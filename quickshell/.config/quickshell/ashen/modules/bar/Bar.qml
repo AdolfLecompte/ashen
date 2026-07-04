@@ -152,6 +152,7 @@ Scope {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 6
 
+                    // Launcher
                     Rectangle {
                         width: 40; height: 44
                         radius: 10
@@ -171,6 +172,7 @@ Scope {
                         }
                     }
 
+                    // Workspaces
                     Rectangle {
                         height: 44
                         radius: 10
@@ -351,7 +353,7 @@ Scope {
                         }
                     }
 
-                    // Sistema
+                    // Sistema — píldora contenedora
                     Rectangle {
                         height: 44
                         radius: 10
@@ -363,13 +365,15 @@ Scope {
                         Row {
                             id: sysRow
                             anchors.centerIn: parent
-                            spacing: 4
+                            spacing: 6
 
                             // Notificaciones
                             Rectangle {
-                                width: 30; height: 30
+                                height: 34
+                                width: 34
                                 radius: 8
                                 color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+
                                 Text {
                                     anchors.centerIn: parent
                                     text: "󰂚"
@@ -379,18 +383,19 @@ Scope {
                                 }
                             }
 
-                            // Wifi
+                            // Wifi — siempre visible
                             Rectangle {
-                                height: 30
+                                height: 34
                                 radius: 8
-                                width: wifiInner.width + 12
+                                width: wifiInner.width + 16
                                 color: root.wifiSsid !== "" ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
                                 Behavior on color { ColorAnimation { duration: 300 } }
 
                                 Row {
                                     id: wifiInner
                                     anchors.centerIn: parent
-                                    spacing: 4
+                                    spacing: 5
+
                                     Text {
                                         text: root.wifiSsid !== "" ? "󰤨" : "󰤭"
                                         color: root.wifiSsid !== "" ? "#0f0f12" : "#7878a0"
@@ -400,28 +405,29 @@ Scope {
                                         Behavior on color { ColorAnimation { duration: 200 } }
                                     }
                                     Text {
-                                        visible: root.wifiSsid !== ""
-                                        text: root.wifiSsid
-                                        color: "#0f0f12"
-                                        font.pixelSize: 11
+                                        text: root.wifiSsid !== "" ? root.wifiSsid : "Off"
+                                        color: root.wifiSsid !== "" ? "#0f0f12" : "#7878a0"
+                                        font.pixelSize: 12
                                         font.family: "JetBrainsMono NF"
                                         anchors.verticalCenter: parent.verticalCenter
+                                        Behavior on color { ColorAnimation { duration: 200 } }
                                     }
                                 }
                             }
 
-                            // Bluetooth
+                            // Bluetooth — siempre visible
                             Rectangle {
-                                height: 30
+                                height: 34
                                 radius: 8
-                                width: btInner.width + 12
+                                width: btInner.width + 16
                                 color: root.btDevice !== "" ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
                                 Behavior on color { ColorAnimation { duration: 300 } }
 
                                 Row {
                                     id: btInner
                                     anchors.centerIn: parent
-                                    spacing: 4
+                                    spacing: 5
+
                                     Text {
                                         text: root.btDevice !== "" ? "󰂯" : "󰂲"
                                         color: root.btDevice !== "" ? "#0f0f12" : "#7878a0"
@@ -431,61 +437,66 @@ Scope {
                                         Behavior on color { ColorAnimation { duration: 200 } }
                                     }
                                     Text {
-                                        visible: root.btDevice !== ""
-                                        text: root.btDevice
-                                        color: "#0f0f12"
-                                        font.pixelSize: 11
+                                        text: root.btDevice !== "" ? root.btDevice : "Off"
+                                        color: root.btDevice !== "" ? "#0f0f12" : "#7878a0"
+                                        font.pixelSize: 12
                                         font.family: "JetBrainsMono NF"
                                         anchors.verticalCenter: parent.verticalCenter
+                                        Behavior on color { ColorAnimation { duration: 200 } }
                                     }
                                 }
                             }
 
                             // Volumen
-                            Rectangle {
-                                height: 30
-                                radius: 8
-                                width: volInner.width + 12
-                                color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+Rectangle {
+    height: 34
+    radius: 8
+    width: volInner.width + 16
+    color: root.volume > 0 ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+    Behavior on color { ColorAnimation { duration: 300 } }
 
-                                Row {
-                                    id: volInner
-                                    anchors.centerIn: parent
-                                    spacing: 4
-                                    Text {
-                                        text: {
-                                            if (root.volume === 0)     return "󰝟"
-                                            else if (root.volume < 33) return "󰕿"
-                                            else if (root.volume < 66) return "󰖀"
-                                            else                        return "󰕾"
-                                        }
-                                        color: root.volume === 0 ? "#8a5a5a" : "#d4d4e0"
-                                        font.pixelSize: 16
-                                        font.family: "JetBrainsMono NF"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        Behavior on color { ColorAnimation { duration: 200 } }
-                                    }
-                                    Text {
-                                        text: root.volume + "%"
-                                        color: "#d4d4e0"
-                                        font.pixelSize: 11
-                                        font.family: "JetBrainsMono NF"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-                            }
+    Row {
+        id: volInner
+        anchors.centerIn: parent
+        spacing: 8
 
-                            // Bateria
+        Text {
+            text: {
+                if (root.volume === 0)     return "󰝟"
+                else if (root.volume < 33) return "󰕿"
+                else if (root.volume < 66) return "󰖀"
+                else                        return "󰕾"
+            }
+            color: root.volume > 0 ? "#0f0f12" : "#7878a0"
+            font.pixelSize: 16
+            font.family: "JetBrainsMono NF"
+            anchors.verticalCenter: parent.verticalCenter
+            Behavior on color { ColorAnimation { duration: 200 } }
+        }
+        Text {
+            text: root.volume + "%"
+            color: root.volume > 0 ? "#0f0f12" : "#7878a0"
+            font.pixelSize: 12
+            font.family: "JetBrainsMono NF"
+            anchors.verticalCenter: parent.verticalCenter
+            Behavior on color { ColorAnimation { duration: 200 } }
+        }
+    }
+}
+
+                            // Bateria — se ilumina al cargar
                             Rectangle {
-                                height: 30
+                                height: 34
                                 radius: 8
-                                width: batInner.width + 12
-                                color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                                width: batInner.width + 16
+                                color: root.charging ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                                Behavior on color { ColorAnimation { duration: 300 } }
 
                                 Row {
                                     id: batInner
                                     anchors.centerIn: parent
-                                    spacing: 4
+                                    spacing: 5
+
                                     Text {
                                         text: {
                                             if (root.charging)            return "󰚥"
@@ -497,7 +508,7 @@ Scope {
                                             else                          return "󰂃"
                                         }
                                         color: {
-                                            if (root.charging)            return "#d4d4e0"
+                                            if (root.charging)            return "#0f0f12"
                                             else if (root.battery >= 50) return "#d4d4e0"
                                             else if (root.battery >= 20) return "#c4a882"
                                             else                          return "#c47a7a"
@@ -510,12 +521,12 @@ Scope {
                                     Text {
                                         text: root.battery + "%"
                                         color: {
-                                            if (root.charging)            return "#d4d4e0"
+                                            if (root.charging)            return "#0f0f12"
                                             else if (root.battery >= 50) return "#d4d4e0"
                                             else if (root.battery >= 20) return "#c4a882"
                                             else                          return "#c47a7a"
                                         }
-                                        font.pixelSize: 11
+                                        font.pixelSize: 12
                                         font.family: "JetBrainsMono NF"
                                         anchors.verticalCenter: parent.verticalCenter
                                         Behavior on color { ColorAnimation { duration: 300 } }

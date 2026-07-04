@@ -1,0 +1,97 @@
+/* ══════════════════════════════════════════
+   Ashen — GTK3
+   ══════════════════════════════════════════ */
+
+window, .background {
+    background-color: transparent;
+}
+
+.sidebar {
+    background-color: transparent;
+    border-right: 1px solid rgba(29, 29, 36, 0.5);
+    color: #d4d4e0;
+}
+
+.sidebar row {
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin: 2px 4px;
+}
+
+.sidebar row:selected {
+    background-color: rgba(98, 114, 164, 0.6);
+    color: #d4d4e0;
+}
+
+.sidebar row:hover {
+    background-color: rgba(98, 114, 164, 0.2);
+}
+
+headerbar, .titlebar {
+    background-color: rgba(10, 10, 13, 0.5);
+    border-bottom: 1px solid rgba(29, 29, 36, 0.5);
+    box-shadow: none;
+    color: #d4d4e0;
+}
+
+.view, iconview {
+    background-color: transparent;
+    color: #d4d4e0;
+}
+
+.view:selected, iconview:selected {
+    background-color: rgba(98, 114, 164, 0.3);
+    color: #d4d4e0;
+}
+
+.path-bar button {
+    background-color: transparent;
+    border: none;
+    color: #7878a0;
+}
+
+.path-bar button:hover {
+    background-color: rgba(98, 114, 164, 0.2);
+    color: #d4d4e0;
+}
+
+/* Forzar transparencia en headerbar de Nemo */
+NemoWindow headerbar,
+NemoWindow headerbar.titlebar,
+NemoWindow .titlebar {
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(29, 29, 36, 0.3);
+}
+
+NemoWindow headerbar button {
+    background-color: transparent;
+}
+
+NemoWindow headerbar button:hover {
+    background-color: rgba(98, 114, 164, 0.2);
+}
+
+toolbar, GtkToolbar {
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+    border: none;
+}
+
+/* Seleccion con colores del sistema Ashen */
+.sidebar row:selected,
+.sidebar row:selected:focus {
+    background-color: #6272a4;
+    color: #0f0f12;
+}
+
+iconview.view:selected,
+iconview.view:selected:focus,
+.view:selected,
+.view:selected:focus {
+    background-color: rgba(98, 114, 164, 0.35);
+    color: #d4d4e0;
+    border-radius: 6px;
+}

@@ -6,8 +6,8 @@ local mod = "SUPER"
 
 -- Apps
 hl.bind(mod .. " + T",     hl.dsp.exec_cmd("kitty"))
-hl.bind(mod .. " + E",     hl.dsp.exec_cmd("nautilus"))
-hl.bind(mod .. " + W",     hl.dsp.exec_cmd("firefox"))
+hl.bind(mod .. " + E",     hl.dsp.exec_cmd("nemo"))
+hl.bind(mod .. " + W",     hl.dsp.exec_cmd("brave"))
 hl.bind(mod .. " + C",     hl.dsp.exec_cmd("codium"))
 hl.bind(mod .. " + SPACE", hl.dsp.exec_cmd("quickshell -c ~/.config/ashen/modules/launcher"))
 
