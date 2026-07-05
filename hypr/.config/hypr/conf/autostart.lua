@@ -8,7 +8,7 @@ local function start(cmd)
     end)
 end
 
-start("swww-daemon")
+start("awww-daemon")
 start("quickshell -c ashen")
 start("swayosd-server")
 start("hypridle")
