@@ -1,14 +1,15 @@
 -- ══════════════════════════════════════════
 --   Ashen — General
 -- ══════════════════════════════════════════
+
 hl.config({
     general = {
         gaps_in = 4,
         gaps_out = 8,
         border_size = 2,
         col = {
-            active_border = { colors = {"rgba(6272a4ff)"} },
-            inactive_border = "rgba(16161bff)",
+            active_border = { colors = {"rgba(6e6e7aff)"} },
+            inactive_border = "rgba(1c1c2100)",
         },
         resize_on_border = true,
         layout = "dwindle",
@@ -16,4 +17,4 @@ hl.config({
     dwindle = {
         preserve_split = true,
     },
-})
+})	

@@ -84,7 +84,6 @@ PanelWindow {
         onTriggered: root.refreshNetworks()
     }
 
-    // Click fuera para cerrar
     MouseArea {
         anchors.fill: parent
         z: -1
@@ -96,15 +95,15 @@ PanelWindow {
 
     // Panel principal
     Rectangle {
-        id: mainPanel
         anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.right: parent.right
+        anchors.rightMargin: 12
         anchors.topMargin: 64
         width: 420
         radius: 14
         height: Math.min(panelCol.implicitHeight + 28, root.height - 80)
-        color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.95)
-        border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+        color: Services.Colors.surfaceAlpha(0.95)
+        border.color: Services.Colors.ghostAlpha(0.2)
         border.width: 1
         clip: true
         visible: !root.showConnectDialog
@@ -140,21 +139,24 @@ PanelWindow {
                         width: (panelCol.width - 8) / 2
                         height: 36
                         radius: 8
-                        color: Services.AppState.networkTab === modelData.id ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                        color: Services.AppState.networkTab === modelData.id
+                            ? Services.Colors.ghost
+                            : Services.Colors.ghostAlpha(0.15)
                         Behavior on color { ColorAnimation { duration: 150 } }
+
                         Row {
                             anchors.centerIn: parent
                             spacing: 6
                             Text {
                                 text: modelData.icon
-                                color: Services.AppState.networkTab === modelData.id ? "#0f0f12" : "#d4d4e0"
+                                color: Services.AppState.networkTab === modelData.id ? Services.Colors.abyss : Services.Colors.snow
                                 font.pixelSize: 16
                                 font.family: "Material Symbols Rounded"
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                             Text {
                                 text: modelData.label
-                                color: Services.AppState.networkTab === modelData.id ? "#0f0f12" : "#d4d4e0"
+                                color: Services.AppState.networkTab === modelData.id ? Services.Colors.abyss : Services.Colors.snow
                                 font.pixelSize: 13
                                 font.family: "JetBrainsMono NF"
                                 anchors.verticalCenter: parent.verticalCenter
@@ -175,22 +177,22 @@ PanelWindow {
                 spacing: 8
                 visible: Services.AppState.networkTab === "wifi"
 
-                // Toggle + refresh
                 RowLayout {
                     width: parent.width
                     Text {
                         text: "Wireless"
-                        color: "#7878a0"
+                        color: Services.Colors.mist
                         font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
                         Layout.fillWidth: true
                     }
                     Rectangle {
-                        width: 28; height: 28; radius: 8; color: "transparent"
+                        width: 28; height: 28; radius: 8
+                        color: "transparent"
                         Text {
                             anchors.centerIn: parent
                             text: ""
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 16
                             font.family: "Material Symbols Rounded"
                         }
@@ -198,17 +200,18 @@ PanelWindow {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-                            onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                             onExited: parent.color = "transparent"
                             onClicked: root.refreshNetworks()
                         }
                     }
                     Rectangle {
                         width: 52; height: 28; radius: 14
-                        color: root.wifiEnabled ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
+                        color: root.wifiEnabled ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.25)
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Rectangle {
-                            width: 20; height: 20; radius: 10; color: "white"
+                            width: 20; height: 20; radius: 10
+                            color: Services.Colors.snow
                             anchors.verticalCenter: parent.verticalCenter
                             x: root.wifiEnabled ? parent.width - width - 4 : 4
                             Behavior on x { NumberAnimation { duration: 200 } }
@@ -230,8 +233,8 @@ PanelWindow {
                     height: Services.Network.wifiSsid !== "" ? 64 : 0
                     visible: Services.Network.wifiSsid !== ""
                     radius: 8
-                    color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
-                    border.color: "#6272a4"
+                    color: Services.Colors.ghostAlpha(0.2)
+                    border.color: Services.Colors.ghost
                     border.width: 1
                     RowLayout {
                         anchors.fill: parent
@@ -239,7 +242,7 @@ PanelWindow {
                         spacing: 10
                         Text {
                             text: ""
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 22
                             font.family: "Material Symbols Rounded"
                         }
@@ -248,21 +251,21 @@ PanelWindow {
                             spacing: 2
                             Text {
                                 text: Services.Network.wifiSsid
-                                color: "#d4d4e0"
+                                color: Services.Colors.snow
                                 font.pixelSize: 14
                                 font.family: "JetBrainsMono NF"
                                 font.bold: true
                             }
                             Text {
                                 text: "Connected"
-                                color: "#6272a4"
+                                color: Services.Colors.ghost
                                 font.pixelSize: 11
                                 font.family: "JetBrainsMono NF"
                             }
                         }
                         Text {
                             text: ""
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 22
                             font.family: "Material Symbols Rounded"
                         }
@@ -277,7 +280,7 @@ PanelWindow {
 
                     Text {
                         text: "Known Networks"
-                        color: "#7878a0"
+                        color: Services.Colors.mist
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
                         leftPadding: 4
@@ -313,7 +316,7 @@ PanelWindow {
                                     spacing: 10
                                     Text {
                                         text: modelData.signal >= 60 ? "" : ""
-                                        color: "#7878a0"
+                                        color: Services.Colors.mist
                                         font.pixelSize: 20
                                         font.family: "Material Symbols Rounded"
                                     }
@@ -322,7 +325,7 @@ PanelWindow {
                                         spacing: 2
                                         Text {
                                             text: modelData.ssid
-                                            color: "#a0a0b8"
+                                            color: Services.Colors.snow
                                             font.pixelSize: 13
                                             font.family: "JetBrainsMono NF"
                                             elide: Text.ElideRight
@@ -330,7 +333,7 @@ PanelWindow {
                                         }
                                         Text {
                                             text: modelData.signal + "% signal"
-                                            color: "#404052"
+                                            color: Services.Colors.ash
                                             font.pixelSize: 10
                                             font.family: "JetBrainsMono NF"
                                         }
@@ -338,7 +341,7 @@ PanelWindow {
                                     Text {
                                         visible: modelData.secure
                                         text: ""
-                                        color: "#404052"
+                                        color: Services.Colors.ash
                                         font.pixelSize: 14
                                         font.family: "Material Symbols Rounded"
                                     }
@@ -347,7 +350,7 @@ PanelWindow {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     hoverEnabled: true
-                                    onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.1)
+                                    onEntered: parent.color = Services.Colors.ghostAlpha(0.1)
                                     onExited: parent.color = "transparent"
                                     onClicked: {
                                         Quickshell.execDetached(["sh", "-c", "nmcli dev wifi connect \"" + modelData.ssid + "\""])
@@ -366,7 +369,7 @@ PanelWindow {
 
                     Text {
                         text: "Available Networks"
-                        color: "#7878a0"
+                        color: Services.Colors.mist
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
                         leftPadding: 4
@@ -402,7 +405,7 @@ PanelWindow {
                                     spacing: 10
                                     Text {
                                         text: modelData.signal >= 60 ? "" : ""
-                                        color: "#7878a0"
+                                        color: Services.Colors.mist
                                         font.pixelSize: 20
                                         font.family: "Material Symbols Rounded"
                                     }
@@ -411,7 +414,7 @@ PanelWindow {
                                         spacing: 2
                                         Text {
                                             text: modelData.ssid
-                                            color: "#a0a0b8"
+                                            color: Services.Colors.snow
                                             font.pixelSize: 13
                                             font.family: "JetBrainsMono NF"
                                             elide: Text.ElideRight
@@ -419,7 +422,7 @@ PanelWindow {
                                         }
                                         Text {
                                             text: modelData.signal + "% signal"
-                                            color: "#404052"
+                                            color: Services.Colors.ash
                                             font.pixelSize: 10
                                             font.family: "JetBrainsMono NF"
                                         }
@@ -427,7 +430,7 @@ PanelWindow {
                                     Text {
                                         visible: modelData.secure
                                         text: ""
-                                        color: "#404052"
+                                        color: Services.Colors.ash
                                         font.pixelSize: 14
                                         font.family: "Material Symbols Rounded"
                                     }
@@ -436,7 +439,7 @@ PanelWindow {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     hoverEnabled: true
-                                    onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.1)
+                                    onEntered: parent.color = Services.Colors.ghostAlpha(0.1)
                                     onExited: parent.color = "transparent"
                                     onClicked: {
                                         root.connectingTo = modelData.ssid
@@ -460,13 +463,13 @@ PanelWindow {
                     width: parent.width
                     height: 60
                     radius: 8
-                    color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.1)
+                    color: Services.Colors.ghostAlpha(0.1)
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: 12
                         Text {
                             text: ""
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 22
                             font.family: "Material Symbols Rounded"
                         }
@@ -474,14 +477,14 @@ PanelWindow {
                             Layout.fillWidth: true
                             Text {
                                 text: "Ethernet"
-                                color: "#d4d4e0"
+                                color: Services.Colors.snow
                                 font.pixelSize: 13
                                 font.family: "JetBrainsMono NF"
                                 font.bold: true
                             }
                             Text {
                                 text: "Cable connection"
-                                color: "#7878a0"
+                                color: Services.Colors.mist
                                 font.pixelSize: 10
                                 font.family: "JetBrainsMono NF"
                             }
@@ -494,17 +497,17 @@ PanelWindow {
         }
     }
 
-    // Dialog de conexion
+    // Dialog conexion
     Rectangle {
-        id: connectDialog
         anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.right: parent.right
+        anchors.rightMargin: 12
         anchors.topMargin: 64
         width: 380
         height: connectCol.implicitHeight + 32
         radius: 14
-        color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.98)
-        border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+        color: Services.Colors.surfaceAlpha(0.98)
+        border.color: Services.Colors.ghostAlpha(0.2)
         border.width: 1
         visible: root.showConnectDialog
 
@@ -521,12 +524,11 @@ PanelWindow {
             width: parent.width - 32
             spacing: 16
 
-            // Header
             RowLayout {
                 width: parent.width
                 Text {
                     text: ""
-                    color: "#6272a4"
+                    color: Services.Colors.ghost
                     font.pixelSize: 22
                     font.family: "Material Symbols Rounded"
                 }
@@ -535,13 +537,13 @@ PanelWindow {
                     spacing: 2
                     Text {
                         text: "Connect to Network"
-                        color: "#7878a0"
+                        color: Services.Colors.mist
                         font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
                     }
                     Text {
                         text: root.connectingTo
-                        color: "#d4d4e0"
+                        color: Services.Colors.snow
                         font.pixelSize: 15
                         font.family: "JetBrainsMono NF"
                         font.bold: true
@@ -552,28 +554,26 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "✕"
-                        color: "#7878a0"
+                        color: Services.Colors.mist
                         font.pixelSize: 14
-                        font.family: "JetBrainsMono NF"
                     }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
-                        onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                        onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                         onExited: parent.color = "transparent"
                         onClicked: root.showConnectDialog = false
                     }
                 }
             }
 
-            // Campo contraseña
             Rectangle {
                 width: parent.width
                 height: 48
                 radius: 8
-                color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.1)
-                border.color: passwordInput.activeFocus ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.3)
+                color: Services.Colors.ghostAlpha(0.1)
+                border.color: passInput.activeFocus ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.3)
                 border.width: 1
                 Behavior on border.color { ColorAnimation { duration: 150 } }
 
@@ -585,7 +585,7 @@ PanelWindow {
 
                     Text {
                         text: ""
-                        color: "#6272a4"
+                        color: Services.Colors.ghost
                         font.pixelSize: 16
                         font.family: "Material Symbols Rounded"
                     }
@@ -595,22 +595,20 @@ PanelWindow {
                         height: 30
 
                         Text {
-                            anchors.fill: parent
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Password"
-                            color: "#404052"
+                            color: Services.Colors.ash
                             font.pixelSize: 14
                             font.family: "JetBrainsMono NF"
-                            visible: passwordInput.text.length === 0
-                            verticalAlignment: Text.AlignVCenter
+                            visible: passInput.text.length === 0
                         }
 
                         TextInput {
-                            id: passwordInput
+                            id: passInput
                             anchors.fill: parent
                             text: root.password
                             echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
-                            color: "#d4d4e0"
+                            color: Services.Colors.snow
                             font.pixelSize: 14
                             font.family: "JetBrainsMono NF"
                             verticalAlignment: TextInput.AlignVCenter
@@ -619,13 +617,12 @@ PanelWindow {
                         }
                     }
 
-                    // Ojito
                     Rectangle {
                         width: 32; height: 32; radius: 6; color: "transparent"
                         Text {
                             anchors.centerIn: parent
                             text: root.showPassword ? "" : ""
-                            color: "#7878a0"
+                            color: Services.Colors.mist
                             font.pixelSize: 18
                             font.family: "Material Symbols Rounded"
                         }
@@ -633,7 +630,7 @@ PanelWindow {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-                            onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                             onExited: parent.color = "transparent"
                             onClicked: root.showPassword = !root.showPassword
                         }
@@ -641,20 +638,18 @@ PanelWindow {
                 }
             }
 
-            // Botones
             RowLayout {
                 width: parent.width
                 spacing: 8
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 40
-                    radius: 8
-                    color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                    height: 40; radius: 8
+                    color: Services.Colors.ghostAlpha(0.15)
                     Text {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        color: "#d4d4e0"
+                        color: Services.Colors.snow
                         font.pixelSize: 13
                         font.family: "JetBrainsMono NF"
                     }
@@ -662,8 +657,8 @@ PanelWindow {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
-                        onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
-                        onExited: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                        onEntered: parent.color = Services.Colors.ghostAlpha(0.25)
+                        onExited: parent.color = Services.Colors.ghostAlpha(0.15)
                         onClicked: root.showConnectDialog = false
                     }
                 }
@@ -671,9 +666,8 @@ PanelWindow {
                 Rectangle {
                     id: connectBtn
                     Layout.fillWidth: true
-                    height: 40
-                    radius: 8
-                    color: "#6272a4"
+                    height: 40; radius: 8
+                    color: Services.Colors.ghost
 
                     function connect() {
                         let cmd = root.password.length > 0
@@ -687,7 +681,7 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "Connect"
-                        color: "#0f0f12"
+                        color: Services.Colors.abyss
                         font.pixelSize: 13
                         font.family: "JetBrainsMono NF"
                         font.bold: true
@@ -696,8 +690,8 @@ PanelWindow {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
-                        onEntered: parent.color = "#8899cc"
-                        onExited: parent.color = "#6272a4"
+                        onEntered: parent.color = Services.Colors.shade
+                        onExited: parent.color = Services.Colors.ghost
                         onClicked: connectBtn.connect()
                     }
                 }

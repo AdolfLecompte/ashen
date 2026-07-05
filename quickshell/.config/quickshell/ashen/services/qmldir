@@ -2,3 +2,4 @@ singleton Audio 1.0 Audio.qml
 singleton Battery 1.0 Battery.qml
 singleton Network 1.0 Network.qml
 singleton AppState 1.0 AppState.qml
+singleton Colors 1.0 Colors.qml

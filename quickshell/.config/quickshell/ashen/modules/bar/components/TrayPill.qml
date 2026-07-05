@@ -2,12 +2,14 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import QtQuick
 
+import "root:/services" as Services
+
 Rectangle {
     id: root
     height: 44
     radius: 10
-    color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.82)
-    border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+    color: Services.Colors.surfaceAlpha(0.82)
+    border.color: Services.Colors.ghostAlpha(0.2)
     border.width: 1
     width: trayRow.width + 16
     visible: SystemTray.items.values.filter(i => !isSystemItem(i.id)).length > 0

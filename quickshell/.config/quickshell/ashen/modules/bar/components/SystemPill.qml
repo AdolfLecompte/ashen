@@ -5,13 +5,13 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
-    readonly property int innerRadius: 8
-    readonly property int innerHeight: 32
+    readonly property int innerR: 8
+    readonly property int innerH: 32
 
     height: 44
     radius: 10
-    color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.82)
-    border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+    color: Services.Colors.surfaceAlpha(0.82)
+    border.color: Services.Colors.ghostAlpha(0.2)
     border.width: 1
     width: sysRow.width + 16
 
@@ -22,13 +22,13 @@ Rectangle {
 
         // Notificaciones
         Rectangle {
-            width: root.innerHeight; height: root.innerHeight
-            radius: root.innerRadius
-            color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
+            width: root.innerH; height: root.innerH
+            radius: root.innerR
+            color: Services.Colors.ghostAlpha(0.2)
             Text {
                 anchors.centerIn: parent
                 text: ""
-                color: "#d4d4e0"
+                color: Services.Colors.mist
                 font.pixelSize: 18
                 font.family: "Material Symbols Rounded"
             }
@@ -36,10 +36,10 @@ Rectangle {
 
         // Wifi
         Rectangle {
-            height: root.innerHeight
-            radius: root.innerRadius
+            height: root.innerH
+            radius: root.innerR
             width: wifiInner.width + 16
-            color: Services.Network.wifiSsid !== "" ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
+            color: Services.Network.wifiSsid !== "" ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
             Behavior on color { ColorAnimation { duration: 300 } }
 
             MouseArea {
@@ -57,7 +57,7 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: Services.Network.wifiSsid !== "" ? "" : ""
-                    color: Services.Network.wifiSsid !== "" ? "#0f0f12" : "#7878a0"
+                    color: Services.Network.wifiSsid !== "" ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -65,7 +65,7 @@ Rectangle {
                 }
                 Text {
                     text: Services.Network.wifiSsid !== "" ? Services.Network.wifiSsid : "Off"
-                    color: Services.Network.wifiSsid !== "" ? "#0f0f12" : "#7878a0"
+                    color: Services.Network.wifiSsid !== "" ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -76,10 +76,10 @@ Rectangle {
 
         // Bluetooth
         Rectangle {
-            height: root.innerHeight
-            radius: root.innerRadius
+            height: root.innerH
+            radius: root.innerR
             width: btInner.width + 16
-            color: Services.Network.btDevice !== "" ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
+            color: Services.Network.btDevice !== "" ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
             Behavior on color { ColorAnimation { duration: 300 } }
             Row {
                 id: btInner
@@ -87,7 +87,7 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: Services.Network.btDevice !== "" ? "" : ""
-                    color: Services.Network.btDevice !== "" ? "#0f0f12" : "#7878a0"
+                    color: Services.Network.btDevice !== "" ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -95,7 +95,7 @@ Rectangle {
                 }
                 Text {
                     text: Services.Network.btDevice !== "" ? Services.Network.btDevice : "Off"
-                    color: Services.Network.btDevice !== "" ? "#0f0f12" : "#7878a0"
+                    color: Services.Network.btDevice !== "" ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -106,10 +106,10 @@ Rectangle {
 
         // Volumen
         Rectangle {
-            height: root.innerHeight
-            radius: root.innerRadius
+            height: root.innerH
+            radius: root.innerR
             width: volInner.width + 16
-            color: Services.Audio.volume > 0 ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
+            color: Services.Audio.volume > 0 ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
             Behavior on color { ColorAnimation { duration: 300 } }
             Row {
                 id: volInner
@@ -117,7 +117,7 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: Services.Audio.volume === 0 ? "" : Services.Audio.volume < 66 ? "" : ""
-                    color: Services.Audio.volume > 0 ? "#0f0f12" : "#7878a0"
+                    color: Services.Audio.volume > 0 ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -125,7 +125,7 @@ Rectangle {
                 }
                 Text {
                     text: Services.Audio.volume + "%"
-                    color: Services.Audio.volume > 0 ? "#0f0f12" : "#7878a0"
+                    color: Services.Audio.volume > 0 ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -136,10 +136,10 @@ Rectangle {
 
         // Bateria
         Rectangle {
-            height: root.innerHeight
-            radius: root.innerRadius
+            height: root.innerH
+            radius: root.innerR
             width: batInner.width + 16
-            color: Services.Battery.charging ? "#6272a4" : Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.25)
+            color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
             Behavior on color { ColorAnimation { duration: 300 } }
             Row {
                 id: batInner
@@ -147,7 +147,11 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: Services.Battery.charging ? "" : Services.Battery.level >= 90 ? "" : Services.Battery.level >= 70 ? "" : Services.Battery.level >= 50 ? "" : Services.Battery.level >= 30 ? "" : Services.Battery.level >= 15 ? "" : ""
-                    color: Services.Battery.charging ? "#0f0f12" : Services.Battery.level >= 50 ? "#d4d4e0" : Services.Battery.level >= 20 ? "#c4a882" : "#c47a7a"
+                    color: {
+                        if (Services.Battery.charging) return Services.Colors.abyss
+                        if (Services.Battery.level >= 20) return Services.Colors.snow
+                        return Services.Colors.error_
+                    }
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -155,7 +159,11 @@ Rectangle {
                 }
                 Text {
                     text: Services.Battery.level + "%"
-                    color: Services.Battery.charging ? "#0f0f12" : Services.Battery.level >= 50 ? "#d4d4e0" : Services.Battery.level >= 20 ? "#c4a882" : "#c47a7a"
+                    color: {
+                        if (Services.Battery.charging) return Services.Colors.abyss
+                        if (Services.Battery.level >= 20) return Services.Colors.snow
+                        return Services.Colors.error_
+                    }
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter

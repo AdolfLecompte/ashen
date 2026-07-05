@@ -12,8 +12,8 @@ Rectangle {
     height: 44
     width: clockRow.implicitWidth + 40
     radius: 10
-    color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.82)
-    border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+    color: Services.Colors.surfaceAlpha(0.82)
+    border.color: Services.Colors.ghostAlpha(0.2)
     border.width: 1
 
     MouseArea {
@@ -49,7 +49,7 @@ Rectangle {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: root.currentTime
-                color: "#d4d4e0"
+                color: Services.Colors.snow
                 font.pixelSize: 15
                 font.family: "JetBrainsMono NF"
                 font.bold: true
@@ -57,7 +57,7 @@ Rectangle {
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: root.currentDate
-                color: "#7878a0"
+                color: Services.Colors.mist
                 font.pixelSize: 10
                 font.family: "JetBrainsMono NF"
             }
@@ -67,14 +67,7 @@ Rectangle {
             text: root.timeIcon
             font.pixelSize: 24
             font.family: "Material Symbols Rounded"
-            color: {
-                let h = new Date().getHours()
-                if (h >= 0 && h < 5)        return "#aab4d4"
-                else if (h >= 5 && h < 8)   return "#c4a882"
-                else if (h >= 8 && h < 17)  return "#c4c882"
-                else if (h >= 17 && h < 20) return "#c4a882"
-                else                         return "#8899cc"
-            }
+            color: Services.Colors.neutral
         }
     }
 }

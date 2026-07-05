@@ -3,17 +3,17 @@ import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 
+import "root:/services" as Services
+
 Row {
     id: root
     spacing: 6
 
-    readonly property int pillRadius: 10
-    readonly property int innerRadius: 8
-    readonly property int pillHeight: 44
-    readonly property int innerHeight: 32
-    readonly property int pillPadding: 8
-    readonly property color pillBg: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.82)
-    readonly property color pillBorder: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+    readonly property int pillH: 44
+    readonly property int innerH: 32
+    readonly property int innerR: 8
+    readonly property int pillR: 10
+    readonly property int pad: 8
 
     property var activeSpecial: {
         let specials = Hyprland.workspaces.values.filter(w => w.id < 0)
@@ -34,15 +34,15 @@ Row {
 
     // Launcher
     Rectangle {
-        width: root.pillHeight; height: root.pillHeight
-        radius: root.pillRadius
-        color: root.pillBg
-        border.color: root.pillBorder
+        width: root.pillH; height: root.pillH
+        radius: root.pillR
+        color: Services.Colors.surfaceAlpha(0.82)
+        border.color: Services.Colors.ghostAlpha(0.2)
         border.width: 1
         Text {
             anchors.centerIn: parent
             text: ""
-            color: "#6272a4"
+            color: Services.Colors.ghost
             font.pixelSize: 22
             font.family: "Material Symbols Rounded"
         }
@@ -54,27 +54,27 @@ Row {
 
     // Workspaces normales
     Rectangle {
-        height: root.pillHeight
-        radius: root.pillRadius
-        color: root.pillBg
-        border.color: root.pillBorder
+        height: root.pillH
+        radius: root.pillR
+        color: Services.Colors.surfaceAlpha(0.82)
+        border.color: Services.Colors.ghostAlpha(0.2)
         border.width: 1
-        width: wsRow.width + root.pillPadding * 2
+        width: wsRow.width + root.pad * 2
         opacity: root.inSpecial ? 0.4 : 1.0
         Behavior on opacity { NumberAnimation { duration: 200 } }
 
         Rectangle {
             id: slideIndicator
-            width: root.innerHeight; height: root.innerHeight
-            radius: root.innerRadius
-            color: "#6272a4"
-            y: (root.pillHeight - root.innerHeight) / 2
+            width: root.innerH; height: root.innerH
+            radius: root.innerR
+            color: Services.Colors.ghost
+            y: (root.pillH - root.innerH) / 2
             x: {
                 let focused = Hyprland.focusedWorkspace
-                if (!focused) return root.pillPadding
+                if (!focused) return root.pad
                 let base = Math.floor((focused.id - 1) / 5) * 5
                 let idx = focused.id - base - 1
-                return root.pillPadding + idx * (root.innerHeight + 4)
+                return root.pad + idx * (root.innerH + 4)
             }
             Behavior on x { SmoothedAnimation { duration: 250 } }
         }
@@ -96,20 +96,20 @@ Row {
                     }
                     property bool isActive: Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id === wsId
                     property bool hasWindows: Hyprland.workspaces.values.find(w => w.id === wsId) !== undefined
-                    width: root.innerHeight; height: root.innerHeight
+                    width: root.innerH; height: root.innerH
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: root.innerRadius
-                        color: "#6272a4"
-                        opacity: parent.hasWindows && !parent.isActive ? 0.15 : 0
+                        radius: root.innerR
+                        color: Services.Colors.ghost
+                        opacity: parent.hasWindows && !parent.isActive ? 0.2 : 0
                         Behavior on opacity { NumberAnimation { duration: 200 } }
                     }
 
                     Text {
                         anchors.centerIn: parent
                         text: wsId
-                        color: parent.isActive ? "#0f0f12" : "#7878a0"
+                        color: parent.isActive ? Services.Colors.abyss : Services.Colors.ash
                         font.pixelSize: 13
                         font.family: "JetBrainsMono NF"
                         font.bold: parent.isActive
@@ -130,10 +130,10 @@ Row {
 
     // Special workspace pill
     Rectangle {
-        height: root.pillHeight
-        radius: root.pillRadius
-        color: "#6272a4"
-        width: root.inSpecial ? (root.innerHeight + root.pillPadding * 2) : 0
+        height: root.pillH
+        radius: root.pillR
+        color: Services.Colors.ghost
+        width: root.inSpecial ? (root.innerH + root.pad * 2) : 0
         opacity: root.inSpecial ? 1.0 : 0.0
         clip: true
         Behavior on width { SmoothedAnimation { duration: 250 } }
@@ -142,7 +142,7 @@ Row {
         Text {
             anchors.centerIn: parent
             text: root.specialIcon(root.specialName)
-            color: "#0f0f12"
+            color: Services.Colors.abyss
             font.pixelSize: 20
             font.family: "Material Symbols Rounded"
             opacity: root.inSpecial ? 1.0 : 0.0

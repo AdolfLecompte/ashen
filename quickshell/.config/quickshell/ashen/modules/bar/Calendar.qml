@@ -18,13 +18,13 @@ PanelWindow {
     color: "transparent"
     visible: Services.AppState.calendarVisible
 
-    property string currentTime: ""
-    property string currentDate: ""
-    property string currentDayName: ""
+    property string currentTime: Qt.formatDateTime(new Date(), "hh:mm:ss AP")
+    property string currentDate: Qt.formatDateTime(new Date(), "MMMM d, yyyy")
+    property string currentDayName: Qt.locale().dayName(new Date().getDay())
 
     Timer {
         interval: 1000
-        running: root.visible
+        running: true
         repeat: true
         onTriggered: {
             let now = new Date()
@@ -49,66 +49,81 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
         Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
-        // ── Caja superior ──────────────────────────
+        // Caja superior — invertida
         Rectangle {
-            width: 320
-            height: 80
+            width: 360
+            height: 100
             radius: 14
-            color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.95)
-            border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
-            border.width: 1
-
+            color: Services.Colors.ghost
             MouseArea { anchors.fill: parent; onClicked: {} }
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
+                anchors.leftMargin: 24
+                anchors.rightMargin: 24
 
+                // Dia y fecha
                 Column {
-                    spacing: 2
+                    spacing: 4
                     Layout.fillWidth: true
+
                     Text {
-                        text: root.currentDayName
-                        color: "#6272a4"
-                        font.pixelSize: 12
+                        text: root.currentDayName.toUpperCase()
+                        color: Services.Colors.surfaceAlpha(0.7)
+                        font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
                         font.bold: true
+                        font.letterSpacing: 2
                     }
                     Text {
                         text: root.currentDate
-                        color: "#d4d4e0"
-                        font.pixelSize: 15
+                        color: Services.Colors.abyss
+                        font.pixelSize: 16
                         font.family: "JetBrainsMono NF"
                         font.bold: true
                     }
                 }
 
+                // Separador
                 Rectangle {
-                    width: 1; height: 40
-                    color: Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.3)
+                    width: 1; height: 50
+                    color: Services.Colors.surfaceAlpha(0.3)
                 }
 
-                Text {
-                    text: root.currentTime
-                    color: "#d4d4e0"
-                    font.pixelSize: 14
-                    font.family: "JetBrainsMono NF"
-                    font.bold: true
+                // Hora
+                Column {
+                    spacing: 2
                     Layout.alignment: Qt.AlignVCenter
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.currentTime.split(" ")[0]
+                        color: Services.Colors.abyss
+                        font.pixelSize: 22
+                        font.family: "JetBrainsMono NF"
+                        font.bold: true
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.currentTime.split(" ")[1]
+                        color: Services.Colors.surfaceAlpha(0.7)
+                        font.pixelSize: 11
+                        font.family: "JetBrainsMono NF"
+                        font.bold: true
+                        font.letterSpacing: 1
+                    }
                 }
             }
         }
 
-        // ── Caja inferior — Calendario ──────────────
+        // Caja calendario
         Rectangle {
-            width: 320
+            width: 360
             height: calCol.implicitHeight + 28
             radius: 14
-            color: Qt.rgba(0x1d/255, 0x1d/255, 0x24/255, 0.95)
-            border.color: Qt.rgba(0x24/255, 0x24/255, 0x2d/255, 0.5)
+            color: Services.Colors.surfaceAlpha(0.95)
+            border.color: Services.Colors.ghostAlpha(0.2)
             border.width: 1
-
             MouseArea { anchors.fill: parent; onClicked: {} }
 
             Column {
@@ -117,26 +132,24 @@ PanelWindow {
                 spacing: 10
                 width: parent.width - 28
 
-                // Header — mes a la izquierda, navegacion a la derecha
                 RowLayout {
                     width: parent.width
 
                     Text {
                         Layout.fillWidth: true
                         text: Qt.locale().monthName(calRoot.currentMonth) + " " + calRoot.currentYear
-                        color: "#d4d4e0"
+                        color: Services.Colors.snow
                         font.pixelSize: 14
                         font.family: "JetBrainsMono NF"
                         font.bold: true
                     }
 
-                    // Flecha izquierda
                     Rectangle {
                         width: 28; height: 28; radius: 8; color: "transparent"
                         Text {
                             anchors.centerIn: parent
                             text: "‹"
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 20
                             font.family: "JetBrainsMono NF"
                         }
@@ -144,7 +157,7 @@ PanelWindow {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-                            onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                             onExited: parent.color = "transparent"
                             onClicked: {
                                 if (calRoot.currentMonth === 0) { calRoot.currentMonth = 11; calRoot.currentYear-- }
@@ -153,13 +166,12 @@ PanelWindow {
                         }
                     }
 
-                    // Casita — volver a hoy
                     Rectangle {
                         width: 28; height: 28; radius: 8; color: "transparent"
                         Text {
                             anchors.centerIn: parent
                             text: ""
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 16
                             font.family: "Material Symbols Rounded"
                         }
@@ -167,7 +179,7 @@ PanelWindow {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-                            onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                             onExited: parent.color = "transparent"
                             onClicked: {
                                 calRoot.currentMonth = calRoot.todayMonth
@@ -176,13 +188,12 @@ PanelWindow {
                         }
                     }
 
-                    // Flecha derecha
                     Rectangle {
                         width: 28; height: 28; radius: 8; color: "transparent"
                         Text {
                             anchors.centerIn: parent
                             text: "›"
-                            color: "#6272a4"
+                            color: Services.Colors.ghost
                             font.pixelSize: 20
                             font.family: "JetBrainsMono NF"
                         }
@@ -190,7 +201,7 @@ PanelWindow {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-                            onEntered: parent.color = Qt.rgba(0x62/255, 0x72/255, 0xa4/255, 0.15)
+                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                             onExited: parent.color = "transparent"
                             onClicked: {
                                 if (calRoot.currentMonth === 11) { calRoot.currentMonth = 0; calRoot.currentYear++ }
@@ -200,7 +211,6 @@ PanelWindow {
                     }
                 }
 
-                // Dias de semana
                 Row {
                     width: parent.width
                     Repeater {
@@ -209,14 +219,13 @@ PanelWindow {
                             width: calCol.width / 7
                             horizontalAlignment: Text.AlignHCenter
                             text: modelData
-                            color: "#404052"
+                            color: Services.Colors.ash
                             font.pixelSize: 11
                             font.family: "JetBrainsMono NF"
                         }
                     }
                 }
 
-                // Grid dias
                 Grid {
                     id: calRoot
                     width: parent.width
@@ -241,16 +250,24 @@ PanelWindow {
 
                             width: calCol.width / 7 - 2
                             height: width
-                            radius: width / 2
-                            color: isToday ? "#6272a4" : "transparent"
+                            radius: 6
+                            color: isToday ? Services.Colors.ghost : "transparent"
 
                             Text {
                                 anchors.centerIn: parent
                                 text: parent.isValid ? parent.day : ""
-                                color: parent.isToday ? "#0f0f12" : "#d4d4e0"
+                                color: parent.isToday ? Services.Colors.abyss : Services.Colors.snow
                                 font.pixelSize: 12
                                 font.family: "JetBrainsMono NF"
                                 font.bold: parent.isToday
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: if (!parent.isToday) parent.color = Services.Colors.ghostAlpha(0.15)
+                                onExited: if (!parent.isToday) parent.color = "transparent"
                             }
                         }
                     }
