@@ -1,97 +1,142 @@
 /* ══════════════════════════════════════════
-   Ashen — GTK3
+   Ashen — GTK3 + Nemo
    ══════════════════════════════════════════ */
 
-window, .background {
+* { -gtk-icon-style: regular; }
+
+window, .background, .csd {
     background-color: transparent;
 }
 
-.sidebar {
+/* ── Vista principal ─────────────────────── */
+.nemo-window .view,
+.nemo-window iconview {
     background-color: transparent;
-    border-right: 1px solid rgba(29, 29, 36, 0.5);
-    color: #d4d4e0;
+    color: #e8e8ec;
 }
 
-.sidebar row {
-    padding: 4px 8px;
+.nemo-window .view:selected,
+.nemo-window iconview:selected {
+    background-color: alpha(#6e6e7a, 0.3);
+    color: #e8e8ec;
     border-radius: 6px;
-    margin: 2px 4px;
 }
 
-.sidebar row:selected {
-    background-color: rgba(98, 114, 164, 0.6);
-    color: #d4d4e0;
-}
-
-.sidebar row:hover {
-    background-color: rgba(98, 114, 164, 0.2);
-}
-
-headerbar, .titlebar {
-    background-color: rgba(10, 10, 13, 0.5);
-    border-bottom: 1px solid rgba(29, 29, 36, 0.5);
-    box-shadow: none;
-    color: #d4d4e0;
-}
-
-.view, iconview {
+/* ── Sidebar ─────────────────────────────── */
+.nemo-window .sidebar .view,
+.nemo-window .sidebar iconview,
+.nemo-window .places-treeview .view.cell {
     background-color: transparent;
-    color: #d4d4e0;
+    color: #9090a0;
 }
 
-.view:selected, iconview:selected {
-    background-color: rgba(98, 114, 164, 0.3);
-    color: #d4d4e0;
+.nemo-window .places-treeview .view.cell:selected {
+    background-color: alpha(#6e6e7a, 0.3);
+    color: #e8e8ec;
+    border-radius: 6px;
 }
 
+.nemo-window .places-treeview .view.cell:hover {
+    background-color: alpha(#6e6e7a, 0.12);
+    color: #e8e8ec;
+    border-radius: 6px;
+}
+
+/* ── Toolbar transparente ────────────────── */
+.nemo-window toolbar.primary-toolbar,
+.nemo-window .toolbar,
+toolbar {
+    background-color: transparent;
+    background-image: none;
+    border-bottom: none;
+    box-shadow: none;
+}
+
+.nemo-window toolbar.primary-toolbar button {
+    background-color: transparent;
+    border: none;
+    color: #4a4a54;
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+.nemo-window toolbar.primary-toolbar button:hover {
+    background-color: alpha(#6e6e7a, 0.15);
+    color: #e8e8ec;
+}
+
+/* ── Path bar — estilo pilodra activa ──────── */
 .path-bar button {
     background-color: transparent;
     border: none;
-    color: #7878a0;
+    color: #4a4a54;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin: 0 2px;
 }
 
 .path-bar button:hover {
-    background-color: rgba(98, 114, 164, 0.2);
-    color: #d4d4e0;
+    background-color: alpha(#6e6e7a, 0.15);
+    color: #e8e8ec;
 }
 
-/* Forzar transparencia en headerbar de Nemo */
-NemoWindow headerbar,
-NemoWindow headerbar.titlebar,
-NemoWindow .titlebar {
-    background-color: transparent;
-    background-image: none;
-    box-shadow: none;
-    border-bottom: 1px solid rgba(29, 29, 36, 0.3);
-}
-
-NemoWindow headerbar button {
-    background-color: transparent;
-}
-
-NemoWindow headerbar button:hover {
-    background-color: rgba(98, 114, 164, 0.2);
-}
-
-toolbar, GtkToolbar {
-    background-color: transparent;
-    background-image: none;
-    box-shadow: none;
-    border: none;
-}
-
-/* Seleccion con colores del sistema Ashen */
-.sidebar row:selected,
-.sidebar row:selected:focus {
-    background-color: #6272a4;
-    color: #0f0f12;
-}
-
-iconview.view:selected,
-iconview.view:selected:focus,
-.view:selected,
-.view:selected:focus {
-    background-color: rgba(98, 114, 164, 0.35);
-    color: #d4d4e0;
+.path-bar button:checked,
+.path-bar button:active {
+    background-color: #6e6e7a;
+    color: #080809;
     border-radius: 6px;
+    font-weight: bold;
+}
+
+/* ── Statusbar ───────────────────────────── */
+.nemo-window .statusbar {
+    background-color: transparent;
+    border-top: 1px solid alpha(#6e6e7a, 0.1);
+    color: #4a4a54;
+    font-size: 11px;
+}
+
+/* ── Scrollbar ───────────────────────────── */
+scrollbar { background-color: transparent; }
+scrollbar slider {
+    background-color: alpha(#6e6e7a, 0.3);
+    border-radius: 4px;
+    min-width: 4px;
+    min-height: 4px;
+}
+scrollbar slider:hover {
+    background-color: alpha(#6e6e7a, 0.5);
+}
+
+label { color: #9090a0; }
+
+/* Override sidebar Mint */
+.nemo-window .sidebar,
+.nemo-window .sidebar .view,
+.nemo-window .places-treeview,
+.nemo-window .places-treeview .view.cell {
+    background-color: transparent;
+    color: #9090a0;
+}
+
+.nemo-window .places-treeview .view.cell:selected,
+.nemo-window .places-treeview row:selected {
+    background-color: alpha(#6e6e7a, 0.3);
+    color: #e8e8ec;
+}
+
+.nemo-window .places-treeview .view.cell:hover,
+.nemo-window .places-treeview row:hover {
+    background-color: alpha(#6e6e7a, 0.12);
+    color: #e8e8ec;
+}
+
+/* Sidebar seleccion activa */
+.nemo-window .places-treeview .view.cell:selected,
+.nemo-window .places-treeview row:selected,
+.nemo-window .sidebar row:selected {
+    background-color: #6e6e7a;
+    color: #080809;
+    border-radius: 6px;
+    font-weight: bold;
 }
