@@ -1,12 +1,14 @@
 pragma Singleton
 import Quickshell
 import Quickshell.Io
+import Quickshell.Bluetooth
 import QtQuick
 
 Singleton {
     id: root
     property string wifiSsid: ""
     property string btDevice: ""
+    property bool btEnabled: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.enabled : false
 
     Process {
         id: wifiProc

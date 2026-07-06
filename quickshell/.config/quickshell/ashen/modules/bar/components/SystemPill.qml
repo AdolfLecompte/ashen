@@ -79,23 +79,30 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: btInner.width + 16
-            color: Services.Network.btDevice !== "" ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: Services.Network.btEnabled ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
             Behavior on color { ColorAnimation { duration: 300 } }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Services.AppState.bluetoothVisible = !Services.AppState.bluetoothVisible
+            }
+
             Row {
                 id: btInner
                 anchors.centerIn: parent
                 spacing: 5
                 Text {
-                    text: Services.Network.btDevice !== "" ? "" : ""
-                    color: Services.Network.btDevice !== "" ? Services.Colors.abyss : Services.Colors.ash
+                    text: Services.Network.btEnabled ? "" : ""
+                    color: Services.Network.btEnabled ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { ColorAnimation { duration: 200 } }
                 }
                 Text {
-                    text: Services.Network.btDevice !== "" ? Services.Network.btDevice : "Off"
-                    color: Services.Network.btDevice !== "" ? Services.Colors.abyss : Services.Colors.ash
+                    text: Services.Network.btDevice !== "" ? Services.Network.btDevice : (Services.Network.btEnabled ? "On" : "Off")
+                    color: Services.Network.btEnabled ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter

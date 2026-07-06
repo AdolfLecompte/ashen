@@ -9,7 +9,6 @@ ShellRoot {
     PowerMenu {}
     Calendar {}
     NetworkPanel {}
-    LockScreen {
-        id: lockScreen
-    }
+    BluetoothPanel {}
+    LockScreen {}
 }
