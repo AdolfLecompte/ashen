@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -10,7 +11,7 @@ Scope {
     IpcHandler {
         target: "settings"
         function toggle() {
-            Services.AppState.settingsVisible = !Services.AppState.settingsVisible
+            Services.AppState.toggleOverlay("settingsVisible")
         }
     }
 
@@ -21,10 +22,14 @@ Scope {
     color: "transparent"
     visible: Services.AppState.settingsVisible
 
+    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
     property var categories: [
-        { id: "wifi", icon: "", label: "Wi-Fi" },
-        { id: "bluetooth", icon: "", label: "Bluetooth" },
+        { id: "general", icon: "", label: "General" },
         { id: "system", icon: "", label: "System" },
+        { id: "wifi", icon: "", label: "Wi-Fi" },
+        { id: "bluetooth", icon: "", label: "Bluetooth" },
+        { id: "theme", icon: "", label: "Theme" },
         { id: "about", icon: "", label: "About" },
     ]
 
@@ -32,6 +37,8 @@ Scope {
         if (id === "wifi") return "SettingsWifiTab.qml"
         if (id === "bluetooth") return "SettingsBluetoothTab.qml"
         if (id === "system") return "SettingsSystemTab.qml"
+        if (id === "general") return "SettingsGeneralTab.qml"
+        if (id === "theme") return "SettingsThemeTab.qml"
         if (id === "about") return "SettingsAboutTab.qml"
         return ""
     }

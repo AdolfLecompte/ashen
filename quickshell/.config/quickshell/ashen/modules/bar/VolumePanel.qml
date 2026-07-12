@@ -13,7 +13,7 @@ PanelWindow {
     function setVolume(ratio) {
         ratio = Math.max(0, Math.min(1, ratio))
         let pct = Math.round(ratio * 100)
-        Quickshell.execDetached(["sh", "-c", "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ " + pct + "%"])
+        Quickshell.execDetached(["sh", "-c", "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ " + pct + "%"])
     }
 
     MouseArea {
@@ -56,7 +56,7 @@ PanelWindow {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: Services.Audio.volume === 0 ? "" : (Services.Audio.volume < 66 ? "" : "")
+                text: Services.Audio.muted ? "" : (Services.Audio.volume === 0 ? "" : (Services.Audio.volume < 66 ? "" : ""))
                 font.family: "Material Symbols Rounded"
                 font.pixelSize: 18
                 color: Services.Colors.ghost
@@ -90,7 +90,7 @@ PanelWindow {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: Services.Audio.volume + "%"
+                text: Services.Audio.muted ? "Muted" : Services.Audio.volume + "%"
                 color: Services.Colors.snow
                 font.pixelSize: 11
                 font.family: "JetBrainsMono NF"

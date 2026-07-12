@@ -15,7 +15,7 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        text: ""
+        text: ""
         color: Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"

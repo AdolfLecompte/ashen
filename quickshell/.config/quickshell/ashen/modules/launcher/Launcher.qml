@@ -13,7 +13,7 @@ Scope {
     IpcHandler {
         target: "launcher"
         function toggle() {
-            Services.AppState.launcherVisible = !Services.AppState.launcherVisible
+            Services.AppState.toggleOverlay("launcherVisible")
             if (Services.AppState.launcherVisible) {
                 searchField.text = ""
                 searchField.forceActiveFocus()
@@ -34,6 +34,26 @@ Scope {
         property string searchText: ""
         property var allApps: []
         property string activeCategory: "All"
+        property int selectedIndex: 0
+
+        function moveCategory(dir) {
+            let ids = win.categories.map(c => c.id)
+            let idx = ids.indexOf(win.activeCategory)
+            idx = (idx + dir + ids.length) % ids.length
+            win.activeCategory = ids[idx]
+            win.selectedIndex = 0
+        }
+        function moveSelection(dir) {
+            if (win.filteredApps.length === 0) return
+            win.selectedIndex = Math.max(0, Math.min(win.filteredApps.length - 1, win.selectedIndex + dir))
+            appList.positionViewAtIndex(win.selectedIndex, ListView.Contain)
+        }
+        function launchSelected() {
+            if (win.filteredApps.length === 0) return
+            let app = win.filteredApps[Math.min(win.selectedIndex, win.filteredApps.length - 1)]
+            Quickshell.execDetached(["sh", "-c", app.exec])
+            Services.AppState.launcherVisible = false
+        }
         property var categories: [
            { id: "All", icon: "" },
            { id: "Internet", icon: "" },
@@ -206,14 +226,13 @@ Scope {
                                 font.family: "JetBrainsMono NF"
                                 focus: Services.AppState.launcherVisible
                                 verticalAlignment: TextInput.AlignVCenter
-                                onTextChanged: win.searchText = text
+                                onTextChanged: { win.searchText = text; win.selectedIndex = 0 }
                                 Keys.onEscapePressed: Services.AppState.launcherVisible = false
-                                Keys.onReturnPressed: {
-                                    if (win.filteredApps.length > 0) {
-                                        Quickshell.execDetached(["sh", "-c", win.filteredApps[0].exec])
-                                        Services.AppState.launcherVisible = false
-                                    }
-                                }
+                                Keys.onReturnPressed: win.launchSelected()
+                                Keys.onUpPressed: win.moveSelection(-1)
+                                Keys.onDownPressed: win.moveSelection(1)
+                                Keys.onLeftPressed: win.moveCategory(-1)
+                                Keys.onRightPressed: win.moveCategory(1)
                             }
                         }
 
@@ -286,10 +305,13 @@ Scope {
 
                         delegate: Rectangle {
                             required property var modelData
+                            required property int index
                             width: appList.width
                             height: 60
                             radius: 8
-                            color: "transparent"
+                            color: index === win.selectedIndex ? Services.Colors.ghostAlpha(0.18) : "transparent"
+                            border.color: index === win.selectedIndex ? Services.Colors.ghostAlpha(0.4) : "transparent"
+                            border.width: 1
                             Behavior on color { ColorAnimation { duration: 100 } }
 
                             RowLayout {
@@ -352,8 +374,7 @@ Scope {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
-                                onEntered: parent.color = Services.Colors.ghostAlpha(0.12)
-                                onExited: parent.color = "transparent"
+                                onEntered: win.selectedIndex = index
                                 onClicked: {
                                     Quickshell.execDetached(["sh", "-c", modelData.exec])
                                     Services.AppState.launcherVisible = false
@@ -378,7 +399,7 @@ Scope {
                     Repeater {
                         model: [
                             { icon: "", label: "Settings", action: "settings", cmd: "" },
-                            { icon: "", label: "Terminal", action: "cmd", cmd: "kitty" },
+                            { icon: "", label: "Record", action: "record", cmd: "" },
                             { icon: "",    label: "Theme",   action: "theme", cmd: "" },
                         ]
 
@@ -417,7 +438,14 @@ Scope {
                                     console.log("Action:", modelData.action, modelData.label)
                                     if (modelData.action === "theme") {
                                         Services.AppState.launcherVisible = false
-                                        themeTimer.start()
+                                        Services.AppState.settingsTab = "theme"
+                                        Services.AppState.settingsVisible = true
+                                    } else if (modelData.action === "record") {
+                                        Services.AppState.launcherVisible = false
+                                        let path = "/home/adolf-arch/Videos/ashen_" + Date.now() + ".mp4"
+                                        Quickshell.execDetached(["sh", "-c", "wf-recorder -f '" + path + "'"])
+                                        Services.AppState.recording = true
+                                        Services.AppState.recordingStartTime = Date.now()
                                     } else if (modelData.action === "settings") {
                                         Services.AppState.launcherVisible = false
                                         Services.AppState.settingsVisible = true

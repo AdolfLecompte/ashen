@@ -241,5 +241,21 @@ Singleton {
                 "dnd"
             )
         }
+        function onKeepAwakeChanged() {
+            root.addSystemToast(
+                Services.AppState.keepAwake ? "KEEP AWAKE ON" : "KEEP AWAKE OFF",
+                "",
+                false,
+                "keepawake"
+            )
+        }
+        function onRecordingChanged() {
+            root.addSystemToast(
+                Services.AppState.recording ? "SCREEN RECORDING STARTED" : "SCREEN RECORDING STOPPED",
+                "",
+                false,
+                "recording"
+            )
+        }
     }
 }

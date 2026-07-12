@@ -6,6 +6,11 @@ import QtQuick
 Singleton {
     id: root
     property int volume: 0
+    property bool muted: false
+    function toggleMute() {
+        Quickshell.execDetached(["sh", "-c", "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"])
+    }
+
     property int micVolume: 0
     property bool micMuted: false
     function toggleMicMute() {
@@ -18,10 +23,14 @@ Singleton {
 
     Process {
         id: volProc
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf \"%d\", $2*100}'"]
+        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@"]
         running: true
         stdout: StdioCollector {
-            onStreamFinished: root.volume = parseInt(text.trim()) || 0
+            onStreamFinished: {
+                root.muted = text.indexOf("MUTED") !== -1
+                let match = text.match(/([0-9]*\.?[0-9]+)/)
+                root.volume = match ? Math.round(parseFloat(match[1]) * 100) : 0
+            }
         }
     }
     Process {

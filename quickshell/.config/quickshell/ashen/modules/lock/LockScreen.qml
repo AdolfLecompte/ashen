@@ -5,6 +5,7 @@ import Quickshell.Services.Mpris
 import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
+import "root:/services" as Services
 
 Scope {
     id: root
@@ -31,6 +32,7 @@ Scope {
             property string errorMsg: ""
             property bool checking: false
             property bool showPower: false
+            property bool showProfiles: false
             property int battery: 0
             property bool charging: false
             property string wallpaper: ""
@@ -65,7 +67,7 @@ Scope {
                 surface.activeProfile = name
             }
 
-            color: "#080809"
+            color: Services.Colors.abyss
 
             Component.onCompleted: {
                 surface.updateArt()
@@ -192,7 +194,7 @@ Scope {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: "#080809"
+                    color: Services.Colors.abyss
                     Image {
                         anchors.fill: parent
                         source: surface.wallpaper !== "" ? ("file://" + surface.wallpaper) : ""
@@ -202,7 +204,7 @@ Scope {
                     }
                     Rectangle {
                         anchors.fill: parent
-                        color: Qt.rgba(0x08/255, 0x08/255, 0x09/255, 0.5)
+                        color: Qt.rgba(Services.Colors.abyss.r, Services.Colors.abyss.g, Services.Colors.abyss.b, 0.5)
                     }
 
                     Column {
@@ -217,7 +219,7 @@ Scope {
                                 spacing: 0
                                 Text {
                                     text: surface.currentTime.split(" ")[0]
-                                    color: "#e8e8ec"
+                                    color: Services.Colors.snow
                                     font.pixelSize: 96
                                     font.family: "JetBrainsMono NF"
                                     font.weight: Font.Bold
@@ -228,14 +230,14 @@ Scope {
                                     spacing: 2
                                     Text {
                                         text: surface.currentSecs
-                                        color: Qt.rgba(0xe8/255, 0xe8/255, 0xec/255, 0.4)
+                                        color: Services.Colors.snowAlpha(0.4)
                                         font.pixelSize: 28
                                         font.family: "JetBrainsMono NF"
                                         font.weight: Font.Bold
                                     }
                                     Text {
                                         text: surface.currentTime.split(" ")[1]
-                                        color: Qt.rgba(0xe8/255, 0xe8/255, 0xec/255, 0.4)
+                                        color: Services.Colors.snowAlpha(0.4)
                                         font.pixelSize: 14
                                         font.family: "JetBrainsMono NF"
                                         font.weight: Font.Bold
@@ -245,11 +247,29 @@ Scope {
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: surface.currentDay + "  ·  " + surface.currentDate
-                                color: Qt.rgba(0xe8/255, 0xe8/255, 0xec/255, 0.5)
+                                color: Services.Colors.snowAlpha(0.5)
                                 font.pixelSize: 16
                                 font.family: "JetBrainsMono NF"
                                 font.weight: Font.Bold
                                 font.letterSpacing: 1
+                            }
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 6
+                                topPadding: 6
+                                Text {
+                                    text: Services.Weather.icon
+                                    color: Services.Colors.snowAlpha(0.55)
+                                    font.pixelSize: 16
+                                    font.family: "Material Symbols Rounded"
+                                }
+                                Text {
+                                    text: Services.Weather.tempC + "\u00b0C"
+                                    color: Services.Colors.snowAlpha(0.55)
+                                    font.pixelSize: 14
+                                    font.family: "JetBrainsMono NF"
+                                    font.weight: Font.Bold
+                                }
                             }
                         }
 
@@ -258,10 +278,11 @@ Scope {
                             spacing: 16
                             Rectangle {
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                width: 120; height: 120
-                                radius: 20
-                                color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.15)
-                                border.color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.35)
+                                width: 160; height: 160
+                                radius: 26
+                                clip: true
+                                color: Services.Colors.ghostAlpha(0.15)
+                                border.color: Services.Colors.ghostAlpha(0.35)
                                 border.width: 2
                                 Image {
                                     id: faceImg
@@ -269,14 +290,25 @@ Scope {
                                     anchors.margins: 2
                                     source: "file:///home/adolf-arch/.face"
                                     fillMode: Image.PreserveAspectCrop
-                                    visible: status === Image.Ready
-                                    layer.enabled: visible
+                                    visible: false
+                                }
+                                Rectangle {
+                                    id: faceMask
+                                    anchors.fill: faceImg
+                                    radius: 24
+                                    visible: false
+                                }
+                                OpacityMask {
+                                    anchors.fill: faceImg
+                                    source: faceImg
+                                    maskSource: faceMask
+                                    visible: faceImg.status === Image.Ready
                                 }
                                 Text {
                                     anchors.centerIn: parent
                                     text: ""
-                                    color: "#6e6e7a"
-                                    font.pixelSize: 68
+                                    color: Services.Colors.ghost
+                                    font.pixelSize: 92
                                     font.family: "Material Symbols Rounded"
                                     visible: faceImg.status !== Image.Ready
                                 }
@@ -284,7 +316,7 @@ Scope {
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: "adolf-arch"
-                                color: "#e8e8ec"
+                                color: Services.Colors.snow
                                 font.pixelSize: 18
                                 font.family: "JetBrainsMono NF"
                                 font.weight: Font.Medium
@@ -298,10 +330,10 @@ Scope {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 width: 320; height: 52
                                 radius: 10
-                                color: Qt.rgba(0x1c/255, 0x1c/255, 0x21/255, 0.85)
-                                border.color: surface.errorMsg !== "" ? "#c87a7a"
-                                    : passInput.activeFocus ? "#6e6e7a"
-                                    : Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.25)
+                                color: Services.Colors.surfaceAlpha(0.85)
+                                border.color: surface.errorMsg !== "" ? Services.Colors.error_
+                                    : passInput.activeFocus ? Services.Colors.ghost
+                                    : Services.Colors.ghostAlpha(0.25)
                                 border.width: 1
                                 Behavior on border.color { ColorAnimation { duration: 150 } }
                                 RowLayout {
@@ -311,7 +343,7 @@ Scope {
                                     spacing: 12
                                     Text {
                                         text: ""
-                                        color: surface.errorMsg !== "" ? "#c87a7a" : "#6e6e7a"
+                                        color: surface.errorMsg !== "" ? Services.Colors.error_ : Services.Colors.ghost
                                         font.pixelSize: 20
                                         font.family: "Material Symbols Rounded"
                                         Behavior on color { ColorAnimation { duration: 150 } }
@@ -322,31 +354,43 @@ Scope {
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: "Enter password..."
-                                            color: "#4a4a54"
+                                            color: Services.Colors.ash
                                             font.pixelSize: 14
                                             font.family: "JetBrainsMono NF"
                                             visible: surface.password.length === 0
                                         }
                                         Row {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            spacing: 8
+                                            spacing: 6
                                             visible: surface.password.length > 0
                                             Repeater {
                                                 model: Math.min(surface.password.length, 24)
-                                                delegate: Rectangle {
-                                                    width: 8; height: 8
-                                                    radius: 2
-                                                    color: "#6e6e7a"
+                                                delegate: Text {
+                                                    text: ""
+                                                    color: Services.Colors.ghost
+                                                    font.pixelSize: 10
+                                                    font.family: "Material Symbols Rounded"
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                }
+                                            }
+                                            Rectangle {
+                                                id: blinkCursor
+                                                width: 2; height: 16
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                color: Services.Colors.snow
+                                                SequentialAnimation on opacity {
+                                                    running: passInput.activeFocus
+                                                    loops: Animation.Infinite
+                                                    NumberAnimation { to: 0.0; duration: 500 }
+                                                    NumberAnimation { to: 1.0; duration: 500 }
                                                 }
                                             }
                                         }
-                                        // Cursor visible (parpadeante) -- el TextInput real
-                                        // esta fuera de pantalla, esto es la representacion visual
                                         Rectangle {
+                                            width: 2; height: 16
                                             anchors.verticalCenter: parent.verticalCenter
-                                            width: 2; height: 18
-                                            color: "#e8e8ec"
-                                            visible: passInput.activeFocus
+                                            visible: surface.password.length === 0 && passInput.activeFocus
+                                            color: Services.Colors.snow
                                             SequentialAnimation on opacity {
                                                 running: passInput.activeFocus
                                                 loops: Animation.Infinite
@@ -372,7 +416,7 @@ Scope {
                                     }
                                     Text {
                                         text: ""
-                                        color: surface.checking ? "#6e6e7a" : "#4a4a54"
+                                        color: surface.checking ? Services.Colors.ghost : Services.Colors.ash
                                         font.pixelSize: 18
                                         font.family: "Material Symbols Rounded"
                                         Behavior on color { ColorAnimation { duration: 150 } }
@@ -392,7 +436,7 @@ Scope {
                                 Text {
                                     anchors.centerIn: parent
                                     text: surface.errorMsg
-                                    color: "#c87a7a"
+                                    color: Services.Colors.error_
                                     font.pixelSize: 12
                                     font.family: "JetBrainsMono NF"
                                     opacity: surface.errorMsg !== "" ? 1.0 : 0.0
@@ -405,14 +449,14 @@ Scope {
                     // ── Reproductor de musica (abajo a la izquierda) ──
                     Rectangle {
                         anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.margins: 24
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottomMargin: 24
                         visible: surface.hasPlayer
                         width: 300
                         height: 76
                         radius: 14
-                        color: Qt.rgba(0x1c/255, 0x1c/255, 0x21/255, 0.85)
-                        border.color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.25)
+                        color: Services.Colors.surfaceAlpha(0.85)
+                        border.color: Services.Colors.ghostAlpha(0.25)
                         border.width: 1
 
                         RowLayout {
@@ -423,7 +467,7 @@ Scope {
                             Rectangle {
                                 width: 52; height: 52
                                 radius: 10
-                                color: "#080809"
+                                color: Services.Colors.abyss
                                 Image {
                                     id: lockArtImg
                                     anchors.fill: parent
@@ -436,7 +480,7 @@ Scope {
                                     anchors.centerIn: parent
                                     visible: lockArtImg.status !== Image.Ready
                                     text: ""
-                                    color: "#6e6e7a"
+                                    color: Services.Colors.ghost
                                     font.pixelSize: 20
                                     font.family: "Material Symbols Rounded"
                                 }
@@ -447,7 +491,7 @@ Scope {
                                 spacing: 2
                                 Text {
                                     text: surface.hasPlayer ? (surface.activePlayer.trackTitle || "Untitled") : ""
-                                    color: "#e8e8ec"
+                                    color: Services.Colors.snow
                                     font.pixelSize: 12
                                     font.bold: true
                                     font.family: "JetBrainsMono NF"
@@ -456,7 +500,7 @@ Scope {
                                 }
                                 Text {
                                     text: surface.hasPlayer ? (surface.activePlayer.trackArtist || "") : ""
-                                    color: "#9090a0"
+                                    color: Services.Colors.mist
                                     font.pixelSize: 10
                                     font.family: "JetBrainsMono NF"
                                     elide: Text.ElideRight
@@ -468,7 +512,7 @@ Scope {
                                         text: ""
                                         font.family: "Material Symbols Rounded"
                                         font.pixelSize: 14
-                                        color: surface.hasPlayer && surface.activePlayer.canGoPrevious ? "#e8e8ec" : "#4a4a54"
+                                        color: surface.hasPlayer && surface.activePlayer.canGoPrevious ? Services.Colors.snow : Services.Colors.ash
                                         MouseArea {
                                             anchors.fill: parent; anchors.margins: -6
                                             cursorShape: Qt.PointingHandCursor
@@ -480,7 +524,7 @@ Scope {
                                         text: surface.hasPlayer && surface.activePlayer.isPlaying ? "" : ""
                                         font.family: "Material Symbols Rounded"
                                         font.pixelSize: 16
-                                        color: "#e8e8ec"
+                                        color: Services.Colors.snow
                                         MouseArea {
                                             anchors.fill: parent; anchors.margins: -6
                                             cursorShape: Qt.PointingHandCursor
@@ -492,7 +536,7 @@ Scope {
                                         text: ""
                                         font.family: "Material Symbols Rounded"
                                         font.pixelSize: 14
-                                        color: surface.hasPlayer && surface.activePlayer.canGoNext ? "#e8e8ec" : "#4a4a54"
+                                        color: surface.hasPlayer && surface.activePlayer.canGoNext ? Services.Colors.snow : Services.Colors.ash
                                         MouseArea {
                                             anchors.fill: parent; anchors.margins: -6
                                             cursorShape: Qt.PointingHandCursor
@@ -505,71 +549,124 @@ Scope {
                         }
                     }
 
-                    // ── Esquina inferior derecha: power options + bateria + perfiles ──
-                    Column {
+                    // ── Esquina inferior derecha: anclas fijas e independientes ──
+                    Item {
+                        id: cornerArea
                         anchors.bottom: parent.bottom
                         anchors.right: parent.right
                         anchors.margins: 24
-                        spacing: 8
+                        width: powerPill.width
+                        height: powerPill.height
+
+                        // -- Power: pildora fija a la derecha, opciones se despliegan hacia ARRIBA --
+                        Rectangle {
+                            id: powerPill
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            width: 44; height: 44
+                            radius: 10
+                            color: Services.Colors.surfaceAlpha(0.85)
+                            border.color: Services.Colors.ghostAlpha(0.25)
+                            border.width: 1
+                            Text {
+                                anchors.centerIn: parent
+                                text: ""
+                                color: surface.showPower ? Services.Colors.snow : Services.Colors.mist
+                                font.pixelSize: 20
+                                font.family: "Material Symbols Rounded"
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: surface.showPower = !surface.showPower
+                            }
+                        }
 
                         Column {
-                            anchors.right: parent.right
+                            anchors.right: powerPill.right
+                            anchors.bottom: powerPill.top
+                            anchors.bottomMargin: 8
                             spacing: 6
                             opacity: surface.showPower ? 1.0 : 0.0
                             visible: opacity > 0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                             Repeater {
                                 model: [
-                                    { icon: "", label: "Suspend",  cmd: "systemctl suspend",  color: "#9090a0" },
-                                    { icon: "", label: "Reboot",   cmd: "systemctl reboot",   color: "#9090a0" },
-                                    { icon: "", label: "Shutdown", cmd: "systemctl poweroff", color: "#c87a7a" },
+                                    { icon: "", cmd: "systemctl poweroff", color: Services.Colors.error_ },
+                                    { icon: "", cmd: "systemctl reboot",   color: Services.Colors.mist },
+                                    { icon: "", cmd: "systemctl suspend",  color: Services.Colors.mist },
                                 ]
                                 delegate: Rectangle {
                                     required property var modelData
                                     anchors.right: parent.right
-                                    width: optRow.implicitWidth + 20
-                                    height: 38
-                                    radius: 8
-                                    color: Qt.rgba(0x1c/255, 0x1c/255, 0x21/255, 0.92)
-                                    border.color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.25)
+                                    width: 44; height: 44
+                                    radius: 10
+                                    color: Services.Colors.surfaceAlpha(0.92)
+                                    border.color: Services.Colors.ghostAlpha(0.25)
                                     border.width: 1
                                     Behavior on color { ColorAnimation { duration: 150 } }
-                                    Row {
-                                        id: optRow
+                                    Text {
                                         anchors.centerIn: parent
-                                        spacing: 8
-                                        Text {
-                                            text: modelData.icon
-                                            color: modelData.color
-                                            font.pixelSize: 18
-                                            font.family: "Material Symbols Rounded"
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-                                        Text {
-                                            text: modelData.label
-                                            color: modelData.color
-                                            font.pixelSize: 12
-                                            font.family: "JetBrainsMono NF"
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
+                                        text: modelData.icon
+                                        color: modelData.color
+                                        font.pixelSize: 20
+                                        font.family: "Material Symbols Rounded"
                                     }
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
                                         hoverEnabled: true
-                                        onEntered: parent.color = Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.2)
-                                        onExited: parent.color = Qt.rgba(0x1c/255, 0x1c/255, 0x21/255, 0.92)
+                                        onEntered: parent.color = Services.Colors.ghostAlpha(0.2)
+                                        onExited: parent.color = Services.Colors.surfaceAlpha(0.92)
                                         onClicked: Quickshell.execDetached(["sh", "-c", modelData.cmd])
                                     }
                                 }
                             }
                         }
 
-                        // Perfiles de energia (compactos, encima de la pildora)
+                        // -- Bateria: pildora fija a la izquierda de power, perfiles se despliegan hacia la IZQUIERDA --
+                        Rectangle {
+                            id: batteryPill
+                            anchors.right: powerPill.left
+                            anchors.rightMargin: 10
+                            anchors.bottom: parent.bottom
+                            width: 78; height: 44
+                            radius: 10
+                            color: Services.Colors.surfaceAlpha(0.85)
+                            border.color: Services.Colors.ghostAlpha(0.25)
+                            border.width: 1
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: 4
+                                Text {
+                                    text: surface.charging ? "" : surface.battery >= 90 ? "" : surface.battery >= 50 ? "" : surface.battery >= 20 ? "" : ""
+                                    color: surface.battery < 20 && !surface.charging ? Services.Colors.error_ : Services.Colors.mist
+                                    font.pixelSize: 18
+                                    font.family: "Material Symbols Rounded"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                Text {
+                                    text: surface.battery + "%"
+                                    color: surface.battery < 20 && !surface.charging ? Services.Colors.error_ : Services.Colors.mist
+                                    font.pixelSize: 12
+                                    font.family: "JetBrainsMono NF"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: surface.showProfiles = !surface.showProfiles
+                            }
+                        }
+
                         Row {
-                            anchors.right: parent.right
+                            anchors.right: batteryPill.left
+                            anchors.rightMargin: 8
+                            anchors.verticalCenter: batteryPill.verticalCenter
                             spacing: 6
-                            opacity: surface.showPower ? 1.0 : 0.0
+                            opacity: surface.showProfiles ? 1.0 : 0.0
                             visible: opacity > 0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                             Repeater {
@@ -583,9 +680,9 @@ Scope {
                                     property bool available: surface.availableProfiles.includes(modelData.id)
                                     width: 38; height: 38
                                     radius: 8
-                                    color: surface.activeProfile === modelData.id ? "#6e6e7a" : Qt.rgba(0x1c/255, 0x1c/255, 0x21/255, 0.85)
+                                    color: surface.activeProfile === modelData.id ? Services.Colors.ghost : Services.Colors.surfaceAlpha(0.85)
                                     opacity: available ? 1.0 : 0.3
-                                    border.color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.25)
+                                    border.color: Services.Colors.ghostAlpha(0.25)
                                     border.width: 1
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                     Text {
@@ -593,66 +690,13 @@ Scope {
                                         text: modelData.icon
                                         font.family: "Material Symbols Rounded"
                                         font.pixelSize: 16
-                                        color: surface.activeProfile === modelData.id ? "#080809" : "#9090a0"
+                                        color: surface.activeProfile === modelData.id ? Services.Colors.abyss : Services.Colors.mist
                                     }
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: parent.available ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                                         enabled: parent.available
                                         onClicked: surface.setProfile(modelData.id)
-                                    }
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            anchors.right: parent.right
-                            width: pillRow.implicitWidth + 20
-                            height: 44
-                            radius: 10
-                            color: Qt.rgba(0x1c/255, 0x1c/255, 0x21/255, 0.85)
-                            border.color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.25)
-                            border.width: 1
-                            Row {
-                                id: pillRow
-                                anchors.centerIn: parent
-                                spacing: 10
-                                Row {
-                                    spacing: 4
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    Text {
-                                        text: surface.charging ? "" : surface.battery >= 90 ? "" : surface.battery >= 50 ? "" : surface.battery >= 20 ? "" : ""
-                                        color: surface.battery < 20 && !surface.charging ? "#c87a7a" : "#9090a0"
-                                        font.pixelSize: 18
-                                        font.family: "Material Symbols Rounded"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                    Text {
-                                        text: surface.battery + "%"
-                                        color: surface.battery < 20 && !surface.charging ? "#c87a7a" : "#9090a0"
-                                        font.pixelSize: 12
-                                        font.family: "JetBrainsMono NF"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-                                Rectangle {
-                                    width: 1; height: 24
-                                    color: Qt.rgba(0x6e/255, 0x6e/255, 0x7a/255, 0.3)
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-                                Text {
-                                    text: ""
-                                    color: surface.showPower ? "#e8e8ec" : "#4a4a54"
-                                    font.pixelSize: 20
-                                    font.family: "Material Symbols Rounded"
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    rotation: surface.showPower ? 0 : 180
-                                    Behavior on color { ColorAnimation { duration: 150 } }
-                                    Behavior on rotation { NumberAnimation { duration: 200 } }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: surface.showPower = !surface.showPower
                                     }
                                 }
                             }

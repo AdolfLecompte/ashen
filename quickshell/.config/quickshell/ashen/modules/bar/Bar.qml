@@ -38,7 +38,13 @@ Scope {
 
                 // ── Centro ─────────────────────────────
                 Clock {
+                    id: clock
                     anchors.centerIn: parent
+                }
+                RecordingPill {
+                    anchors.left: clock.right
+                    anchors.leftMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
                 }
 
                 // ── Derecha ────────────────────────────

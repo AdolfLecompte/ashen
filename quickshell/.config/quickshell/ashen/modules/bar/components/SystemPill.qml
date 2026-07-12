@@ -159,7 +159,7 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: volInner.width + 16
-            color: Services.Audio.volume > 0 ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
             Behavior on color { ColorAnimation { duration: 300 } }
             MouseArea {
                 anchors.fill: parent
@@ -178,16 +178,16 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: 5
                 Text {
-                    text: Services.Audio.volume === 0 ? "" : Services.Audio.volume < 66 ? "" : ""
-                    color: Services.Audio.volume > 0 ? Services.Colors.abyss : Services.Colors.ash
+                    text: Services.Audio.muted ? "" : (Services.Audio.volume === 0 ? "" : Services.Audio.volume < 66 ? "" : "")
+                    color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { ColorAnimation { duration: 200 } }
                 }
                 Text {
-                    text: Services.Audio.volume + "%"
-                    color: Services.Audio.volume > 0 ? Services.Colors.abyss : Services.Colors.ash
+                    text: Services.Audio.muted ? "Mute" : Services.Audio.volume + "%"
+                    color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter

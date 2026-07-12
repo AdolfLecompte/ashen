@@ -12,7 +12,8 @@ Scope {
 
     IpcHandler {
         target: "wallpaper"
-        function show() {
+        function open() {
+            Services.AppState.closeBigOverlays()
             Services.AppState.wallpaperVisible = true
             wallpaperScanner.running = true
         }
@@ -80,7 +81,7 @@ Scope {
             }
             Keys.onReturnPressed: {
                 if (win.wallpapers.length > 0) {
-                    Quickshell.execDetached(["sh", "-c", "awww img \"" + win.wallpapers[win.currentIndex] + "\" --transition-type random --transition-duration 0.6 --transition-fps 60 && matugen image \"" + win.wallpapers[win.currentIndex] + "\" --mode dark"])
+                    Quickshell.execDetached(["sh", "-c", "awww img \"" + win.wallpapers[win.currentIndex] + "\" --transition-type random --transition-duration 0.6 --transition-fps 60 && [ \"$(cat /home/adolf-arch/.cache/ashen_scheme_mode.txt 2>/dev/null)\" = \"dynamic\" ] && matugen image \"" + win.wallpapers[win.currentIndex] + "\" --mode dark --source-color-index 0 --type \"$(cat /home/adolf-arch/.cache/ashen_dynamic_type.txt 2>/dev/null || echo scheme-tonal-spot)\""])
                     Services.AppState.wallpaperVisible = false
                 }
             }
@@ -116,7 +117,7 @@ Scope {
                         anchors.verticalCenter: parent.verticalCenter
                     }
                     Text {
-                        text: "Theme"
+                        text: "Wallpaper"
                         color: Services.Colors.mist
                         font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
@@ -225,11 +226,12 @@ Scope {
                             id: img
                             anchors.fill: parent
                             source: win.wallpapers.length > index ? "file://" + win.wallpapers[index] : ""
-                            sourceSize.width: 480
-                           sourceSize.height: 320
+                            sourceSize.width: 360
+                           sourceSize.height: 240
                            fillMode: Image.PreserveAspectCrop
                             smooth: true
-                            asynchronous: true
+                            asynchronous: false
+                            cache: true
                             visible: false
                         }
 
@@ -259,7 +261,7 @@ Scope {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 if (parent.parent.isCurrent) {
-                                    Quickshell.execDetached(["sh", "-c", "awww img \"" + win.wallpapers[win.currentIndex] + "\" --transition-type random --transition-duration 0.6 --transition-fps 60 && matugen image \"" + win.wallpapers[win.currentIndex] + "\" --mode dark"])
+                                    Quickshell.execDetached(["sh", "-c", "awww img \"" + win.wallpapers[win.currentIndex] + "\" --transition-type random --transition-duration 0.6 --transition-fps 60 && [ \"$(cat /home/adolf-arch/.cache/ashen_scheme_mode.txt 2>/dev/null)\" = \"dynamic\" ] && matugen image \"" + win.wallpapers[win.currentIndex] + "\" --mode dark --source-color-index 0 --type \"$(cat /home/adolf-arch/.cache/ashen_dynamic_type.txt 2>/dev/null || echo scheme-tonal-spot)\""])
                                     Services.AppState.wallpaperVisible = false
                                 } else {
                                     win.currentIndex = index

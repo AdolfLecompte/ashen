@@ -191,7 +191,7 @@ Item {
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
                             spacing: 10
-                            Text { text: ""; color: Services.Colors.mist; font.pixelSize: 20; font.family: "Material Symbols Rounded" }
+                            Text { text: modelData.signal >= 75 ? "" : modelData.signal >= 50 ? "" : modelData.signal >= 25 ? "" : ""; color: Services.Colors.mist; font.pixelSize: 20; font.family: "Material Symbols Rounded" }
                             Column {
                                 Layout.fillWidth: true
                                 spacing: 2
@@ -244,7 +244,7 @@ Item {
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
                             spacing: 10
-                            Text { text: ""; color: Services.Colors.mist; font.pixelSize: 20; font.family: "Material Symbols Rounded" }
+                            Text { text: modelData.signal >= 75 ? "" : modelData.signal >= 50 ? "" : modelData.signal >= 25 ? "" : ""; color: Services.Colors.mist; font.pixelSize: 20; font.family: "Material Symbols Rounded" }
                             Column {
                                 Layout.fillWidth: true
                                 spacing: 2
@@ -291,7 +291,7 @@ Item {
 
             RowLayout {
                 width: parent.width
-                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
                 Column {
                     Layout.fillWidth: true
                     spacing: 2
@@ -325,7 +325,7 @@ Item {
                     anchors.leftMargin: 12
                     anchors.rightMargin: 8
                     spacing: 8
-                    Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 16; font.family: "Material Symbols Rounded" }
+                    Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 16; font.family: "Material Symbols Rounded" }
                     Item {
                         Layout.fillWidth: true
                         height: 30
@@ -354,7 +354,7 @@ Item {
                         width: 32; height: 32; radius: 6; color: "transparent"
                         Text {
                             anchors.centerIn: parent
-                            text: tab.showPassword ? "" : ""
+                            text: tab.showPassword ? "" : ""
                             color: Services.Colors.mist
                             font.pixelSize: 18
                             font.family: "Material Symbols Rounded"

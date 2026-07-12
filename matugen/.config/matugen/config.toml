@@ -1,11 +1,13 @@
 [config]
-scheme_type = "scheme-monochrome"
-
+scheme_type = "scheme-tonal-spot"
 [config.wallpaper]
 command = "true"
 set = false
-
 [templates.ashen_colors]
 input_path = "~/.config/matugen/templates/Colors.qml.template"
 output_path = "/home/adolf-arch/ashen/quickshell/.config/quickshell/ashen/services/Colors.qml"
 post_hook = "pkill -9 quickshell; sleep 0.3; quickshell -c ashen &"
+[templates.hypr_border]
+input_path = "~/.config/matugen/templates/border_color.template"
+output_path = "/home/adolf-arch/.cache/matugen_border_color.txt"
+post_hook = "BORDER_HEX=$(cat /home/adolf-arch/.cache/matugen_border_color.txt) && hyprctl eval \"hl.config({ general = { col = { active_border = { colors = {'rgba(${BORDER_HEX}ff)'} } } } })\" && sed -i \"s/active_border = { colors = {\\\"rgba([^)]*)\\\"} }/active_border = { colors = {\\\"rgba(${BORDER_HEX}ff)\\\"} }/\" /home/adolf-arch/ashen/hypr/.config/hypr/conf/general.lua"
