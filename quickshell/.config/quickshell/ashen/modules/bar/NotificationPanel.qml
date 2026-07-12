@@ -13,6 +13,9 @@ Scope {
         function toggle() {
             Services.AppState.notificationsVisible = !Services.AppState.notificationsVisible
         }
+        function screenshot() {
+            Services.Notifications.addSystemToast("SCREENSHOT SAVED", "\uf727", false, "screenshot")
+        }
     }
 
     PanelWindow {

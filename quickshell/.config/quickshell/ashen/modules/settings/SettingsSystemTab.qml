@@ -30,9 +30,14 @@ Item {
             property real ramTotalMB: 0
             property real cpuPercent: 0
             property string cpuModel: "..."
+            property real cpuTemp: 0
             property string gpuInfo: "..."
             property real prevCpuTotal: 0
             property real prevCpuIdle: 0
+
+            property real gpuUsage: 0
+            property real gpuTemp: 0
+            property bool hasGpuStats: false
 
             property real diskUsedGB: 0
             property real diskTotalGB: 0
@@ -45,7 +50,6 @@ Item {
 
             property var cpuHistory: []
             property var ramHistory: []
-            property var procList: []
 
             function pushHistory(arr, val) {
                 let a = arr.slice()
@@ -69,20 +73,21 @@ Item {
                 cpuProc.running = true
                 diskProc.running = true
                 netProc.running = true
-                procProc.running = true
+                sensorsProc.running = true
+                gpuStatProc.running = true
             }
 
             Timer {
                 interval: 1500
                 running: true
                 repeat: true
-                onTriggered: { ramProc.running = true; cpuProc.running = true; netProc.running = true }
+                onTriggered: { ramProc.running = true; cpuProc.running = true; netProc.running = true; sensorsProc.running = true; gpuStatProc.running = true }
             }
             Timer {
                 interval: 10000
                 running: true
                 repeat: true
-                onTriggered: { diskProc.running = true; procProc.running = true }
+                onTriggered: { diskProc.running = true }
             }
 
             Process {
@@ -121,6 +126,17 @@ Item {
                 stdout: StdioCollector { onStreamFinished: col.cpuModel = text.trim() }
             }
             Process {
+                id: sensorsProc
+                command: ["sh", "-c", "sensors 2>/dev/null | grep -iE 'Package id 0|Tctl|Tdie' | head -1 | grep -oE '[0-9]+\\.[0-9]+' | head -1"]
+                running: false
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        let t = parseFloat(text.trim())
+                        col.cpuTemp = isNaN(t) ? 0 : t
+                    }
+                }
+            }
+            Process {
                 id: gpuProc
                 command: ["sh", "-c", "lspci | grep -E 'VGA|3D controller'"]
                 running: false
@@ -128,6 +144,24 @@ Item {
                     onStreamFinished: {
                         let lines = text.trim().split("\n").filter(l => l.length > 0)
                         col.gpuInfo = lines.length > 0 ? lines.map(l => l.split(": ").pop()).join(" / ") : "Unknown"
+                    }
+                }
+            }
+            Process {
+                id: gpuStatProc
+                command: ["sh", "-c", "nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null"]
+                running: false
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        let t = text.trim()
+                        if (t.length > 0) {
+                            let parts = t.split(",").map(s => parseFloat(s.trim()))
+                            col.gpuUsage = parts[0] || 0
+                            col.gpuTemp = parts[1] || 0
+                            col.hasGpuStats = true
+                        } else {
+                            col.hasGpuStats = false
+                        }
                     }
                 }
             }
@@ -204,23 +238,6 @@ Item {
                     }
                 }
             }
-            Process {
-                id: procProc
-                command: ["sh", "-c", "ps -eo comm,%cpu,%mem --sort=-%cpu --no-headers | head -6"]
-                running: false
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        let lines = text.trim().split("\n").filter(l => l.length > 0)
-                        col.procList = lines.map(l => {
-                            let parts = l.trim().split(/\s+/)
-                            let cpu = parts.pop()
-                            let mem = parts.pop()
-                            let name = parts.join(" ")
-                            return { name: name, cpu: parseFloat(cpu), mem: parseFloat(mem) }
-                        })
-                    }
-                }
-            }
 
             Text {
                 text: "System"
@@ -267,9 +284,9 @@ Item {
                 spacing: 10
                 Repeater {
                     model: [
-                        { id: "power-saver", icon: "", label: "Saver" },
-                        { id: "balanced", icon: "", label: "Balanced" },
-                        { id: "performance", icon: "", label: "Performance" },
+                        { id: "power-saver", icon: "\uec1a", label: "Saver" },
+                        { id: "balanced", icon: "\ueaf6", label: "Balanced" },
+                        { id: "performance", icon: "\ueb9b", label: "Performance" },
                     ]
                     delegate: Rectangle {
                         required property var modelData
@@ -316,158 +333,248 @@ Item {
                 font.family: "JetBrainsMono NF"
             }
 
-            // CPU con grafica
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 4
-                RowLayout {
-                    spacing: 10
-                    Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 16; color: Services.Colors.ghost }
-                    Text { text: "CPU  ·  " + col.cpuModel; color: Services.Colors.snow; font.pixelSize: 12; font.family: "JetBrainsMono NF"; elide: Text.ElideRight; Layout.fillWidth: true }
-                    Text { text: col.cpuPercent.toFixed(0) + "%"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
-                }
-                Canvas {
-                    id: cpuCanvas
-                    Layout.fillWidth: true
-                    height: 36
-                    property var hist: col.cpuHistory
-                    onHistChanged: requestPaint()
-                    onPaint: {
-                        let ctx = getContext("2d")
-                        ctx.reset()
-                        ctx.clearRect(0, 0, width, height)
-                        let h = hist
-                        if (h.length < 2) return
-                        ctx.strokeStyle = "#6e6e7a"
-                        ctx.lineWidth = 2
-                        ctx.beginPath()
-                        for (let i = 0; i < h.length; i++) {
-                            let x = (i / (h.length - 1)) * width
-                            let y = height - (h[i] / 100) * height
-                            if (i === 0) ctx.moveTo(x, y)
-                            else ctx.lineTo(x, y)
-                        }
-                        ctx.stroke()
-                    }
-                }
-            }
-
-            // Memoria con grafica
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 4
-                RowLayout {
-                    spacing: 10
-                    Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 16; color: Services.Colors.ghost }
-                    Text { text: "Memory"; color: Services.Colors.snow; font.pixelSize: 12; font.family: "JetBrainsMono NF"; Layout.fillWidth: true }
-                    Text { text: col.ramUsedMB.toFixed(0) + " / " + col.ramTotalMB.toFixed(0) + " MB"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
-                }
-                Canvas {
-                    id: ramCanvas
-                    Layout.fillWidth: true
-                    height: 36
-                    property var hist: col.ramHistory
-                    onHistChanged: requestPaint()
-                    onPaint: {
-                        let ctx = getContext("2d")
-                        ctx.reset()
-                        ctx.clearRect(0, 0, width, height)
-                        let h = hist
-                        if (h.length < 2) return
-                        ctx.strokeStyle = "#9090a0"
-                        ctx.lineWidth = 2
-                        ctx.beginPath()
-                        for (let i = 0; i < h.length; i++) {
-                            let x = (i / (h.length - 1)) * width
-                            let y = height - (h[i] / 100) * height
-                            if (i === 0) ctx.moveTo(x, y)
-                            else ctx.lineTo(x, y)
-                        }
-                        ctx.stroke()
-                    }
-                }
-            }
-
-            // Red
+            // CPU
             RowLayout {
-                spacing: 10
-                Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 16; color: Services.Colors.ghost }
-                Text { text: "Network"; color: Services.Colors.snow; font.pixelSize: 12; font.family: "JetBrainsMono NF"; Layout.fillWidth: true }
-                Text { text: "\u2193 " + col.netRxKBs.toFixed(0) + " KB/s"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
-                Text { text: "\u2191 " + col.netTxKBs.toFixed(0) + " KB/s"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
+                Layout.fillWidth: true
+                spacing: 16
+                Item {
+                    id: ringCpu
+                    property real percent: col.cpuPercent
+                    width: 60; height: 60
+                    Canvas {
+                        id: canvasCpu
+                        anchors.fill: parent
+                        onPaint: {
+                            let ctx = getContext("2d")
+                            ctx.reset()
+                            let cx = width / 2, cy = height / 2
+                            let r = (Math.min(width, height) - 5) / 2
+                            ctx.lineWidth = 5
+                            ctx.lineCap = "round"
+                            ctx.strokeStyle = Services.Colors.ghostAlpha(0.15)
+                            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke()
+                            let frac = Math.max(0, Math.min(1, ringCpu.percent / 100))
+                            if (frac > 0) {
+                                ctx.strokeStyle = Services.Colors.ghost
+                                ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke()
+                            }
+                        }
+                        Component.onCompleted: requestPaint()
+                        Connections { target: ringCpu; function onPercentChanged() { canvasCpu.requestPaint() } }
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: Math.round(ringCpu.percent) + "%"
+                        color: Services.Colors.snow
+                        font.pixelSize: 13
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+                    Text { text: "CPU"; color: Services.Colors.snow; font.pixelSize: 12; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { text: col.cpuModel; color: Services.Colors.mist; font.pixelSize: 10; font.family: "JetBrainsMono NF"; elide: Text.ElideRight; Layout.fillWidth: true }
+                    Text { visible: col.cpuTemp > 0; text: col.cpuTemp.toFixed(0) + "°C"; color: Services.Colors.ash; font.pixelSize: 10; font.family: "JetBrainsMono NF" }
+                    Canvas {
+                        id: cpuHistCanvas
+                        Layout.fillWidth: true
+                        height: 24
+                        property var hist: col.cpuHistory
+                        onHistChanged: requestPaint()
+                        onPaint: {
+                            let ctx = getContext("2d")
+                            ctx.reset()
+                            ctx.clearRect(0, 0, width, height)
+                            let h = hist
+                            if (h.length < 2) return
+                            ctx.strokeStyle = Services.Colors.ghost
+                            ctx.lineWidth = 1.5
+                            ctx.beginPath()
+                            for (let i = 0; i < h.length; i++) {
+                                let x = (i / (h.length - 1)) * width
+                                let y = height - (h[i] / 100) * height
+                                if (i === 0) ctx.moveTo(x, y)
+                                else ctx.lineTo(x, y)
+                            }
+                            ctx.stroke()
+                        }
+                    }
+                }
+            }
+
+            // Memory
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 16
+                Item {
+                    id: ringRam
+                    property real percent: col.ramTotalMB > 0 ? (col.ramUsedMB / col.ramTotalMB) * 100 : 0
+                    width: 60; height: 60
+                    Canvas {
+                        id: canvasRam
+                        anchors.fill: parent
+                        onPaint: {
+                            let ctx = getContext("2d")
+                            ctx.reset()
+                            let cx = width / 2, cy = height / 2
+                            let r = (Math.min(width, height) - 5) / 2
+                            ctx.lineWidth = 5
+                            ctx.lineCap = "round"
+                            ctx.strokeStyle = Services.Colors.ghostAlpha(0.15)
+                            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke()
+                            let frac = Math.max(0, Math.min(1, ringRam.percent / 100))
+                            if (frac > 0) {
+                                ctx.strokeStyle = Services.Colors.mist
+                                ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke()
+                            }
+                        }
+                        Component.onCompleted: requestPaint()
+                        Connections { target: ringRam; function onPercentChanged() { canvasRam.requestPaint() } }
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: Math.round(ringRam.percent) + "%"
+                        color: Services.Colors.snow
+                        font.pixelSize: 13
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+                    Text { text: "Memory"; color: Services.Colors.snow; font.pixelSize: 12; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { text: col.ramUsedMB.toFixed(0) + " / " + col.ramTotalMB.toFixed(0) + " MB"; color: Services.Colors.mist; font.pixelSize: 10; font.family: "JetBrainsMono NF" }
+                    Canvas {
+                        id: ramHistCanvas
+                        Layout.fillWidth: true
+                        height: 24
+                        property var hist: col.ramHistory
+                        onHistChanged: requestPaint()
+                        onPaint: {
+                            let ctx = getContext("2d")
+                            ctx.reset()
+                            ctx.clearRect(0, 0, width, height)
+                            let h = hist
+                            if (h.length < 2) return
+                            ctx.strokeStyle = Services.Colors.mist
+                            ctx.lineWidth = 1.5
+                            ctx.beginPath()
+                            for (let i = 0; i < h.length; i++) {
+                                let x = (i / (h.length - 1)) * width
+                                let y = height - (h[i] / 100) * height
+                                if (i === 0) ctx.moveTo(x, y)
+                                else ctx.lineTo(x, y)
+                            }
+                            ctx.stroke()
+                        }
+                    }
+                }
+            }
+
+            // Storage
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 16
+                Item {
+                    id: ringDisk
+                    property real percent: col.diskPercent
+                    width: 60; height: 60
+                    Canvas {
+                        id: canvasDisk
+                        anchors.fill: parent
+                        onPaint: {
+                            let ctx = getContext("2d")
+                            ctx.reset()
+                            let cx = width / 2, cy = height / 2
+                            let r = (Math.min(width, height) - 5) / 2
+                            ctx.lineWidth = 5
+                            ctx.lineCap = "round"
+                            ctx.strokeStyle = Services.Colors.ghostAlpha(0.15)
+                            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke()
+                            let frac = Math.max(0, Math.min(1, ringDisk.percent / 100))
+                            if (frac > 0) {
+                                ctx.strokeStyle = col.diskPercent >= 90 ? Services.Colors.error_ : Services.Colors.ghost
+                                ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke()
+                            }
+                        }
+                        Component.onCompleted: requestPaint()
+                        Connections { target: ringDisk; function onPercentChanged() { canvasDisk.requestPaint() } }
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: Math.round(ringDisk.percent) + "%"
+                        color: Services.Colors.snow
+                        font.pixelSize: 13
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+                    Text { text: "Storage"; color: Services.Colors.snow; font.pixelSize: 12; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { text: col.diskUsedGB.toFixed(0) + " / " + col.diskTotalGB.toFixed(0) + " GB  ·  /"; color: Services.Colors.mist; font.pixelSize: 10; font.family: "JetBrainsMono NF" }
+                }
             }
 
             // Graphics
             RowLayout {
-                spacing: 10
-                Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 16; color: Services.Colors.ghost }
-                Text { text: "Graphics"; color: Services.Colors.snow; font.pixelSize: 12; font.family: "JetBrainsMono NF" }
-                Text { text: col.gpuInfo; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF"; elide: Text.ElideRight; Layout.fillWidth: true }
-            }
-
-            // Storage
-            ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 4
-                RowLayout {
-                    spacing: 10
-                    Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 16; color: Services.Colors.ghost }
-                    Text { text: "Storage"; color: Services.Colors.snow; font.pixelSize: 12; font.family: "JetBrainsMono NF"; Layout.fillWidth: true }
-                    Text { text: col.diskUsedGB.toFixed(0) + " / " + col.diskTotalGB.toFixed(0) + " GB"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
+                spacing: 16
+                Item {
+                    id: ringGpu
+                    visible: col.hasGpuStats
+                    property real percent: col.gpuUsage
+                    width: 60; height: 60
+                    Canvas {
+                        id: canvasGpu
+                        anchors.fill: parent
+                        onPaint: {
+                            let ctx = getContext("2d")
+                            ctx.reset()
+                            let cx = width / 2, cy = height / 2
+                            let r = (Math.min(width, height) - 5) / 2
+                            ctx.lineWidth = 5
+                            ctx.lineCap = "round"
+                            ctx.strokeStyle = Services.Colors.ghostAlpha(0.15)
+                            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke()
+                            let frac = Math.max(0, Math.min(1, ringGpu.percent / 100))
+                            if (frac > 0) {
+                                ctx.strokeStyle = Services.Colors.ghost
+                                ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke()
+                            }
+                        }
+                        Component.onCompleted: requestPaint()
+                        Connections { target: ringGpu; function onPercentChanged() { canvasGpu.requestPaint() } }
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: Math.round(ringGpu.percent) + "%"
+                        color: Services.Colors.snow
+                        font.pixelSize: 13
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
                 }
-                Rectangle {
+                ColumnLayout {
                     Layout.fillWidth: true
-                    height: 6; radius: 3
-                    color: Services.Colors.ghostAlpha(0.15)
-                    Rectangle {
-                        height: parent.height; radius: 3
-                        color: col.diskPercent >= 90 ? Services.Colors.error_ : Services.Colors.ghost
-                        width: parent.width * (col.diskPercent / 100)
-                        Behavior on width { NumberAnimation { duration: 300 } }
-                    }
+                    spacing: 4
+                    Text { text: "Graphics"; color: Services.Colors.snow; font.pixelSize: 12; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { text: col.gpuInfo; color: Services.Colors.mist; font.pixelSize: 10; font.family: "JetBrainsMono NF"; elide: Text.ElideRight; Layout.fillWidth: true }
+                    Text { visible: col.hasGpuStats && col.gpuTemp > 0; text: col.gpuTemp.toFixed(0) + "°C"; color: Services.Colors.ash; font.pixelSize: 10; font.family: "JetBrainsMono NF" }
                 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Services.Colors.ghostAlpha(0.15); Layout.topMargin: 4 }
-
-            Text {
-                text: "Processes"
-                color: Services.Colors.mist
-                font.pixelSize: 11
-                font.family: "JetBrainsMono NF"
-            }
-
-            ColumnLayout {
+            // Network
+            RowLayout {
                 Layout.fillWidth: true
-                spacing: 6
-                Repeater {
-                    model: col.procList
-                    delegate: RowLayout {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        spacing: 10
-                        Text {
-                            text: modelData.name
-                            color: Services.Colors.snow
-                            font.pixelSize: 11
-                            font.family: "JetBrainsMono NF"
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                        }
-                        Text {
-                            text: modelData.cpu.toFixed(1) + "% CPU"
-                            color: Services.Colors.mist
-                            font.pixelSize: 10
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Text {
-                            text: modelData.mem.toFixed(1) + "% MEM"
-                            color: Services.Colors.ash
-                            font.pixelSize: 10
-                            font.family: "JetBrainsMono NF"
-                        }
-                    }
-                }
+                spacing: 10
+                Text { text: "Network"; color: Services.Colors.snow; font.pixelSize: 12; font.bold: true; font.family: "JetBrainsMono NF"; Layout.fillWidth: true }
+                Text { text: "↓ " + col.netRxKBs.toFixed(0) + " KB/s"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
+                Text { text: "↑ " + col.netTxKBs.toFixed(0) + " KB/s"; color: Services.Colors.mist; font.pixelSize: 11; font.family: "JetBrainsMono NF" }
             }
 
             Item { Layout.preferredHeight: 8 }

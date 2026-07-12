@@ -56,7 +56,7 @@ hl.bind(mod .. " + D", hl.dsp.workspace.toggle_special("discord"))
 
 -- Sistema
 hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
-hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=/home/adolf-arch/Pictures/Screenshots grimblast --notify copysave area'"))
+hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=/home/adolf-arch/Pictures/Screenshots grimblast copysave area && qs ipc -c ashen call notifications screenshot'"))
 hl.bind(mod .. " + L",         hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lock"))
 
 -- Audio y brillo

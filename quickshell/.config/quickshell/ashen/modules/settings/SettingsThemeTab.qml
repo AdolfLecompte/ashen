@@ -98,6 +98,20 @@ Item {
         id: schemeSection
         Layout.fillWidth: true
         spacing: 8
+
+        property string activeScheme: "classic"
+        // merged into single onCompleted below
+        Process {
+            id: schemeModeReadProc
+            command: ["sh", "-c", "cat /home/adolf-arch/.cache/ashen_scheme_mode.txt 2>/dev/null"]
+            running: false
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    let s = text.trim()
+                    if (s.length > 0) schemeSection.activeScheme = s
+                }
+            }
+        }
         RowLayout {
             spacing: 10
             Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 18; color: Services.Colors.ghost }
@@ -147,6 +161,22 @@ Item {
                             }
                         }
                     }
+                    Rectangle {
+                        visible: schemeSection.activeScheme === modelData.id
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 6
+                        width: 18; height: 18
+                        radius: 9
+                        color: Services.Colors.ghost
+                        Text {
+                            anchors.centerIn: parent
+                            text: "\uf0be"
+                            font.family: "Material Symbols Rounded"
+                            font.pixelSize: 11
+                            color: Services.Colors.abyss
+                        }
+                    }
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
@@ -155,11 +185,13 @@ Item {
                         onExited: parent.color = Services.Colors.ghostAlpha(0.15)
                         onClicked: {
                             if (modelData.id === "dynamic") {
+                                schemeSection.activeScheme = "dynamic"
                                 Quickshell.execDetached(["sh", "-c",
                                     "echo 'dynamic' > /home/adolf-arch/.cache/ashen_scheme_mode.txt && " +
                                     "matugen image \"$(awww query | grep -o 'image: .*' | cut -d' ' -f2)\" --mode dark --source-color-index 0 --type $(cat /home/adolf-arch/.cache/ashen_dynamic_type.txt 2>/dev/null || echo scheme-tonal-spot)"
                                 ])
                             } else {
+                                schemeSection.activeScheme = modelData.id
                                 tab.applyScheme(modelData.id)
                             }
                         }
@@ -173,7 +205,10 @@ Item {
         Text { text: "How aggressively Dynamic pulls color from the wallpaper"; color: Services.Colors.ash; font.pixelSize: 10; font.family: "JetBrainsMono NF" }
 
         property string dynamicType: "scheme-tonal-spot"
-        Component.onCompleted: dynTypeProc.running = true
+        Component.onCompleted: {
+            schemeModeReadProc.running = true
+            dynTypeProc.running = true
+        }
         Process {
             id: dynTypeProc
             command: ["sh", "-c", "cat /home/adolf-arch/.cache/ashen_dynamic_type.txt 2>/dev/null"]
