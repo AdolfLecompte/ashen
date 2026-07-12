@@ -31,11 +31,11 @@ Rectangle {
             Behavior on width { NumberAnimation { duration: 200 } }
             Text {
                 anchors.centerIn: parent
-                text: "A"
+                text: ""
                 color: Services.Colors.abyss
-                font.pixelSize: 14
+                font.pixelSize: 18
                 font.bold: true
-                font.family: "JetBrainsMono NF"
+                font.family: "Material Symbols Rounded"
             }
         }
         // Num Lock (solo visible si esta activo)
@@ -49,11 +49,11 @@ Rectangle {
             Behavior on width { NumberAnimation { duration: 200 } }
             Text {
                 anchors.centerIn: parent
-                text: "1"
+                text: ""
                 color: Services.Colors.abyss
-                font.pixelSize: 14
+                font.pixelSize: 18
                 font.bold: true
-                font.family: "JetBrainsMono NF"
+                font.family: "Material Symbols Rounded"
             }
         }
         // Notificaciones

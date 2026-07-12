@@ -24,12 +24,12 @@ Row {
     property string specialName: inSpecial ? activeSpecial.name.replace("special:", "") : ""
 
     function specialIcon(name) {
-        if (name === "music")   return ""
-        if (name === "discord") return ""
-        if (name === "notes")   return ""
-        if (name === "term")    return ""
-        if (name === "fav")     return ""
-        return ""
+        if (name === "music")   return "󿿘"
+        if (name === "discord") return ""
+        if (name === "notes")   return ""
+        if (name === "term")    return "󿾋"
+        if (name === "fav")     return ""
+        return ""
     }
 
     // Launcher

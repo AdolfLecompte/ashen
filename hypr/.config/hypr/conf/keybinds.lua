@@ -8,6 +8,7 @@ local mod = "SUPER"
 hl.bind(mod .. " + SHIFT + W", hl.dsp.exec_cmd("qs ipc -c ashen call wallpaper open"))
 hl.bind(mod .. " + N",         hl.dsp.exec_cmd("qs ipc -c ashen call notifications toggle"))
 hl.bind(mod .. " + I",         hl.dsp.exec_cmd("qs ipc -c ashen call settings toggle"))
+hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call clipboard toggle'"), { locked = true })
 hl.bind("SUPER + comma", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call emojis toggle'"), { locked = true })
 hl.bind("SUPER + period", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call glyph toggle'"), { locked = true })
 
@@ -55,7 +56,7 @@ hl.bind(mod .. " + D", hl.dsp.workspace.toggle_special("discord"))
 
 -- Sistema
 hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
-hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("grimblast --notify copysave area"))
+hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=/home/adolf-arch/Pictures/Screenshots grimblast --notify copysave area'"))
 hl.bind(mod .. " + L",         hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lock"))
 
 -- Audio y brillo

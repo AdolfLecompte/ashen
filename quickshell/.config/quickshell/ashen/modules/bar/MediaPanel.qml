@@ -134,7 +134,7 @@ PanelWindow {
             anchors.margins: 20
             spacing: 18
 
-            // Art cuadrado con bordes redondos (NO circular, consistente con el resto del sistema)
+            // Art cuadrado con bordes redondos
             Item {
                 width: 130; height: 130
                 Layout.alignment: Qt.AlignVCenter

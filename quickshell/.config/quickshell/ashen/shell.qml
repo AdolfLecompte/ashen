@@ -8,6 +8,7 @@ import "root:/modules/wallpaper"
 import "root:/modules/settings"
 import "root:/modules/emojis"
 import "root:/modules/glyph"
+import "root:/modules/clipboard"
 
 ShellRoot {
     Bar {}
@@ -28,4 +29,5 @@ ShellRoot {
     WallpaperPicker {}
     Emojis {}
     Glyph {}
+    Clipboard {}
 }

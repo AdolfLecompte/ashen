@@ -479,7 +479,7 @@ Scope {
                                 Text {
                                     anchors.centerIn: parent
                                     visible: lockArtImg.status !== Image.Ready
-                                    text: ""
+                                    text: "󿿘"
                                     color: Services.Colors.ghost
                                     font.pixelSize: 20
                                     font.family: "Material Symbols Rounded"

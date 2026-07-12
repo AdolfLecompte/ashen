@@ -134,10 +134,10 @@ Singleton {
                     if (!kb) return
                     if (root.initialized) {
                         if (kb.capsLock !== root.lastCapsLock) {
-                            root.addSystemToast(kb.capsLock ? "CAPS LOCK ON" : "CAPS LOCK OFF", "A", true, "capslock")
+                            root.addSystemToast(kb.capsLock ? "CAPS LOCK ON" : "CAPS LOCK OFF", "", false, "capslock")
                         }
                         if (kb.numLock !== root.lastNumLock) {
-                            root.addSystemToast(kb.numLock ? "NUM LOCK ON" : "NUM LOCK OFF", "1", true, "numlock")
+                            root.addSystemToast(kb.numLock ? "NUM LOCK ON" : "NUM LOCK OFF", "", false, "numlock")
                         }
                     }
                     root.lastCapsLock = kb.capsLock
@@ -236,7 +236,7 @@ Singleton {
         function onDoNotDisturbChanged() {
             root.addSystemToast(
                 Services.AppState.doNotDisturb ? "DO NOT DISTURB ON" : "DO NOT DISTURB OFF",
-                "\ue7f8",
+                "",
                 false,
                 "dnd"
             )

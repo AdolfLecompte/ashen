@@ -4,8 +4,9 @@ import QtQuick
 
 Singleton {
     id: root
+    property bool clipboardVisible: false
 
-    property var bigOverlays: ["launcherVisible", "settingsVisible", "emojisVisible", "glyphVisible", "wallpaperVisible"]
+    property var bigOverlays: ["launcherVisible", "settingsVisible", "emojisVisible", "glyphVisible", "wallpaperVisible", "clipboardVisible"]
     function toggleOverlay(name) {
         let wasOpen = root[name]
         for (let n of bigOverlays) root[n] = false

@@ -92,7 +92,7 @@ Scope {
                     Behavior on color { ColorAnimation { duration: 150 } }
                     Text {
                         anchors.centerIn: parent
-                        text: Services.AppState.doNotDisturb ? "" : ""
+                        text: Services.AppState.doNotDisturb ? "" : ""
                         color: Services.AppState.doNotDisturb ? Services.Colors.ghost : Services.Colors.mist
                         font.pixelSize: 16
                         font.family: "Material Symbols Rounded"
@@ -112,7 +112,7 @@ Scope {
                     visible: Services.Notifications.history.length > 0
                     Text {
                         anchors.centerIn: parent
-                        text: ""
+                        text: ""
                         color: Services.Colors.mist
                         font.pixelSize: 16
                         font.family: "Material Symbols Rounded"
@@ -241,7 +241,7 @@ Scope {
                             Text {
                                 anchors.centerIn: parent
                                 visible: (modelData.icon || "") === ""
-                                text: ""
+                                text: ""
                                 color: Services.Colors.ghost
                                 font.pixelSize: 16
                                 font.family: "Material Symbols Rounded"
@@ -298,7 +298,7 @@ Scope {
                             color: "transparent"
                             Text {
                                 anchors.centerIn: parent
-                                text: ""
+                                text: ""
                                 color: Services.Colors.ash
                                 font.pixelSize: 14
                                 font.family: "Material Symbols Rounded"

@@ -18,7 +18,8 @@ PanelWindow {
     color: "transparent"
     visible: Services.AppState.calendarVisible
 
-    property string currentTime: Qt.formatDateTime(new Date(), "hh:mm:ss AP")
+    property string currentTime: Qt.formatDateTime(new Date(), "hh:mm AP")
+    property string currentSecs: Qt.formatDateTime(new Date(), "ss")
     property string currentDate: Qt.formatDateTime(new Date(), "MMMM d, yyyy")
     property string currentDayName: Qt.locale().dayName(new Date().getDay())
 
@@ -28,7 +29,8 @@ PanelWindow {
         repeat: true
         onTriggered: {
             let now = new Date()
-            root.currentTime = Qt.formatDateTime(now, "hh:mm:ss AP")
+            root.currentTime = Qt.formatDateTime(now, "hh:mm AP")
+            root.currentSecs = Qt.formatDateTime(now, "ss")
             root.currentDate = Qt.formatDateTime(now, "MMMM d, yyyy")
             root.currentDayName = Qt.locale().dayName(now.getDay())
         }
@@ -39,87 +41,102 @@ PanelWindow {
         onClicked: Services.AppState.calendarVisible = false
     }
 
-    Column {
+    readonly property int boxHeight: 380
+
+    Row {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 64
-        spacing: 8
+        spacing: 10
         opacity: Services.AppState.calendarVisible ? 1.0 : 0.0
         scale: Services.AppState.calendarVisible ? 1.0 : 0.92
         Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
         Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
-        // Caja superior — invertida
+        transform: Translate {
+            y: Services.AppState.calendarVisible ? 0 : -24
+            Behavior on y { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        }
+
+        // -- Columna central: Hora --
         Rectangle {
-            width: 440
-            height: 100
+            width: 150
+            height: root.boxHeight
             radius: 14
-            color: Services.Colors.ghostAlpha(0.75)
+            color: Services.Colors.surfaceAlpha(0.95)
+            border.color: Services.Colors.ghostAlpha(0.2)
+            border.width: 1
             MouseArea { anchors.fill: parent; onClicked: {} }
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 24
-                anchors.rightMargin: 24
+            Column {
+                anchors.centerIn: parent
+                spacing: 18
 
-                // Dia y fecha
                 Column {
-                    spacing: 4
-                    Layout.fillWidth: true
-
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: -6
                     Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.currentTime.split(":")[0]
+                        color: Services.Colors.ghost
+                        font.pixelSize: 56
+                        font.family: "JetBrainsMono NF"
+                        font.bold: true
+                        lineHeight: 0.9
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.currentTime.split(":")[1].split(" ")[0]
+                        color: Services.Colors.snow
+                        font.pixelSize: 56
+                        font.family: "JetBrainsMono NF"
+                        font.bold: true
+                        lineHeight: 0.9
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.currentTime.split(" ")[1] + "  " + root.currentSecs
+                        color: Services.Colors.mist
+                        font.pixelSize: 12
+                        font.family: "JetBrainsMono NF"
+                        font.bold: true
+                        topPadding: 8
+                    }
+                }
+
+                Rectangle { width: 40; height: 1; anchors.horizontalCenter: parent.horizontalCenter; color: Services.Colors.ghostAlpha(0.25) }
+
+                Column {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 4
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentDayName.toUpperCase()
-                        color: Services.Colors.surfaceAlpha(0.7)
-                        font.pixelSize: 11
+                        color: Services.Colors.ash
+                        font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
                         font.bold: true
                         font.letterSpacing: 2
                     }
                     Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentDate
-                        color: Services.Colors.abyss
-                        font.pixelSize: 16
+                        color: Services.Colors.snow
+                        font.pixelSize: 12
                         font.family: "JetBrainsMono NF"
                         font.bold: true
-                    }
-                }
-
-                // Separador
-                Rectangle {
-                    width: 1; height: 50
-                    color: Services.Colors.surfaceAlpha(0.3)
-                }
-
-                // Hora
-                Column {
-                    spacing: 2
-                    Layout.alignment: Qt.AlignVCenter
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.currentTime.split(" ")[0]
-                        color: Services.Colors.abyss
-                        font.pixelSize: 22
-                        font.family: "JetBrainsMono NF"
-                        font.bold: true
-                    }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.currentTime.split(" ")[1]
-                        color: Services.Colors.surfaceAlpha(0.7)
-                        font.pixelSize: 11
-                        font.family: "JetBrainsMono NF"
-                        font.bold: true
-                        font.letterSpacing: 1
+                        horizontalAlignment: Text.AlignHCenter
+                        width: 120
+                        wrapMode: Text.WordWrap
                     }
                 }
             }
         }
 
-        // Caja calendario
+        // -- Columna izquierda: Calendario --
         Rectangle {
-            width: 440
-            height: calCol.implicitHeight + 28
+            width: 360
+            height: root.boxHeight
             radius: 14
             color: Services.Colors.surfaceAlpha(0.95)
             border.color: Services.Colors.ghostAlpha(0.2)
@@ -129,28 +146,19 @@ PanelWindow {
             Column {
                 id: calCol
                 anchors.centerIn: parent
-                spacing: 8
-                width: parent.width - 28
+                spacing: 10
+                width: parent.width - 32
 
                 RowLayout {
                     width: parent.width
 
-                    Text {
-                        Layout.fillWidth: true
-                        text: Qt.locale().monthName(calRoot.currentMonth) + " " + calRoot.currentYear
-                        color: Services.Colors.snow
-                        font.pixelSize: 14
-                        font.family: "JetBrainsMono NF"
-                        font.bold: true
-                    }
-
                     Rectangle {
-                        width: 28; height: 28; radius: 8; color: "transparent"
+                        width: 26; height: 26; radius: 8; color: "transparent"
                         Text {
                             anchors.centerIn: parent
-                            text: "‹"
+                            text: "\u2039"
                             color: Services.Colors.ghost
-                            font.pixelSize: 20
+                            font.pixelSize: 18
                             font.family: "JetBrainsMono NF"
                         }
                         MouseArea {
@@ -166,35 +174,23 @@ PanelWindow {
                         }
                     }
 
-                    Rectangle {
-                        width: 28; height: 28; radius: 8; color: "transparent"
-                        Text {
-                            anchors.centerIn: parent
-                            text: ""
-                            color: Services.Colors.ghost
-                            font.pixelSize: 16
-                            font.family: "Material Symbols Rounded"
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
-                            onExited: parent.color = "transparent"
-                            onClicked: {
-                                calRoot.currentMonth = calRoot.todayMonth
-                                calRoot.currentYear = calRoot.todayYear
-                            }
-                        }
+                    Text {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Qt.locale().monthName(calRoot.currentMonth) + " " + calRoot.currentYear
+                        color: Services.Colors.snow
+                        font.pixelSize: 14
+                        font.family: "JetBrainsMono NF"
+                        font.bold: true
                     }
 
                     Rectangle {
-                        width: 28; height: 28; radius: 8; color: "transparent"
+                        width: 26; height: 26; radius: 8; color: "transparent"
                         Text {
                             anchors.centerIn: parent
-                            text: "›"
+                            text: "\u203a"
                             color: Services.Colors.ghost
-                            font.pixelSize: 20
+                            font.pixelSize: 18
                             font.family: "JetBrainsMono NF"
                         }
                         MouseArea {
@@ -206,6 +202,28 @@ PanelWindow {
                             onClicked: {
                                 if (calRoot.currentMonth === 11) { calRoot.currentMonth = 0; calRoot.currentYear++ }
                                 else calRoot.currentMonth++
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: 26; height: 26; radius: 8; color: "transparent"
+                        Text {
+                            anchors.centerIn: parent
+                            text: ""
+                            color: Services.Colors.ghost
+                            font.pixelSize: 15
+                            font.family: "Material Symbols Rounded"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
+                            onExited: parent.color = "transparent"
+                            onClicked: {
+                                calRoot.currentMonth = calRoot.todayMonth
+                                calRoot.currentYear = calRoot.todayYear
                             }
                         }
                     }
@@ -230,7 +248,7 @@ PanelWindow {
                     id: calRoot
                     width: parent.width
                     columns: 7
-                    spacing: 2
+                    spacing: 3
 
                     property int currentMonth: new Date().getMonth()
                     property int currentYear: new Date().getFullYear()
@@ -248,7 +266,7 @@ PanelWindow {
                             property bool isValid: index >= calRoot.firstDay
                             property bool isToday: isValid && day === calRoot.today && calRoot.currentMonth === calRoot.todayMonth && calRoot.currentYear === calRoot.todayYear
 
-                            width: calCol.width / 7 - 2
+                            width: calCol.width / 7 - 3
                             height: Math.min(width, 32)
                             radius: 6
                             color: isToday ? Services.Colors.ghost : "transparent"
@@ -275,84 +293,89 @@ PanelWindow {
             }
         }
 
-        // Caja del clima -- ahora mismo + pronostico, invertida como el reloj
+        // -- Columna derecha: Clima --
         Rectangle {
-            width: 440
-            height: weatherCol.implicitHeight + 28
+            width: 150
+            height: root.boxHeight
             radius: 14
-            color: Services.Colors.ghostAlpha(0.75)
+            color: Services.Colors.surfaceAlpha(0.95)
+            border.color: Services.Colors.ghostAlpha(0.2)
+            border.width: 1
             MouseArea { anchors.fill: parent; onClicked: {} }
 
             Column {
-                id: weatherCol
                 anchors.centerIn: parent
-                width: parent.width - 28
-                spacing: 10
+                spacing: 14
+                width: parent.width - 24
 
-                // Clima ahora mismo
-                Row {
-                    spacing: 12
+                Column {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 4
                     Text {
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
                         text: Services.Weather.icon
-                        color: Services.Colors.abyss
-                        font.pixelSize: 40
+                        color: Services.Colors.ghost
+                        font.pixelSize: 44
                         font.family: "Material Symbols Rounded"
                     }
                     Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: Services.Weather.tempC + "°C"
-                        color: Services.Colors.abyss
-                        font.pixelSize: 30
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: Services.Weather.tempC + "\u00b0C"
+                        color: Services.Colors.snow
+                        font.pixelSize: 26
                         font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: Services.Weather.condition
+                        color: Services.Colors.mist
+                        font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
                     }
                 }
 
-                Rectangle { width: parent.width; height: 1; color: Services.Colors.surfaceAlpha(0.25) }
+                Rectangle { width: parent.width; height: 1; color: Services.Colors.ghostAlpha(0.15) }
 
-                // Pronostico de los proximos dias
-                Row {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 20
-
+                Column {
+                    width: parent.width
+                    spacing: 6
                     Repeater {
                         model: Services.Weather.forecast
-                        delegate: Column {
+                        delegate: Rectangle {
                             required property var modelData
-                            spacing: 2
-                            width: 72
+                            required property int index
+                            width: parent.width
+                            height: 44
+                            radius: 8
+                            color: index === 0 ? Services.Colors.ghostAlpha(0.25) : "transparent"
 
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: modelData.label
-                                color: Services.Colors.surfaceAlpha(0.7)
-                                font.pixelSize: 11
-                                font.family: "JetBrainsMono NF"
-                                font.bold: true
-                                font.letterSpacing: 1
-                            }
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: modelData.icon
-                                color: Services.Colors.abyss
-                                font.pixelSize: 30
-                                font.family: "Material Symbols Rounded"
-                            }
-                            Row {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: 5
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 8
+                                anchors.rightMargin: 8
+                                spacing: 6
+
                                 Text {
-                                    text: modelData.maxC + "°"
-                                    color: Services.Colors.abyss
-                                    font.pixelSize: 12
+                                    text: modelData.label
+                                    color: index === 0 ? Services.Colors.snow : Services.Colors.mist
+                                    font.pixelSize: 10
                                     font.bold: true
                                     font.family: "JetBrainsMono NF"
+                                    Layout.preferredWidth: 30
                                 }
                                 Text {
-                                    text: modelData.minC + "°"
-                                    color: Services.Colors.surfaceAlpha(0.6)
-                                    font.pixelSize: 12
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: modelData.icon
+                                    color: index === 0 ? Services.Colors.ghost : Services.Colors.mist
+                                    font.pixelSize: 20
+                                    font.family: "Material Symbols Rounded"
+                                }
+                                Text {
+                                    text: modelData.maxC + "\u00b0/" + modelData.minC + "\u00b0"
+                                    color: index === 0 ? Services.Colors.snow : Services.Colors.ash
+                                    font.pixelSize: 10
                                     font.family: "JetBrainsMono NF"
                                 }
                             }
