@@ -4,6 +4,17 @@ A monochrome Hyprland + Quickshell rice. One accent color ("ghost") over a grays
 
 Hyprland · Quickshell · Kitty · Zsh + Powerlevel10k · PipeWire · matugen
 
+---
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/bbf668fc-dec3-41fc-b85b-98f470968e3b" />
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/90688d3d-8a15-478d-bc21-243aa9ed7a71" />
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2b3fd5b0-7691-42d9-9382-384ae500c49e" />
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/4d62fbea-c0a3-459a-af28-d8ee252774bd" />
+
+
 ## Install
 
 ```bash
