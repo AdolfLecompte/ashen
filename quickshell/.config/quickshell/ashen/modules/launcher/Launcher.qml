@@ -127,7 +127,9 @@ Scope {
         Process {
             id: appLoader
             command: ["sh", "-c",
-                "for f in $(find /usr/share/applications ~/.local/share/applications -name '*.desktop' 2>/dev/null | head -200); do echo '---'; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
+                // read the paths line by line: Steam's shortcuts have spaces in
+                // their filenames ("Gun Devil.desktop") and $(find) would split them
+                "find /usr/share/applications ~/.local/share/applications -name '*.desktop' 2>/dev/null | while IFS= read -r f; do echo '---'; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
             ]
             running: false
             stdout: StdioCollector {
