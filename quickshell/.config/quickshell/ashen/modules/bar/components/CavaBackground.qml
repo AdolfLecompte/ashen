@@ -7,10 +7,12 @@ Item {
     anchors.fill: parent
     z: -1
 
-    property var barValues: []
-    property bool isActive: false
+    readonly property var barValues: Services.Cava.barValues
+    readonly property bool isActive: Services.Cava.isActive
     opacity: isActive ? 1.0 : 0.0
     Behavior on opacity { NumberAnimation { duration: 400 } }
+
+    onBarValuesChanged: canvas.requestPaint()
 
     Canvas {
         id: canvas
@@ -42,7 +44,7 @@ Item {
             var n = root.barValues.length
             var barW = width / n
             ctx.fillStyle = Services.Colors.ghostAlpha(0.18)
-            var heightBoost = 1.3
+            var heightBoost = 2.0
             for (var i = 0; i < n; i++) {
                 var v = Math.max(0, Math.min(100, root.barValues[i])) / 100.0
                 var h = Math.min(height, v * height * heightBoost)
@@ -51,21 +53,4 @@ Item {
         }
     }
 
-    Process {
-        id: cavaProcess
-        command: ["cava", "-p", "/home/adolf-arch/.config/cava/ashen.conf"]
-        running: true
-        stdout: SplitParser {
-            onRead: data => {
-                if (!data) return
-                let parts = data.split(";").filter(s => s.length > 0).map(Number)
-                if (parts.length === 0) return
-                root.barValues = parts
-                let maxV = Math.max.apply(null, parts)
-                root.isActive = maxV > 2
-                canvas.requestPaint()
-            }
-        }
-        onRunningChanged: if (!running) running = true
-    }
 }
