@@ -125,9 +125,14 @@ Scope {
         Process {
             id: appLoader
             command: ["sh", "-c",
-                // read the paths line by line: Steam's shortcuts have spaces in
-                // their filenames ("Gun Devil.desktop") and $(find) would split them
-                "find /usr/share/applications ~/.local/share/applications -name '*.desktop' 2>/dev/null | while IFS= read -r f; do echo '---'; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
+                // walk XDG_DATA_HOME + XDG_DATA_DIRS instead of hardcoding two paths:
+                // flatpak exports its .desktop files under /var/lib/flatpak/exports/share
+                // (and ~/.local/share/flatpak/... for user installs), which are in
+                // XDG_DATA_DIRS but were invisible to the old find.
+                // Read the paths line by line: Steam's shortcuts have spaces in
+                // their filenames ("Gun Devil.desktop") and $(find) would split them.
+                // Earlier dirs win, per the XDG spec, so dedupe by desktop id.
+                "seen=''; for d in \"${XDG_DATA_HOME:-$HOME/.local/share}\" $(echo \"${XDG_DATA_DIRS:-/usr/local/share:/usr/share}\" | tr ':' ' '); do [ -d \"$d/applications\" ] || continue; find \"$d/applications\" -name '*.desktop' 2>/dev/null; done | while IFS= read -r f; do id=${f##*/}; case \" $seen \" in *\" $id \"*) continue ;; esac; seen=\"$seen $id\"; echo '---'; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
             ]
             running: false
             stdout: StdioCollector {
@@ -140,7 +145,9 @@ Scope {
                         for (let line of lines) {
                             if (line.startsWith("Name=") && app.name === "") app.name = line.substring(5).trim()
                             else if (line.startsWith("Comment=") && app.comment === "") app.comment = line.substring(8).trim()
-                            else if (line.startsWith("Exec=") && app.exec === "") app.exec = line.substring(5).trim().replace(/ %[uUfFdDnNickvm]/g, "")
+                            // @@u/@@ are flatpak's file-forwarding markers; with no file
+                            // args left after the field codes go, they are dead weight
+                            else if (line.startsWith("Exec=") && app.exec === "") app.exec = line.substring(5).trim().replace(/ %[uUfFdDnNickvm]/g, "").replace(/ @@[uU]?(?= |$)/g, "")
                             else if (line.startsWith("Icon=") && app.icon === "") app.icon = line.substring(5).trim()
                             else if (line.startsWith("Categories=") && app.category === "Other") {
                                 let cats = line.substring(11).split(";")
