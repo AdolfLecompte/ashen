@@ -24,6 +24,7 @@ pipewire pipewire-pulse pipewire-alsa wireplumber
 networkmanager bluez bluez-utils udisks2 upower
 brightnessctl lm_sensors
 wl-clipboard cliphist grim slurp wf-recorder
+hypridle mpvpaper ffmpeg
 nemo zenity fastfetch cava
 papirus-icon-theme ttf-jetbrains-mono-nerd
 qt6-base qt6-declarative
@@ -38,9 +39,9 @@ bibata-cursor-theme ttf-material-symbols-variable-git grimblast-git
 
 Plus [Oh My Zsh](https://ohmyz.sh) and [Powerlevel10k](https://github.com/romkatv/powerlevel10k) (not packaged, see their own install instructions).
 
-> If your system locale created localized XDG user folders (e.g. `~/Imágenes` instead of `~/Pictures`), create the English ones manually — Ashen's scripts expect `~/Pictures/wallpapers`, `~/Pictures/Screenshots` and `~/Videos` literally, regardless of system language:
+> If your system locale created localized XDG user folders (e.g. `~/Imágenes` instead of `~/Pictures`), create the English ones manually — Ashen's scripts expect `~/Pictures/Wallpapers`, `~/Pictures/Screenshots` and `~/Videos` literally, regardless of system language:
 > ```bash
-> mkdir -p ~/Pictures/wallpapers ~/Pictures/Screenshots ~/Videos
+> mkdir -p ~/Pictures/Wallpapers ~/Pictures/Screenshots ~/Videos
 > ```
 
 ## Install

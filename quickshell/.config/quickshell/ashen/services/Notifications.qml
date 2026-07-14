@@ -105,8 +105,14 @@ Singleton {
         id: notifServer
         bodySupported: true
         imageSupported: true
-        actionsSupported: false
         keepOnReload: true
+
+        // Chromium queries GetCapabilities on startup and refuses the D-Bus
+        // route unless the server advertises actions and persistence, falling
+        // back to its own in-window message center. Brave notifications
+        // (WhatsApp Web) depend on these two being advertised.
+        actionsSupported: true
+        persistenceSupported: true
 
         onNotification: notification => {
             notification.tracked = true
