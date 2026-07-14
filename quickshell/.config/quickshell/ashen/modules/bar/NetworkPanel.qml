@@ -362,7 +362,7 @@ PanelWindow {
                                     onEntered: parent.color = Services.Colors.ghostAlpha(0.1)
                                     onExited: parent.color = "transparent"
                                     onClicked: {
-                                        Quickshell.execDetached(["sh", "-c", "nmcli dev wifi connect \"" + modelData.ssid + "\""])
+                                        Quickshell.execDetached(["nmcli", "dev", "wifi", "connect", modelData.ssid])
                                         Services.AppState.networkVisible = false
                                     }
                                 }
@@ -681,10 +681,12 @@ PanelWindow {
                     color: Services.Colors.ghost
 
                     function connect() {
-                        let cmd = root.password.length > 0
-                            ? "nmcli dev wifi connect \"" + root.connectingTo + "\" password \"" + root.password + "\""
-                            : "nmcli dev wifi connect \"" + root.connectingTo + "\""
-                        Quickshell.execDetached(["sh", "-c", cmd])
+                        // argv, not a shell string: an SSID or password holding a
+                        // quote would otherwise close it and run the rest as shell.
+                        let cmd = ["nmcli", "dev", "wifi", "connect", root.connectingTo]
+                        if (root.password.length > 0)
+                            cmd.push("password", root.password)
+                        Quickshell.execDetached(cmd)
                         root.showConnectDialog = false
                         Services.AppState.networkVisible = false
                     }

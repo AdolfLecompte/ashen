@@ -207,7 +207,7 @@ Item {
                             onEntered: parent.color = Services.Colors.ghostAlpha(0.1)
                             onExited: parent.color = "transparent"
                             onClicked: {
-                                Quickshell.execDetached(["sh", "-c", "nmcli dev wifi connect \"" + modelData.ssid + "\""])
+                                Quickshell.execDetached(["nmcli", "dev", "wifi", "connect", modelData.ssid])
                             }
                         }
                     }
@@ -394,10 +394,12 @@ Item {
                     height: 40; radius: 8
                     color: Services.Colors.ghost
                     function connect() {
-                        let cmd = tab.password.length > 0
-                            ? "nmcli dev wifi connect \"" + tab.connectingTo + "\" password \"" + tab.password + "\""
-                            : "nmcli dev wifi connect \"" + tab.connectingTo + "\""
-                        Quickshell.execDetached(["sh", "-c", cmd])
+                        // argv, not a shell string: an SSID or password holding a
+                        // quote would otherwise close it and run the rest as shell.
+                        let cmd = ["nmcli", "dev", "wifi", "connect", tab.connectingTo]
+                        if (tab.password.length > 0)
+                            cmd.push("password", tab.password)
+                        Quickshell.execDetached(cmd)
                         tab.showConnectDialog = false
                     }
                     Text { anchors.centerIn: parent; text: "Connect"; color: Services.Colors.abyss; font.pixelSize: 13; font.family: "JetBrainsMono NF"; font.bold: true }

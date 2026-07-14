@@ -76,11 +76,11 @@ Singleton {
     Component.onCompleted: root.refresh()
 
     function mount(path) {
-        Quickshell.execDetached(["sh", "-c", "udisksctl mount -b " + path])
+        Quickshell.execDetached(["udisksctl", "mount", "-b", path])
         refreshDelay.restart()
     }
     function unmount(path) {
-        Quickshell.execDetached(["sh", "-c", "udisksctl unmount -b " + path])
+        Quickshell.execDetached(["udisksctl", "unmount", "-b", path])
         refreshDelay.restart()
     }
     function eject(parentName) {

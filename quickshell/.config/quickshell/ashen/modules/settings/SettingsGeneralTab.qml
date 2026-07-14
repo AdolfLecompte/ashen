@@ -103,7 +103,7 @@ ColumnLayout {
             onStreamFinished: {
                 let path = text.trim()
                 if (path.length > 0) {
-                    faceCopyProc.command = ["sh", "-c", "cp \"" + path + "\" /home/adolf/.face"]
+                    faceCopyProc.command = ["cp", path, "/home/adolf/.face"]
                     faceCopyProc.running = true
                 }
             }
