@@ -12,10 +12,20 @@ Scope {
 
     IpcHandler {
         target: "wallpaper"
+
         function open() {
             Services.AppState.closeBigOverlays()
             Services.AppState.wallpaperVisible = true
             wallpaperScanner.running = true
+        }
+
+        function close() {
+            Services.AppState.wallpaperVisible = false
+        }
+
+        function toggle() {
+            if (Services.AppState.wallpaperVisible) close()
+            else open()
         }
     }
 
@@ -28,28 +38,71 @@ Scope {
 
         WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-        property var wallpapers: []
+        // Every file found, unfiltered
+        property var allWallpapers: []
+        property bool scanned: false
+
+        // "static" = png/jpg/jpeg/webp (awww) | "animated" = gif (awww) + mp4/webm/mkv/mov (mpvpaper)
+        property string category: "static"
+
+        function isAnimated(p) {
+            let l = p.toLowerCase()
+            return l.endsWith(".gif") || l.endsWith(".mp4") || l.endsWith(".webm")
+                || l.endsWith(".mkv") || l.endsWith(".mov")
+        }
+        function isVideo(p) {
+            let l = p.toLowerCase()
+            return l.endsWith(".mp4") || l.endsWith(".webm") || l.endsWith(".mkv") || l.endsWith(".mov")
+        }
+
+        // QML's Image cannot decode video, so videos are previewed with the
+        // frame ashen-wallpaper-thumbs.sh cached for them
+        function previewFor(p) {
+            if (!isVideo(p)) return "file://" + p
+            let name = p.split("/").pop()
+            return "file://" + Quickshell.env("HOME") + "/.cache/ashen_wall_thumbs/" + name + ".jpg"
+        }
+
+        readonly property var wallpapers: allWallpapers.filter(p => category === "animated" ? isAnimated(p) : !isAnimated(p))
+        readonly property int animatedCount: allWallpapers.filter(p => isAnimated(p)).length
+        readonly property int staticCount: allWallpapers.length - animatedCount
+
         property int currentIndex: 0
         readonly property real skew: -0.16
         readonly property real cardH: Math.min(200, height * 0.2)
         readonly property real cardW: 340
         readonly property real bandHeight: cardH + 20
 
+        onCategoryChanged: {
+            currentIndex = 0
+            view.currentIndex = 0
+            view.positionViewAtBeginning()
+        }
+
         onVisibleChanged: {
             if (visible) {
-                wallpaperScanner.running = true
+                if (!scanned) wallpaperScanner.running = true
                 focusItem.forceActiveFocus()
             }
         }
 
+        // awww vs mpvpaper, gif frames for matugen, killing the other backend:
+        // all of that lives in the script, this just hands it a path
+        function applyWallpaper(path) {
+            if (!path) return
+            Quickshell.execDetached([Quickshell.env("HOME") + "/ashen/scripts/ashen-wallpaper.sh", path])
+            Services.AppState.wallpaperVisible = false
+        }
+
         Process {
             id: wallpaperScanner
-            command: ["sh", "-c", "ls /home/adolf-arch/Pictures/wallpapers/ | grep -E '\\.(png|jpg|jpeg|webp)$' | sed 's|^|/home/adolf-arch/Pictures/wallpapers/|' | sort"]
+            command: [Quickshell.env("HOME") + "/ashen/scripts/ashen-wallpaper-thumbs.sh"]
             running: false
             stdout: StdioCollector {
                 onStreamFinished: {
                     let files = text.trim().split("\n").filter(f => f.length > 0)
-                    win.wallpapers = files
+                    win.allWallpapers = files
+                    win.scanned = true
                     win.currentIndex = 0
                 }
             }
@@ -70,97 +123,96 @@ Scope {
             focus: true
 
             Keys.onLeftPressed: {
+                if (win.wallpapers.length === 0) return
                 if (win.currentIndex > 0) win.currentIndex--
                 else win.currentIndex = win.wallpapers.length - 1
                 view.currentIndex = win.currentIndex
             }
             Keys.onRightPressed: {
+                if (win.wallpapers.length === 0) return
                 if (win.currentIndex < win.wallpapers.length - 1) win.currentIndex++
                 else win.currentIndex = 0
                 view.currentIndex = win.currentIndex
             }
+            // Up/Down switch category
+            Keys.onUpPressed: win.category = "static"
+            Keys.onDownPressed: win.category = "animated"
             Keys.onReturnPressed: {
-                if (win.wallpapers.length > 0) {
-                    Quickshell.execDetached(["sh", "-c", "awww img \"" + win.wallpapers[win.currentIndex] + "\" --transition-type random --transition-duration 0.6 --transition-fps 60 && [ \"$(cat /home/adolf-arch/.cache/ashen_scheme_mode.txt 2>/dev/null)\" = \"dynamic\" ] && matugen image \"" + win.wallpapers[win.currentIndex] + "\" --mode dark --source-color-index 0 --type \"$(cat /home/adolf-arch/.cache/ashen_dynamic_type.txt 2>/dev/null || echo scheme-tonal-spot)\""])
-                    Services.AppState.wallpaperVisible = false
-                }
+                if (win.wallpapers.length > 0) win.applyWallpaper(win.wallpapers[win.currentIndex])
             }
             Keys.onEscapePressed: Services.AppState.wallpaperVisible = false
         }
 
-        // FIX: pills Theme/Add ahora ancladas al nivel del titulo del archivo
-        // (band.top), no arriba de toda la pantalla
+        // Categories, centered above the card band
         Row {
+            id: tabs
             anchors.bottom: band.top
             anchors.bottomMargin: 14
-            anchors.left: parent.left
-            anchors.leftMargin: 16
+            anchors.horizontalCenter: parent.horizontalCenter
             spacing: 8
             z: 30
 
-            Rectangle {
-                height: 30
-                width: themeRow.implicitWidth + 16
-                radius: 8
-                color: Services.Colors.surfaceAlpha(0.85)
-                border.color: Services.Colors.ghostAlpha(0.2)
-                border.width: 1
-                Row {
-                    id: themeRow
-                    anchors.centerIn: parent
-                    spacing: 5
-                    Text {
-                        text: ""
-                        color: Services.Colors.ghost
-                        font.pixelSize: 12
-                        font.family: "Material Symbols Rounded"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                    Text {
-                        text: "Wallpaper"
-                        color: Services.Colors.mist
-                        font.pixelSize: 11
-                        font.family: "JetBrainsMono NF"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-            }
+            Repeater {
+                model: [
+                    { id: "static",   label: "Static",   icon: "" },
+                    { id: "animated", label: "Animated", icon: "" }
+                ]
 
-            Rectangle {
-                height: 30
-                width: addRow.implicitWidth + 16
-                radius: 8
-                color: Services.Colors.surfaceAlpha(0.85)
-                border.color: Services.Colors.ghostAlpha(0.2)
-                border.width: 1
-                Row {
-                    id: addRow
-                    anchors.centerIn: parent
-                    spacing: 5
-                    Text {
-                        text: ""
-                        color: Services.Colors.ghost
-                        font.pixelSize: 12
-                        font.family: "Material Symbols Rounded"
-                        anchors.verticalCenter: parent.verticalCenter
+                delegate: Rectangle {
+                    required property var modelData
+                    readonly property bool active: win.category === modelData.id
+                    readonly property int count: modelData.id === "animated" ? win.animatedCount : win.staticCount
+
+                    height: 32
+                    width: tabRow.implicitWidth + 22
+                    radius: 10
+                    color: active ? Services.Colors.ghostAlpha(0.28) : Services.Colors.surfaceAlpha(0.85)
+                    border.color: active ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+                    border.width: 1
+
+                    Behavior on color { ColorAnimation { duration: 140 } }
+                    Behavior on border.color { ColorAnimation { duration: 140 } }
+
+                    Row {
+                        id: tabRow
+                        anchors.centerIn: parent
+                        spacing: 6
+
+                        Text {
+                            text: parent.parent.modelData.icon
+                            color: parent.parent.active ? Services.Colors.snow : Services.Colors.mist
+                            font.pixelSize: 13
+                            font.family: "Material Symbols Rounded"
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Text {
+                            text: parent.parent.modelData.label + "  " + parent.parent.count
+                            color: parent.parent.active ? Services.Colors.snow : Services.Colors.mist
+                            font.pixelSize: 11
+                            font.bold: parent.parent.active
+                            font.family: "JetBrainsMono NF"
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
-                    Text {
-                        text: "Add"
-                        color: Services.Colors.mist
-                        font.pixelSize: 11
-                        font.family: "JetBrainsMono NF"
-                        anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: win.category = parent.modelData.id
                     }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
-                    onEntered: parent.color = Services.Colors.ghostAlpha(0.3)
-                    onExited: parent.color = Services.Colors.surfaceAlpha(0.85)
-                    onClicked: Quickshell.execDetached(["sh", "-c", "nemo /home/adolf-arch/Pictures/wallpapers"])
                 }
             }
+        }
+
+        // Message shown when the category is empty
+        Text {
+            anchors.centerIn: band
+            z: 20
+            visible: win.scanned && win.wallpapers.length === 0
+            text: win.category === "animated" ? "No animated wallpapers (gif / mp4 / webm) in ~/Pictures/Wallpapers" : "No wallpapers in ~/Pictures/Wallpapers"
+            color: Services.Colors.mist
+            font.pixelSize: 12
+            font.family: "JetBrainsMono NF"
         }
 
         Item {
@@ -181,6 +233,10 @@ Scope {
                 spacing: 0
                 model: win.wallpapers.length
                 currentIndex: win.currentIndex
+
+                // Preload neighbouring cards so scrolling has no gaps
+                cacheBuffer: Math.round(win.cardW * 4)
+                reuseItems: true
 
                 highlightRangeMode: ListView.StrictlyEnforceRange
                 preferredHighlightBegin: width / 2 - win.cardW / 2
@@ -225,12 +281,12 @@ Scope {
                         Image {
                             id: img
                             anchors.fill: parent
-                            source: win.wallpapers.length > index ? "file://" + win.wallpapers[index] : ""
+                            source: win.wallpapers.length > index ? win.previewFor(win.wallpapers[index]) : ""
                             sourceSize.width: 360
-                           sourceSize.height: 240
-                           fillMode: Image.PreserveAspectCrop
+                            sourceSize.height: 240
+                            fillMode: Image.PreserveAspectCrop
                             smooth: true
-                            asynchronous: false
+                            asynchronous: true
                             cache: true
                             visible: false
                         }
@@ -246,6 +302,17 @@ Scope {
                             anchors.fill: parent
                             source: img
                             maskSource: maskRect
+                            visible: img.status === Image.Ready
+                            opacity: img.status === Image.Ready ? 1.0 : 0.0
+                            Behavior on opacity { NumberAnimation { duration: 140 } }
+                        }
+
+                        // Placeholder while decoding, avoids the black gap
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 14
+                            color: Services.Colors.surfaceAlpha(0.5)
+                            visible: img.status !== Image.Ready
                         }
 
                         Rectangle {
@@ -256,13 +323,46 @@ Scope {
                             border.width: parent.parent.isCurrent ? 2 : 1
                         }
 
+                        // Marks what the card actually is, since a video shows a still frame
+                        Rectangle {
+                            visible: win.wallpapers.length > index && win.isAnimated(win.wallpapers[index])
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 8
+                            height: 20
+                            width: badgeRow.implicitWidth + 12
+                            radius: 6
+                            color: Qt.rgba(0, 0, 0, 0.62)
+
+                            Row {
+                                id: badgeRow
+                                anchors.centerIn: parent
+                                spacing: 4
+
+                                Text {
+                                    text: ""
+                                    color: Services.Colors.snow
+                                    font.pixelSize: 11
+                                    font.family: "Material Symbols Rounded"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                                Text {
+                                    text: win.wallpapers.length > index && win.isVideo(win.wallpapers[index]) ? "VIDEO" : "GIF"
+                                    color: Services.Colors.snow
+                                    font.pixelSize: 9
+                                    font.bold: true
+                                    font.family: "JetBrainsMono NF"
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+                        }
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 if (parent.parent.isCurrent) {
-                                    Quickshell.execDetached(["sh", "-c", "awww img \"" + win.wallpapers[win.currentIndex] + "\" --transition-type random --transition-duration 0.6 --transition-fps 60 && [ \"$(cat /home/adolf-arch/.cache/ashen_scheme_mode.txt 2>/dev/null)\" = \"dynamic\" ] && matugen image \"" + win.wallpapers[win.currentIndex] + "\" --mode dark --source-color-index 0 --type \"$(cat /home/adolf-arch/.cache/ashen_dynamic_type.txt 2>/dev/null || echo scheme-tonal-spot)\""])
-                                    Services.AppState.wallpaperVisible = false
+                                    win.applyWallpaper(win.wallpapers[win.currentIndex])
                                 } else {
                                     win.currentIndex = index
                                     view.currentIndex = index
@@ -272,17 +372,6 @@ Scope {
                     }
                 }
             }
-        }
-
-        Text {
-            anchors.bottom: band.top
-            anchors.bottomMargin: 10
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: win.wallpapers.length > 0 ? win.wallpapers[win.currentIndex].split("/").pop() : ""
-            color: Qt.rgba(1,1,1,0.55)
-            font.pixelSize: 12
-            font.family: "JetBrainsMono NF"
-            z: 30
         }
 
         Row {
