@@ -57,8 +57,9 @@ PanelWindow {
                 required property var modelData
                 width: 90; height: 90
                 radius: 14
-                color: Services.Colors.surfaceAlpha(0.95)
-                border.color: Services.Colors.ghostAlpha(0.2)
+                // Declarative hover (no imperative parent.color assignment, which
+                // clobbers the binding and makes the highlight stick/flicker).
+                color: hover.containsMouse ? Services.Colors.ghostAlpha(0.2) : Services.Colors.surfaceAlpha(0.95)
                 border.width: 0
                 Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -71,11 +72,10 @@ PanelWindow {
                 }
 
                 MouseArea {
+                    id: hover
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     hoverEnabled: true
-                    onEntered: parent.color = Services.Colors.ghostAlpha(0.2)
-                    onExited: parent.color = Services.Colors.surfaceAlpha(0.95)
                     onClicked: {
                         Services.AppState.powerMenuVisible = false
                         Quickshell.execDetached(["sh", "-c", modelData.cmd])

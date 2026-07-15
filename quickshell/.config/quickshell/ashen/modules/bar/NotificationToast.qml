@@ -12,12 +12,18 @@ PanelWindow {
     implicitWidth: 360
     visible: Services.Notifications.activePopups.length > 0
 
+    // The surface spans the full right edge but only the toast column should grab
+    // the pointer — otherwise the invisible rest of the window eats clicks meant
+    // for the bar pills underneath. Mask input to the cards' region.
+    mask: Region { item: col }
+
     function formatTime(ts) {
         if (!ts) return ""
         return Qt.formatTime(new Date(ts), "hh:mm")
     }
 
     Column {
+        id: col
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.topMargin: 64
