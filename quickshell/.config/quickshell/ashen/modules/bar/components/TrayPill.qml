@@ -32,6 +32,14 @@ Rectangle {
                 height: 26
                 visible: !root.isSystemItem(modelData.id)
 
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 28; height: 28
+                    radius: 8
+                    color: trayHover.containsMouse ? Services.Colors.ghostAlpha(0.2) : "transparent"
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+
                 Image {
                     anchors.centerIn: parent
                     source: modelData.icon
@@ -43,8 +51,10 @@ Rectangle {
                     mipmap: true
                 }
                 MouseArea {
+                    id: trayHover
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onClicked: (mouse) => {
                         let g = parent.mapToGlobal(parent.width / 2, 0)

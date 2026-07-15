@@ -44,7 +44,7 @@ Rectangle {
         spacing: 6
         Text {
             text: "\uf679"
-            color: root.active ? Services.Colors.abyss : Services.Colors.mist
+            color: (root.active || hover.containsMouse) ? Services.Colors.abyss : Services.Colors.mist
             font.pixelSize: root.active ? 16 : 22
             font.family: "Material Symbols Rounded"
             anchors.verticalCenter: parent.verticalCenter

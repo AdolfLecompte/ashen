@@ -53,12 +53,15 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: wifiInner.width + 16
-            color: Services.Network.online ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: Services.Network.online ? Services.Colors.ghost
+                                           : (wifiHover.containsMouse ? Services.Colors.ghostAlpha(0.4) : Services.Colors.ghostAlpha(0.2))
             Behavior on color { ColorAnimation { duration: 300 } }
 
             MouseArea {
+                id: wifiHover
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
                 onClicked: {
                     Services.AppState.networkTab = "wifi"
                     Services.AppState.networkVisible = !Services.AppState.networkVisible
@@ -71,7 +74,7 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: Services.Network.wifiSsid !== "" ? (Services.Network.wifiSignal >= 75 ? "" : Services.Network.wifiSignal >= 50 ? "" : Services.Network.wifiSignal >= 25 ? "" : "") : (Services.Network.ethConnection !== "" ? "" : "")
-                    color: Services.Network.online ? Services.Colors.abyss : Services.Colors.ash
+                    color: (Services.Network.online || wifiHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -79,7 +82,7 @@ Rectangle {
                 }
                 Text {
                     text: Services.Network.wifiSsid !== "" ? Services.Network.wifiSsid : (Services.Network.ethConnection !== "" ? Services.Network.ethConnection : "Off")
-                    color: Services.Network.online ? Services.Colors.abyss : Services.Colors.ash
+                    color: (Services.Network.online || wifiHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -93,12 +96,15 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: btInner.width + 16
-            color: Services.Network.btEnabled ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: Services.Network.btEnabled ? Services.Colors.ghost
+                                              : (btHover.containsMouse ? Services.Colors.ghostAlpha(0.4) : Services.Colors.ghostAlpha(0.2))
             Behavior on color { ColorAnimation { duration: 300 } }
 
             MouseArea {
+                id: btHover
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
                 onClicked: Services.AppState.bluetoothVisible = !Services.AppState.bluetoothVisible
             }
 
@@ -108,7 +114,7 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: Services.Network.btEnabled ? "" : ""
-                    color: Services.Network.btEnabled ? Services.Colors.abyss : Services.Colors.ash
+                    color: (Services.Network.btEnabled || btHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -116,7 +122,7 @@ Rectangle {
                 }
                 Text {
                     text: Services.Network.btDevice !== "" ? Services.Network.btDevice : (Services.Network.btEnabled ? "On" : "Off")
-                    color: Services.Network.btEnabled ? Services.Colors.abyss : Services.Colors.ash
+                    color: (Services.Network.btEnabled || btHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -130,11 +136,14 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: volInner.width + 16
-            color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.ghost
+                                                                        : (volHover.containsMouse ? Services.Colors.ghostAlpha(0.4) : Services.Colors.ghostAlpha(0.2))
             Behavior on color { ColorAnimation { duration: 300 } }
             MouseArea {
+                id: volHover
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
                 onClicked: Services.AppState.volumeVisible = !Services.AppState.volumeVisible
             }
             Timer {
@@ -149,16 +158,31 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: 5
                 Text {
+                    id: volIcon
                     text: Services.Audio.icon(Services.Audio.volume, Services.Audio.muted, Services.Audio.headphones)
-                    color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.abyss : Services.Colors.ash
+                    color: (!Services.Audio.muted && Services.Audio.volume > 0 || volHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
                     Behavior on color { ColorAnimation { duration: 200 } }
+
+                    // Subtle fade + scale pop when the glyph swaps (headphones <-> speaker, level buckets).
+                    transform: Scale {
+                        id: volScale
+                        origin.x: volIcon.width / 2
+                        origin.y: volIcon.height / 2
+                    }
+                    onTextChanged: volSwap.restart()
+                    ParallelAnimation {
+                        id: volSwap
+                        NumberAnimation { target: volIcon; property: "opacity"; from: 0.0; to: 1.0; duration: 180; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: volScale; property: "xScale"; from: 0.7; to: 1.0; duration: 200; easing.type: Easing.OutCubic }
+                        NumberAnimation { target: volScale; property: "yScale"; from: 0.7; to: 1.0; duration: 200; easing.type: Easing.OutCubic }
+                    }
                 }
                 Text {
                     text: Services.Audio.muted ? "Mute" : Services.Audio.volume + "%"
-                    color: (!Services.Audio.muted && Services.Audio.volume > 0) ? Services.Colors.abyss : Services.Colors.ash
+                    color: (!Services.Audio.muted && Services.Audio.volume > 0 || volHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -171,11 +195,14 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: brightInner.width + 16
-            color: Services.Brightness.level > 0 ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: Services.Brightness.level > 0 ? Services.Colors.ghost
+                                                 : (brightHover.containsMouse ? Services.Colors.ghostAlpha(0.4) : Services.Colors.ghostAlpha(0.2))
             Behavior on color { ColorAnimation { duration: 300 } }
             MouseArea {
+                id: brightHover
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
                 onClicked: Services.AppState.brightnessVisible = !Services.AppState.brightnessVisible
             }
             Timer {
@@ -191,7 +218,7 @@ Rectangle {
                 spacing: 5
                 Text {
                     text: ""
-                    color: Services.Brightness.level > 0 ? Services.Colors.abyss : Services.Colors.ash
+                    color: (Services.Brightness.level > 0 || brightHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 18
                     font.family: "Material Symbols Rounded"
                     anchors.verticalCenter: parent.verticalCenter
@@ -199,7 +226,7 @@ Rectangle {
                 }
                 Text {
                     text: Services.Brightness.level + "%"
-                    color: Services.Brightness.level > 0 ? Services.Colors.abyss : Services.Colors.ash
+                    color: (Services.Brightness.level > 0 || brightHover.containsMouse) ? Services.Colors.abyss : Services.Colors.ash
                     font.pixelSize: 12
                     font.family: "JetBrainsMono NF"
                     anchors.verticalCenter: parent.verticalCenter
@@ -213,11 +240,14 @@ Rectangle {
             height: root.innerH
             radius: root.innerR
             width: batInner.width + 16
-            color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
+            color: Services.Battery.charging ? Services.Colors.ghost
+                                             : (batHover.containsMouse ? Services.Colors.ghostAlpha(0.4) : Services.Colors.ghostAlpha(0.2))
             Behavior on color { ColorAnimation { duration: 300 } }
             MouseArea {
+                id: batHover
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
                 onClicked: Services.AppState.batteryVisible = !Services.AppState.batteryVisible
             }
             Timer {
@@ -234,7 +264,7 @@ Rectangle {
                 Text {
                     text: Services.Battery.charging ? "" : Services.Battery.level >= 90 ? "" : Services.Battery.level >= 70 ? "" : Services.Battery.level >= 50 ? "" : Services.Battery.level >= 30 ? "" : Services.Battery.level >= 15 ? "" : ""
                     color: {
-                        if (Services.Battery.charging) return Services.Colors.abyss
+                        if (Services.Battery.charging || batHover.containsMouse) return Services.Colors.abyss
                         if (Services.Battery.level >= 20) return Services.Colors.snow
                         return Services.Colors.error_
                     }
@@ -246,7 +276,7 @@ Rectangle {
                 Text {
                     text: Services.Battery.level + "%"
                     color: {
-                        if (Services.Battery.charging) return Services.Colors.abyss
+                        if (Services.Battery.charging || batHover.containsMouse) return Services.Colors.abyss
                         if (Services.Battery.level >= 20) return Services.Colors.snow
                         return Services.Colors.error_
                     }

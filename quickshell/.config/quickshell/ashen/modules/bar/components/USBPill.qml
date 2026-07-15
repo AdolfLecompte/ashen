@@ -15,8 +15,9 @@ Rectangle {
 
     height: 44
     radius: 10
-    color: root.anyMounted ? Services.Colors.ghost : Services.Colors.surfaceAlpha(0.82)
-    border.color: Services.Colors.ghostAlpha(0.2)
+    color: root.anyMounted ? Services.Colors.ghost
+                           : (hover.containsMouse ? Services.Colors.ghostAlpha(0.3)
+                                                  : Services.Colors.surfaceAlpha(0.82))
     border.width: 0
     width: Services.USB.devices.length > 0 ? (icon.implicitWidth + 24) : 0
     opacity: Services.USB.devices.length > 0 ? 1.0 : 0.0
@@ -29,7 +30,7 @@ Rectangle {
         id: icon
         anchors.centerIn: parent
         text: "\ue1e0"
-        color: root.anyMounted ? Services.Colors.abyss : Services.Colors.mist
+        color: (root.anyMounted || hover.containsMouse) ? Services.Colors.abyss : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"
         Behavior on color { ColorAnimation { duration: 300 } }
@@ -47,8 +48,10 @@ Rectangle {
     }
 
     MouseArea {
+        id: hover
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
+        hoverEnabled: true
         onClicked: Services.AppState.usbVisible = !Services.AppState.usbVisible
     }
 }
