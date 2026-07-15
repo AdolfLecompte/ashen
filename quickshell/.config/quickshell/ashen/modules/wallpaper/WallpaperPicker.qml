@@ -178,12 +178,9 @@ Scope {
                     height: 32
                     width: tabRow.implicitWidth + 22
                     radius: 10
-                    color: active ? Services.Colors.ghostAlpha(0.28) : Services.Colors.surfaceAlpha(0.85)
-                    border.color: active ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
-                    border.width: 1
+                    color: active ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.12)
 
                     Behavior on color { ColorAnimation { duration: 140 } }
-                    Behavior on border.color { ColorAnimation { duration: 140 } }
 
                     Row {
                         id: tabRow
@@ -192,14 +189,14 @@ Scope {
 
                         Text {
                             text: parent.parent.modelData.icon
-                            color: parent.parent.active ? Services.Colors.snow : Services.Colors.mist
+                            color: parent.parent.active ? Services.Colors.abyss : Services.Colors.snow
                             font.pixelSize: 13
                             font.family: "Material Symbols Rounded"
                             anchors.verticalCenter: parent.verticalCenter
                         }
                         Text {
                             text: parent.parent.modelData.label + "  " + parent.parent.count
-                            color: parent.parent.active ? Services.Colors.snow : Services.Colors.mist
+                            color: parent.parent.active ? Services.Colors.abyss : Services.Colors.snow
                             font.pixelSize: 11
                             font.bold: parent.parent.active
                             font.family: "JetBrainsMono NF"
