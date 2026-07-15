@@ -50,8 +50,14 @@ Scope {
 
                 // ── Centro ─────────────────────────────
                 USBPill {
+                    id: usbPill
                     anchors.right: clock.left
-                    anchors.rightMargin: 10
+                    anchors.rightMargin: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                LocksPill {
+                    anchors.right: usbPill.left
+                    anchors.rightMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
                 }
                 Clock {
@@ -60,7 +66,7 @@ Scope {
                 }
                 RecordingPill {
                     anchors.left: clock.right
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 6
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
@@ -72,7 +78,6 @@ Scope {
                     spacing: 6
 
                     TrayPill {}
-                    LocksPill {}
                     SystemPill {}
                     PowerPill {}
                 }
