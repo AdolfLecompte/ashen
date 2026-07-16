@@ -334,7 +334,7 @@ PanelWindow {
                         }
                     }
                     Rectangle {
-                        width: 44; height: 44; radius: 22
+                        width: 44; height: 44; radius: 14
                         color: Services.Colors.ghost
                         Text {
                             anchors.centerIn: parent
