@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import Qt5Compat.GraphicalEffects
 import QtQuick
@@ -131,27 +132,34 @@ PanelWindow {
 
         MouseArea { anchors.fill: parent; onClicked: {} }
 
-        Canvas {
-            id: cavaCanvas
+        // Cava backdrop, clipped to the card's rounded corners so the bars
+        // don't poke out at the sides.
+        ClippingRectangle {
             anchors.fill: parent
-            opacity: Services.Cava.isActive ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 400 } }
-            Connections {
-                target: Services.Cava
-                function onBarValuesChanged() { cavaCanvas.requestPaint() }
-            }
-            onPaint: {
-                var ctx = getContext("2d")
-                ctx.reset()
-                let vals = Services.Cava.barValues
-                if (!vals || vals.length === 0) return
-                var n = vals.length
-                var barW = width / n
-                ctx.fillStyle = Services.Colors.ghostAlpha(0.10)
-                for (var i = 0; i < n; i++) {
-                    var v = Math.max(0, Math.min(100, vals[i])) / 100.0
-                    var h = v * height * 0.6
-                    ctx.fillRect(i * barW, height - h, Math.max(1, barW - 1), h)
+            radius: 16
+            color: "transparent"
+            Canvas {
+                id: cavaCanvas
+                anchors.fill: parent
+                opacity: Services.Cava.isActive ? 1.0 : 0.0
+                Behavior on opacity { NumberAnimation { duration: 400 } }
+                Connections {
+                    target: Services.Cava
+                    function onBarValuesChanged() { cavaCanvas.requestPaint() }
+                }
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.reset()
+                    let vals = Services.Cava.barValues
+                    if (!vals || vals.length === 0) return
+                    var n = vals.length
+                    var barW = width / n
+                    ctx.fillStyle = Services.Colors.ghostAlpha(0.10)
+                    for (var i = 0; i < n; i++) {
+                        var v = Math.max(0, Math.min(100, vals[i])) / 100.0
+                        var h = v * height * 0.6
+                        ctx.fillRect(i * barW, height - h, Math.max(1, barW - 1), h)
+                    }
                 }
             }
         }
