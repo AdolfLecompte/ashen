@@ -59,7 +59,9 @@ PanelWindow {
                 radius: 14
                 // Declarative hover (no imperative parent.color assignment, which
                 // clobbers the binding and makes the highlight stick/flicker).
-                color: hover.containsMouse ? Services.Colors.ghostAlpha(0.2) : Services.Colors.surfaceAlpha(0.95)
+                // Both states stay opaque: crossfading to a translucent ghost tint
+                // let the dark overlay show through mid-animation, reading as a jump.
+                color: hover.containsMouse ? Services.Colors.elevated : Services.Colors.surfaceAlpha(0.95)
                 border.width: 0
                 Behavior on color { ColorAnimation { duration: 150 } }
 
