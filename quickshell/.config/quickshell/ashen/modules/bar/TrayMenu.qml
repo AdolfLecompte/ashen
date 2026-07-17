@@ -138,7 +138,7 @@ PanelWindow {
                                     let on = e.checkState === Qt.Checked
                                     if (e.buttonType === QsMenuButtonType.RadioButton)
                                         return on ? "\ue837" : "\ue836"
-                                    return on ? "\ue9de" : "\ue835"
+                                    return on ? "\ue834" : "\ue835"
                                 }
                                 color: entryCol.modelData.checkState === Qt.Checked
                                        ? Services.Colors.ghost : Services.Colors.ash
