@@ -29,6 +29,20 @@ Scope {
     onShownChanged: if (!shown) closeDelay.restart()
     Timer { id: closeDelay; interval: 300 }
 
+    // Clearing the history fades the list out first, then wipes the model once
+    // the fade has played -- otherwise the rows just blink out of existence.
+    property bool clearing: false
+    Timer {
+        id: clearTimer
+        interval: 260
+        onTriggered: { Services.Notifications.clearAll(); win.clearing = false }
+    }
+    function fadeClear() {
+        if (Services.Notifications.history.length === 0 || win.clearing) return
+        win.clearing = true
+        clearTimer.restart()
+    }
+
     function formatTime(ts) {
         if (!ts) return ""
         return Qt.formatDateTime(new Date(ts), "MMM d, hh:mm")
@@ -130,7 +144,7 @@ Scope {
                         hoverEnabled: true
                         onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
                         onExited: parent.color = "transparent"
-                        onClicked: Services.Notifications.clearAll()
+                        onClicked: win.fadeClear()
                     }
                 }
                 Rectangle {
@@ -172,6 +186,9 @@ Scope {
                 clip: true
                 spacing: 6
                 model: Services.Notifications.history
+
+                opacity: win.clearing ? 0.0 : 1.0
+                Behavior on opacity { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
 
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AsNeeded
