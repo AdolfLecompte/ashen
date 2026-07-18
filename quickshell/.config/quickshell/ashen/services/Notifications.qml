@@ -51,7 +51,9 @@ Singleton {
         entry.id = Date.now() + "-" + Math.floor(Math.random() * 100000)
         entry.timestamp = Date.now()
         root.history = [entry].concat(root.history).slice(0, 300)
-        if (!Services.AppState.doNotDisturb) {
+        // Do Not Disturb hides toasts, but urgency 2 (critical) always breaks
+        // through -- low-battery and the like must not be swallowed.
+        if (!Services.AppState.doNotDisturb || entry.urgency === 2) {
             root.pushPopup(entry)
         }
         saveHistory()
