@@ -21,6 +21,13 @@ PanelWindow {
     onShownChanged: if (!shown) closeDelay.restart()
     Timer { id: closeDelay; interval: 300 }
 
+    IpcHandler {
+        target: "power"
+        function toggle() {
+            Services.AppState.powerMenuVisible = !Services.AppState.powerMenuVisible
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Qt.rgba(0, 0, 0, 0.55)

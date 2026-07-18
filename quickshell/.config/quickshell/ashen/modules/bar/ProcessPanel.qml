@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
@@ -16,6 +17,11 @@ PanelWindow {
 
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+    IpcHandler {
+        target: "process"
+        function toggle() { Services.AppState.toggleOverlay("processVisible") }
+    }
 
     readonly property bool shown: Services.AppState.processVisible
 
@@ -115,7 +121,7 @@ PanelWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: Services.Network.wifiSsid !== "" ? "" : ""
+                            text: Services.Network.wifiSsid !== "" ? (Services.Network.wifiSignal >= 75 ? "" : Services.Network.wifiSignal >= 50 ? "" : Services.Network.wifiSignal >= 25 ? "" : "") : (Services.Network.ethConnection !== "" ? "" : "")
                             color: Services.Network.online ? Services.Colors.ghost : Services.Colors.ash
                             font.pixelSize: 18
                             font.family: "Material Symbols Rounded"
