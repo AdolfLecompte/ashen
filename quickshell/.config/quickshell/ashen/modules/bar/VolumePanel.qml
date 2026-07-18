@@ -56,19 +56,35 @@ PanelWindow {
             // ── Speaker ────────────────────────────
             Item {
                 width: parent.width
-                height: 22
+                height: 26
 
                 Row {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8
 
-                    Text {
+                    // Click the glyph to mute/unmute -- same effect as Settings
+                    Rectangle {
+                        width: 26; height: 26
+                        radius: 8
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Services.Audio.icon(Services.Audio.volume, Services.Audio.muted, Services.Audio.headphones)
-                        font.family: "Material Symbols Rounded"
-                        font.pixelSize: 18
-                        color: Services.Colors.ghost
+                        color: spkArea.containsMouse ? Services.Colors.ghostAlpha(0.2) : "transparent"
+                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: Services.Audio.muted ? "" : ""
+                            font.family: "Material Symbols Rounded"
+                            font.pixelSize: 18
+                            color: Services.Audio.muted ? Services.Colors.error_ : Services.Colors.ghost
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                        }
+                        MouseArea {
+                            id: spkArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Services.Audio.toggleMute()
+                        }
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -83,7 +99,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Audio.muted ? "Muted" : Math.round(volBar.shown * 100) + "%"
-                    color: Services.Colors.snow
+                    color: Services.Audio.muted ? Services.Colors.error_ : Services.Colors.snow
                     font.pixelSize: 14
                     font.bold: true
                     font.family: "JetBrainsMono NF"
@@ -97,6 +113,8 @@ PanelWindow {
                 knobBorder: 1
                 knobBorderColor: Services.Colors.ghostAlpha(0.45)
                 hitMargin: 14
+                dimmed: Services.Audio.muted
+                fillColor: Services.Audio.muted ? Services.Colors.error_ : Services.Colors.ghost
                 value: Services.Audio.volume / 100
                 onMoved: r => win.setVolume(r)
             }
@@ -118,26 +136,26 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8
 
+                    // Click the glyph to mute/unmute -- same effect as Settings
                     Rectangle {
-                        id: micBtn
-                        width: 28; height: 28
+                        width: 26; height: 26
                         radius: 8
                         anchors.verticalCenter: parent.verticalCenter
-                        color: Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.ghostAlpha(0.2)
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        color: micArea.containsMouse ? Services.Colors.ghostAlpha(0.2) : "transparent"
+                        Behavior on color { ColorAnimation { duration: 120 } }
                         Text {
                             anchors.centerIn: parent
                             text: Services.Audio.micMuted ? "" : ""
                             font.family: "Material Symbols Rounded"
-                            font.pixelSize: 16
-                            color: Services.Audio.micMuted ? Services.Colors.snow : Services.Colors.ghost
+                            font.pixelSize: 18
+                            color: Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.ghost
+                            Behavior on color { ColorAnimation { duration: 120 } }
                         }
                         MouseArea {
+                            id: micArea
                             anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
                             hoverEnabled: true
-                            onEntered: parent.color = Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.ghostAlpha(0.35)
-                            onExited: parent.color = Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.ghostAlpha(0.2)
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: Services.Audio.toggleMicMute()
                         }
                     }
