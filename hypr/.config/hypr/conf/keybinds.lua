@@ -11,6 +11,7 @@ hl.bind(mod .. " + I",         hl.dsp.exec_cmd("qs ipc -c ashen call settings to
 hl.bind("SUPER + SHIFT + V", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call clipboard toggle'"), { locked = true })
 hl.bind("SUPER + comma", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call emojis toggle'"), { locked = true })
 hl.bind("SUPER + period", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call glyph toggle'"), { locked = true })
+hl.bind(mod .. " + SHIFT + P", hl.dsp.exec_cmd("qs ipc -c ashen call process toggle"), { locked = true })
 
 
 -- Move/resize floating windows with the mouse (SUPER + drag)
@@ -60,6 +61,7 @@ hl.bind(mod .. " + X", hl.dsp.workspace.toggle_special("fav"))
 hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
 hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=/home/adolf/Pictures/Screenshots grimblast copysave area && qs ipc -c ashen call notifications screenshot'"))
 hl.bind(mod .. " + L",         hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lock"))
+hl.bind(mod .. " + Escape",    hl.dsp.exec_cmd("qs ipc -c ashen call power toggle"))
 
 -- Audio and brightness
 hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("sh -c 'wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0 && qs ipc -c ashen call osd volume'"),  { locked = true, repeating = true })
