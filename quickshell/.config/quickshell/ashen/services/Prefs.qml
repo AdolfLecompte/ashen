@@ -14,6 +14,10 @@ Singleton {
     // Weather: the API only ever returns celsius, so this is display-only
     // ("C" | "F" | "K") and every consumer goes through Weather.tempString().
     property string tempUnit: "C"
+    // Chosen weather location, packed as "lat|lon|City" in ONE field on purpose:
+    // JsonAdapter drops intermediate values when several props are written in the
+    // same tick, so lat/lon/name go in together. Empty -> Weather geolocates by IP.
+    property string weatherLoc: ""
 
     // Active keyboard layout, by code ("latam"). switchxkblayout is runtime-only
     // and Hyprland has no "default index" setting -- only the order of kb_layout
@@ -47,6 +51,7 @@ Singleton {
             property alias clockSeconds: root.clockSeconds
             property alias clock24h: root.clock24h
             property alias tempUnit: root.tempUnit
+            property alias weatherLoc: root.weatherLoc
             property alias keyboardLayout: root.keyboardLayout
         }
     }
