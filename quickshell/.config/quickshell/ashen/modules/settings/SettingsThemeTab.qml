@@ -445,6 +445,13 @@ Item {
             Quickshell.execDetached(["sh", "-c", "echo '" + t + "' > /home/adolf/.cache/ashen_dynamic_type.txt"])
         }
 
+        // Re-run matugen from the current wallpaper (frame for gif/video) with
+        // the saved style. No-ops unless in dynamic mode. Called when a style
+        // pill or the Dynamic tile is clicked so the change lands immediately.
+        function recolor() {
+            Quickshell.execDetached([Quickshell.env("HOME") + "/ashen/scripts/ashen-recolor.sh"])
+        }
+
         RowLayout {
             spacing: 10
             Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 18; color: Services.Colors.ghost }
@@ -526,9 +533,12 @@ Item {
                         onClicked: {
                             if (modelData.id === "dynamic") {
                                 schemeSection.activeScheme = "dynamic"
+                                // Switch into dynamic mode, then recolour from
+                                // the wallpaper's frame -- awww query fails on
+                                // video (mpvpaper, not awww, is running).
                                 Quickshell.execDetached(["sh", "-c",
-                                    "echo 'dynamic' > /home/adolf/.cache/ashen_scheme_mode.txt && " +
-                                    "matugen image \"$(awww query | grep -o 'image: .*' | cut -d' ' -f2)\" --mode dark --source-color-index 0 --type $(cat /home/adolf/.cache/ashen_dynamic_type.txt 2>/dev/null || echo scheme-tonal-spot)"
+                                    "echo 'dynamic' > " + Quickshell.env("HOME") + "/.cache/ashen_scheme_mode.txt && " +
+                                    Quickshell.env("HOME") + "/ashen/scripts/ashen-recolor.sh"
                                 ])
                             } else {
                                 schemeSection.activeScheme = modelData.id
@@ -612,7 +622,7 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: schemeSection.setDynamicType(modelData.id)
+                                onClicked: { schemeSection.setDynamicType(modelData.id); schemeSection.recolor() }
                             }
                         }
                     }
