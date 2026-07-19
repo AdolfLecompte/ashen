@@ -112,7 +112,7 @@ PanelWindow {
         anchors.top: parent.top
         anchors.topMargin: 64
         width: 520
-        height: 190
+        height: 210
         x: Math.max(12, Math.min(parent.width - width - 12, Services.AppState.mediaPillCenterX - width / 2))
         radius: 16
         color: Services.Colors.surfaceAlpha(0.95)
@@ -259,42 +259,75 @@ PanelWindow {
                     Layout.fillWidth: true
                     spacing: 4
 
+                    // Snake progress: a sine wave whose played portion glows in
+                    // the accent and scrolls while the track plays; the rest is
+                    // a dim static wave. A dot rides the crest at the playhead.
                     Item {
+                        id: snake
                         Layout.fillWidth: true
-                        height: 6
+                        height: 22
 
-                        Rectangle {
+                        property real progress: (root.hasPlayer && root.activePlayer.length > 0)
+                            ? Math.max(0, Math.min(1, root.activePlayer.position / root.activePlayer.length)) : 0
+                        Behavior on progress { NumberAnimation { duration: 300 } }
+                        property real phase: 0
+                        readonly property bool playing: root.hasPlayer && root.activePlayer.isPlaying
+
+                        // 0 = flat line (paused), 1 = full wave (playing). Animated
+                        // so the straight<->snake transition morphs smoothly.
+                        property real ampFactor: playing ? 1 : 0
+                        Behavior on ampFactor { NumberAnimation { duration: 550; easing.type: Easing.InOutCubic } }
+
+                        onProgressChanged: waveCanvas.requestPaint()
+                        onPhaseChanged: waveCanvas.requestPaint()
+                        onAmpFactorChanged: waveCanvas.requestPaint()
+                        NumberAnimation on phase {
+                            running: snake.playing
+                            from: 0; to: 2 * Math.PI
+                            duration: 1600; loops: Animation.Infinite
+                        }
+
+                        Canvas {
+                            id: waveCanvas
                             anchors.fill: parent
-                            radius: 3
-                            color: Services.Colors.ghostAlpha(0.15)
-                        }
-
-                        Rectangle {
-                            id: fillBar
-                            height: parent.height
-                            radius: 3
-                            color: Services.Colors.ghost
-                            width: {
-                                if (!root.hasPlayer || root.activePlayer.length <= 0) return 0
-                                return parent.width * (root.activePlayer.position / root.activePlayer.length)
+                            readonly property real amp: height * 0.30
+                            readonly property real waves: 3.5
+                            function trace(ctx) {
+                                var mid = height / 2
+                                ctx.beginPath()
+                                for (var px = 0; px <= width; px += 2) {
+                                    var y = mid + amp * parent.ampFactor * Math.sin((px / width) * waves * 2 * Math.PI + parent.phase)
+                                    if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y)
+                                }
                             }
-                            Behavior on width { NumberAnimation { duration: 300 } }
+                            onPaint: {
+                                var ctx = getContext("2d")
+                                ctx.reset()
+                                ctx.lineWidth = 4
+                                ctx.lineCap = "round"
+                                // Dim full wave
+                                ctx.strokeStyle = Services.Colors.ghostAlpha(0.18)
+                                trace(ctx); ctx.stroke()
+                                // Accent wave, clipped to the played fraction
+                                var pw = width * parent.progress
+                                if (pw > 0) {
+                                    ctx.save()
+                                    ctx.beginPath(); ctx.rect(0, 0, pw, height); ctx.clip()
+                                    ctx.strokeStyle = Services.Colors.ghost
+                                    trace(ctx); ctx.stroke()
+                                    ctx.restore()
+                                }
+                            }
                         }
 
+                        // Dot rides the wave at the playhead
                         Rectangle {
-                            id: thumb
-                            width: 10; height: 10; radius: 5
+                            width: 9; height: 9; radius: 5
                             color: Services.Colors.snow
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: Math.max(0, fillBar.width - width / 2)
+                            x: Math.max(0, parent.width * parent.progress - width / 2)
+                            y: parent.height / 2 - height / 2
+                                + waveCanvas.amp * parent.ampFactor * Math.sin(parent.progress * waveCanvas.waves * 2 * Math.PI + parent.phase)
                             Behavior on x { NumberAnimation { duration: 300 } }
-
-                            SequentialAnimation on scale {
-                                running: root.hasPlayer && root.activePlayer.isPlaying
-                                loops: Animation.Infinite
-                                NumberAnimation { from: 0.85; to: 1.25; duration: 700; easing.type: Easing.InOutSine }
-                                NumberAnimation { from: 1.25; to: 0.85; duration: 700; easing.type: Easing.InOutSine }
-                            }
                         }
                     }
 
