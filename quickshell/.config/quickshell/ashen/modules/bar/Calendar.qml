@@ -81,7 +81,7 @@ PanelWindow {
 
         // -- Center column: Time --
         Rectangle {
-            width: 150
+            width: 185
             height: root.boxHeight
             radius: 14
             color: Services.Colors.surfaceAlpha(0.95)
@@ -100,7 +100,7 @@ PanelWindow {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentHour
                         color: Services.Colors.ghost
-                        font.pixelSize: 56
+                        font.pixelSize: 68
                         font.family: "JetBrainsMono NF"
                         font.bold: true
                         lineHeight: 0.9
@@ -109,7 +109,7 @@ PanelWindow {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentMinute
                         color: Services.Colors.snow
-                        font.pixelSize: 56
+                        font.pixelSize: 68
                         font.family: "JetBrainsMono NF"
                         font.bold: true
                         lineHeight: 0.9
@@ -275,6 +275,12 @@ PanelWindow {
                     columns: 7
                     spacing: 3
 
+                    // fixed cell size + a reserved height of 6 rows, so a 5-week
+                    // month doesn't shrink the grid and shift the whole (centered)
+                    // calendar column up/down when flipping months.
+                    readonly property int cellSize: Math.min(calCol.width / 7 - 3, 32)
+                    height: 6 * cellSize + 5 * spacing
+
                     property int currentMonth: new Date().getMonth()
                     property int currentYear: new Date().getFullYear()
                     property int today: new Date().getDate()
@@ -292,7 +298,7 @@ PanelWindow {
                             property bool isToday: isValid && day === calRoot.today && calRoot.currentMonth === calRoot.todayMonth && calRoot.currentYear === calRoot.todayYear
 
                             width: calCol.width / 7 - 3
-                            height: Math.min(width, 32)
+                            height: calRoot.cellSize
                             radius: 6
                             color: isToday ? Services.Colors.ghost : "transparent"
 
@@ -320,7 +326,7 @@ PanelWindow {
 
         // -- Right column: Weather --
         Rectangle {
-            width: 150
+            width: 185
             height: root.boxHeight
             radius: 14
             color: Services.Colors.surfaceAlpha(0.95)
@@ -333,76 +339,101 @@ PanelWindow {
                 spacing: 14
                 width: parent.width - 24
 
+                // Current conditions: big glyph beside the temperature, condition
+                // under it, city name centered below.
                 Column {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 4
-                    Text {
+                    width: parent.width
+                    spacing: 6
+
+                    RowLayout {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: Services.Weather.icon
-                        color: Services.Colors.ghost
-                        font.pixelSize: 44
-                        font.family: "Material Symbols Rounded"
+                        spacing: 10
+                        Text {
+                            text: Services.Weather.icon
+                            color: Services.Colors.ghost
+                            font.pixelSize: 54
+                            font.family: "Material Symbols Rounded"
+                        }
+                        ColumnLayout {
+                            spacing: 0
+                            Text {
+                                text: Services.Weather.temp
+                                color: Services.Colors.snow
+                                font.pixelSize: 32
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                            Text {
+                                text: Services.Weather.condition
+                                color: Services.Colors.mist
+                                font.pixelSize: 10
+                                font.family: "JetBrainsMono NF"
+                            }
+                        }
                     }
+                    // City name (blank until located); full width so it never clips
                     Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: Services.Weather.temp
-                        color: Services.Colors.snow
-                        font.pixelSize: 26
-                        font.bold: true
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Services.Weather.city
+                        visible: text !== ""
+                        color: Services.Colors.ash
+                        font.pixelSize: 9
                         font.family: "JetBrainsMono NF"
-                    }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: Services.Weather.condition
-                        color: Services.Colors.mist
-                        font.pixelSize: 10
-                        font.family: "JetBrainsMono NF"
+                        elide: Text.ElideRight
                     }
                 }
 
                 Rectangle { width: parent.width; height: 1; color: Services.Colors.ghostAlpha(0.15) }
 
-                Column {
+                // Following days as side-by-side columns (Today is already the header
+                // above, so it's skipped here via slice(1)).
+                RowLayout {
                     width: parent.width
-                    spacing: 6
+                    spacing: 4
                     Repeater {
-                        model: Services.Weather.forecast
-                        delegate: Rectangle {
+                        model: Services.Weather.forecast.slice(1)
+                        delegate: ColumnLayout {
                             required property var modelData
-                            required property int index
-                            width: parent.width
-                            height: 44
-                            radius: 8
-                            color: index === 0 ? Services.Colors.ghostAlpha(0.25) : "transparent"
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 1     // equal share regardless of content
+                            spacing: 3
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 8
-                                anchors.rightMargin: 8
-                                spacing: 6
-
-                                Text {
-                                    text: modelData.label
-                                    color: index === 0 ? Services.Colors.snow : Services.Colors.mist
-                                    font.pixelSize: 10
-                                    font.bold: true
-                                    font.family: "JetBrainsMono NF"
-                                    Layout.preferredWidth: 30
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    horizontalAlignment: Text.AlignHCenter
-                                    text: modelData.icon
-                                    color: index === 0 ? Services.Colors.ghost : Services.Colors.mist
-                                    font.pixelSize: 20
-                                    font.family: "Material Symbols Rounded"
-                                }
-                                Text {
-                                    text: Services.Weather.degrees(modelData.maxC) + "/" + Services.Weather.degrees(modelData.minC)
-                                    color: index === 0 ? Services.Colors.snow : Services.Colors.ash
-                                    font.pixelSize: 10
-                                    font.family: "JetBrainsMono NF"
-                                }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: modelData.label
+                                color: Services.Colors.mist
+                                font.pixelSize: 10
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: modelData.icon
+                                color: Services.Colors.ghost
+                                font.pixelSize: 20
+                                font.family: "Material Symbols Rounded"
+                                topPadding: 2
+                                bottomPadding: 2
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: Services.Weather.degrees(modelData.maxC)
+                                color: Services.Colors.snow
+                                font.pixelSize: 11
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignHCenter
+                                text: Services.Weather.degrees(modelData.minC)
+                                color: Services.Colors.ash
+                                font.pixelSize: 11
+                                font.family: "JetBrainsMono NF"
                             }
                         }
                     }
