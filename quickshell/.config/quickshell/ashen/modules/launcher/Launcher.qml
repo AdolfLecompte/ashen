@@ -113,10 +113,22 @@ Scope {
             }
             if (searchText.length > 0) {
                 let q = searchText.toLowerCase()
-                apps = apps.filter(a =>
-                    a.name.toLowerCase().includes(q) ||
-                    a.comment.toLowerCase().includes(q)
-                )
+                // Rank by how the query matches the NAME first; a comment-only hit
+                // is kept but sinks to the bottom. Lower score = better. allApps is
+                // already alphabetical and the sort is stable, so ties stay A→Z.
+                function score(a) {
+                    let n = a.name.toLowerCase()
+                    if (n === q) return 0                                       // exact
+                    if (n.startsWith(q)) return 1                               // name starts with query
+                    if (n.split(/[\s\-_]+/).some(w => w.startsWith(q))) return 2 // a word starts with query
+                    if (n.includes(q)) return 3                                 // name contains query
+                    if (a.comment.toLowerCase().includes(q)) return 4           // only the description matches
+                    return 5                                                    // no match
+                }
+                apps = apps.map(a => ({ app: a, s: score(a) }))
+                           .filter(x => x.s < 5)
+                           .sort((x, y) => x.s - y.s)
+                           .map(x => x.app)
             }
             return apps.slice(0, 50)
         }
