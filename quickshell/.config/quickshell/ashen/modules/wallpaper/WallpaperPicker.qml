@@ -16,7 +16,8 @@ Scope {
         function open() {
             Services.AppState.closeBigOverlays()
             Services.AppState.wallpaperVisible = true
-            wallpaperScanner.running = true
+            // Scan + positioning is driven by onShownChanged, so both entry
+            // points (this keybind and the Settings tab) behave identically.
         }
 
         function close() {
@@ -44,6 +45,10 @@ Scope {
         // Every file found, unfiltered
         property var allWallpapers: []
         property bool scanned: false
+
+        // Path of the wallpaper actually on screen (written by ashen-wallpaper.sh),
+        // so the picker can open centred on it instead of at the far left.
+        property string currentWallpaperPath: ""
 
         // "static" = png/jpg/jpeg/webp (awww) | "animated" = gif (awww) + mp4/webm/mkv/mov (mpvpaper)
         property string category: "static"
@@ -84,11 +89,27 @@ Scope {
 
         onShownChanged: {
             if (shown) {
-                if (!scanned) wallpaperScanner.running = true
+                // Re-read the on-screen wallpaper first; its handler kicks off
+                // the scan, and positionAtCurrent() runs once the list is in.
+                stateReader.running = true
                 focusItem.forceActiveFocus()
             } else {
                 closeDelay.restart()
             }
+        }
+
+        // Centre the carousel on the wallpaper currently on screen. Switches the
+        // static/animated tab to match so the entry is in the filtered list.
+        function positionAtCurrent() {
+            let cur = win.currentWallpaperPath
+            if (cur && cur.length > 0)
+                win.category = win.isAnimated(cur) ? "animated" : "static"
+            let idx = cur ? win.wallpapers.indexOf(cur) : -1
+            if (idx < 0) idx = 0
+            win.currentIndex = idx
+            view.currentIndex = idx
+            // Defer the scroll so the ListView has realised its delegates.
+            Qt.callLater(function() { view.positionViewAtIndex(idx, ListView.Center) })
         }
 
         // awww vs mpvpaper, gif frames for matugen, killing the other backend:
@@ -97,6 +118,20 @@ Scope {
             if (!path) return
             Quickshell.execDetached([Quickshell.env("HOME") + "/ashen/scripts/ashen-wallpaper.sh", path])
             Services.AppState.wallpaperVisible = false
+        }
+
+        // Reads the on-screen wallpaper path, then triggers the (re)scan; the
+        // scanner positions the carousel once its list is ready.
+        Process {
+            id: stateReader
+            command: ["cat", Quickshell.env("HOME") + "/.cache/ashen_wallpaper.txt"]
+            running: false
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    win.currentWallpaperPath = text.trim()
+                    wallpaperScanner.running = true
+                }
+            }
         }
 
         Process {
@@ -108,7 +143,7 @@ Scope {
                     let files = text.trim().split("\n").filter(f => f.length > 0)
                     win.allWallpapers = files
                     win.scanned = true
-                    win.currentIndex = 0
+                    win.positionAtCurrent()
                 }
             }
         }
