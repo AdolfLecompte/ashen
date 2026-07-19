@@ -627,14 +627,14 @@ Scope {
                         }
                     }
 
-                    // ── Music card (bottom left) ──
+                    // ── Music card (top right; leaves room for future lyrics) ──
                     Rectangle {
                         id: musicCard
-                        anchors.left: parent.left
-                        anchors.bottom: parent.bottom
-                        anchors.margins: 24
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 48
                         width: 460
-                        height: 132
+                        height: 146
                         radius: 16
                         clip: true
                         color: Services.Colors.surfaceAlpha(0.85)
@@ -643,7 +643,7 @@ Scope {
                         visible: opacity > 0
                         Behavior on opacity { NumberAnimation { duration: 250 } }
                         transform: Translate {
-                            y: surface.hasPlayer ? 0 : 16
+                            y: surface.hasPlayer ? 0 : -16
                             Behavior on y { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
                         }
 
@@ -756,24 +756,67 @@ Scope {
 
                                 Item { Layout.fillHeight: true }
 
-                                // Progress
+                                // Progress: snake wave while playing, flat when paused
                                 Item {
+                                    id: lockSnake
                                     Layout.fillWidth: true
-                                    height: 4
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        radius: 2
-                                        color: Services.Colors.ghostAlpha(0.18)
+                                    height: 14
+
+                                    property real progress: (surface.hasPlayer && surface.activePlayer.length > 0)
+                                        ? Math.max(0, Math.min(1, surface.activePlayer.position / surface.activePlayer.length)) : 0
+                                    Behavior on progress { NumberAnimation { duration: 300 } }
+                                    property real phase: 0
+                                    readonly property bool playing: surface.hasPlayer && surface.activePlayer.isPlaying
+                                    property real ampFactor: playing ? 1 : 0
+                                    Behavior on ampFactor { NumberAnimation { duration: 550; easing.type: Easing.InOutCubic } }
+
+                                    onProgressChanged: lockWave.requestPaint()
+                                    onPhaseChanged: lockWave.requestPaint()
+                                    onAmpFactorChanged: lockWave.requestPaint()
+                                    NumberAnimation on phase {
+                                        running: lockSnake.playing
+                                        from: 0; to: 2 * Math.PI
+                                        duration: 1600; loops: Animation.Infinite
                                     }
-                                    Rectangle {
-                                        height: parent.height
-                                        radius: 2
-                                        color: Services.Colors.ghost
-                                        width: {
-                                            if (!surface.hasPlayer || surface.activePlayer.length <= 0) return 0
-                                            return parent.width * (surface.activePlayer.position / surface.activePlayer.length)
+
+                                    Canvas {
+                                        id: lockWave
+                                        anchors.fill: parent
+                                        readonly property real amp: height * 0.30
+                                        readonly property real waves: 3.5
+                                        function trace(ctx) {
+                                            var mid = height / 2
+                                            ctx.beginPath()
+                                            for (var px = 0; px <= width; px += 2) {
+                                                var y = mid + amp * parent.ampFactor * Math.sin((px / width) * waves * 2 * Math.PI + parent.phase)
+                                                if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y)
+                                            }
                                         }
-                                        Behavior on width { NumberAnimation { duration: 300 } }
+                                        onPaint: {
+                                            var ctx = getContext("2d")
+                                            ctx.reset()
+                                            ctx.lineWidth = 3
+                                            ctx.lineCap = "round"
+                                            ctx.strokeStyle = Services.Colors.ghostAlpha(0.18)
+                                            trace(ctx); ctx.stroke()
+                                            var pw = width * parent.progress
+                                            if (pw > 0) {
+                                                ctx.save()
+                                                ctx.beginPath(); ctx.rect(0, 0, pw, height); ctx.clip()
+                                                ctx.strokeStyle = Services.Colors.ghost
+                                                trace(ctx); ctx.stroke()
+                                                ctx.restore()
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        width: 7; height: 7; radius: 4
+                                        color: Services.Colors.snow
+                                        x: Math.max(0, parent.width * parent.progress - width / 2)
+                                        y: parent.height / 2 - height / 2
+                                            + lockWave.amp * parent.ampFactor * Math.sin(parent.progress * lockWave.waves * 2 * Math.PI + parent.phase)
+                                        Behavior on x { NumberAnimation { duration: 300 } }
                                     }
                                 }
 
