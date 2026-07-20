@@ -46,7 +46,7 @@ Item {
                     text: sliderRow.glyph
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 18
-                    color: sliderRow.muted ? Services.Colors.error_ : Services.Colors.ghost
+                    color: sliderRow.muted ? Services.Colors.mist : Services.Colors.ghost
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
                 MouseArea {
@@ -611,7 +611,7 @@ Item {
                             anchors.margins: 4
                             width: 18; height: 18
                             radius: 9
-                            color: rmArea.containsMouse ? Services.Colors.error_ : Services.Colors.ghostAlpha(0.4)
+                            color: rmArea.containsMouse ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.4)
                             Behavior on color { ColorAnimation { duration: 120 } }
                             Text {
                                 anchors.centerIn: parent

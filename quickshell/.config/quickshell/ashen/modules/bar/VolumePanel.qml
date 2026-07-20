@@ -75,7 +75,7 @@ PanelWindow {
                             text: Services.Audio.muted ? "" : ""
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 18
-                            color: Services.Audio.muted ? Services.Colors.error_ : Services.Colors.ghost
+                            color: Services.Audio.muted ? Services.Colors.mist : Services.Colors.ghost
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
                         MouseArea {
@@ -99,7 +99,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Audio.muted ? "Muted" : Math.round(volBar.shown * 100) + "%"
-                    color: Services.Audio.muted ? Services.Colors.error_ : Services.Colors.snow
+                    color: Services.Audio.muted ? Services.Colors.mist : Services.Colors.snow
                     font.pixelSize: 14
                     font.bold: true
                     font.family: "JetBrainsMono NF"
@@ -114,7 +114,7 @@ PanelWindow {
                 knobBorderColor: Services.Colors.ghostAlpha(0.45)
                 hitMargin: 14
                 dimmed: Services.Audio.muted
-                fillColor: Services.Audio.muted ? Services.Colors.error_ : Services.Colors.ghost
+                fillColor: Services.Audio.muted ? Services.Colors.mist : Services.Colors.ghost
                 value: Services.Audio.volume / 100
                 onMoved: r => win.setVolume(r)
             }
@@ -148,7 +148,7 @@ PanelWindow {
                             text: Services.Audio.micMuted ? "" : ""
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 18
-                            color: Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.ghost
+                            color: Services.Audio.micMuted ? Services.Colors.mist : Services.Colors.ghost
                             Behavior on color { ColorAnimation { duration: 120 } }
                         }
                         MouseArea {
@@ -172,7 +172,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Audio.micMuted ? "Muted" : Math.round(micBar.shown * 100) + "%"
-                    color: Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.snow
+                    color: Services.Audio.micMuted ? Services.Colors.mist : Services.Colors.snow
                     font.pixelSize: 14
                     font.bold: true
                     font.family: "JetBrainsMono NF"
@@ -187,7 +187,7 @@ PanelWindow {
                 knobBorderColor: Services.Colors.ghostAlpha(0.45)
                 hitMargin: 14
                 dimmed: Services.Audio.micMuted
-                fillColor: Services.Audio.micMuted ? Services.Colors.error_ : Services.Colors.ghost
+                fillColor: Services.Audio.micMuted ? Services.Colors.mist : Services.Colors.ghost
                 value: Services.Audio.micVolume / 100
                 onMoved: r => Services.Audio.setMicVolume(Math.round(r * 100))
             }

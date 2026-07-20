@@ -476,7 +476,7 @@ PanelWindow {
                                 Text {
                                     anchors.centerIn: parent
                                     text: ""
-                                    color: killMouse.containsMouse ? Services.Colors.error_ : Services.Colors.ash
+                                    color: killMouse.containsMouse ? Services.Colors.ghost : Services.Colors.ash
                                     font.pixelSize: 14
                                     font.family: "Material Symbols Rounded"
                                 }
