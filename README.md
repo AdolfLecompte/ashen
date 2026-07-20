@@ -150,7 +150,7 @@ The keyboard layout pill in the bar is **read-only**. Layouts are declared in
 
 ## Status
 
-1.2.1
+1.3.0
 
 ## License
 
