@@ -16,6 +16,7 @@ WALL="${1:?usage: ashen-wallpaper.sh <path>}"
 
 CACHE="$HOME/.cache"
 FRAME="$CACHE/ashen_wall_frame.png"
+FRAMES="$CACHE/ashen_frames"
 STATE="$CACHE/ashen_wallpaper.txt"
 OPT="$CACHE/ashen_wall_optimized"
 
@@ -91,15 +92,52 @@ except Exception:
     fi
 }
 
-# Pull a still frame from a video/gif wallpaper. Two consumers need it:
-# matugen (accepts stills only) and the lock screen, which can't draw a moving
-# background layer. Runs regardless of colour mode, so the lock frame stays in
-# sync with the wallpaper even when the dynamic palette is off.
+# Deterministic per-wallpaper frame path. basename keeps it legible; a cksum of
+# the full path disambiguates same-named files living in different folders.
+frame_for() {
+    local src="$1"
+    printf '%s/%s-%s.png' "$FRAMES" \
+        "$(basename "${src%.*}")" \
+        "$(printf '%s' "$src" | cksum | cut -d' ' -f1)"
+}
+
+# Pull a still frame from a video/gif wallpaper. Three consumers need it: the
+# video bridge below, matugen (accepts stills only) and the lock screen, which
+# can't draw a moving background layer. Runs regardless of colour mode, so the
+# lock frame stays in sync with the wallpaper even when the dynamic palette is
+# off.
+#
+# The extracted still is cached permanently, keyed to the wallpaper, so a
+# re-switch to a clip used before skips ffmpeg entirely and the bridge can paint
+# with no decode latency. The shared ashen_wall_frame.png stays the single path
+# lock+matugen read: we just refresh it from the persistent cache each switch.
 ensure_frame() {
     needs_frame || return 0
-    # 2s in, so we skip fade-ins that would sample as pure black
-    ffmpeg -y -loglevel error -ss 2 -i "$WALL" -frames:v 1 "$FRAME" 2>/dev/null \
-        || ffmpeg -y -loglevel error -i "$WALL" -frames:v 1 "$FRAME" 2>/dev/null
+    local persist
+    persist="$(frame_for "$WALL")"
+
+    # Regenerate only when missing or older than the source file
+    if [ ! -f "$persist" ] || [ "$WALL" -nt "$persist" ]; then
+        mkdir -p "$FRAMES"
+        # 2s in, so we skip fade-ins that would sample as pure black
+        ffmpeg -y -loglevel error -ss 2 -i "$WALL" -frames:v 1 "$persist" 2>/dev/null \
+            || ffmpeg -y -loglevel error -i "$WALL" -frames:v 1 "$persist" 2>/dev/null
+    fi
+
+    [ -f "$persist" ] && cp -f "$persist" "$FRAME"
+}
+
+# Every visible transition awww ships except the plain fade -- one is rolled at
+# random per switch. awww's own 'random' can't be filtered, so we curate here.
+# Edit this list to add/drop effects.
+TRANSITIONS=(left right top bottom wipe wave grow center any outer)
+
+# Paint a still on the awww layer: start the daemon if needed, then hand awww a
+# random transition from the pool above.
+paint() {
+    pgrep -x awww-daemon >/dev/null || { setsid awww-daemon >/dev/null 2>&1 < /dev/null & sleep 0.4; }
+    local t="${TRANSITIONS[RANDOM % ${#TRANSITIONS[@]}]}"
+    awww img "$1" --transition-type "$t" --transition-duration 0.6 --transition-fps 60 2>/dev/null
 }
 
 apply_colors() {
@@ -131,22 +169,24 @@ if is_video; then
     # first -- over whatever is currently showing -- then start the video on top
     # of it, so the empty Hyprland background never flashes through. The frame is
     # a still of this very clip, so the hand-off from still to motion is seamless.
-    if [ -f "$FRAME" ]; then
-        pgrep -x awww-daemon >/dev/null || { setsid awww-daemon >/dev/null 2>&1 < /dev/null & sleep 0.4; }
-        awww img "$FRAME" --transition-type random --transition-duration 0.6 --transition-fps 60 2>/dev/null
-    fi
+    [ -f "$FRAME" ] && paint "$FRAME"
     pkill -x mpvpaper 2>/dev/null
     # mpvpaper only supports the libmpv vo, so no vo= here.
     # panscan fills the screen instead of letterboxing an odd aspect ratio.
     setsid mpvpaper -o "no-audio loop hwdec=auto panscan=1.0" ALL "$PLAY" >/dev/null 2>&1 < /dev/null &
-    # Drop the still bridge once mpvpaper has had time to draw its first frame
-    # (no clean signal for that, hence a fixed delay). Guarded on STATE so a
-    # quick re-switch to another wallpaper doesn't get its fresh awww killed.
-    ( sleep 1.5; [ "$(cat "$STATE" 2>/dev/null)" = "$WALL" ] && awww kill 2>/dev/null ) >/dev/null 2>&1 &
+    # Leave the awww daemon alive holding the bridge frame under the opaque
+    # mpvpaper surface -- it costs nothing (a static layer the compositor skips)
+    # and it means a later switch to a still can paint on an already-running
+    # daemon and reveal it without a restart gap. See the still branch below.
 else
+    # Paint the new still on the awww layer *before* removing the video. mpvpaper
+    # sits above awww, so the swap stays hidden until awww has committed its
+    # frame underneath; only then do we kill mpvpaper, revealing the still with
+    # no window where Hyprland's empty background could flash through. The short
+    # settle gives awww time to buffer its first frame before the reveal.
+    paint "$WALL"
+    sleep 0.3
     pkill -x mpvpaper 2>/dev/null
-    pgrep -x awww-daemon >/dev/null || { setsid awww-daemon >/dev/null 2>&1 < /dev/null & sleep 0.4; }
-    awww img "$WALL" --transition-type random --transition-duration 0.6 --transition-fps 60
 fi
 
 apply_colors
