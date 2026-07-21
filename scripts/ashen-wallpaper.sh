@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ── Ashen — wallpaper setter ─────────────────────────────────────────────
+# ── Ashen — wallpaper setter ──────────  by Adolf — github.com/AdolfLecompte ──
 #    Handles both kinds of wallpaper behind a single entry point:
 #      · still images + gif  ->  awww (its daemon animates gifs on its own)
 #      · video (mp4/webm/mkv) ->  mpvpaper

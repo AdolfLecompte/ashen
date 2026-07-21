@@ -1,3 +1,7 @@
+// ══════════════════════════════════════════════════════════════════════════
+//   Ashen — a Hyprland + Quickshell rice.   by Adolf — github.com/AdolfLecompte
+//   Root of the shell: wires every module (bar, lock, launcher, …) together.
+// ══════════════════════════════════════════════════════════════════════════
 import Quickshell
 import QtQuick
 
