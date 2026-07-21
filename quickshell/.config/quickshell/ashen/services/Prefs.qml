@@ -1,3 +1,4 @@
+// Ashen — persisted user prefs (prefs.json).  by Adolf — github.com/AdolfLecompte
 pragma Singleton
 import Quickshell
 import Quickshell.Io
@@ -14,10 +15,20 @@ Singleton {
     // Weather: the API only ever returns celsius, so this is display-only
     // ("C" | "F" | "K") and every consumer goes through Weather.tempString().
     property string tempUnit: "C"
-    // Chosen weather location, packed as "lat|lon|City" in ONE field on purpose:
-    // JsonAdapter drops intermediate values when several props are written in the
-    // same tick, so lat/lon/name go in together. Empty -> Weather geolocates by IP.
+    // Legacy single weather location ("lat|lon|City"). Kept only so old prefs.json
+    // still parses and Weather can migrate it into weatherLocs once. Do not write.
     property string weatherLoc: ""
+    // Saved weather locations, MANY now (like keyboard layouts). Packed into ONE
+    // field because JsonAdapter drops intermediate values when several props are
+    // written in the same tick -- so the whole list AND the active index ride in
+    // one string. Format: line 0 = active index, each following line = "lat|lon|City".
+    // Empty -> Weather geolocates by IP. See Weather.qml for the codec.
+    property string weatherLocs: ""
+
+    // FileView loads async: without gating on this, singletons that read a pref in
+    // Component.onCompleted (Weather) see "" and clobber the saved value. Consumers
+    // wait for loaded before acting on persisted state.
+    property bool loaded: false
 
     // Active keyboard layout, by code ("latam"). switchxkblayout is runtime-only
     // and Hyprland has no "default index" setting -- only the order of kb_layout
@@ -43,8 +54,11 @@ Singleton {
         // and the first one silently snaps back.
         // Any write to the adapter lands on disk immediately
         onAdapterUpdated: writeAdapter()
-        // First run: no file yet, so seed it with the defaults above
-        onLoadFailed: function(error) { writeAdapter() }
+        // File on disk is now the source of truth: let consumers act on it.
+        onLoaded: root.loaded = true
+        // First run: no file yet, so seed it with the defaults above. Still
+        // "loaded" -- the empty state IS the loaded state (Weather will geolocate).
+        onLoadFailed: function(error) { writeAdapter(); root.loaded = true }
 
         JsonAdapter {
             id: adapter
@@ -52,6 +66,7 @@ Singleton {
             property alias clock24h: root.clock24h
             property alias tempUnit: root.tempUnit
             property alias weatherLoc: root.weatherLoc
+            property alias weatherLocs: root.weatherLocs
             property alias keyboardLayout: root.keyboardLayout
         }
     }

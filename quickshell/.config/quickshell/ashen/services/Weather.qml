@@ -1,3 +1,4 @@
+// Ashen — Weather service (Open-Meteo, no API key).  by Adolf — github.com/AdolfLecompte
 pragma Singleton
 import Quickshell
 import Quickshell.Io
@@ -29,20 +30,83 @@ Singleton {
 
     readonly property string temp: tempString(tempC)
 
-    // Location lives in Prefs as a single "lat|lon|City" string: JsonAdapter
-    // drops intermediate values when several props are written in one tick, so
-    // the three pieces are packed into one field and written once.
-    readonly property var loc: {
-        let parts = (Services.Prefs.weatherLoc || "").split("|")
-        if (parts.length < 2) return null
-        let lat = parseFloat(parts[0]), lon = parseFloat(parts[1])
-        if (isNaN(lat) || isNaN(lon)) return null
-        return { lat: lat, lon: lon, city: parts.slice(2).join("|") }
+    // MANY saved locations now (like keyboard layouts). They live in Prefs as ONE
+    // packed string (JsonAdapter drops sibling writes in the same tick, so the list
+    // AND the active index share one field). Format: line 0 = active index, each
+    // following line = "lat|lon|City". Everything below reads through savedLocs.
+    readonly property var savedLocs: {
+        let raw = Services.Prefs.weatherLocs || ""
+        if (raw === "") return []
+        let lines = raw.split("\n")
+        let out = []
+        for (let i = 1; i < lines.length; i++) {
+            let p = lines[i].split("|")
+            if (p.length < 2) continue
+            let lat = parseFloat(p[0]), lon = parseFloat(p[1])
+            if (isNaN(lat) || isNaN(lon)) continue
+            out.push({ lat: lat, lon: lon, city: p.slice(2).join("|") })
+        }
+        return out
     }
+    readonly property int activeLocIndex: {
+        let raw = Services.Prefs.weatherLocs || ""
+        if (raw === "") return -1
+        let idx = parseInt(raw.split("\n")[0])
+        if (isNaN(idx) || idx < 0 || idx >= root.savedLocs.length)
+            return root.savedLocs.length > 0 ? 0 : -1
+        return idx
+    }
+    readonly property var loc: (activeLocIndex >= 0 && activeLocIndex < savedLocs.length)
+        ? savedLocs[activeLocIndex] : null
     readonly property string city: loc ? loc.city : ""
 
-    function setLoc(lat, lon, city) {
-        Services.Prefs.weatherLoc = lat + "|" + lon + "|" + (city || "")
+    // One write, one field -- sidesteps the JsonAdapter same-tick drop.
+    function packLocs(list, index) {
+        if (list.length === 0) { Services.Prefs.weatherLocs = ""; return }
+        let lines = [String(index)]
+        for (let l of list) lines.push(l.lat + "|" + l.lon + "|" + (l.city || ""))
+        Services.Prefs.weatherLocs = lines.join("\n")
+    }
+
+    // Add (or re-select if already saved) a city and make it active.
+    function addLoc(lat, lon, city) {
+        let list = savedLocs.slice()
+        // Dedup by ~coords so re-picking the same place just re-selects it.
+        let hit = list.findIndex(l => Math.abs(l.lat - lat) < 0.01 && Math.abs(l.lon - lon) < 0.01)
+        let idx
+        if (hit >= 0) idx = hit
+        else { list.push({ lat: lat, lon: lon, city: city || "" }); idx = list.length - 1 }
+        packLocs(list, idx)
+        fetchForecast(lat, lon)
+    }
+
+    // Switch the active city (the whole point of the feature).
+    function selectLoc(index) {
+        if (index < 0 || index >= savedLocs.length) return
+        packLocs(savedLocs, index)
+        fetchForecast(savedLocs[index].lat, savedLocs[index].lon)
+    }
+
+    function removeLoc(index) {
+        if (index < 0 || index >= savedLocs.length) return
+        let list = savedLocs.slice()
+        list.splice(index, 1)
+        if (list.length === 0) { packLocs([], 0); refresh(); return }  // back to auto/IP
+        let idx = activeLocIndex
+        if (index < activeLocIndex) idx = activeLocIndex - 1
+        else if (index === activeLocIndex) idx = Math.min(activeLocIndex, list.length - 1)
+        packLocs(list, idx)
+        fetchForecast(list[idx].lat, list[idx].lon)
+    }
+
+    // One-time upgrade from the legacy single-location field.
+    function migrateIfNeeded() {
+        if ((Services.Prefs.weatherLocs || "") !== "") return
+        let parts = (Services.Prefs.weatherLoc || "").split("|")
+        if (parts.length < 2) return
+        let lat = parseFloat(parts[0]), lon = parseFloat(parts[1])
+        if (isNaN(lat) || isNaN(lon)) return
+        packLocs([{ lat: lat, lon: lon, city: parts.slice(2).join("|") }], 0)
     }
 
     // Open-Meteo speaks WMO weather codes (ints), not text, so both the glyph
@@ -86,10 +150,17 @@ Singleton {
         return Qt.locale().dayName(d.getDay(), Locale.ShortFormat)
     }
 
-    // Entry point: use the saved location, or geolocate by IP once if none yet.
+    // Entry point: re-fetch the active city, or IP-geolocate once if none saved.
+    // Guarded by Prefs.loaded so a startup race can't mistake "not loaded yet" for
+    // "no city" and geolocate over the saved pick (that was the reset bug).
     function refresh() {
         if (root.loc) fetchForecast(root.loc.lat, root.loc.lon)
-        else geoProc.running = true
+        else if (Services.Prefs.loaded) geoProc.running = true
+    }
+
+    function start() {
+        migrateIfNeeded()
+        refresh()
     }
 
     function fetchForecast(lat, lon) {
@@ -113,12 +184,11 @@ Singleton {
         searchProc.command = ["sh", "-c", "curl -s --max-time 10 '" + url + "'"]
         searchProc.running = true
     }
-    // Commit one chosen candidate (exact coords, no re-geocode) and refresh.
+    // Commit one chosen candidate (exact coords, no re-geocode): save + activate.
     function chooseResult(lat, lon, label) {
         root.searchResults = []
         root.cityError = false
-        root.setLoc(lat, lon, label)
-        root.fetchForecast(lat, lon)
+        root.addLoc(lat, lon, label)
     }
 
     // IP geolocation fallback (no coords saved yet). Non-commercial, no key.
@@ -129,10 +199,8 @@ Singleton {
             onStreamFinished: {
                 try {
                     let d = JSON.parse(text)
-                    if (d.status === "success") {
-                        root.setLoc(d.lat, d.lon, d.city || "")
-                        root.fetchForecast(d.lat, d.lon)
-                    }
+                    if (d.status === "success")
+                        root.addLoc(d.lat, d.lon, d.city || "")
                 } catch (e) { console.log("[Weather] geo error:", e) }
             }
         }
@@ -198,7 +266,12 @@ Singleton {
         }
     }
 
-    Component.onCompleted: root.refresh()
+    // Wait for prefs to actually be on disk before touching persisted state.
+    Component.onCompleted: if (Services.Prefs.loaded) root.start()
+    Connections {
+        target: Services.Prefs
+        function onLoadedChanged() { if (Services.Prefs.loaded) root.start() }
+    }
 
     Timer {
         interval: 900000

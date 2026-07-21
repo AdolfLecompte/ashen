@@ -184,6 +184,8 @@ Item {
             // Layout picker state
             property bool pickerOpen: false
             property string layoutQuery: ""
+            // City add-picker (weather): open state for the search box
+            property bool cityPickerOpen: false
             // Match on code or name, so both "de" and "german" find German
             readonly property var filteredLayouts: {
                 let q = col.layoutQuery.trim().toLowerCase()
@@ -437,50 +439,238 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
-                RowGlyph { glyph: "\ue7f1" }        // location_city
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 2
-                    Text { text: "Location"; color: Services.Colors.snow; font.pixelSize: 13; font.family: "JetBrainsMono NF" }
-                    Text {
-                        text: Services.Weather.cityError
-                            ? "No matches - try another name"
-                            : (Services.Weather.city !== "" ? Services.Weather.city : "Auto (by IP)")
-                        color: Services.Weather.cityError ? Services.Colors.error_ : Services.Colors.ash
-                        font.pixelSize: 10
-                        font.family: "JetBrainsMono NF"
+                SectionLabel { text: "Location"; Layout.fillWidth: true }
+                SectionLabel {
+                    text: Services.Weather.cityError
+                        ? "No matches - try another name"
+                        : (Services.Weather.city !== "" ? Services.Weather.city : "Auto (by IP)")
+                    color: Services.Weather.cityError ? Services.Colors.error_ : Services.Colors.ash
+                }
+            }
+
+            // Saved cities as cards (mirrors the keyboard-layout picker below):
+            // click to switch the active one, X to drop it, + to add another.
+            Flow {
+                Layout.fillWidth: true
+                spacing: 10
+
+                Repeater {
+                    model: Services.Weather.savedLocs
+                    delegate: Rectangle {
+                        id: cityCard
+                        required property var modelData
+                        required property int index
+                        readonly property bool active: Services.Weather.activeLocIndex === cityCard.index
+                        property bool hovered: false
+                        implicitWidth: Math.min(cityName.implicitWidth + 44, 220)
+                        height: 40
+                        radius: 10
+                        color: cityCard.active ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.12)
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 8
+                            spacing: 6
+                            Text {
+                                text: "\uf1db"                 // location_on
+                                font.family: "Material Symbols Rounded"
+                                font.pixelSize: 15
+                                color: cityCard.active ? Services.Colors.abyss : Services.Colors.ghost
+                            }
+                            Text {
+                                id: cityName
+                                text: cityCard.modelData.city
+                                color: cityCard.active ? Services.Colors.abyss : Services.Colors.snow
+                                font.pixelSize: 11
+                                font.family: "JetBrainsMono NF"
+                                elide: Text.ElideRight
+                                Layout.fillWidth: true
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.rightMargin: 20      // leave the X hit-area free
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Services.Weather.selectLoc(cityCard.index)
+                        }
+                        Rectangle {
+                            visible: cityCard.hovered || rmCityArea.containsMouse
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.margins: 4
+                            width: 18; height: 18; radius: 9
+                            color: rmCityArea.containsMouse ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.4)
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                            Text {
+                                anchors.centerIn: parent
+                                text: "\ue5cd"           // close
+                                font.family: "Material Symbols Rounded"
+                                font.pixelSize: 11
+                                color: Services.Colors.abyss
+                            }
+                            MouseArea {
+                                id: rmCityArea
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onClicked: Services.Weather.removeLoc(cityCard.index)
+                            }
+                        }
+                        HoverHandler { onHoveredChanged: cityCard.hovered = hovered }
                     }
                 }
+
+                // Add-city card: toggles the search box.
                 Rectangle {
-                    Layout.preferredWidth: 150
-                    Layout.preferredHeight: 34
+                    height: 40
+                    implicitWidth: 92
                     radius: 10
-                    color: Services.Colors.ghostAlpha(0.12)
-                    Text {
-                        anchors.left: parent.left
-                        anchors.leftMargin: 12
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "Type a city..."
-                        color: Services.Colors.ash
-                        font.pixelSize: 12
-                        font.family: "JetBrainsMono NF"
-                        visible: cityInput.text.length === 0
+                    color: addCityArea.containsMouse ? Services.Colors.ghostAlpha(0.2) : Services.Colors.ghostAlpha(0.06)
+                    border.color: Services.Colors.ghostAlpha(0.3)
+                    border.width: 1
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 4
+                        Text {
+                            text: "\ue145"                    // add
+                            font.family: "Material Symbols Rounded"
+                            font.pixelSize: 18
+                            color: Services.Colors.ghost
+                        }
+                        Text {
+                            text: "Add"
+                            font.pixelSize: 10
+                            font.family: "JetBrainsMono NF"
+                            color: Services.Colors.mist
+                        }
                     }
-                    TextInput {
-                        id: cityInput
+                    MouseArea {
+                        id: addCityArea
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        verticalAlignment: TextInput.AlignVCenter
-                        color: Services.Colors.snow
-                        font.pixelSize: 12
-                        font.family: "JetBrainsMono NF"
-                        clip: true
-                        onTextChanged: cityDebounce.restart()
-                        onAccepted: {
-                            let r = Services.Weather.searchResults
-                            if (r.length > 0) { Services.Weather.chooseResult(r[0].lat, r[0].lon, r[0].label); text = "" }
+                        cursorShape: Qt.PointingHandCursor
+                        hoverEnabled: true
+                        onClicked: {
+                            col.cityPickerOpen = !col.cityPickerOpen
+                            if (col.cityPickerOpen) cityInput.forceActiveFocus()
+                            else { cityInput.text = ""; Services.Weather.search("") }
+                        }
+                    }
+                }
+            }
+
+            // City search box + candidate dropdown (only while adding).
+            Rectangle {
+                Layout.fillWidth: true
+                visible: col.cityPickerOpen
+                radius: 12
+                color: Services.Colors.ghostAlpha(0.08)
+                implicitHeight: cityPickerCol.implicitHeight + 20
+
+                ColumnLayout {
+                    id: cityPickerCol
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 10
+                    spacing: 8
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 34
+                        radius: 8
+                        color: Services.Colors.ghostAlpha(0.12)
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 10
+                            anchors.rightMargin: 10
+                            spacing: 8
+                            Text {
+                                text: "\ue8e2"               // search
+                                font.family: "Material Symbols Rounded"
+                                font.pixelSize: 15
+                                color: Services.Colors.ghost
+                            }
+                            TextField {
+                                id: cityInput
+                                Layout.fillWidth: true
+                                placeholderText: "Search city..."
+                                color: Services.Colors.snow
+                                placeholderTextColor: Services.Colors.ash
+                                font.pixelSize: 12
+                                font.family: "JetBrainsMono NF"
+                                background: null
+                                padding: 0
+                                onTextChanged: cityDebounce.restart()
+                                Keys.onEscapePressed: { col.cityPickerOpen = false; text = "" }
+                                onAccepted: {
+                                    let r = Services.Weather.searchResults
+                                    if (r.length > 0) {
+                                        Services.Weather.chooseResult(r[0].lat, r[0].lon, r[0].label)
+                                        text = ""
+                                        col.cityPickerOpen = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Candidate dropdown (name + region/country); one tap to add.
+                    Repeater {
+                        model: Services.Weather.searchResults
+                        delegate: Rectangle {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 38
+                            radius: 8
+                            color: sugArea.containsMouse ? Services.Colors.ghostAlpha(0.18) : Services.Colors.ghostAlpha(0.06)
+                            Behavior on color { ColorAnimation { duration: 120 } }
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 12
+                                spacing: 10
+                                Text {
+                                    text: "\uf1db"            // location_on
+                                    font.family: "Material Symbols Rounded"
+                                    font.pixelSize: 14
+                                    color: Services.Colors.ghost
+                                }
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 0
+                                    Text {
+                                        text: modelData.label
+                                        color: Services.Colors.snow
+                                        font.pixelSize: 12
+                                        font.family: "JetBrainsMono NF"
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                    }
+                                    Text {
+                                        text: modelData.detail
+                                        visible: text !== ""
+                                        color: Services.Colors.ash
+                                        font.pixelSize: 9
+                                        font.family: "JetBrainsMono NF"
+                                        elide: Text.ElideRight
+                                        Layout.fillWidth: true
+                                    }
+                                }
+                            }
+                            MouseArea {
+                                id: sugArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    Services.Weather.chooseResult(modelData.lat, modelData.lon, modelData.label)
+                                    cityInput.text = ""
+                                    col.cityPickerOpen = false
+                                }
+                            }
                         }
                     }
                 }
@@ -491,63 +681,6 @@ Item {
                 id: cityDebounce
                 interval: 350
                 onTriggered: Services.Weather.search(cityInput.text)
-            }
-
-            // Candidate dropdown (name + region/country); one tap to pick.
-            Repeater {
-                model: Services.Weather.searchResults
-                delegate: Rectangle {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 38
-                    radius: 8
-                    color: sugArea.containsMouse ? Services.Colors.ghostAlpha(0.18) : Services.Colors.ghostAlpha(0.06)
-                    Behavior on color { ColorAnimation { duration: 120 } }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        spacing: 10
-                        Text {
-                            text: "\uf1db"            // location_on
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 14
-                            color: Services.Colors.ghost
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 0
-                            Text {
-                                text: modelData.label
-                                color: Services.Colors.snow
-                                font.pixelSize: 12
-                                font.family: "JetBrainsMono NF"
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-                            Text {
-                                text: modelData.detail
-                                visible: text !== ""
-                                color: Services.Colors.ash
-                                font.pixelSize: 9
-                                font.family: "JetBrainsMono NF"
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-                        }
-                    }
-                    MouseArea {
-                        id: sugArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            Services.Weather.chooseResult(modelData.lat, modelData.lon, modelData.label)
-                            cityInput.text = ""
-                        }
-                    }
-                }
             }
 
             Divider {}
