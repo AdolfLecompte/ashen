@@ -2,7 +2,9 @@
 # ══════════════════════════════════════════
 #   Ashen — System Setup
 #   Installs deps, stows the configs, applies the theme.
-#   Safe to re-run.
+#   Safe to re-run (updates an existing install).
+#
+#   by Adolf — github.com/AdolfLecompte
 # ══════════════════════════════════════════
 set -uo pipefail
 
@@ -11,6 +13,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DO_PACKAGES=1
 DO_STOW=1
 DO_SERVICES=1
+DO_PULL=1
 ASSUME_YES=0
 
 for arg in "$@"; do
@@ -18,9 +21,10 @@ for arg in "$@"; do
         --no-packages) DO_PACKAGES=0 ;;
         --no-stow)     DO_STOW=0 ;;
         --no-services) DO_SERVICES=0 ;;
+        --no-pull)     DO_PULL=0 ;;
         -y|--yes)      ASSUME_YES=1 ;;
         -h|--help)
-            echo "usage: setup-system.sh [--no-packages] [--no-stow] [--no-services] [-y]"
+            echo "usage: setup-system.sh [--no-packages] [--no-stow] [--no-services] [--no-pull] [-y]"
             exit 0 ;;
         *) echo "unknown flag: $arg" >&2; exit 1 ;;
     esac
@@ -38,25 +42,65 @@ ask() {
     [[ -z "$reply" || "$reply" =~ ^[YySs]$ ]]
 }
 
+# ── 0. Self-update ─────────────────────────────────────────────────────────
+# The whole point of re-running: keep an EXISTING install in sync. A downstream
+# user who only `git pull`s gets new QML that may need new packages -> half
+# updated, broken shell. One who only re-runs setup keeps the old code. So setup
+# pulls the repo itself and, if anything changed, re-execs the freshly pulled
+# script -- the new package list, stow set, and logic all apply in ONE run
+# (the running shell still holds the OLD script in memory, hence the re-exec).
+# Skipped when the tree is dirty (protects local/uncommitted work) or --no-pull.
+if [[ $DO_PULL -eq 1 ]] && command -v git >/dev/null \
+   && git -C "$REPO_DIR" rev-parse --git-dir >/dev/null 2>&1; then
+    if [[ -n "$(git -C "$REPO_DIR" status --porcelain 2>/dev/null)" ]]; then
+        warn "Repo has local changes — skipping self-update. Commit/stash to enable, or ignore."
+    else
+        before=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null)
+        say "Updating Ashen (git pull)..."
+        if git -C "$REPO_DIR" pull --ff-only >/dev/null 2>&1; then
+            after=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null)
+            if [[ "$before" != "$after" ]]; then
+                ok "Ashen updated → re-running setup with the new version"
+                exec bash "$REPO_DIR/scripts/setup-system.sh" --no-pull "$@"
+            fi
+            ok "Ashen already up to date"
+        else
+            warn "git pull failed (no network or diverged) — using the local version."
+        fi
+    fi
+fi
+
 # Everything the shell actually shells out to. Missing one degrades that
 # feature; qt6-5compat and the Material Symbols font are hard requirements.
 PKGS_OFFICIAL=(
     hyprland kitty zsh stow git base-devel
     qt6-base qt6-declarative qt6-5compat
-    pipewire pipewire-pulse pipewire-alsa wireplumber
+    quickshell
+    pipewire pipewire-pulse pipewire-alsa wireplumber libpulse
     networkmanager bluez bluez-utils udisks2 upower power-profiles-daemon
-    brightnessctl lm_sensors
+    brightnessctl lm_sensors pciutils
     wl-clipboard cliphist grim slurp wf-recorder
     hypridle mpvpaper ffmpeg
-    nemo zenity fastfetch cava
-    papirus-icon-theme ttf-jetbrains-mono-nerd adw-gtk3
+    nemo zenity fastfetch cava xdg-utils libnotify
+    papirus-icon-theme adw-gtk-theme
+    # Fonts the QML asks for BY FAMILY NAME -- a miss renders tofu, not a fallback:
+    #   "JetBrainsMono NF"        <- ttf-jetbrains-mono-nerd
+    #   "Material Symbols Rounded" <- ttf-material-symbols-variable (official 'extra',
+    #                                 NOT the -git: -git Conflicts With this one)
+    #   "Noto Color Emoji"         <- noto-fonts-emoji (emoji picker)
+    ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
     xdg-desktop-portal-hyprland polkit-gnome
 )
 
-# quickshell needs PAM (lock screen) and the Hyprland modules (bar).
+# quickshell is in the official 'extra' repo (bundles its Hyprland module for the
+# bar and the PAM service for the lock screen) -> moved to PKGS_OFFICIAL so it
+# installs even without an AUR helper. Pin the STABLE build, never quickshell-git:
+# the rice targets the 0.3.0 API and the -git package tracks a newer, drifting one.
+# The rest are AUR-only on vanilla Arch (CachyOS ships some in its own repos, but
+# the helper resolves those transparently).
 PKGS_AUR=(
-    quickshell awww matugen grimblast-git
-    papirus-folders bibata-cursor-theme ttf-material-symbols-variable-git
+    awww matugen grimblast-git
+    papirus-folders bibata-cursor-theme
 )
 
 SERVICES=(NetworkManager bluetooth power-profiles-daemon)
@@ -66,6 +110,20 @@ STOW_PKGS=(cava dconf fastfetch gtk hypr kitty matugen quickshell zsh)
 # ── 1. Packages ───────────────────────────────────────────────────────────
 if [[ $DO_PACKAGES -eq 1 ]]; then
     command -v pacman >/dev/null || die "not an Arch-based system (no pacman). Install the deps from the README by hand, then re-run with --no-packages."
+
+    # Ashen is PipeWire-only. pipewire-pulse Conflicts With pulseaudio (it does
+    # NOT Replace it), so a --noconfirm batch would abort on any machine that
+    # still has the old PulseAudio daemon. Swap it out first. libpulse (the
+    # client library apps link against) is left alone -- pipewire-pulse uses it.
+    pulse_installed=$(pacman -Qq pulseaudio pulseaudio-alsa pulseaudio-bluetooth \
+        pulseaudio-jack pulseaudio-equalizer pulseaudio-zeroconf pulseaudio-lirc \
+        pulseaudio-rtp 2>/dev/null)
+    if [[ -n "$pulse_installed" ]]; then
+        warn "PulseAudio is installed; Ashen uses PipeWire. Removing: $pulse_installed"
+        # shellcheck disable=SC2086
+        sudo pacman -R --noconfirm $pulse_installed \
+            || warn "Could not remove PulseAudio automatically — remove it by hand, then re-run."
+    fi
 
     say "Installing packages from the official repos..."
     sudo pacman -S --needed --noconfirm "${PKGS_OFFICIAL[@]}" \
@@ -182,8 +240,42 @@ fi
 if [[ "$SHELL" != *zsh ]]; then
     warn "Your login shell is $SHELL, not zsh. Change it with: chsh -s $(command -v zsh)"
 fi
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    warn "Oh My Zsh + Powerlevel10k are not installed (not packaged — see their own docs)."
+
+# The repo's zshrc drives everything through Oh My Zsh (ZSH=$HOME/.oh-my-zsh,
+# ZSH_THEME=powerlevel10k/powerlevel10k, plugins=(git zsh-autosuggestions
+# zsh-syntax-highlighting z)). None of OMZ, p10k, or the two external plugins are
+# packaged into OMZ's custom dir, so clone them. git + z ship with OMZ already.
+# Cloning (not the upstream install.sh) keeps it unattended and side-effect-free.
+# Re-running the setup UPDATES what is already there (git pull), so an existing
+# install refreshes its shell instead of being told "already present".
+OMZ="$HOME/.oh-my-zsh"
+clone_or_update() {   # url  dest
+    if [[ -d "$2/.git" ]]; then
+        git -C "$2" pull --ff-only >/dev/null 2>&1 \
+            && ok "updated $(basename "$2")" \
+            || warn "could not update $(basename "$2") (local changes?) — skipped."
+    else
+        git clone --depth=1 "$1" "$2" >/dev/null 2>&1 \
+            && ok "cloned $(basename "$2")" \
+            || warn "could not clone $(basename "$2") from $1 — do it by hand."
+    fi
+}
+if ! command -v git >/dev/null; then
+    warn "git missing — cannot install Oh My Zsh. Install git and re-run."
+else
+    clone_or_update https://github.com/ohmyzsh/ohmyzsh "$OMZ"
+    clone_or_update https://github.com/romkatv/powerlevel10k         "$OMZ/custom/themes/powerlevel10k"
+    clone_or_update https://github.com/zsh-users/zsh-autosuggestions "$OMZ/custom/plugins/zsh-autosuggestions"
+    clone_or_update https://github.com/zsh-users/zsh-syntax-highlighting "$OMZ/custom/plugins/zsh-syntax-highlighting"
+
+    # If the shell is running, reload it so the update takes effect without a
+    # full logout. Harmless when it isn't (e.g. first install from a TTY).
+    if command -v quickshell >/dev/null && pgrep -x quickshell >/dev/null; then
+        say "Reloading Quickshell..."
+        pkill quickshell 2>/dev/null
+        setsid nohup quickshell -c ashen >/dev/null 2>&1 &
+        ok "Quickshell reloaded"
+    fi
 fi
 
 echo

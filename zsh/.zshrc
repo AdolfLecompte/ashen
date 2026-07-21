@@ -1,6 +1,12 @@
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
+#
+# quiet: on a fresh install the oh-my-zsh plugin load can print to the console
+# (custom plugins not present yet), and the default 'verbose' mode would dump a
+# "console output during initialization detected" warning above Ashen's prompt.
+# quiet keeps the instant prompt clean. MUST be set before the source below.
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
