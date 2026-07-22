@@ -236,6 +236,20 @@ else
     say "Skipping services (--no-services)"
 fi
 
+# ── 6b. Camera access ─────────────────────────────────────────────────────
+# /dev/video* is root:video rw----, so webcam access (Discord, browsers, any
+# screenshare-with-cam) needs the user in the `video` group. PipeWire detects
+# the device on its own, but without this the nodes are unreadable. Group
+# membership only takes effect on the next login.
+if id -nG "$USER" | tr ' ' '\n' | grep -qx video; then
+    ok "$USER already in the video group"
+else
+    say "Adding $USER to the video group (webcam access)..."
+    sudo usermod -aG video "$USER" \
+        && ok "added to video — log out and back in for it to take effect" \
+        || warn "could not add $USER to video — do it by hand: sudo usermod -aG video $USER"
+fi
+
 # ── 7. Shell ──────────────────────────────────────────────────────────────
 if [[ "$SHELL" != *zsh ]]; then
     warn "Your login shell is $SHELL, not zsh. Change it with: chsh -s $(command -v zsh)"
