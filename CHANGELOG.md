@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.2
+
+### Fixed
+- **Installer resilience** — package install no longer aborts wholesale when a
+  single package conflicts. `pacman -S` runs everything in one atomic
+  transaction, so one bad target (a renamed package, an AUR `-git` variant, or
+  a base package like PipeWire that CachyOS ships as a newer `-1.1` rebuild the
+  plain repo would "downgrade") used to block every other package. Now the
+  batch is tried first and, on failure, each package is installed individually
+  so the good ones still land and only the genuine conflicts are skipped and
+  reported.
+
 ## 1.5.1
 
 ### Fixed
