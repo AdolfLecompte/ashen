@@ -39,12 +39,23 @@ Singleton {
             let p = Quickshell.iconPath(root.whatsappIconId, true)
             if (p && p !== "") return p
         }
+        // Discord ships no appIcon over dbus, so the toast fell back to a
+        // generic Material glyph. Resolve its theme icon by name instead.
+        if ((appName || "").toLowerCase().indexOf("discord") !== -1) {
+            let d = Quickshell.iconPath("discord", true)
+            if (d && d !== "") return d
+        }
         let ic = appIcon || ""
-        if (ic === "") return ""
         if (ic.startsWith("image://") || ic.startsWith("file://") || ic.startsWith("http")) return ic
         if (ic.startsWith("/")) return "file://" + ic
-        // Bare icon-theme name (e.g. "discord", "steam")
-        return Quickshell.iconPath(ic, true)
+        if (ic !== "") {
+            // Bare icon-theme name (e.g. "discord", "steam")
+            let p = Quickshell.iconPath(ic, true)
+            if (p && p !== "") return p
+        }
+        // Last resort: try the app's own name as a theme icon name.
+        if (appName && appName !== "") return Quickshell.iconPath(appName.toLowerCase(), true)
+        return ""
     }
 
     function addEntry(entry) {
