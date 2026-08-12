@@ -223,6 +223,12 @@ Item {
     Behavior on width { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
     Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
 
+    // The pointer being on the pill is what lets a long title walk, and a
+    // HoverHandler sees it even while the transport chips have the mouse --
+    // a MouseArea underneath them would go blind the moment you reached for
+    // play.
+    HoverHandler { id: pillHover }
+
     // Reports its real on-screen position so MediaPanel can center below it
     PillCenter { key: "media" }
 
@@ -267,7 +273,11 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
     radius: Services.Sizes.innerR
     color: Services.Colors.abyss
     anchors.verticalCenter: parent.verticalCenter
-    opacity: trackSwap.fade
+    // Paused, the cover stands down: it was the one part of the pill that
+    // looked exactly the same whether anything was playing or not.
+    readonly property real playingAmt: (root.activePlayer !== null && root.activePlayer.isPlaying) ? 1.0 : 0.45
+    opacity: trackSwap.fade * artFrame.playingAmt
+    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
     transform: Translate { x: trackSwap.offX }
     Image {
         id: pillArt
@@ -310,14 +320,12 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
                 opacity: trackSwap.fade
                 transform: Translate { x: trackSwap.offX }
 
-                Text {
+                Widgets.MarqueeText {
                     width: parent.width
                     text: root.shownTitle
                     color: Services.Colors.snow
-                    font.pixelSize: 11
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                    elide: Text.ElideRight
+                    pixelSize: 11
+                    active: pillHover.hovered
                 }
                 
     Text {

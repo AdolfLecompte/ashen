@@ -464,12 +464,18 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 10
 
+                    // Shuffle: lit when it is on, dimmed when the player does
+                    // not offer it at all.
                     CtlChip {
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: root.extrasOpacity
                         size: root.chipLg
                         glyphSize: 20
                         glyph: "\ue043"
+                        available: root.activePlayer !== null && root.activePlayer.shuffleSupported
+                        active: root.activePlayer !== null && root.activePlayer.shuffle
+                        onTriggered: if (root.activePlayer)
+                            root.activePlayer.shuffle = !root.activePlayer.shuffle
                     }
                     CtlChip {
                         id: prevChip
@@ -505,12 +511,26 @@ Item {
                         available: root.activePlayer !== null && root.activePlayer.canGoNext
                         onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(1); root.activePlayer.next() }
                     }
+                    // Repeat cycles the three MPRIS states, and says which one
+                    // it is with the glyph: the whole list, or this one track.
                     CtlChip {
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: root.extrasOpacity
                         size: root.chipLg
                         glyphSize: 20
-                        glyph: "\ue040"
+                        glyph: (root.activePlayer !== null
+                                && root.activePlayer.loopState === MprisLoopState.Track)
+                               ? "\ue041" : "\ue040"
+                        available: root.activePlayer !== null && root.activePlayer.loopSupported
+                        active: root.activePlayer !== null
+                                && root.activePlayer.loopState !== MprisLoopState.None
+                        onTriggered: {
+                            if (!root.activePlayer) return
+                            const p = root.activePlayer
+                            p.loopState = p.loopState === MprisLoopState.None ? MprisLoopState.Playlist
+                                        : p.loopState === MprisLoopState.Playlist ? MprisLoopState.Track
+                                        : MprisLoopState.None
+                        }
                     }
                 }
             }
