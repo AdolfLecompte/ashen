@@ -25,6 +25,14 @@ Rectangle {
     border.color: Services.Colors.fillRest
     border.width: 0
 
+    // The bar pivots the centre group on this point, so the HOUR sits dead
+    // centre on screen and the date and weather fall either side of it.
+    readonly property real pivot: root.vertical
+        ? height / 2
+        : (clockRow.visible && timeText.width > 0
+            ? clockRow.x + timeText.mapToItem(clockRow, timeText.width / 2, 0).x
+            : width / 2)
+
     MouseArea {
         id: pillHover
         anchors.fill: parent
@@ -163,24 +171,25 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 16
 
-        Column {
-            spacing: 1
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: root.currentTime
-                color: Services.Colors.snow
-                font.pixelSize: 15
-                font.family: "JetBrainsMono NF"
-                font.bold: true
-            }
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: root.currentDate
-                color: Services.Colors.mist
-                font.pixelSize: 10
-                font.family: "JetBrainsMono NF"
-                font.bold: true
-            }
+        // Date, hour, weather: the hour holds the middle and the other two
+        // fall either side of it, which is what the bar pivots on.
+        Text {
+            Layout.alignment: Qt.AlignVCenter
+            text: root.currentDate
+            color: Services.Colors.mist
+            font.pixelSize: 15
+            font.family: "JetBrainsMono NF"
+            font.bold: true
+        }
+
+        Text {
+            id: timeText
+            Layout.alignment: Qt.AlignVCenter
+            text: root.currentTime
+            color: Services.Colors.snow
+            font.pixelSize: 15
+            font.family: "JetBrainsMono NF"
+            font.bold: true
         }
 
         Row {

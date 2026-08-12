@@ -132,6 +132,12 @@ Scope {
                     property string pillId: ""
                     implicitWidth: holder.item ? holder.item.width : 0
                     implicitHeight: holder.item ? holder.item.height : 0
+                    // A pill may name the point the bar should pivot on -- the
+                    // clock centres its TIME, not its box, so the date beside
+                    // it does not push the hour off the middle of the screen.
+                    readonly property real pivot: (holder.item && holder.item.pivot !== undefined)
+                        ? holder.item.pivot
+                        : (bar.vertical ? implicitHeight / 2 : implicitWidth / 2)
 
                     Loader {
                         id: holder
@@ -168,8 +174,8 @@ Scope {
 
                     property Item anchorItem: null
                     readonly property real anchorMid: anchorItem
-                        ? (bar.vertical ? anchorItem.y + anchorItem.height / 2
-                                        : anchorItem.x + anchorItem.width / 2)
+                        ? (bar.vertical ? anchorItem.y + anchorItem.pivot
+                                        : anchorItem.x + anchorItem.pivot)
                         : (bar.vertical ? height / 2 : width / 2)
 
                     x: bar.vertical ? (parent.width - width) / 2 : parent.width / 2 - anchorMid
