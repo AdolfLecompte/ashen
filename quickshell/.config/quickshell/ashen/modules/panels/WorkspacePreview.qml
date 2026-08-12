@@ -307,7 +307,12 @@ PanelWindow {
             font.pixelSize: 13
             font.bold: true
             font.family: root.labelIsGlyph ? "Material Symbols Rounded" : "JetBrainsMono NF"
-            x: card.lerp(card.width / 2, labelSlot.x + labelSlot.width / 2, card.morph) - width / 2
+            // labelRow.x, not just labelSlot.x: the slot sits at 0 INSIDE the
+            // row, and the row is the one holding the card's padding. Without
+            // it the label landed a whole `pad` short and sat on the edge --
+            // the y below always had it right.
+            x: card.lerp(card.width / 2,
+                         labelRow.x + labelSlot.x + labelSlot.width / 2, card.morph) - width / 2
             y: card.lerp(card.height / 2,
                          labelRow.y + labelSlot.y + labelSlot.height / 2, card.morph) - height / 2
         }
