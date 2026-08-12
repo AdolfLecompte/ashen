@@ -115,88 +115,100 @@ PanelWindow {
                     opacity: card.contentAmt
 
                     // ── The reading and the bar ────────────────────────────
-                    // Dial on the left, its slider beside it: the same value
-                    // said twice, once as a shape and once as something to
-                    // drag.
-                    Item {
+                    // One vessel holding the whole reading: the device, the
+                    // number and the slider all stand in the liquid, and the
+                    // part of them it has reached is re-inked -- the bar
+                    // changes colour exactly the way the lettering does.
+                    Widgets.LiquidPane {
+                        id: dial
                         width: parent.width
-                        height: 120
+                        height: 148
+                        dimmed: win.muted
+                        fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost
+                        value: levelBar.shown
+                        easeMs: levelBar.dragging ? 0 : 220
+                        onTapped: win.toggleMute()
 
-                        Widgets.LiquidBox {
-                            id: dial
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            size: 120
-                            // Off the SLIDER, not the service: Audio polls once
-                            // a second and a dial tied to it lagged the bar you
-                            // were dragging.
-                            value: levelBar.shown
-                            easeMs: levelBar.dragging ? 0 : 220
-                            glyph: win.catGlyph
-                            label: Math.round(dial.frac * 100) + "%"
-                            glyphSize: 18
-                            labelSize: 22
-                            hideGlyph: card.morphingGlyph
-                            hideLabel: card.morphingLabel
-                            fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost
-                            onTapped: win.toggleMute()
+                        readonly property Item glyphItem: volGlyph
+                        readonly property Item labelItem: volLabel
+
+                        // What is actually playing this, and how it is plugged
+                        // in: "the Bluetooth ones" is what you think in, not the
+                        // model of the chip.
+                        Row {
+                            x: 18
+                            y: 16
+                            width: parent.width - 36
+                            spacing: 6
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Services.Audio.kindGlyph(win.deviceKind)
+                                color: Services.Colors.snow
+                                font.pixelSize: 15
+                                font.family: "Material Symbols Rounded"
+                            }
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - 90
+                                text: win.deviceName
+                                color: Services.Colors.snow
+                                font.pixelSize: Services.Sizes.fsBody
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: win.muted ? "Muted"
+                                     : Services.Audio.kindLabel(win.deviceKind)
+                                color: Services.Colors.mist
+                                font.pixelSize: Services.Sizes.fsMeta
+                                font.family: "JetBrainsMono NF"
+                            }
                         }
 
-                        Column {
-                            anchors.left: dial.right
-                            anchors.leftMargin: 16
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
+                        Row {
+                            x: 18
+                            y: 48
                             spacing: 8
 
-                            // What is actually playing this, and how it is
-                            // plugged in: "the Bluetooth ones" is what you
-                            // think in, not the model of the chip.
-                            Row {
-                                width: parent.width
-                                spacing: 6
-
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: Services.Audio.kindGlyph(win.deviceKind)
-                                    color: win.muted ? Services.Colors.mist : Services.Colors.ghost
-                                    font.pixelSize: 15
-                                    font.family: "Material Symbols Rounded"
-                                }
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: parent.width - 90
-                                    text: win.deviceName
-                                    color: win.muted ? Services.Colors.mist : Services.Colors.snow
-                                    font.pixelSize: Services.Sizes.fsBody
-                                    font.bold: true
-                                    font.family: "JetBrainsMono NF"
-                                    elide: Text.ElideRight
-                                }
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: win.muted ? "Muted"
-                                         : Services.Audio.kindLabel(win.deviceKind)
-                                    color: Services.Colors.mist
-                                    font.pixelSize: Services.Sizes.fsMeta
-                                    font.family: "JetBrainsMono NF"
-                                }
+                            Text {
+                                id: volGlyph
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: win.catGlyph
+                                visible: !card.morphingGlyph
+                                color: Services.Colors.snow
+                                font.pixelSize: 26
+                                font.family: "Material Symbols Rounded"
                             }
-
-                            Widgets.SliderTrack {
-                                id: levelBar
-                                width: parent.width
-                                // Thick: it stands beside a 120 px dial with
-                                // nothing else in the row, and a 10 px line
-                                // left most of that height empty.
-                                trackHeight: 20
-                                hitMargin: 12
-                                dimmed: win.muted
-                                fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost
-                                value: (win.isOut ? Services.Audio.volume
-                                                  : Services.Audio.micVolume) / 100
-                                onMoved: r => win.setLevel(r)
+                            Text {
+                                id: volLabel
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Math.round(levelBar.shown * 100) + "%"
+                                visible: !card.morphingLabel
+                                color: Services.Colors.snow
+                                font.pixelSize: 34
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
                             }
+                        }
+
+                        // The slider stands in the vessel: its own track and
+                        // fill, re-inked by the liquid it is standing in.
+                        Widgets.SliderTrack {
+                            id: levelBar
+                            x: 18
+                            width: parent.width - 36
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 16
+                            trackHeight: 14
+                            hitMargin: 10
+                        dimmed: win.muted
+                            fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost
+                            value: (win.isOut ? Services.Audio.volume
+                                              : Services.Audio.micVolume) / 100
+                            onMoved: r => win.setLevel(r)
                         }
                     }
 
