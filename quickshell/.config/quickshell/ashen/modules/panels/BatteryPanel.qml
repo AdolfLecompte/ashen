@@ -17,8 +17,8 @@ PanelWindow {
     // Mapped until the drop is all the way home; see DropCard.closeMs.
     Timer { id: closeDelay; interval: card.closeMs }
 
-    // The dial is held dark until the card is really on screen, then sweeps up
-    // from empty; DialGauge does the sweep itself off this flag.
+    // The vessel is held empty until the card is really on screen, then the
+    // water climbs to the charge; LiquidPane does the sweep off this flag.
     property bool battArmed: false
     // Holds the sweep until the card's contents are on screen, so the whole
     // 0->level trace is seen. It has to clear the drop's wait for the window
@@ -105,74 +105,108 @@ PanelWindow {
         pillGlyph: Services.AppState.pillGlyph("battery")
         pillLabel: Services.AppState.pillLabel("battery")
         openW: 440
-        openH: 400
+        openH: 340
         cardRadius: 18
 
         body: Component {
             Item {
                 // Where the chip's glyph and reading land.
-                readonly property Item glyphTarget: dial.glyphItem
-                readonly property Item labelTarget: dial.labelItem
+                readonly property Item glyphTarget: gauge.glyphItem
+                readonly property Item labelTarget: gauge.labelItem
 
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 20
                     spacing: 12
 
-                    // The same dial as sound and brightness, grown: reading in the middle,
-                    // charge around the rim. The old rounded-rectangle trace was a shape
-                    // nothing else used, with its own ladder of thresholds.
-                    Widgets.DialGauge {
-                        id: dial
-                        Layout.alignment: Qt.AlignHCenter
-                        size: 200
-                        lw: 13
+                    // The charge as water in a vessel, the same one sound got:
+                    // it climbs from empty when the card lands, and the state
+                    // and the reading standing in it are re-inked where the
+                    // water has passed them.
+                    Widgets.LiquidPane {
+                        id: gauge
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 150
                         value: Math.max(0, Math.min(1, Services.Battery.level / 100))
-                        glyph: Services.AppState.pillGlyph("battery")
-                        glyphSize: 34
-                        label: Math.round(dial.frac * 100) + "%"
-                        labelSize: 40
-                        captionSize: 0
                         // Accent at every level, never red: error_ is for things
                         // that actually went wrong, and a low battery is the panel
                         // doing its job. The old gauge made the same choice.
                         fillColor: Services.Colors.ghost
-                        // Breathes while it is filling. Charging is the one state here
-                        // that is still happening rather than simply being.
+                        // Charging is the one state here that is still happening
+                        // rather than simply being: the surface keeps moving and
+                        // the vessel breathes, the way the dial's halo did.
+                        lively: Services.Battery.charging
                         glow: Services.Battery.charging
                         armed: win.battArmed
                         sweepMs: 1500
-                        hideGlyph: card.morphingGlyph
-                        hideLabel: card.morphingLabel
-                    }
 
-                    // Status under the box: charging state + time to full/empty
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Text {
-                            visible: Services.Battery.charging
-                            text: "\uea0b"
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 16
-                            color: Services.Colors.ghost
+                        readonly property Item glyphItem: battGlyph
+                        readonly property Item labelItem: battLabel
+
+                        // Charging state and time to full/empty, in the water.
+                        Row {
+                            x: 18
+                            y: 16
+                            width: parent.width - 36
+                            spacing: 8
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: Services.Battery.charging
+                                text: "\uea0b"
+                                font.family: "Material Symbols Rounded"
+                                font.pixelSize: 16
+                                color: Services.Colors.snow
+                            }
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Services.Battery.charging ? "Charging" : "On battery"
+                                color: Services.Colors.snow
+                                font.pixelSize: 13
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
                         }
+
                         Text {
-                            text: Services.Battery.charging ? "Charging" : "On battery"
-                            color: Services.Colors.snow
-                            font.pixelSize: 13
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Item { Layout.fillWidth: true }
-                        Text {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 18
+                            y: 18
                             text: win.timeRemaining !== "--"
                                 ? (Services.Battery.charging ? ("Full in " + win.timeRemaining) : (win.timeRemaining + " left"))
                                 : (Services.Battery.charging ? "Fully charged" : "Calculating...")
-                            color: Services.Colors.ash
+                            color: Services.Colors.mist
                             font.pixelSize: 11
                             font.bold: true
                             font.family: "JetBrainsMono NF"
+                        }
+
+                        // The reading sits low, where the water reaches it first.
+                        Row {
+                            x: 18
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 16
+                            spacing: 10
+
+                            Text {
+                                id: battGlyph
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Services.AppState.pillGlyph("battery")
+                                visible: !card.morphingGlyph
+                                color: Services.Colors.snow
+                                font.pixelSize: 30
+                                font.family: "Material Symbols Rounded"
+                            }
+                            Text {
+                                id: battLabel
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Math.round(gauge.frac * 100) + "%"
+                                visible: !card.morphingLabel
+                                color: Services.Colors.snow
+                                font.pixelSize: 40
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
                         }
                     }
 
