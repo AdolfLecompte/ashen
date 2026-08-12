@@ -318,8 +318,10 @@ unfolds, which is what `EdgeEntry` is for.
 | A panel that grows from a bar pill or a utility chip | `widgets/DropCard` | A hand-rolled `fall`/`spread` |
 | A panel with no pill behind it | `widgets/EdgeEntry` | Fading in centred |
 | A column heading | `widgets/SectionHead` | A bare `Text` at 18–20 px |
-| A square icon button | **`widgets/IconButton`** (to be written, §9) | A private `component XBtn` |
+| A square icon button | **`widgets/IconButton`** | A private `component XBtn` |
 | A transport / utility chip | `widgets/CtlChip` | — |
+| A reading between empty and full | `widgets/LiquidPane` (panel) / `LiquidBox` (chip) | A dial, a ring, a bare progress bar |
+| A line that may not fit its slot | `widgets/MarqueeText` | `elide` alone, or text that scrolls unprompted |
 | A chip on the system pill | `bar/components/SystemChip` | — |
 | A row laid along the bar's axis | `bar/components/BarStrip` | A raw `Row`/`Grid` |
 | Settings surfaces | `settings/components/*` | — |
@@ -403,6 +405,53 @@ know what you opened, because you opened it.
 
 `widgets/SectionHead` is kept for a surface that genuinely has to name itself
 to a stranger, and nothing in the shell currently does.
+
+### A reading is a vessel with liquid in it
+
+**Anything that is a level between empty and full is shown as water in a box.**
+Sound and battery both read this way, and that is the whole reason a panel with
+one number in it does not need a dial, a ring or a bar to say what it already
+says.
+
+- `widgets/LiquidPane` is the vessel: it takes `value` and whatever the caller
+  puts inside it, and re-inks the part of those contents the water has reached
+  (`widgets/Submerged`) so nothing ever sits on a tone it shares. Letters,
+  a glyph, a whole `SliderTrack` — the slider standing in the water changes
+  colour exactly the way the words beside it do.
+- `widgets/LiquidBox` is the same idea at chip size, and `widgets/LiquidFill`
+  is the surface both are painted with: two sine waves of different length so
+  the swell never reads as a sawtooth, on a 33 ms timer rather than every
+  frame.
+- **The vessel opens empty.** `armed` holds it at zero until the card is really
+  on screen and `sweepMs` runs it up from there: the climb is the panel saying
+  what it just read, and a box that is already full when it lands says nothing.
+- **`glow` is for something that is still happening**, not for something that
+  merely is: the battery breathes while it charges and stands still while it
+  discharges. It is the same 900/900 pulse the dial's halo had.
+- **Never on the bar.** Three canvases painting at 30 fps in the bar measured
+  29.5 % CPU against 12.7 % without them. A vessel belongs to a panel, which is
+  only alive while it is open.
+
+### Text runs only under the pointer
+
+**A line too long for its slot is cut with an ellipsis, and walks only while
+the pointer is on the thing it belongs to** (`widgets/MarqueeText`). A bar with
+words sliding about on their own is a bar that never stops moving in the corner
+of your eye.
+
+When it does run it runs *continuously* — a second copy follows the first
+across a fixed gap, and the reset to zero lands where that copy already is, so
+there is no seam. It never walks to the end and reverses: that reads as the
+text changing its mind. Linear curve, constant speed, so a longer title takes
+longer rather than travelling faster, and one beat at the start of each turn so
+the beginning can be read before it leaves.
+
+### A cover that is not playing stands down
+
+Album art is the one part of the media pill that looked identical whether
+anything was playing or not. **Paused, it drops to 45 % and the pill says so
+without a word.** The dimming multiplies whatever the track-change sweep is
+already doing to it, so the two never fight.
 
 ### The utility pill
 
@@ -578,6 +627,7 @@ Ordered by how much each buys.
 - [ ] Icons from §5, rendered and checked before committing
 - [ ] Durations and curves from §6; hover via `Sizes.hoverScale`
 - [ ] Buttons reuse `IconButton` / `CtlChip`
+- [ ] A level between empty and full is a `LiquidPane`, armed so it opens empty
 - [ ] Every box is a rounded rectangle or a circle — nothing else
 - [ ] Nothing destructive is red
 - [ ] `Esc` closes it; click-off closes it; the exit animation is visible
