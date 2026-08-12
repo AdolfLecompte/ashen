@@ -65,12 +65,24 @@ Canvas {
         if (root.shape === "circle") {
             ctx.arc(w / 2, h / 2, Math.min(w, h) / 2 - root.inset, 0, Math.PI * 2)
         } else {
-            const r = root.radius_, i = root.inset
-            ctx.moveTo(i + r, i)
-            ctx.arcTo(w - i, i, w - i, h - i, r)
-            ctx.arcTo(w - i, h - i, i, h - i, r)
-            ctx.arcTo(i, h - i, i, i, r)
-            ctx.arcTo(i, i, w - i, i, r)
+            // Explicit corner arcs, not arcTo: with a radius of half the height
+            // the straight side between two corners is zero pixels long, arcTo
+            // has no tangent to work from, the path comes out invalid and the
+            // clip below is dropped in silence -- which reads as the liquid
+            // spilling out of its vessel as a straight band.
+            const i = root.inset
+            const x0 = i, y0 = i, x1 = w - i, y1 = h - i
+            const r = Math.max(0, Math.min(root.radius_, (x1 - x0) / 2, (y1 - y0) / 2))
+            const hp = Math.PI / 2
+            ctx.moveTo(x0 + r, y0)
+            ctx.lineTo(x1 - r, y0)
+            ctx.arc(x1 - r, y0 + r, r, -hp, 0)
+            ctx.lineTo(x1, y1 - r)
+            ctx.arc(x1 - r, y1 - r, r, 0, hp)
+            ctx.lineTo(x0 + r, y1)
+            ctx.arc(x0 + r, y1 - r, r, hp, Math.PI)
+            ctx.lineTo(x0, y0 + r)
+            ctx.arc(x0 + r, y0 + r, r, Math.PI, Math.PI + hp)
             ctx.closePath()
         }
         ctx.clip()
