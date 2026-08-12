@@ -5,7 +5,6 @@ import QtQuick.Layouts
 
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
-import "root:/modules/net" as Net
 
 PanelWindow {
     id: root
@@ -153,8 +152,9 @@ PanelWindow {
                     }
 
                     // ── The ring ────────────────────────────────────────────
-                    // Connected in the middle, everything paired orbiting it. Strangers live
-                    // in the scan list below, so the slots stay put.
+                    // Connected in the middle, everything paired orbiting it. Six slots and
+                    // nothing under them: what the ring cannot hold is reached from
+                    // Settings > Bluetooth, not from a list bolted to the card.
                     Widgets.NodeGraph {
                         id: graph
                         width: parent.width
@@ -196,8 +196,8 @@ PanelWindow {
                             : "No paired devices yet \u2014 press Scan"
 
                         // Same scan chip as Wi-Fi, in the same slot: press it and the
-                        // ring fills with everything the radio can see. Strangers get
-                        // no wire — nothing is paired with them yet.
+                        // ring fills with everything the radio can see, six at a time.
+                        // Strangers get no wire — nothing is paired with them yet.
                         scanEnabled: true
                         scanGlyph: "\ue8b6"
                         scanLabel: "Scan"
@@ -245,42 +245,6 @@ PanelWindow {
                             if (d) d.connect()
                         }
                         onHubActivated: if (graph.linked) graph.linked.disconnect()
-                    }
-
-                    // Whatever the ring could not hold — six slots is its limit by
-                    // design. Only up while you are actually looking, and the scan chip
-                    // in the ring is the one place a scan is started from.
-                    Column {
-                        width: parent.width
-                        spacing: 4
-                        visible: graph.scanMode && overflowList.count > 0
-
-                        Text {
-                            text: "More devices"
-                            color: Services.Colors.mist
-                            font.pixelSize: 10
-                            font.family: "JetBrainsMono NF"
-                            leftPadding: 4
-                        }
-
-                        ListView {
-                            id: overflowList
-                            width: parent.width
-                            model: graph.strangers.slice(6)
-                            // Three rows, not four: past that the list makes the card
-                            // taller than it is wide and the landscape shape is lost.
-                            height: Math.min(count, 3) * 46 + Math.max(Math.min(count, 3) - 1, 0) * 4
-                            spacing: 4
-                            clip: true
-                            boundsBehavior: Flickable.StopAtBounds
-                            Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-
-                            delegate: Net.BtDeviceRow {
-                                required property var modelData
-                                width: overflowList.width
-                                device: modelData
-                            }
-                        }
                     }
 
                     Item { height: 4 }
