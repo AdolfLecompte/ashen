@@ -55,33 +55,31 @@ PanelWindow {
 
         // ── Reference layout A: the pill ────────────────────────────────
         // A structural copy of Clock.qml's row, laid out but never drawn, so
-        // the flying pieces start exactly where the real pill has them.
-        // Centred because the pill is its row plus 20 px either side.
+        // the flying pieces start exactly where the real pill has them: date,
+        // hour, weather, all on one line. Centred because the pill is its row
+        // plus 20 px either side.
         Row {
             id: pillRef
             opacity: 0
             anchors.centerIn: parent
             spacing: 16
 
-            Column {
-                id: refStack
-                spacing: 1
-                Text {
-                    id: refTime
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: panelRef.timeText
-                    font.pixelSize: 15
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    id: refDate
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatDateTime(panelRef.now, "ddd, MMM d")
-                    font.pixelSize: 10
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
+            Text {
+                id: refDate
+                anchors.verticalCenter: parent.verticalCenter
+                text: Qt.formatDateTime(panelRef.now, "ddd, MMM d")
+                font.pixelSize: 15
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+            }
+
+            Text {
+                id: refTime
+                anchors.verticalCenter: parent.verticalCenter
+                text: panelRef.timeText
+                font.pixelSize: 15
+                font.bold: true
+                font.family: "JetBrainsMono NF"
             }
 
             Row {
@@ -127,9 +125,9 @@ PanelWindow {
             font.pixelSize: panelRef.clockPx
             font.bold: true
             font.family: "JetBrainsMono NF"
-            x: card.lerp(pillRef.x + refStack.x + refTime.x + refTime.width / 2,
+            x: card.lerp(pillRef.x + refTime.x + refTime.width / 2,
                          panelRef.x + panelRef.timeCX, card.morph) - width / 2
-            y: card.lerp(pillRef.y + refStack.y + refTime.y + refTime.height / 2,
+            y: card.lerp(pillRef.y + refTime.y + refTime.height / 2,
                          panelRef.y + panelRef.timeCY, card.morph) - height / 2
             transform: Scale {
                 origin.x: flyTime.width / 2
@@ -139,7 +137,7 @@ PanelWindow {
             }
         }
 
-        // Only 10 -> 13 px: three integer steps, small enough to grow the font
+        // 15 -> 13 px: two integer steps, small enough to move the font size
         // directly without the scaling dance.
         Text {
             id: flyDate
@@ -147,12 +145,12 @@ PanelWindow {
                 ? Qt.formatDateTime(panelRef.now, "ddd, MMM d")
                 : panelRef.dateText
             color: Services.Colors.mist
-            font.pixelSize: card.lerp(10, 13, card.morph)
+            font.pixelSize: card.lerp(15, 13, card.morph)
             font.bold: true
             font.family: "JetBrainsMono NF"
-            x: card.lerp(pillRef.x + refStack.x + refDate.x + refDate.width / 2,
+            x: card.lerp(pillRef.x + refDate.x + refDate.width / 2,
                          panelRef.x + panelRef.dateCX, card.morph) - width / 2
-            y: card.lerp(pillRef.y + refStack.y + refDate.y + refDate.height / 2,
+            y: card.lerp(pillRef.y + refDate.y + refDate.height / 2,
                          panelRef.y + panelRef.dateCY, card.morph) - height / 2
         }
 
