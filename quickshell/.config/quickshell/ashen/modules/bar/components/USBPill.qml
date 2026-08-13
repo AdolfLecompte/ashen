@@ -93,6 +93,6 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
-        onClicked: Services.AppState.usbVisible = !Services.AppState.usbVisible
+        onClicked: Services.AppState.togglePanel("usbVisible")
     }
 }

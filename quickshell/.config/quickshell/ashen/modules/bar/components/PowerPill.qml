@@ -43,6 +43,6 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
-        onClicked: Services.AppState.powerMenuVisible = !Services.AppState.powerMenuVisible
+        onClicked: Services.AppState.togglePanel("powerMenuVisible")
     }
 }

@@ -124,13 +124,33 @@ ShellRoot {
             Services.AppState.toggleOverlay("processVisible")
         }
     }
+    // Alt-tab: the same call opens it and steps through it, so one keybind is
+    // the whole switcher. `prev` is the shifted twin.
+    IpcHandler {
+        target: "switcher"
+        function next() {
+            if (!Services.AppState.switcherVisible) {
+                Services.AppState.switcherIndex = 0
+                Services.AppState.switcherVisible = true
+            }
+            Services.AppState.stepSwitcher(1)
+        }
+        function prev() {
+            if (!Services.AppState.switcherVisible) {
+                Services.AppState.switcherIndex = 0
+                Services.AppState.switcherVisible = true
+            }
+            Services.AppState.stepSwitcher(-1)
+        }
+        function close() { Services.AppState.switcherVisible = false }
+    }
     IpcHandler {
         target: "power"
-        function toggle() { Services.AppState.powerMenuVisible = !Services.AppState.powerMenuVisible }
+        function toggle() { Services.AppState.togglePanel("powerMenuVisible") }
     }
     IpcHandler {
         target: "media"
-        function toggle() { Services.AppState.mediaVisible = !Services.AppState.mediaVisible }
+        function toggle() { Services.AppState.togglePanel("mediaVisible") }
         // The keyboard's transport keys. Hyprland hands XF86Audio* to nobody
         // unless something is bound to them, so without these three they do
         // nothing at all.
@@ -140,20 +160,20 @@ ShellRoot {
     }
     IpcHandler {
         target: "calendar"
-        function toggle() { Services.AppState.calendarVisible = !Services.AppState.calendarVisible }
+        function toggle() { Services.AppState.togglePanel("calendarVisible") }
     }
     IpcHandler {
         target: "bluetooth"
-        function toggle() { Services.AppState.bluetoothVisible = !Services.AppState.bluetoothVisible }
+        function toggle() { Services.AppState.togglePanel("bluetoothVisible") }
     }
     IpcHandler {
         target: "network"
-        function toggle() { Services.AppState.networkVisible = !Services.AppState.networkVisible }
+        function toggle() { Services.AppState.togglePanel("networkVisible") }
     }
     IpcHandler {
         target: "notifications"
-        function toggle() { Services.AppState.notificationsVisible = !Services.AppState.notificationsVisible }
-        function screenshot() { Services.Notifications.addSystemToast("SCREENSHOT SAVED", "\uf727", false, "screenshot") }
+        function toggle() { Services.AppState.togglePanel("notificationsVisible") }
+        function screenshot() { Services.Notifications.screenshotToast() }
     }
     IpcHandler {
         target: "bar"
@@ -213,6 +233,7 @@ ShellRoot {
     Widgets.LazyPanel { preloadMs: 2520; shown: Services.AppState.usbVisible;           panel: Component { USBPanel {} } }
     Widgets.LazyPanel { preloadMs: 2640; shown: Services.AppState.trayMenuVisible;      panel: Component { TrayMenu {} } }
     Widgets.LazyPanel { preloadMs: 2760; shown: Services.AppState.processVisible;       panel: Component { ProcessPanel {} } }
+    Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.switcherVisible;     panel: Component { Switcher {} } }
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.launcherVisible;      panel: Component { Launcher {} } }
     Widgets.LazyPanel { preloadMs: 3000; shown: Services.AppState.wallpaperVisible;     panel: Component { WallpaperPicker {} } }
     Widgets.LazyPanel { preloadMs: 3360; shown: Services.AppState.clipboardVisible;     panel: Component { Clipboard {} } }

@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 Rectangle {
@@ -19,9 +20,9 @@ Rectangle {
     // Whole containment pill fills with the accent while the panel is open, the
     // same inversion every other active pill uses (see RecordingPill /
     // No inner box, and no hover tint on the plate.
-    color: open ? Services.Colors.ghost
-                : Services.Colors.surfacePill
-    gradient: Services.Prefs.useGradients && (open) ? Services.Colors.accentGradient : null
+    color: open ? Services.Colors.ghost : Services.Colors.surfacePill
+    gradient: Services.Prefs.useGradients && open
+        ? Services.Colors.accentGradient : null
     border.width: 0
     Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
 
@@ -98,6 +99,6 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
-        onClicked: Services.AppState.notificationsVisible = !Services.AppState.notificationsVisible
+        onClicked: Services.AppState.togglePanel("notificationsVisible")
     }
 }

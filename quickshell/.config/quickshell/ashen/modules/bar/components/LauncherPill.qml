@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 Rectangle {
@@ -18,15 +19,15 @@ Rectangle {
     // Fills with the accent while open, the same inversion every other toggle
     // pill uses (see NotificationPill / RecordingPill). No hover tint: the
     // plate is the pill itself, and it answers the pointer by growing.
-    color: active ? Services.Colors.ghost
-                  : Services.Colors.surfacePill
-    gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
+    color: active ? Services.Colors.ghost : Services.Colors.surfacePill
+    gradient: Services.Prefs.useGradients && active
+        ? Services.Colors.accentGradient : null
     border.width: 0
     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
     Text {
         anchors.centerIn: parent
-        text: "\uE9B0"
+        text: "\uE8B6"
         // Dark only on the accent fill; on the hover plate, which is a surface
         // tone, the glyph lifts to snow. At rest it is `mist` like the pills
         // beside it -- the accent reads as "this one is on", and a pill that is
@@ -43,6 +44,6 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
-        onClicked: Services.AppState.launcherVisible = !Services.AppState.launcherVisible
+        onClicked: Services.AppState.togglePanel("launcherVisible")
     }
 }

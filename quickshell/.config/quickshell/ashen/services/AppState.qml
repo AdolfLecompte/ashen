@@ -66,11 +66,28 @@ Singleton {
     // the pill catalogue rather than wired to one panel.
     function overlayOpen(name) { return name !== "" && root[name] === true }
 
-    function toggleOverlay(name) {
-        let wasOpen = root[name]
-        for (let n of bigOverlays) root[n] = false
+    // Every panel that opens on a click. One at a time is not a nicety here:
+    // the panels mask the bar's strip out of their input region so the click
+    // reaches the pill, which means nothing else is left to close the panel
+    // that was already up. `wsPreviewId` is not on the list -- it follows the
+    // pointer, it is not something you open.
+    readonly property var panelFlags: ["volumeVisible", "batteryVisible", "mediaVisible",
+        "notificationsVisible", "settingsVisible", "powerMenuVisible", "calendarVisible",
+        "networkVisible", "bluetoothVisible", "usbVisible", "processVisible",
+        "clipboardVisible", "launcherVisible", "wallpaperVisible", "utilitiesVisible",
+        "trayMenuVisible", "switcherVisible"]
+    function closeOthers(name) {
+        for (let n of root.panelFlags) if (n !== name && root[n] === true) root[n] = false
+    }
+    // What every pill and every keybind goes through: the one already open
+    // steps down, and the one asked for takes its place in a single click.
+    function togglePanel(name) {
+        const wasOpen = root[name] === true
+        root.closeOthers(name)
         root[name] = !wasOpen
     }
+    // Kept as the name the overlays were written against; the reach is wider now.
+    function toggleOverlay(name) { root.togglePanel(name) }
     function closeBigOverlays() {
         for (let n of bigOverlays) root[n] = false
     }
@@ -216,6 +233,20 @@ Singleton {
         root.wsPreviewId = id
     }
     property bool powerMenuVisible: false
+    // The window switcher. It has no pill of its own: the keybind opens it and
+    // the same keybind steps through it, so the index lives here too.
+    property bool switcherVisible: false
+    property int switcherIndex: 0
+    // How many windows the panel found. Zero means it has not been built yet:
+    // the keybind that OPENS the switcher also asks for a step, and that ask
+    // arrives before the panel exists, so it is held here until it does.
+    property int switcherCount: 0
+    property int switcherPending: 0
+    function stepSwitcher(d) {
+        if (root.switcherCount <= 0) { root.switcherPending += d; return }
+        const n = root.switcherCount
+        root.switcherIndex = ((root.switcherIndex + d) % n + n) % n
+    }
     property bool calendarVisible: false
     property bool networkVisible: false
     property real volumePillW: 44
@@ -322,6 +353,7 @@ Singleton {
             root.closeTrayMenu()
             return
         }
+        root.closeOthers("trayMenuVisible")
         root.trayMenuHandle = item.menu
         root.trayMenuCenterX = centerX
         root.trayMenuCenterY = centerY !== undefined ? centerY : root.trayMenuCenterY

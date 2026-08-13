@@ -38,7 +38,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: Services.AppState.calendarVisible = !Services.AppState.calendarVisible
+        onClicked: Services.AppState.togglePanel("calendarVisible")
     }
 
     // No hover grow here: the clock is the widest thing on the bar and it sits

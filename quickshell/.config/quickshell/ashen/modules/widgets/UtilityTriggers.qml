@@ -334,7 +334,7 @@ Scope {
                             Services.AppState.utilitiesPillW = drawerChip.width
                             Services.AppState.utilitiesPillH = drawerChip.height
                             Services.AppState.utilitiesSourceEdge = trig.edge
-                            Services.AppState.utilitiesVisible = !Services.AppState.utilitiesVisible
+                            Services.AppState.togglePanel("utilitiesVisible")
                         }
                     }
                 }

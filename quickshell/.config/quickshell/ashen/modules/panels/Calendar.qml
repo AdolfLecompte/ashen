@@ -12,8 +12,16 @@ PanelWindow {
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    // Everything but the bar's strip: a click on a pill has to reach it,
+    // or changing panels costs two. See widgets/ShellMask.qml.
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
     readonly property bool shown: Services.AppState.calendarVisible
     visible: shown || card.closing
+
+    // A day picked in the weather strip lives only as long as the panel is up:
+    // the hero glyph and temperature are the pieces that fly back to the pill,
+    // and the pill always speaks for right now.
+    onShownChanged: if (!shown) panelRef.selDay = 0
 
     // The pill stands aside while its panel is wearing its face.
     Binding {
@@ -32,6 +40,9 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         z: -1
+        // Off while the panel is closing: the window stays mapped for the
+        // animation, and a live dismiss layer ate the next click.
+        enabled: Services.AppState.calendarVisible
         onClicked: Services.AppState.calendarVisible = false
     }
 
@@ -157,12 +168,20 @@ PanelWindow {
         Text {
             id: flyIcon
             readonly property real s: card.lerp(22 / 48, 1, card.morph)
-            text: Services.Weather.icon
+            // The card's own reading, not the service's: a day picked in the
+            // strip changes this, and the pill's copy is only ever today --
+            // which is why selDay is dropped the moment the panel closes.
+            text: panelRef.wxIcon
             color: Services.Colors.neutral
             font.pixelSize: 48
             font.family: "Material Symbols Rounded"
+            // Both flying pieces ride the card's day sweep as well: they are
+            // what the column's headline actually is, so if they stood still
+            // the rest of the column would sweep out from under them.
+            opacity: panelRef.wxSlideFade
             x: card.lerp(pillRef.x + refWx.x + refIcon.x + refIcon.width / 2,
-                         panelRef.x + panelRef.wIconCX, card.morph) - width / 2
+                         panelRef.x + panelRef.wIconCX + panelRef.wxSlideX,
+                         card.morph) - width / 2
             y: card.lerp(pillRef.y + refWx.y + refIcon.y + refIcon.height / 2,
                          panelRef.y + panelRef.wIconCY, card.morph) - height / 2
             transform: Scale {
@@ -176,15 +195,17 @@ PanelWindow {
         Text {
             id: flyTemp
             readonly property real s: card.lerp(13 / 30, 1, card.morph)
-            text: Services.Weather.temp
+            text: panelRef.wxTemp
             // Dim in the bar, bright in the card: it is the headline number
             // there and only a footnote here.
             color: card.mix(Services.Colors.mist, Services.Colors.snow, card.morph)
             font.pixelSize: 30
             font.bold: true
             font.family: "JetBrainsMono NF"
+            opacity: panelRef.wxSlideFade
             x: card.lerp(pillRef.x + refWx.x + refTemp.x + refTemp.width / 2,
-                         panelRef.x + panelRef.wTempCX, card.morph) - width / 2
+                         panelRef.x + panelRef.wTempCX + panelRef.wxSlideX,
+                         card.morph) - width / 2
             y: card.lerp(pillRef.y + refWx.y + refTemp.y + refTemp.height / 2,
                          panelRef.y + panelRef.wTempCY, card.morph) - height / 2
             transform: Scale {

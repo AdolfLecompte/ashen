@@ -380,7 +380,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         cursorShape: Qt.PointingHandCursor
         z: -1
         onClicked: {
-            if (root.hasPlayer) Services.AppState.mediaVisible = !Services.AppState.mediaVisible
+            if (root.hasPlayer) Services.AppState.togglePanel("mediaVisible")
         }
     }
 
