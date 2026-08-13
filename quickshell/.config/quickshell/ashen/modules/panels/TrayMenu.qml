@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import "root:/modules/widgets" as Widgets
 import QtQuick.Controls
 
 import "root:/services" as Services
@@ -15,12 +16,15 @@ PanelWindow {
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    // Everything but the bar's strip: a click on a pill has to reach it,
+    // or changing panels costs two. See widgets/ShellMask.qml.
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
     // stay mapped while the close animation plays
     visible: Services.AppState.trayMenuVisible || closeDelay.running
 
     // Escape has to reach us, so the keyboard is taken while it is open and
     // handed straight back -- the same deal PowerMenu and Settings make.
-    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     readonly property bool shown: Services.AppState.trayMenuVisible
 
@@ -38,6 +42,9 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         z: -1
+        // Off while the panel is closing: the window stays mapped for the
+        // animation, and a live dismiss layer ate the next click.
+        enabled: Services.AppState.trayMenuVisible
         onClicked: Services.AppState.closeTrayMenu()
     }
 

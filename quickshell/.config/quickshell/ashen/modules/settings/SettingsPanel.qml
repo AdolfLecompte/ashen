@@ -13,13 +13,16 @@ PanelWindow {
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    // Everything but the bar's strip: a click on a pill has to reach it,
+    // or changing panels costs two. See widgets/ShellMask.qml.
+    mask: Widgets.ShellMask { winW: win.width; winH: win.height }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.settingsVisible
     visible: shown || closeDelay.running
     onShownChanged: if (!shown) closeDelay.restart()
     Timer { id: closeDelay; interval: card.closeMs }
 
-    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     // One tab per question the user is actually asking; Wi-Fi and Bluetooth
     // share one, since they are the same question.
@@ -69,6 +72,9 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         z: -1
+        // Off while the panel is closing: the window stays mapped for the
+        // animation, and a live dismiss layer ate the next click.
+        enabled: Services.AppState.settingsVisible
         onClicked: Services.AppState.settingsVisible = false
     }
 

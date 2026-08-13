@@ -15,16 +15,19 @@ PanelWindow {
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    // Everything but the bar's strip: a click on a pill has to reach it,
+    // or changing panels costs two. See widgets/ShellMask.qml.
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.powerMenuVisible
     visible: shown || closeDelay.running
     onShownChanged: {
-        if (shown) { root.sel = 0; root.pressedIndex = -1 }
+        if (shown) { root.sel = -1; root.pressedIndex = -1 }
         else closeDelay.restart()
     }
     Timer { id: closeDelay; interval: host.holdMs }
 
-    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     function close() { Services.AppState.powerMenuVisible = false }
 
@@ -32,9 +35,16 @@ PanelWindow {
     // Which tile the keyboard is on, and which one it is holding down. Both
     // live up here because the tiles are built inside the host's `body`, a
     // scope of its own -- they can read `root`, but nothing can reach in.
-    property int sel: 0
+    // -1 is "nothing picked yet": the menu opens with no tile chosen, because
+    // preselecting one is the shell deciding which way out you meant. The
+    // first arrow lands on an end, the pointer picks whatever it is over.
+    property int sel: -1
     property int pressedIndex: -1
-    function step(d) { root.sel = (root.sel + d + root.actions.length) % root.actions.length }
+    function step(d) {
+        const n = root.actions.length
+        root.sel = root.sel < 0 ? (d > 0 ? 0 : n - 1)
+                                : (root.sel + d + n) % n
+    }
 
     // Every one of these has to be held down, not clicked. Nothing here is
     // red: error_ is for something that went wrong, and shutting a machine
@@ -52,7 +62,7 @@ PanelWindow {
         color: Services.Colors.scrim
         opacity: root.shown ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPronounced } }
-        MouseArea { anchors.fill: parent; onClicked: root.close() }
+        MouseArea { anchors.fill: parent; enabled: root.shown; onClicked: root.close() }
     }
 
     FocusScope {
@@ -148,7 +158,7 @@ PanelWindow {
 
                             // Pointer or keyboard, the tile only knows it is the
                             // one being looked at.
-                            readonly property bool active: hover.containsMouse || root.sel === tile.index
+                            readonly property bool active: root.sel === tile.index
                             readonly property bool keyHeld: root.pressedIndex === tile.index
                             onKeyHeldChanged: {
                                 if (tile.keyHeld) { holdDrain.stop(); holdFill.restart() }
@@ -300,13 +310,20 @@ PanelWindow {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 hoverEnabled: true
+                                // Pointer and keyboard write the SAME selection,
+                                // so only one tile is ever lit, and leaving the
+                                // tiles leaves nothing picked.
+                                onEntered: root.sel = tile.index
                                 onPressed: { holdDrain.stop(); holdFill.restart() }
                                 // Released, cancelled, or the pointer sliding
                                 // off are all "changed your mind", and only the
                                 // first of the three fires `released`.
                                 onReleased: { holdFill.stop(); holdDrain.restart() }
                                 onCanceled: { holdFill.stop(); holdDrain.restart() }
-                                onExited: { holdFill.stop(); holdDrain.restart() }
+                                onExited: {
+                                    holdFill.stop(); holdDrain.restart()
+                                    if (root.sel === tile.index) root.sel = -1
+                                }
                             }
                         }
                     }

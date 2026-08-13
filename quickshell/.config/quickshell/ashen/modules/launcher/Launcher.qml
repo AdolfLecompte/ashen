@@ -19,6 +19,9 @@ Scope {
         screen: Services.Screens.active
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
+        // Everything but the bar's strip: a click on a pill has to reach it,
+        // or changing panels costs two. See widgets/ShellMask.qml.
+        mask: Widgets.ShellMask { winW: win.width; winH: win.height }
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.launcherVisible
         visible: shown || closeDelay.running
@@ -41,7 +44,7 @@ Scope {
             onTriggered: searchField.forceActiveFocus()
         }
 
-        WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         property string searchText: ""
         property var allApps: []
@@ -166,6 +169,9 @@ Scope {
         MouseArea {
             anchors.fill: parent
             z: -1
+            // Off while the panel is closing: the window stays mapped for the
+            // animation, and a live dismiss layer ate the next click.
+            enabled: Services.AppState.launcherVisible
             onClicked: Services.AppState.launcherVisible = false
         }
 

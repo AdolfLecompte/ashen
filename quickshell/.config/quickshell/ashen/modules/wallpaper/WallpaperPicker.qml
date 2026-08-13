@@ -17,12 +17,15 @@ Scope {
         screen: Services.Screens.active
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
+        // Everything but the bar's strip: a click on a pill has to reach it,
+        // or changing panels costs two. See widgets/ShellMask.qml.
+        mask: Widgets.ShellMask { winW: win.width; winH: win.height }
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.wallpaperVisible
         visible: shown || closeDelay.running
         Timer { id: closeDelay; interval: card.closeMs }
 
-        WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         // Every file found, unfiltered
         property var allWallpapers: []
@@ -160,6 +163,9 @@ Scope {
             color: Qt.rgba(0, 0, 0, 0.0)
             MouseArea {
                 anchors.fill: parent
+                // Off while it is closing: the window stays mapped for the
+                // animation, and a live dismiss layer ate the next click.
+                enabled: Services.AppState.wallpaperVisible
                 onClicked: Services.AppState.wallpaperVisible = false
             }
         }
