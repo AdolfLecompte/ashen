@@ -14,6 +14,9 @@ PanelWindow {
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
+    // Everything but the bar's strip: a click on a pill has to reach it,
+    // or changing panels costs two. See widgets/ShellMask.qml.
+    mask: Widgets.ShellMask { winW: win.width; winH: win.height }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.volumeVisible
     visible: shown || closeDelay.running
@@ -67,6 +70,9 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         z: -1
+        // Off while the panel is closing: the window stays mapped for the
+        // animation, and a live dismiss layer ate the next click.
+        enabled: Services.AppState.volumeVisible
         onClicked: Services.AppState.volumeVisible = false
     }
 
@@ -427,7 +433,7 @@ PanelWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "\ue1ac"
+                            text: Services.Brightness.icon(Services.Brightness.level)
                             color: Services.Colors.ghost
                             font.pixelSize: 15
                             font.family: "Material Symbols Rounded"
