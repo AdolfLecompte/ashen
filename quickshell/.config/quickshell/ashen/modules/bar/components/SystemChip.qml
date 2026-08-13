@@ -2,9 +2,11 @@ import QtQuick
 
 import "root:/services" as Services
 
-// One chip inside the system pill: wifi, bluetooth, volume,
-// battery, keyboard. The caller says what it shows and what a click does; the
-// fill, the hover, the expand and the pill-centre report are shared.
+// One chip inside the system pill: wifi, bluetooth, volume, battery,
+// keyboard. The caller says what it shows and what a click does; the fill, the
+// hover, the expand and the pill-centre report are shared. Give it altGlyph and
+// altLabel and it carries two readings behind one hairline -- sound and
+// brightness ride together in a single wide chip.
 Rectangle {
     id: chip
 
@@ -13,6 +15,10 @@ Rectangle {
     property string pillKey: ""
     property string glyph: ""
     property string label: ""
+    // Second reading, off by default. Its own face and text, same plate.
+    property string altGlyph: ""
+    property string altLabel: ""
+    readonly property bool dual: chip.altGlyph !== "" || chip.altLabel !== ""
     // On: filled with the accent, text goes dark.
     property bool active: false
     // Its panel is open — on a vertical bar that holds the chip expanded.
@@ -83,8 +89,11 @@ Rectangle {
 
     radius: Services.Sizes.innerR
     width: vertical ? Services.Sizes.innerH : inner.width + 16
-    height: vertical ? (expanded ? Services.Sizes.innerH + 13 : Services.Sizes.innerH)
-                     : Services.Sizes.innerH
+    // Sideways the two readings stack, so a dual chip is as tall as its column.
+    height: vertical
+        ? (chip.dual ? inner.height + 12
+                     : (expanded ? Services.Sizes.innerH + 13 : Services.Sizes.innerH))
+        : Services.Sizes.innerH
     Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
 
     // The plate does not react. Hover is the chip growing and its contents
@@ -97,12 +106,16 @@ Rectangle {
     scale: Services.Sizes.hoverScale(hovered, hover.pressed)
     Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
+    // A chip nothing opens is inert: no cursor, no hover growth, no lift to
+    // snow, and clicks go straight through it. Answering the pointer is the
+    // shell saying "this does something", and the keyboard layout does not.
     MouseArea {
         id: hover
         anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: chip.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: if (chip.interactive) chip.activated()
+        enabled: chip.interactive
+        hoverEnabled: chip.interactive
+        cursorShape: Qt.PointingHandCursor
+        onClicked: chip.activated()
     }
 
     // Only a chip with a panel behind it needs to publish where it is.
@@ -115,48 +128,84 @@ Rectangle {
         id: inner
         anchors.centerIn: parent
         spacing: chip.vertical ? 0 : 5
-        Text {
-            id: glyphText
-            text: chip.glyph
-            color: chip.contentColor
-            font.pixelSize: 18
-            font.family: "Material Symbols Rounded"
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
-            // A swapped glyph pops rather than cutting: the volume icon changes
-            // between headphones and speaker often enough to notice.
-            transform: Scale {
-                id: popScale
-                origin.x: glyphText.width / 2
-                origin.y: glyphText.height / 2
-            }
-            onTextChanged: pop.restart()
-            ParallelAnimation {
-                id: pop
-                NumberAnimation { target: glyphText; property: "opacity"; from: 0.0; to: 1.0; duration: 180; easing.type: Services.Sizes.easeOut }
-                NumberAnimation { target: popScale; property: "xScale"; from: 0.7; to: 1.0; duration: 200; easing.type: Services.Sizes.easeOut }
-                NumberAnimation { target: popScale; property: "yScale"; from: 0.7; to: 1.0; duration: 200; easing.type: Services.Sizes.easeOut }
-            }
-        }
-
-        Text {
+        Face { text: chip.glyph; col: chip.contentColor }
+        Reading {
             text: chip.label
-            color: chip.contentColor
-            // Floor and ceiling on the width: the chip is where the panel hangs from,
-            // so a long SSID used to drag the open panel across the screen and "Off"
-            // used to snap it narrow. Past the ceiling the name trails off.
-            width: chip.maxLabelW > 0
-                ? Math.max(chip.minLabelW, Math.min(implicitWidth, chip.maxLabelW))
-                : implicitWidth
-            elide: chip.maxLabelW > 0 ? Text.ElideRight : Text.ElideNone
-            // Sideways there is no room for the words. Zero text, not an empty label:
-            // an empty one still counted as a lane in BarStrip's Grid and reserved the
-            // spacing after the glyph, leaving the icon off-centre in its own chip.
-            visible: chip.label !== "" && (!chip.vertical || chip.expanded)
-            font.pixelSize: chip.vertical ? 9 : 12
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+            col: chip.contentColor
+            vert: chip.vertical
+            shown: chip.label !== "" && (!chip.vertical || chip.expanded || chip.dual)
+            band: chip.maxLabelW > 0
+            loW: chip.minLabelW
+            hiW: chip.maxLabelW
         }
+
+        // No rule between the two readings -- only air, a touch wider than the
+        // gap a glyph keeps from its own number, so they read as two and still
+        // as one chip.
+        Item {
+            visible: chip.dual
+            width: chip.vertical ? 1 : 4
+            height: chip.vertical ? 4 : 1
+        }
+
+        Face { text: chip.altGlyph; col: chip.contentColor; visible: chip.dual }
+        Reading {
+            text: chip.altLabel
+            col: chip.contentColor
+            vert: chip.vertical
+            shown: chip.dual && chip.altLabel !== ""
+        }
+    }
+
+    // A face pops rather than cutting when it is swapped: the volume icon
+    // changes between headphones and speaker often enough to notice. Inline
+    // components cannot see the ids around them, so colour and size come in.
+    component Face: Text {
+        id: face
+        property color col: "white"
+        color: face.col
+        font.pixelSize: 18
+        font.family: "Material Symbols Rounded"
+        Behavior on color { ColorAnimation { duration: 200 } }
+
+        transform: Scale {
+            id: popScale
+            origin.x: face.width / 2
+            origin.y: face.height / 2
+        }
+        onTextChanged: pop.restart()
+        ParallelAnimation {
+            id: pop
+            NumberAnimation { target: face; property: "opacity"; from: 0.0; to: 1.0; duration: 180; easing.type: Easing.OutCubic }
+            NumberAnimation { target: popScale; property: "xScale"; from: 0.7; to: 1.0; duration: 200; easing.type: Easing.OutCubic }
+            NumberAnimation { target: popScale; property: "yScale"; from: 0.7; to: 1.0; duration: 200; easing.type: Easing.OutCubic }
+        }
+    }
+
+    // The words next to a face. Only the first reading takes the width band.
+    component Reading: Text {
+        id: read
+        property color col: "white"
+        property bool vert: false
+        property bool shown: true
+        property bool band: false
+        property real loW: 0
+        property real hiW: 0
+        color: read.col
+        // Floor and ceiling on the width: the chip is where the panel hangs from,
+        // so a long SSID used to drag the open panel across the screen and "Off"
+        // used to snap it narrow. Past the ceiling the name trails off.
+        width: read.band ? Math.max(read.loW, Math.min(implicitWidth, read.hiW))
+                         : implicitWidth
+        elide: read.band ? Text.ElideRight : Text.ElideNone
+        // Sideways there is no room for the words. Zero text, not an empty label:
+        // an empty one still counted as a lane in BarStrip's Grid and reserved the
+        // spacing after the glyph, leaving the icon off-centre in its own chip.
+        visible: read.shown
+        font.pixelSize: read.vert ? 9 : 12
+        font.family: "JetBrainsMono NF"
+        font.bold: true
+        Behavior on color { ColorAnimation { duration: 200 } }
     }
 }

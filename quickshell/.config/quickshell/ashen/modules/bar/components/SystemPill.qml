@@ -58,7 +58,7 @@ Rectangle {
                  : (Services.Network.wifiEnabled ? "Searching" : "Disabled"))
             onActivated: {
                 Services.AppState.networkTab = "wifi"
-                Services.AppState.networkVisible = !Services.AppState.networkVisible
+                Services.AppState.togglePanel("networkVisible")
             }
         }
 
@@ -76,28 +76,33 @@ Rectangle {
                  : (Services.Network.btEnabled ? "\ue1a7" : "\ue1a9")
             label: Services.Network.btDevice !== "" ? Services.Network.btDevice
                  : (Services.Network.btEnabled ? "Scanning" : "Disabled")
-            onActivated: Services.AppState.bluetoothVisible = !Services.AppState.bluetoothVisible
+            onActivated: Services.AppState.togglePanel("bluetoothVisible")
         }
 
+        // Sound and brightness in one wide chip. Brightness had a slot of its
+        // own once and lost it for being a lone number; here it rides with the
+        // level it is always changed next to, and both open the same panel.
         SystemChip {
             pillKey: "volume"
             active: !Services.Audio.muted && Services.Audio.volume > 0
             open: Services.AppState.volumeVisible
             glyph: Services.Audio.icon(Services.Audio.volume, Services.Audio.muted, Services.Audio.headphones)
             label: Services.Audio.muted ? "Mute" : Services.Audio.volume + "%"
-            onActivated: Services.AppState.volumeVisible = !Services.AppState.volumeVisible
+            altGlyph: Services.Brightness.icon(Services.Brightness.level)
+            altLabel: Services.Brightness.level + "%"
+            onActivated: Services.AppState.togglePanel("volumeVisible")
         }
 
         SystemChip {
             pillKey: "battery"
             active: Services.Battery.charging
             open: Services.AppState.batteryVisible
-            glyph: Services.Battery.charging ? "" : Services.Battery.level >= 90 ? "" : Services.Battery.level >= 70 ? "" : Services.Battery.level >= 50 ? "" : Services.Battery.level >= 30 ? "" : Services.Battery.level >= 15 ? "" : ""
+            glyph: Services.Battery.icon(Services.Battery.level, Services.Battery.charging)
             label: Services.Battery.level + "%"
             // Below a fifth it stops being a reading and starts being a warning.
             idleColor: Services.Battery.level >= 20 ? Services.Colors.snow
                                                     : Services.Colors.error_
-            onActivated: Services.AppState.batteryVisible = !Services.AppState.batteryVisible
+            onActivated: Services.AppState.togglePanel("batteryVisible")
         }
     }
 
