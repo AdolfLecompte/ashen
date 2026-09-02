@@ -11,7 +11,7 @@ import "root:/services" as Services
 Scope {
     id: root
 
-    Component.onCompleted: appLoader.running = true
+    Component.onCompleted: Services.Apps.scan()
 
     PanelWindow {
         id: win
@@ -24,14 +24,24 @@ Scope {
         mask: Widgets.ShellMask { winW: win.width; winH: win.height }
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.launcherVisible
+
+        // The two things this panel says when it has nothing to show. Picked on
+        // the opening and on the miss, never per keystroke: a line rewriting
+        // itself under the cursor reads as the list still searching.
+        property string idleLine: Services.Voice.pick("launcher.idle")
+        property string missLine: Services.Voice.pick("launcher.noHits")
+        readonly property bool missed: win.searchText !== "" && win.filteredApps.length === 0
+        onMissedChanged: if (win.missed) win.missLine = Services.Voice.pick("launcher.noHits")
+
         visible: shown || closeDelay.running
         onShownChanged: {
             if (!shown) { closeDelay.restart(); return }
+            win.idleLine = Services.Voice.pick("launcher.idle")
             searchField.text = ""
             focusArm.restart()
             // Rescan every open, not just the first: picks up installs/uninstalls
             // without needing a shell restart. Guard against overlapping runs.
-            if (!appLoader.running) appLoader.running = true
+            Services.Apps.scan()
         }
         // Long enough for the whole exit: the window used to unmap at 300 ms
         // while the collapse still had 220 to run, which cut it dead.
@@ -47,7 +57,9 @@ Scope {
         WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         property string searchText: ""
-        property var allApps: []
+        // Read through, never copied: a second list is a second thing to keep
+        // in step.
+        readonly property var allApps: Services.Apps.all
         property string activeCategory: "All"
         property int selectedIndex: 0
 
@@ -109,55 +121,10 @@ Scope {
             return apps.slice(0, 50)
         }
 
-        // Apps are loaded in a single process (find + parse) instead of two sequential trips.
-        // Preloaded when quickshell starts (Scope's Component.onCompleted) so the list
-        // is already there the first time the launcher opens, then re-run on every
-        // subsequent open (toggle() above) to pick up installs/uninstalls since last scan.
-        Process {
-            id: appLoader
-            command: ["sh", "-c",
-                // Walk XDG_DATA_HOME + XDG_DATA_DIRS, not two hardcoded paths: flatpak
-                // exports under dirs the old find never saw. Line by line, because Steam's
-                // shortcuts have spaces; deduped by desktop id, earlier dirs winning.
-                "seen=''; for d in \"${XDG_DATA_HOME:-$HOME/.local/share}\" $(echo \"${XDG_DATA_DIRS:-/usr/local/share:/usr/share}\" | tr ':' ' '); do [ -d \"$d/applications\" ] || continue; find \"$d/applications\" -name '*.desktop' 2>/dev/null; done | while IFS= read -r f; do id=${f##*/}; case \" $seen \" in *\" $id \"*) continue ;; esac; seen=\"$seen $id\"; echo '---'; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
-            ]
-            running: false
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    let apps = []
-                    let blocks = text.split("---").filter(b => b.trim().length > 0)
-                    for (let block of blocks) {
-                        let lines = block.trim().split("\n")
-                        let app = { name: "", comment: "", exec: "", icon: "", category: "Other", noDisplay: false }
-                        for (let line of lines) {
-                            if (line.startsWith("Name=") && app.name === "") app.name = line.substring(5).trim()
-                            else if (line.startsWith("Comment=") && app.comment === "") app.comment = line.substring(8).trim()
-                            // @@u/@@ are flatpak's file-forwarding markers; with no file
-                            // args left after the field codes go, they are dead weight
-                            else if (line.startsWith("Exec=") && app.exec === "") app.exec = line.substring(5).trim().replace(/ %[uUfFdDnNickvm]/g, "").replace(/ @@[uU]?(?= |$)/g, "")
-                            else if (line.startsWith("Icon=") && app.icon === "") app.icon = line.substring(5).trim()
-                            else if (line.startsWith("Categories=") && app.category === "Other") {
-                                let cats = line.substring(11).split(";")
-                                if (cats.some(c => ["WebBrowser","Network","Email"].includes(c))) app.category = "Internet"
-                                else if (cats.some(c => ["Development","IDE"].includes(c))) app.category = "Development"
-                                else if (cats.some(c => ["System","Settings","PackageManager"].includes(c))) app.category = "System"
-                                else if (cats.some(c => ["Utility","Accessibility"].includes(c))) app.category = "Utility"
-                                else if (cats.some(c => ["Game","Games"].includes(c))) app.category = "Games"
-                                else if (cats.some(c => ["Graphics","Photography"].includes(c))) app.category = "Graphics"
-                                else if (cats.some(c => ["Office","Spreadsheet"].includes(c))) app.category = "Office"
-                            }
-                            else if (line.startsWith("NoDisplay=true")) app.noDisplay = true
-                        }
-                        if (app.name.length > 0 && !app.noDisplay && app.exec.length > 0) {
-                            apps.push(app)
-                        }
-                    }
-                    apps.sort((a, b) => a.name.localeCompare(b.name))
-                    win.allApps = apps
-                }
-            }
-        }
-
+        // The list itself lives in Services.Apps: Settings offers the same
+        // programs when you pick a browser or a terminal, and two scans would
+        // disagree the moment one went stale. Re-asked on every open, which is
+        // what picks up an install since last time.
         Timer {
             id: themeTimer
             interval: 150
@@ -233,7 +200,7 @@ Scope {
                     width: parent.width
                     height: 52
                     radius: 10
-                    color: Services.Colors.ghostAlpha(0.1)
+                    color: Services.Colors.fillLine
                     border.color: searchField.activeFocus ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
                     border.width: 1
                     Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
@@ -257,7 +224,7 @@ Scope {
 
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Search applications..."
+                                text: win.idleLine
                                 color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsSectionTitle
                                 font.family: "JetBrainsMono NF"
@@ -326,9 +293,9 @@ Scope {
                                 height: 30
                                 radius: 8
                                 // Only the sliding indicator carries the active fill;
-                                // idle slots are bare (hover just brightens them).
-                                color: active ? "transparent"
-                                    : catHover.containsMouse ? Services.Colors.ghostAlpha(0.15) : "transparent"
+                                // idle slots are bare -- hover only brightens them,
+                                // it never paints a plate.
+                                color: "transparent"
                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
                                 Text {
@@ -336,7 +303,9 @@ Scope {
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     text: modelData.icon
-                                    color: active ? Services.Colors.accentText : Services.Colors.mist
+                                    color: active ? Services.Colors.accentText
+                                         : catHover.containsMouse ? Services.Colors.snow
+                                         : Services.Colors.mist
                                     font.pixelSize: 16
                                     font.family: "Material Symbols Rounded"
                                 }
@@ -363,6 +332,32 @@ Scope {
                     color: "transparent"
                     clip: true
 
+                    // A search that matched nothing. Not an error and not an
+                    // empty box: the panel says so itself, where the rows
+                    // would have been.
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        opacity: win.missed ? 1 : 0
+                        visible: opacity > 0.01
+                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "\ue8b6"
+                            color: Services.Colors.ghost
+                            font.pixelSize: 28
+                            font.family: "Material Symbols Rounded"
+                        }
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: win.missLine
+                            color: Services.Colors.mist
+                            font.pixelSize: Services.Sizes.fsBody
+                            font.family: "JetBrainsMono NF"
+                        }
+                    }
+
                     ListView {
                         id: appList
                         anchors.fill: parent
@@ -383,7 +378,7 @@ Scope {
                             radius: 8
                             // Fill alone marks the selection; the outline read as
                             // a glow and nothing else in the shell frames a row.
-                            color: index === win.selectedIndex ? Services.Colors.ghostAlpha(0.18) : "transparent"
+                            color: index === win.selectedIndex ? Services.Colors.fillRest : "transparent"
                             border.width: 0
                             Behavior on color { ColorAnimation { duration: Services.Sizes.msInstant } }
 
@@ -397,13 +392,26 @@ Scope {
                                 Rectangle {
                                     width: 40; height: 40
                                     radius: 10
-                                    color: Services.Colors.ghostAlpha(0.15)
+                                    color: Services.Colors.fillLine
 
                                     Image {
                                         id: appImg
                                         anchors.fill: parent
                                         anchors.margins: 6
-                                        source: modelData.icon ? (modelData.icon.startsWith("/") ? ("file://" + modelData.icon) : Quickshell.iconPath(modelData.icon, 48)) : ""
+                                        // No size overload exists -- iconPath is
+                                        // (icon), (icon, check: bool) or (icon,
+                                        // fallback: string), so the 48 that used
+                                        // to sit here was landing on `check`.
+                                        // A missing icon loads as Ready with Qt's
+                                        // placeholder rather than failing, so the
+                                        // glyph behind this never got its turn:
+                                        // the theme's generic app icon is the
+                                        // honest fallback.
+                                        source: modelData.icon
+                                            ? (modelData.icon.startsWith("/")
+                                               ? ("file://" + modelData.icon)
+                                               : Quickshell.iconPath(modelData.icon, "application-x-executable"))
+                                            : ""
                                         fillMode: Image.PreserveAspectFit
                                         visible: status === Image.Ready
                                         opacity: 0.85

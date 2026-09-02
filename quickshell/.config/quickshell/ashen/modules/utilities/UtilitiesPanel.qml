@@ -18,7 +18,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; utilEdge: Services.AppState.utilitiesSourceEdge }
     visible: Services.AppState.utilitiesVisible || closeDelay.running
 
     WlrLayershell.layer: WlrLayer.Overlay
@@ -155,9 +155,7 @@ PanelWindow {
                                 width: card.tileW
                                 height: card.tileH
                                 radius: Services.Sizes.cardR
-                                color: on ? Services.Colors.ghost
-                                     : (tileHover.containsMouse ? Services.Colors.fillHover
-                                                                : Services.Colors.fillInset)
+                                color: on ? Services.Colors.ghost : Services.Colors.fillInset
                                 gradient: Services.Prefs.useGradients && on
                                     ? Services.Colors.accentGradient : null
                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }

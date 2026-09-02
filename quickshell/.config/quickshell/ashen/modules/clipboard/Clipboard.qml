@@ -14,13 +14,19 @@ Scope {
 
     PanelWindow {
         id: win
+        // The three silences of this panel, each picked once rather than on
+        // every keystroke -- a line rewriting itself as you type reads as a
+        // list still searching.
+        property string emptyLine: Services.Voice.pick("clipboard.empty")
+        property string noShotsLine: Services.Voice.pick("clipboard.noShots")
+        property string missLine: Services.Voice.pick("search.noMatch")
         anchors { top: true; left: true; right: true; bottom: true }
         screen: Services.Screens.active
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
         // Everything but the bar's strip: a click on a pill has to reach it,
         // or changing panels costs two. See widgets/ShellMask.qml.
-        mask: Widgets.ShellMask { winW: win.width; winH: win.height }
+        mask: Widgets.ShellMask { winW: win.width; winH: win.height; utilEdge: Services.AppState.clipboardSourceEdge }
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.clipboardVisible
         visible: shown || closeDelay.running
@@ -321,7 +327,7 @@ Scope {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
                                 radius: 12
-                                color: Services.Colors.ghostAlpha(0.1)
+                                color: Services.Colors.fillLine
                                 // A resting outline is decoration; only focus earns one.
                                 border.color: Services.Colors.ghost
                                 border.width: searchField.activeFocus ? 1 : 0
@@ -384,9 +390,9 @@ Scope {
                                 Layout.preferredWidth: 42
                                 Layout.preferredHeight: 42
                                 radius: 12
-                                color: wipeHover.containsMouse ? Services.Colors.ghostAlpha(0.22)
-                                                               : Services.Colors.ghostAlpha(0.06)
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                color: Services.Colors.fillInset
+                                scale: Services.Sizes.hoverScale(wipeHover.containsMouse, wipeHover.pressed)
+                                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                                 Text {
                                     anchors.centerIn: parent
@@ -412,8 +418,8 @@ Scope {
                                 visible: win.filtered.length === 0
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                text: win.searchText.length > 0 ? "Nothing matches that."
-                                     : win.onImages ? "No captures kept yet." : "Nothing copied yet."
+                                text: win.searchText.length > 0 ? win.missLine
+                                     : win.onImages ? win.noShotsLine : win.emptyLine
                                 color: Services.Colors.ash
                                 font.pixelSize: 12
                                 font.family: "JetBrainsMono NF"
@@ -448,8 +454,8 @@ Scope {
                                         anchors.fill: parent
                                         anchors.margins: 4
                                         radius: 12
-                                        color: index === win.selectedIndex ? Services.Colors.ghostAlpha(0.2)
-                                                                           : Services.Colors.ghostAlpha(0.06)
+                                        color: index === win.selectedIndex ? Services.Colors.fillRest
+                                                                           : Services.Colors.fillInset
                                         Behavior on color { ColorAnimation { duration: Services.Sizes.msInstant } }
 
                                         Text {
@@ -520,15 +526,15 @@ Scope {
                                         anchors.fill: parent
                                         anchors.margins: 4
                                         radius: 12
-                                        color: index === win.selectedIndex ? Services.Colors.ghostAlpha(0.24)
-                                                                           : Services.Colors.ghostAlpha(0.06)
+                                        color: index === win.selectedIndex ? Services.Colors.fillRest
+                                                                           : Services.Colors.fillInset
                                         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
                                         ClippingRectangle {
                                             anchors.fill: parent
                                             anchors.margins: 6
                                             radius: 9
-                                            color: Services.Colors.ghostAlpha(0.12)
+                                            color: Services.Colors.fillLine
 
                                             Image {
                                                 anchors.fill: parent

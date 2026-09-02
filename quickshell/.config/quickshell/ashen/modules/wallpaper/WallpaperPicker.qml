@@ -48,12 +48,15 @@ Scope {
             return l.endsWith(".mp4") || l.endsWith(".webm") || l.endsWith(".mkv") || l.endsWith(".mov")
         }
 
-        // QML's Image cannot decode video, so videos are previewed with the
-        // frame ashen-wallpaper-thumbs.sh cached for them
+        // Every card reads the cached thumb: videos cannot be decoded by
+        // Image at all, and a 4K png costs a full decode per card otherwise.
         function previewFor(p) {
-            if (!isVideo(p)) return "file://" + p
             let name = p.split("/").pop()
             return "file://" + Quickshell.env("HOME") + "/.cache/ashen_wall_thumbs/" + name + ".jpg"
+        }
+        // Fallback while the thumb is still being written (first run).
+        function originalFor(p) {
+            return isVideo(p) ? "" : "file://" + p
         }
 
         // `category` is the tab you pressed; `shownCategory` is what the
@@ -68,10 +71,21 @@ Scope {
         readonly property int staticCount: allWallpapers.length - animatedCount
 
         property int currentIndex: 0
-        readonly property real skew: -0.16
-        readonly property real cardH: Math.min(200, height * 0.2)
-        readonly property real cardW: 340
-        readonly property real bandHeight: cardH + 20
+        // Portrait cards: tall enough that the picture inside can slide
+        // behind the frame without the crop turning into a letterbox.
+        readonly property real skew: -0.07
+        readonly property real cardH: Math.min(460, height * 0.46)
+        // cardW is the pitch of the carousel, not the card: the front one
+        // widens to cardWide and the rest sit at cardNarrow.
+        // The pitch is the narrow card plus the gap; the widening in the
+        // middle is paid for by pushing its neighbours aside (slot.shift), so
+        // the gap reads the same everywhere. A fixed pitch alone left a wide
+        // hole out at the sides and a tight one in the middle.
+        readonly property real cardGap: 16
+        readonly property real cardNarrow: 258
+        readonly property real cardWide: 370
+        readonly property real cardW: cardNarrow + cardGap
+        readonly property real bandHeight: cardH + 24
 
         // The carousel is inside the card's body, which is rebuilt on every
         // open, so it is reached through what the body publishes -- never held
@@ -79,6 +93,9 @@ Scope {
         readonly property Item listView: card.bodyItem ? card.bodyItem.listView : null
 
         onShownCategoryChanged: {
+            // While the picker is placing itself the index is already chosen;
+            // resetting it here is what dragged the carousel off its target.
+            if (win.landing) return
             currentIndex = 0
             if (!win.listView) return
             win.listView.currentIndex = 0
@@ -112,19 +129,108 @@ Scope {
             let idx = cur ? win.wallpapers.indexOf(cur) : -1
             if (idx < 0) idx = 0
             win.currentIndex = idx
-            if (!win.listView) return
-            win.listView.currentIndex = idx
-            // Defer the scroll so the ListView has realised its delegates.
-            Qt.callLater(function() {
-                if (win.listView) win.listView.positionViewAtIndex(idx, ListView.Center)
-            })
+            win.pendingIndex = idx
+            settleTimer.tries = 0
+            settleTimer.ticks = 0
+            win.settleAt()
+        }
+
+        // Where the carousel still has to land, -1 once it is there.
+        property int pendingIndex: -1
+        // True while the picker places itself. The strict range animates every
+        // correction it makes, so the entrance has to be silent: the carousel
+        // must open ON the wallpaper you wear, not travel to it.
+        readonly property bool landing: pendingIndex >= 0
+
+        // The one door to the selection. The view owns currentIndex and writes
+        // back through onCurrentIndexChanged; binding it the other way too
+        // closed a loop that fought every imperative move.
+        function select(i) {
+            if (win.wallpapers.length === 0) return
+            const t = Math.max(0, Math.min(win.wallpapers.length - 1, i))
+            if (win.listView) win.listView.currentIndex = t
+            else win.currentIndex = t
+        }
+
+        // positionViewAtIndex answers with whatever the view has realised so
+        // far, and the strict range then drags it somewhere else -- it opened
+        // several cards off the wallpaper you are actually wearing. So the
+        // landing is arithmetic instead, on the view's own numbers: with a
+        // strict highlight range the items are laid out from content x 0 and
+        // the header sits OUTSIDE that origin, so a card's content x is
+        // index * cardW -- the header width is not in it. Centring it means
+        // pulling back half a viewport minus half a card.
+        //
+        // Flickable does not clamp an assigned contentX on the spot; it fixes
+        // it up a frame later, once the delegates around it exist. So the
+        // check reads what the PREVIOUS tick actually left behind before
+        // asserting the position again -- at the ends of the list that fixup
+        // is what moved it, since there the view had nothing realised yet to
+        // hold the position against.
+        function centreX(i) {
+            const lv = win.listView
+            if (!lv) return 0
+            // The realised card is the ground truth; the arithmetic is the
+            // guess that realises it in the first place.
+            const it = lv.itemAtIndex(i)
+            const x = it ? it.x : i * win.cardW
+            const w = it ? it.width : win.cardW
+            return x - (lv.width - w) / 2
+        }
+
+        function settleAt() {
+            const lv = win.listView
+            if (!lv || win.pendingIndex < 0) return
+            settleTimer.ticks++
+            // Give up rather than spin: better a carousel one card off than a
+            // timer running behind a closed panel.
+            if (settleTimer.ticks > 40) { win.landed(lv); return }
+            if (lv.width <= 0 || lv.count <= win.pendingIndex) { settleTimer.restart(); return }
+
+            const target = win.centreX(win.pendingIndex)
+            const put = Math.abs(lv.contentX - target) < 0.5 && !lv.moving && !lv.flicking
+            settleTimer.tries = put ? settleTimer.tries + 1 : 0
+            if (settleTimer.tries >= 3) { win.landed(lv); return }
+
+            lv.contentX = target
+            lv.forceLayout()
+            settleTimer.restart()
+        }
+
+        function landed(lv) {
+            settleTimer.stop()
+            const i = win.pendingIndex
+            // Cleared first: the view's index is a choice again from here on.
+            win.pendingIndex = -1
+            if (!lv) return
+            lv.currentIndex = i
+            win.currentIndex = i
+        }
+
+        Timer {
+            id: settleTimer
+            interval: 50
+            // Consecutive ticks that found the view where it was put.
+            property int tries: 0
+            // Every tick, landed or not -- the deadline.
+            property int ticks: 0
+            onTriggered: win.settleAt()
         }
 
         // awww vs mpvpaper, gif frames for matugen, killing the other backend:
         // all of that lives in the script, this just hands it a path
         function applyWallpaper(path) {
             if (!path) return
+            // The look this wallpaper remembers goes on FIRST: the script runs
+            // matugen itself, and it reads the mode and the style off disk.
+            Services.Looks.prepare(path)
             Quickshell.execDetached([Services.Paths.script("ashen-wallpaper.sh"), path])
+            // The picker goes the instant you choose, and the script takes
+            // seconds to repaint everything: without a word the shell just
+            // changes colour under you.
+            Services.Notifications.addSystemToast(Services.Voice.pick("wallpaper.applied"),
+                                                  "\ue40b", false, "wallpaper",
+                                                  { title: "WALLPAPER SET" })
             Services.AppState.wallpaperVisible = false
         }
 
@@ -175,18 +281,11 @@ Scope {
             anchors.fill: parent
             focus: true
 
-            Keys.onLeftPressed: {
-                if (win.wallpapers.length === 0) return
-                if (win.currentIndex > 0) win.currentIndex--
-                else win.currentIndex = win.wallpapers.length - 1
-                if (win.listView) win.listView.currentIndex = win.currentIndex
-            }
-            Keys.onRightPressed: {
-                if (win.wallpapers.length === 0) return
-                if (win.currentIndex < win.wallpapers.length - 1) win.currentIndex++
-                else win.currentIndex = 0
-                if (win.listView) win.listView.currentIndex = win.currentIndex
-            }
+            // Wrap at both ends, then let select() do the moving.
+            Keys.onLeftPressed: win.select(win.currentIndex > 0 ? win.currentIndex - 1
+                                                                : win.wallpapers.length - 1)
+            Keys.onRightPressed: win.select(win.currentIndex < win.wallpapers.length - 1
+                                            ? win.currentIndex + 1 : 0)
             // Up/Down switch category
             Keys.onUpPressed: win.category = "static"
             Keys.onDownPressed: win.category = "animated"
@@ -310,8 +409,8 @@ Scope {
 
                         Repeater {
                             model: [
-                                { id: "static",   label: "Static",   icon: "" },
-                                { id: "animated", label: "Animated", icon: "" }
+                                { id: "static",   label: "Static",   icon: "\ue3f4" },
+                                { id: "animated", label: "Animated", icon: "\ue02c" }
                             ]
 
                             delegate: Rectangle {
@@ -325,9 +424,9 @@ Scope {
                                 width: tabRow.implicitWidth + 20
                                 radius: 9
                                 // Only the sliding indicator carries the active fill;
-                                // idle tabs are bare (hover just brightens them).
-                                color: active ? "transparent"
-                                    : tabHover.containsMouse ? Services.Colors.ghostAlpha(0.12) : "transparent"
+                                // idle tabs are bare -- hover only brightens them,
+                                // it never paints a plate.
+                                color: "transparent"
 
                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
@@ -338,14 +437,18 @@ Scope {
 
                                     Text {
                                         text: parent.parent.modelData.icon
-                                        color: parent.parent.active ? Services.Colors.accentText : Services.Colors.snow
+                                        color: parent.parent.active ? Services.Colors.accentText
+                                             : tabHover.containsMouse ? Services.Colors.snow
+                                             : Services.Colors.mist
                                         font.pixelSize: 13
                                         font.family: "Material Symbols Rounded"
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
                                     Text {
                                         text: parent.parent.modelData.label + "  " + parent.parent.count
-                                        color: parent.parent.active ? Services.Colors.accentText : Services.Colors.snow
+                                        color: parent.parent.active ? Services.Colors.accentText
+                                             : tabHover.containsMouse ? Services.Colors.snow
+                                             : Services.Colors.mist
                                         font.pixelSize: 11
                                         font.bold: parent.parent.active
                                         font.family: "JetBrainsMono NF"
@@ -387,7 +490,7 @@ Scope {
                     Widgets.SlideSwap {
                         id: catSlide
                         axis: "horizontal"
-                        travel: 40
+                        travel: 56
                         index: win.category === "animated" ? 1 : 0
                         animate: !win.settling
                         onCommit: win.shownCategory = win.category
@@ -403,9 +506,22 @@ Scope {
                         clip: true
                         z: 10
 
+                        // One card per notch: a horizontal list ignores the
+                        // vertical wheel, and that is the wheel people have.
+                        WheelHandler {
+                            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                            property real acc: 0
+                            function step(d) { win.select(win.currentIndex + d) }
+                            onWheel: event => {
+                                acc += event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x
+                                while (acc >= 120) { acc -= 120; step(-1) }
+                                while (acc <= -120) { acc += 120; step(1) }
+                            }
+                        }
+
                         readonly property real amt: bodyRoot.piece(1)
                         opacity: catSlide.fade * band.amt
-                        transform: Translate { x: catSlide.offX; y: (1 - band.amt) * 26 }
+                        transform: Translate { x: catSlide.offX; y: (1 - band.amt) * 34 }
 
                         ListView {
                             id: view
@@ -414,7 +530,6 @@ Scope {
                             clip: false
                             spacing: 0
                             model: win.wallpapers.length
-                            currentIndex: win.currentIndex
 
                             // Preload neighbouring cards so scrolling has no gaps
                             cacheBuffer: Math.round(win.cardW * 4)
@@ -423,12 +538,22 @@ Scope {
                             highlightRangeMode: ListView.StrictlyEnforceRange
                             preferredHighlightBegin: width / 2 - win.cardW / 2
                             preferredHighlightEnd: width / 2 + win.cardW / 2
-                            highlightMoveDuration: 160
+                            // Every correction the strict range makes is animated,
+                            // so the opening slide is this number: zero while the
+                            // picker is placing itself.
+                            highlightMoveDuration: win.landing ? 0 : Services.Sizes.msPronounced
 
                             header: Item { width: view.width / 2 - win.cardW / 2 }
                             footer: Item { width: view.width / 2 - win.cardW / 2 }
 
-                            onCurrentIndexChanged: win.currentIndex = currentIndex
+                            // The view is the source of truth for the selection;
+                            // while landing its index is still being placed, so it
+                            // is not a choice anyone made.
+                            onCurrentIndexChanged: if (!win.landing) win.currentIndex = currentIndex
+                            // Delegates and geometry both arrive late, and either
+                            // one moves the ground under the landing.
+                            onCountChanged: win.settleAt()
+                            onWidthChanged: win.settleAt()
 
                             delegate: Item {
                                 id: slot
@@ -444,22 +569,48 @@ Scope {
                                 // on purpose: the one you are choosing has to be
                                 // obviously bigger than its neighbours.
                                 readonly property real prox: Math.max(0, 1 - Math.abs(slot.dist) / 2)
+                                // 1 only for the card in front, 0 a card out.
+                                readonly property real front: Math.max(0, 1 - Math.abs(slot.dist))
+                                // What the widening in the middle costs this card.
+                                // Each step out owes half of the extra width on
+                                // either side of it, and the fronts always sum to
+                                // 1, so the whole sum collapses to this clamp --
+                                // equal gaps at any scroll position.
+                                readonly property real shift:
+                                    (win.cardWide - win.cardNarrow) / 2 * Math.max(-1, Math.min(1, slot.dist))
 
                                 width: win.cardW
                                 height: view.height
+                                // The pitch is tighter than the widened card, so
+                                // the front one laps over its neighbours -- it has
+                                // to paint on top of them.
+                                z: slot.prox
 
                                 Item {
                                     id: cardRoot
-                                    width: win.cardW - 20
+                                    // The one you are choosing widens towards the
+                                    // wallpaper's own shape; the pitch stays fixed,
+                                    // so the extra width eats the gap, not the list.
+                                    width: win.cardNarrow + (win.cardWide - win.cardNarrow) * slot.front
+                                    // Fixed frame: the card is a window, and a
+                                    // window that also squashes hides the very
+                                    // thing the picture sliding behind it shows.
+                                    height: win.cardH
+
+                                    anchors.centerIn: parent
+                                    anchors.horizontalCenterOffset: slot.shift
+
                                     // The nearer it is, the bigger it gets --
                                     // no Behaviors, because `prox` is already
                                     // continuous and smoothing it only adds lag.
-                                    height: win.cardH * (0.6 + 0.4 * slot.prox)
+                                    // Hover rides on top with its own easing.
+                                    property real hoverBoost: cardHover.containsMouse ? 0.03 : 0
+                                    Behavior on hoverBoost { NumberAnimation { duration: Services.Sizes.msMicro } }
 
-                                    anchors.centerIn: parent
-
-                                    scale: 0.74 + 0.26 * slot.prox
-                                    opacity: 0.22 + 0.78 * slot.prox
+                                    // Gentler than before: the width already
+                                    // carries most of "this is the one".
+                                    scale: 0.88 + 0.12 * slot.prox + cardRoot.hoverBoost
+                                    opacity: 0.34 + 0.66 * slot.prox
 
                                     transform: Matrix4x4 {
                                         matrix: Qt.matrix4x4(
@@ -470,29 +621,77 @@ Scope {
                                         )
                                     }
 
-                                    Image {
-                                        id: img
+                                    // The window: the frame travels, the picture
+                                    // behind it does not, so a card off to the
+                                    // side shows another part of its own image.
+                                    Item {
+                                        id: imgWrap
                                         anchors.fill: parent
-                                        source: win.wallpapers.length > index ? win.previewFor(win.wallpapers[index]) : ""
-                                        sourceSize.width: 360
-                                        sourceSize.height: 240
-                                        fillMode: Image.PreserveAspectCrop
-                                        smooth: true
-                                        asynchronous: true
-                                        cache: true
+                                        // Keeps the effect's capture to the frame;
+                                        // the picture inside overflows on purpose.
+                                        clip: true
                                         visible: false
+
+                                        // How far off centre, over a card and a half.
+                                        readonly property real off: Math.max(-1, Math.min(1, slot.dist / 1.5))
+                                        // Only the cards around the middle pan; past
+                                        // two out the picture is parked, so the far
+                                        // ones stay quiet while the near ones run.
+                                        readonly property real near: Math.max(0, Math.min(1, (2 - Math.abs(slot.dist)) / 0.5))
+                                        // Zero dead centre: the front card frames
+                                        // its wallpaper straight, nothing else does.
+                                        readonly property real ovr: 0.3 * Math.abs(imgWrap.off) * imgWrap.near
+
+                                        Image {
+                                            id: img
+                                            y: 0
+                                            height: parent.height
+                                            width: parent.width * (1 + 2 * imgWrap.ovr)
+                                            x: -imgWrap.ovr * parent.width * (1 + imgWrap.off)
+
+                                            readonly property string path: win.wallpapers.length > index ? win.wallpapers[index] : ""
+                                            property bool fellBack: false
+                                            source: img.path === "" ? "" : win.previewFor(img.path)
+                                            // The thumb may still be baking on the
+                                            // first run; videos have no fallback.
+                                            onStatusChanged: if (status === Image.Error && !fellBack) {
+                                                fellBack = true
+                                                source = win.originalFor(img.path)
+                                            }
+                                            onPathChanged: fellBack = false
+
+                                            // Width only: pinning both fits the thumb
+                                            // inside that box and threw away the
+                                            // resolution the cache had just baked.
+                                            sourceSize.width: 1000
+                                            fillMode: Image.PreserveAspectCrop
+                                            smooth: true
+                                            asynchronous: true
+                                            cache: true
+                                        }
                                     }
 
-                                    Rectangle {
+                                    // What the tilt has to rasterise is the MASK's
+                                    // edge, and an edge sitting exactly on the item
+                                    // bounds is cut hard -- stair steps down the
+                                    // slanted sides. Inset by a pixel and a half the
+                                    // alpha ramp lives inside the texture, so the
+                                    // skew samples a soft edge instead of a cliff.
+                                    Item {
                                         id: maskRect
                                         anchors.fill: parent
-                                        radius: 14
                                         visible: false
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            anchors.margins: 1.5
+                                            radius: 18
+                                            antialiasing: true
+                                        }
                                     }
 
                                     OpacityMask {
                                         anchors.fill: parent
-                                        source: img
+                                        source: imgWrap
                                         maskSource: maskRect
                                         visible: img.status === Image.Ready
                                         opacity: img.status === Image.Ready ? 1.0 : 0.0
@@ -502,7 +701,7 @@ Scope {
                                     // Placeholder while decoding, avoids the black gap
                                     Rectangle {
                                         anchors.fill: parent
-                                        radius: 14
+                                        radius: 18
                                         // Not a card background: a veil over a thumbnail
                                         // that has not decoded yet, deliberately see-through
                                         // so the tile does not flash solid and then fill in.
@@ -511,12 +710,34 @@ Scope {
                                         visible: img.status !== Image.Ready
                                     }
 
+                                    // Name of the file, only legible on the card
+                                    // you are actually looking at.
                                     Rectangle {
-                                        anchors.fill: parent
-                                        radius: 14
-                                        color: "transparent"
-                                        border.color: parent.parent.isCurrent ? Services.Colors.ghost : Services.Colors.snowAlpha(0.08)
-                                        border.width: parent.parent.isCurrent ? 2 : 1
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.bottom: parent.bottom
+                                        anchors.margins: 10
+                                        height: 26
+                                        radius: 8
+                                        color: Qt.rgba(0, 0, 0, 0.55)
+                                        opacity: slot.prox
+                                        visible: opacity > 0.02
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            width: parent.width - 20
+                                            horizontalAlignment: Text.AlignHCenter
+                                            elide: Text.ElideMiddle
+                                            text: {
+                                                if (win.wallpapers.length <= index) return ""
+                                                const n = win.wallpapers[index].split("/").pop()
+                                                const dot = n.lastIndexOf(".")
+                                                return dot > 0 ? n.substring(0, dot) : n
+                                            }
+                                            color: Services.Colors.snow
+                                            font.pixelSize: 11
+                                            font.family: "JetBrainsMono NF"
+                                        }
                                     }
 
                                     // Marks what the card actually is, since a video shows a still frame
@@ -524,7 +745,7 @@ Scope {
                                         visible: win.wallpapers.length > index && win.isAnimated(win.wallpapers[index])
                                         anchors.right: parent.right
                                         anchors.top: parent.top
-                                        anchors.margins: 8
+                                        anchors.margins: 10
                                         height: 20
                                         width: badgeRow.implicitWidth + 12
                                         radius: 6
@@ -536,7 +757,7 @@ Scope {
                                             spacing: 4
 
                                             Text {
-                                                text: ""
+                                                text: ""
                                                 color: Services.Colors.snow
                                                 font.pixelSize: 11
                                                 font.family: "Material Symbols Rounded"
@@ -554,15 +775,13 @@ Scope {
                                     }
 
                                     MouseArea {
+                                        id: cardHover
                                         anchors.fill: parent
+                                        hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            if (parent.parent.isCurrent) {
-                                                win.applyWallpaper(win.wallpapers[win.currentIndex])
-                                            } else {
-                                                win.currentIndex = index
-                                                view.currentIndex = index
-                                            }
+                                            if (slot.isCurrent) win.applyWallpaper(win.wallpapers[win.currentIndex])
+                                            else win.select(slot.index)
                                         }
                                     }
                                 }
@@ -608,12 +827,7 @@ Scope {
                                     cursorShape: Qt.PointingHandCursor
                                     // Within the run you are on, so a dot still
                                     // takes you where it looks like it will.
-                                    onClicked: {
-                                        const t = Math.min(dotsRow.runStart + index,
-                                                           win.wallpapers.length - 1)
-                                        win.currentIndex = t
-                                        view.currentIndex = t
-                                    }
+                                    onClicked: win.select(dotsRow.runStart + index)
                                 }
                             }
                         }
