@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // One Bluetooth device row, shared by the bar panel and the settings tab so
 // both render identically (device-type icon, status, connected mark, forget).
@@ -16,11 +17,9 @@ Rectangle {
 
     height: 54
     radius: 8
-    // hover is declarative so the connected/hover state binding is never
-    // destroyed by an imperative onEntered color assignment
-    color: device.connected ? Services.Colors.ghostAlpha(0.2)
-         : rowMouse.containsMouse ? Services.Colors.ghostAlpha(0.1)
-         : "transparent"
+    // Connected is a state and takes a fill; hover is not, and only lifts the
+    // name to snow. A full-width row does not grow.
+    color: device.connected ? Services.Colors.fillRest : Services.Colors.fillInset
     Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
     // BlueZ reports a freedesktop icon name ("audio-headset", "input-mouse"…);
@@ -60,8 +59,10 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 2
             Text {
-                text: row.device.name
-                color: row.device.connected ? Services.Colors.snow : Services.Colors.mist
+                text: Services.BtLink.displayName(row.device)
+                color: (row.device.connected || rowMouse.containsMouse)
+                    ? Services.Colors.snow : Services.Colors.mist
+                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                 font.pixelSize: 13
                 font.family: "JetBrainsMono NF"
                 font.bold: row.device.connected
@@ -69,7 +70,9 @@ Rectangle {
                 width: parent.width
             }
             Text {
-                text: row.device.pairing ? "Pairing..."
+                // A link in flight says so: the row used to read "Paired" for
+                // the whole of a connect that takes seconds.
+                text: Services.BtLink.busyText(row.device) !== "" ? Services.BtLink.busyText(row.device)
                     : row.device.connected ? "Connected"
                     : (row.device.paired || row.device.bonded) ? "Paired"
                     : row.device.trusted ? "Saved"
@@ -87,27 +90,12 @@ Rectangle {
             font.family: "Material Symbols Rounded"
         }
         // Forget (unpair): only paired devices can be forgotten.
-        Rectangle {
-            id: forgetBtn
-            Layout.preferredWidth: 30
-            Layout.preferredHeight: 30
-            radius: 8
+        Widgets.IconButton {
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
             visible: row.remembered
-            color: forgetMouse.containsMouse ? Services.Colors.ghostAlpha(0.18) : "transparent"
-            Text {
-                anchors.centerIn: parent
-                text: "\ue5cd"
-                color: Services.Colors.ash
-                font.pixelSize: 16
-                font.family: "Material Symbols Rounded"
-            }
-            MouseArea {
-                id: forgetMouse
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
-                onClicked: row.device.forget()
-            }
+            glyph: "\ue5cd"
+            onActivated: row.device.forget()
         }
     }
 
@@ -122,12 +110,10 @@ Rectangle {
         onClicked: {
             if (row.device.connected) {
                 row.device.disconnect()
-            } else if (row.remembered) {
-                row.device.connect()
             } else {
-                // BlueZ rejects connect() without prior bonding
-                row.device.trusted = true
-                row.device.pair()
+                // Pair-or-connect, discovery stopped first and the link chased
+                // after bonding lands. See services/BtLink.qml.
+                Services.BtLink.request(row.device)
             }
         }
     }

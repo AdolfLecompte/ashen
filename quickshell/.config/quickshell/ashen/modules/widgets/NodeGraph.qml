@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // A hub with a ring of fixed slots: what you are connected to in the middle,
@@ -23,6 +24,11 @@ Item {
     // What to say when the ring has nothing on it: an empty orbit around a lone
     // hub looks broken otherwise.
     property string emptyHint: ""
+    // What the graph is waiting on right now -- a sweep, a pairing. It outranks
+    // the empty hint (a ring with things in it can still be scanning) and it is
+    // the one line here that is TYPED: a wait is time passing, and that is what
+    // typing draws.
+    property string waitLine: ""
 
     // While a panel morphs its bar chip into this hub, the hub lends out its
     // face: the flying copies are the ones on screen until they land.
@@ -60,6 +66,54 @@ Item {
     signal scanClosed()
 
     readonly property string scanId: "__scan__"
+    // The slot that says there are more than fit. Pressing it turns the ring
+    // over to the next page rather than growing the card: a ring that changes
+    // size stops being a ring you recognise.
+    readonly property string moreId: "__more__"
+
+    // ── Paging ──────────────────────────────────────────────────────────
+    property int page: 0
+    // How many of the ring's slots carry content on this turn: the scan chip
+    // keeps one whenever it is offered, and the "more" chip takes another as
+    // soon as there is anything that does not fit.
+    readonly property int reservedSlots: (scanEnabled && !scanMode) ? 1 : 0
+    readonly property var pageSource: scanMode ? scanNodes : nodes
+    readonly property bool overflowing:
+        root.pageSource.length > (root.slotCount - root.reservedSlots)
+    readonly property int pageRoom:
+        root.slotCount - root.reservedSlots - (root.overflowing ? 1 : 0)
+    readonly property int pageCount:
+        root.overflowing ? Math.ceil(root.pageSource.length / root.pageRoom) : 1
+    // How many are not on this page at all -- what the chip counts.
+    readonly property int restCount:
+        Math.max(0, root.pageSource.length - root.pageRoom)
+
+    // The list shrank under the page you were on: back to the first, or the
+    // ring would be a page of holes.
+    onPageSourceChanged: if (root.page >= root.pageCount) root.page = 0
+    onScanModeChanged: root.page = 0
+
+    // Turning a page pulls the ring in and throws it back out, the same motion
+    // the radio switching off already had -- so paging and powering down are
+    // one gesture the eye has seen before.
+    property real turnAmt: 1
+    Behavior on turnAmt {
+        NumberAnimation { duration: 190; easing.type: Services.Sizes.easeBox }
+    }
+    function turnPage() {
+        if (root.pageCount < 2) return
+        root.turnAmt = 0
+        turnCommit.restart()
+    }
+    Timer {
+        id: turnCommit
+        interval: 200
+        onTriggered: {
+            root.page = (root.page + 1) % root.pageCount
+            root.publishRing()
+            root.turnAmt = 1
+        }
+    }
 
     function enterScan() {
         beginSwap(scanId)
@@ -137,11 +191,12 @@ Item {
     // Six slots, evenly spaced but rotated 30° so nothing sits dead above or
     // below the hub, where a connector would have nowhere to bend.
     function slotAngle(i) { return (30 + i * 60) * Math.PI / 180 }
-    function slotX(i) { return cx + Math.cos(slotAngle(i)) * ringX * liveAmt }
+    readonly property real ringOut: liveAmt * turnAmt
+    function slotX(i) { return cx + Math.cos(slotAngle(i)) * ringX * ringOut }
     function slotY(i) {
         const s = Math.sin(slotAngle(i))
         // Straight up and down keeps the full radius; the diagonals are flattened.
-        return cy + s * ringY * (Math.abs(s) < 0.9 ? diagonalDrop : 1) * liveAmt
+        return cy + s * ringY * (Math.abs(s) < 0.9 ? diagonalDrop : 1) * ringOut
     }
 
     // ── Connecting: the swap ────────────────────────────────────────────
@@ -168,10 +223,14 @@ Item {
     // under your finger when one comes or goes.
     readonly property var liveRing: {
         const out = []
-        const src = scanMode ? scanNodes : nodes
-        const room = (scanEnabled && !scanMode) ? slotCount - 1 : slotCount
-        for (let i = 0; i < room; i++)
-            out.push(i < src.length ? src[i] : null)
+        const src = root.pageSource
+        const from = root.page * root.pageRoom
+        for (let i = 0; i < root.pageRoom; i++)
+            out.push(from + i < src.length ? src[from + i] : null)
+        if (root.overflowing)
+            out.push({ id: moreId, glyph: "\ue5d3", label: "+" + root.restCount,
+                       sub: "page " + (root.page + 1) + " of " + root.pageCount,
+                       active: false, kind: "more" })
         if (scanEnabled && !scanMode)
             out.push({ id: scanId, glyph: scanGlyph, label: scanLabel,
                        sub: scanSub, active: false, kind: "scan" })
@@ -393,12 +452,13 @@ Item {
             // them, strings a dashed line to it: there is no connection yet,
             // but that is where one would go. It never sets solid — see
             // solidWhenLit — because nothing has been agreed with it.
-            solidWhenLit: !isScan && !root.scanMode
+            solidWhenLit: !isScan && !isMoreSlot && !root.scanMode
 
             // A known network keeps its line; a stranger only gets one under
             // the pointer, because a line claims a relationship.
-            readonly property bool resting: present && !isScan && !root.scanMode
-            readonly property bool onHover: present && (isScan || root.scanMode) && lit
+            readonly property bool isMoreSlot: present && entry.kind === "more"
+            readonly property bool resting: present && !isScan && !isMoreSlot && !root.scanMode
+            readonly property bool onHover: present && (isScan || isMoreSlot || root.scanMode) && lit
             // The elbow only makes sense between a parked middle and a parked
             // slot. While those two are trading places the thread below draws
             // them instead, because two boxes crossing need one line following
@@ -491,7 +551,7 @@ Item {
         x: root.hubX - width / 2
         y: root.hubY - height / 2
         z: 2
-        color: root.hubFilled ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.14)
+        color: root.hubFilled ? Services.Colors.ghost : Services.Colors.fillLine
         gradient: Services.Prefs.useGradients && root.hubFilled ? Services.Colors.accentGradient : null
         Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
@@ -607,14 +667,14 @@ Item {
         }
     }
 
-    Text {
+    Widgets.SaidLine {
         anchors.horizontalCenter: parent.horizontalCenter
         y: root.cy + root.hubR + 30
-        visible: root.ringCount === 0 && root.emptyHint !== ""
-        text: root.emptyHint
-        color: Services.Colors.mist
+        line: root.waitLine !== "" ? root.waitLine
+            : (root.ringCount === 0 ? root.emptyHint : "")
+        // Waiting is written out; an empty ring is simply stated.
+        msPerChar: root.waitLine !== "" ? 26 : 0
         font.pixelSize: 11
-        font.family: "JetBrainsMono NF"
     }
 
     // ── The ring ────────────────────────────────────────────────────────
@@ -635,6 +695,7 @@ Item {
             enabled: !empty
 
             readonly property bool isScan: !empty && modelData.kind === "scan"
+            readonly property bool isMore: !empty && modelData.kind === "more"
             readonly property bool armed: !empty && root.armedId === modelData.id
             readonly property bool dark: (!empty && modelData.active) || promoting || armed
 
@@ -655,8 +716,7 @@ Item {
             z: promoting ? 3 : 1
 
             color: (!empty && modelData.active) || promoting || armed ? Services.Colors.ghost
-                 : nodeHover.containsMouse ? Services.Colors.ghostAlpha(0.32)
-                 : Services.Colors.ghostAlpha(0.14)
+                 : Services.Colors.fillLine
             Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
             // Folded into the hub with the radio off, and it fades on the way
@@ -778,9 +838,11 @@ Item {
                 }
                 // One swap at a time, and the ring is not clickable while it is
                 // folded away.
-                enabled: !node.empty && root.pendingId === "" && root.liveAmt > 0.99
+                enabled: !node.empty && root.pendingId === "" && root.ringOut > 0.99
                 onClicked: {
-                    if (node.isScan) {
+                    if (node.isMore) {
+                        root.turnPage()
+                    } else if (node.isScan) {
                         root.enterScan()
                         root.scanActivated()
                     } else if (root.scanMode) {

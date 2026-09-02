@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // One Wi-Fi network row, shared by the bar panel and the settings tab. The
 // caller sets the width, passes `net` ({ ssid, signal, secure }) and `known`
@@ -15,7 +16,10 @@ Rectangle {
 
     height: 54
     radius: 8
-    color: rowMouse.containsMouse ? Services.Colors.ghostAlpha(0.1) : "transparent"
+    // The plate is there at rest and never changes under the pointer: hover is
+    // that the name lifts to snow. A full-width row does not grow -- it would
+    // climb over its neighbours.
+    color: Services.Colors.fillInset
     Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
     RowLayout {
@@ -35,7 +39,8 @@ Rectangle {
             spacing: 2
             Text {
                 text: row.net.ssid
-                color: Services.Colors.snow
+                color: rowMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                 font.pixelSize: 13
                 font.family: "JetBrainsMono NF"
                 elide: Text.ElideRight
@@ -56,27 +61,12 @@ Rectangle {
             font.family: "Material Symbols Rounded"
         }
         // Forget: only saved (known) networks can be forgotten.
-        Rectangle {
-            id: forgetBtn
-            Layout.preferredWidth: 30
-            Layout.preferredHeight: 30
-            radius: 8
+        Widgets.IconButton {
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
             visible: row.known
-            color: forgetMouse.containsMouse ? Services.Colors.ghostAlpha(0.18) : "transparent"
-            Text {
-                anchors.centerIn: parent
-                text: "\ue5cd"
-                color: Services.Colors.ash
-                font.pixelSize: 16
-                font.family: "Material Symbols Rounded"
-            }
-            MouseArea {
-                id: forgetMouse
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
-                onClicked: row.forget()
-            }
+            glyph: "\ue5cd"
+            onActivated: row.forget()
         }
     }
 
