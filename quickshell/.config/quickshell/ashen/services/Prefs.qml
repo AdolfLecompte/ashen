@@ -60,6 +60,11 @@ Singleton {
     // asked for when the palette comes from the wallpaper.
     property string themeMode: "dark"
 
+    // Interface language, as an i18n/*.json name ("en", "es", "ru", "de").
+    // Empty or unknown reads as English. Read through Services.I18n, never
+    // straight from here: it is the one that knows which files ship.
+    property string language: "en"
+
     // How panels open. "morph": they come out of the capsule you pressed and
     // transform into the panel. "plain": they simply appear, like a window.
     property string panelStyle: "morph"
@@ -323,6 +328,7 @@ Singleton {
             property alias useGradients: root.useGradients
             property alias panelStyle: root.panelStyle
             property alias themeMode: root.themeMode
+            property alias language: root.language
             property alias doNotDisturb: root.doNotDisturb
             property alias keepAwake: root.keepAwake
             property alias notifySound: root.notifySound

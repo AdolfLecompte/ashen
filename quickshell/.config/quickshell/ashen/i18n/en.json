@@ -1,0 +1,6 @@
+{
+  "settings.language.title": "Language",
+  "settings.language.pick": "Interface language",
+  "settings.language.hint": "Anything not translated yet is shown in English.",
+  "settings.language.live": "Applies as you pick it. Nothing restarts."
+}

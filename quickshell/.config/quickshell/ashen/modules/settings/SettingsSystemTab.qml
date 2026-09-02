@@ -64,6 +64,33 @@ Section {
         }
     }
 
+    // The first card of the tab on purpose: everything below it is read in
+    // whatever this one says. Its own title travels with the pick, so the card
+    // is the proof that the language changed.
+    Card {
+        title: Services.I18n.t("settings.language.title")
+
+        SectionLabel { text: Services.I18n.t("settings.language.pick") }
+
+        Segmented {
+            // Names are NOT translated: a language is written in itself, so it
+            // can be recognised by someone who cannot read the current one.
+            options: Services.I18n.languages.map(l => ({ id: l.id, label: l.label }))
+            current: Services.I18n.lang
+            onPicked: id => Services.I18n.setLang(id)
+        }
+
+        Text {
+            Layout.fillWidth: true
+            text: Services.I18n.t("settings.language.hint") + " "
+                + Services.I18n.t("settings.language.live")
+            wrapMode: Text.WordWrap
+            color: Services.Colors.ash
+            font.pixelSize: Services.Sizes.fsMeta
+            font.family: "JetBrainsMono NF"
+        }
+    }
+
     Card {
         title: "Power & Session"
         RowLayout {

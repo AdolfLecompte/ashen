@@ -1,0 +1,6 @@
+{
+  "settings.language.title": "Язык",
+  "settings.language.pick": "Язык интерфейса",
+  "settings.language.hint": "Всё, что ещё не переведено, показывается по-английски.",
+  "settings.language.live": "Применяется сразу. Ничего не перезапускается."
+}

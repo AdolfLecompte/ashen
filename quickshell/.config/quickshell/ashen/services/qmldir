@@ -39,3 +39,4 @@ singleton Release 1.0 Release.qml
 singleton Apps 1.0 Apps.qml
 singleton Picker 1.0 Picker.qml
 singleton Shortcuts 1.0 Shortcuts.qml
+singleton I18n 1.0 I18n.qml
