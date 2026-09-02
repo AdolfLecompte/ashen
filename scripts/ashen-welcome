@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# The first-run screen, and the notes for the version that is running. Both are
+# the same card in the shell; this only says which face to show.
+set -euo pipefail
+
+case "${1:-welcome}" in
+    -h|--help|help)
+        cat <<'USAGE'
+ashen-welcome            the welcome screen, as it appears on a fresh install
+ashen-welcome about      the keys and the commands, straight to that page
+ashen-welcome notes      what changed in the version that is running
+ashen-welcome state      version, what has been seen, how many notes there are
+USAGE
+        ;;
+    notes) qs -c ashen ipc call welcome notes ;;
+    about) qs -c ashen ipc call welcome about ;;
+    state) qs -c ashen ipc call welcome state ;;
+    welcome) qs -c ashen ipc call welcome open ;;
+    *) echo "ashen-welcome: no such command: $1" >&2; exit 1 ;;
+esac
