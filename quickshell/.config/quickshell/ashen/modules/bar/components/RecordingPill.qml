@@ -4,11 +4,7 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills -- except while a recording is
-    // actually running, when Bar.pillsIn() puts it back and it has to agree to
-    // be drawn. Off the bar it is a control you chose not to keep; running, it
-    // is the only thing that can tell you the machine is still capturing.
-    visible: Services.Prefs.pillVisible("recording") || root.active
+    // Off the bar it is not built; while recording, Bar.pillsIn() puts it back.
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -28,7 +24,7 @@ Rectangle {
     radius: Services.Sizes.pillR
     clip: true
     color: active ? Services.Colors.ghost
-                  : Services.Colors.surfacePill
+                  : Services.Colors.pillPlate
     gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
     border.color: active ? Services.Colors.ghost : Services.Colors.fillRest
     border.width: 0

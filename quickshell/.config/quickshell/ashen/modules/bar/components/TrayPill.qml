@@ -10,12 +10,15 @@ Rectangle {
     readonly property bool vertical: Services.Sizes.barVertical
     height: root.vertical ? trayRow.height + 16 : Services.Sizes.pillH
     radius: Services.Sizes.pillR
-    color: Services.Colors.surfacePill
+    color: Services.Colors.pillPlate
     border.color: Services.Colors.fillRest
     border.width: 0
     width: root.vertical ? Services.Sizes.pillH : trayRow.width + 16
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("tray") && (SystemTray.items.values.filter(i => !isSystemItem(i.id)).length > 0)
+    // An empty tray still measures its 16 px of padding, and a slot kept for
+    // that is a hole in the row. `wanted` and not `visible`: read back, an
+    // item's `visible` reports its parent's state too.
+    readonly property bool wanted: SystemTray.items.values.filter(i => !isSystemItem(i.id)).length > 0
+    visible: root.wanted
 
     function isSystemItem(id) {
         let excluded = ["blueman", "nm-applet", "networkmanager", "bluetooth", "pulseaudio", "pipewire"]

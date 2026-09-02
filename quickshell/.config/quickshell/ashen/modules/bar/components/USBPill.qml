@@ -49,17 +49,15 @@ Rectangle {
     height: root.vertical ? (root.present ? Services.Sizes.pillH : 0) : Services.Sizes.pillH
     radius: Services.Sizes.pillR
     color: root.anyMounted ? Services.Colors.ghost
-                           : Services.Colors.surfacePill
+                           : Services.Colors.pillPlate
     gradient: Services.Prefs.useGradients && (root.anyMounted) ? Services.Colors.accentGradient : null
     border.width: 0
     width: root.vertical ? Services.Sizes.pillH : (root.present ? icon.implicitWidth + 24 : 0)
     opacity: (root.takenOver && Services.Pills.wearsFace) ? 0.0 : (root.present ? 1.0 : 0.0)
-    // Hidden from Settings > Bar > Pills. `visible` keys on the device being
-    // there, not on opacity: while the pill is handed over to its panel it is
-    // transparent but must keep its slot, or the strip closes the gap and the
-    // pills either side jump.
-    visible: Services.Prefs.pillVisible("usb")
-        && (root.present || root.takenOver || opacity > 0)
+    // Keyed on the device, not opacity: handed over to its panel the pill is
+    // transparent but must keep its slot.
+    readonly property bool wanted: root.present || root.takenOver || root.opacity > 0
+    visible: root.wanted
     clip: true
     Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
     Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }

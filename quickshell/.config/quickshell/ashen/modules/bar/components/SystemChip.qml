@@ -89,10 +89,11 @@ Rectangle {
 
     radius: Services.Sizes.innerR
     width: vertical ? Services.Sizes.innerH : inner.width + 16
-    // Sideways the two readings stack, so a dual chip is as tall as its column.
+    // On a side bar a chip is a FACE and nothing else -- the reading rides out
+    // of the plate on hover (see `tail`) instead of making the column taller.
+    // A dual chip is two faces, so it is the one that is twice as tall.
     height: vertical
-        ? (chip.dual ? inner.height + 12
-                     : (expanded ? Services.Sizes.innerH + 13 : Services.Sizes.innerH))
+        ? (chip.dual ? inner.height + 12 : Services.Sizes.innerH)
         : Services.Sizes.innerH
     Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
 
@@ -134,7 +135,7 @@ Rectangle {
             text: chip.label
             col: chip.contentColor
             vert: chip.vertical
-            shown: chip.label !== "" && (!chip.vertical || chip.expanded || chip.dual)
+            shown: chip.label !== "" && !chip.vertical
             band: chip.maxLabelW > 0
             loW: chip.minLabelW
             hiW: chip.maxLabelW
@@ -154,7 +155,55 @@ Rectangle {
             text: chip.altLabel
             col: chip.contentColor
             vert: chip.vertical
-            shown: chip.dual && chip.altLabel !== ""
+            shown: chip.dual && chip.altLabel !== "" && !chip.vertical
+        }
+    }
+
+    // The reading, out past the bar. The bar's window is wider than the strip
+    // (Sizes.barSpill) with its input mask still on the strip, so this is only
+    // ever pixels: nothing here hears the pointer, which is also why it can sit
+    // outside its ancestors without the usual click trouble. It starts at the
+    // plate's own edge, so what unrolls reads as the plate and not as a label
+    // that happens to be nearby.
+    readonly property int plateEdge: 8
+    readonly property bool outward: Services.Sizes.barPosition !== "right"
+
+    Rectangle {
+        id: tail
+        visible: chip.vertical && (chip.label !== "" || chip.altLabel !== "")
+        height: chip.height
+        y: 0
+        x: chip.outward ? chip.width + chip.plateEdge : -(width + chip.plateEdge)
+        // Unrolls: the capsule grows and the words are revealed by it, rather
+        // than words fading in over a box that was already there.
+        width: chip.expanded ? tailCol.implicitWidth + 20 : 0
+        clip: true
+        radius: Services.Sizes.innerR
+        color: Services.Colors.surfacePill
+        opacity: chip.expanded ? 1 : 0
+        Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+
+        Column {
+            id: tailCol
+            anchors.centerIn: parent
+            spacing: 4
+            Text {
+                visible: chip.label !== ""
+                text: chip.label
+                color: Services.Colors.snow
+                font.pixelSize: 12
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+            }
+            Text {
+                visible: chip.dual && chip.altLabel !== ""
+                text: chip.altLabel
+                color: Services.Colors.snow
+                font.pixelSize: 12
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+            }
         }
     }
 

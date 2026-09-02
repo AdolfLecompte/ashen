@@ -7,14 +7,12 @@ import "root:/services" as Services
 // and behaves lives there.
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("system")
 
     readonly property bool vertical: Services.Sizes.barVertical
 
     height: root.vertical ? sysRow.height + 16 : Services.Sizes.pillH
     radius: Services.Sizes.pillR
-    color: Services.Colors.surfacePill
+    color: Services.Colors.pillPlate
     border.color: Services.Colors.fillRest
     border.width: 0
     width: root.vertical ? Services.Sizes.pillH : sysRow.width + 16

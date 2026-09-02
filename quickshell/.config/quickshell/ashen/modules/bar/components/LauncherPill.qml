@@ -5,8 +5,6 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("launcher")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -19,7 +17,7 @@ Rectangle {
     // Fills with the accent while open, the same inversion every other toggle
     // pill uses (see NotificationPill / RecordingPill). No hover tint: the
     // plate is the pill itself, and it answers the pointer by growing.
-    color: active ? Services.Colors.ghost : Services.Colors.surfacePill
+    color: active ? Services.Colors.ghost : Services.Colors.pillPlate
     gradient: Services.Prefs.useGradients && active
         ? Services.Colors.accentGradient : null
     border.width: 0

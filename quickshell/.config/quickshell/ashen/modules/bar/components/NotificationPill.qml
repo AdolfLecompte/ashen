@@ -5,8 +5,6 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("notifications")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -20,7 +18,7 @@ Rectangle {
     // Whole containment pill fills with the accent while the panel is open, the
     // same inversion every other active pill uses (see RecordingPill /
     // No inner box, and no hover tint on the plate.
-    color: open ? Services.Colors.ghost : Services.Colors.surfacePill
+    color: open ? Services.Colors.ghost : Services.Colors.pillPlate
     gradient: Services.Prefs.useGradients && open
         ? Services.Colors.accentGradient : null
     border.width: 0

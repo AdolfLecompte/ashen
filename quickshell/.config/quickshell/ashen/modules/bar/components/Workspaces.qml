@@ -11,8 +11,6 @@ import "root:/services" as Services
 // which is plain to see now that the pill draws no full box around them.
 Item {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("workspaces")
 
     // The bar flips the whole strip: chips stack instead of running across.
     readonly property bool vertical: Services.Sizes.barVertical
@@ -125,7 +123,7 @@ Item {
     Rectangle {
         id: pill
         radius: root.pillR
-        color: Services.Colors.surfacePill
+        color: Services.Colors.pillPlate
         border.color: Services.Colors.fillRest
         border.width: 0
 

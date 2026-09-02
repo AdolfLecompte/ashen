@@ -10,8 +10,9 @@ import "root:/services" as Services
 // and takes no clicks, so the strip stays clickable through it.
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("window") && (opacity > 0)
+    // Nothing focused, no readout, no slot.
+    readonly property bool wanted: root.opacity > 0
+    visible: root.wanted
 
     readonly property bool vertical: Services.Sizes.barVertical
 
@@ -43,7 +44,7 @@ Rectangle {
     width: root.vertical ? Services.Sizes.pillH
                          : (root.present ? Math.min(240, inner.implicitWidth + 24) : 0)
     radius: Services.Sizes.pillR
-    color: Services.Colors.surfacePill
+    color: Services.Colors.pillPlate
     border.width: 0
     clip: true
     opacity: root.present ? 1.0 : 0.0

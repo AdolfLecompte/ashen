@@ -2,35 +2,71 @@ import QtQuick
 import QtQuick.Layouts
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("clock")
-    property string currentTime: ""
-    property string currentDate: ""
-    property string timeIcon: ""
+    // These follow Services.Time -- the shell's single SystemClock. They used
+    // to be assigned from a Timer of this pill's own, one of four.
+    readonly property string currentTime: Services.Time.fmt(Services.Prefs.timeFormat)
+    readonly property string currentDate: Services.Time.fmt("ddd, MMM d")
+    readonly property string timeIcon: {
+        const h = Services.Time.hours
+        if (h < 5) return ""
+        if (h < 8) return ""
+        if (h < 17) return ""
+        if (h < 20) return ""
+        return ""
+    }
     // A side bar is one pill wide: the clock stacks hours over minutes there and
     // drops the date and the weather chip.
     readonly property bool vertical: Services.Sizes.barVertical
-    property string vertHour: ""
-    property string vertMinute: ""
-    property string vertSuffix: ""
-    property string vertSecond: ""
+    readonly property string vertHour: Services.Time.fmt(Services.Prefs.hourToken)
+    readonly property string vertMinute: Services.Time.fmt("mm")
+    readonly property string vertSuffix: Services.Prefs.clock24h ? "" : Services.Time.fmt("AP")
+    readonly property string vertSecond: Services.Prefs.clockSeconds ? Services.Time.fmt("ss") : ""
+    // The date comes back on a side bar. The horizontal pill says "Sat, Aug 29"
+    // and the vertical one used to say nothing at all -- the month is what does
+    // not fit in 44 px, not the day. Stacked like everything else in this
+    // column: the name over its number, the way the glyph sits over its reading.
+    readonly property string vertDay: Services.Time.fmt("ddd").toUpperCase()
+    readonly property string vertDayNum: Services.Time.fmt("d")
 
     height: root.vertical ? vertCol.implicitHeight + 16 : Services.Sizes.pillH
     width: root.vertical ? Services.Sizes.pillH : clockRow.implicitWidth + 40
     radius: Services.Sizes.pillR
-    color: Services.Colors.surfacePill
+    // While the timer box is hanging off it, the two corners facing it go
+    // square. That join is the whole point: a rounded pill sitting on a squared
+    // box leaves a notch either side of the seam, and the pair reads as two
+    // surfaces that happen to touch. Squared, they are ONE taller capsule.
+    readonly property string boxEdge: {
+        if (!Services.AppState.timerBoxOut) return ""
+        const e = Services.Sizes.barPosition
+        if (e === "bottom") return "top"
+        if (e === "left") return "right"
+        if (e === "right") return "left"
+        return "bottom"
+    }
+    topLeftRadius:     (root.boxEdge === "top" || root.boxEdge === "left")     ? 0 : root.radius
+    topRightRadius:    (root.boxEdge === "top" || root.boxEdge === "right")    ? 0 : root.radius
+    bottomLeftRadius:  (root.boxEdge === "bottom" || root.boxEdge === "left")  ? 0 : root.radius
+    bottomRightRadius: (root.boxEdge === "bottom" || root.boxEdge === "right") ? 0 : root.radius
+    // The weather text still changes width under it (a degree gained, an icon
+    // swapped), so the settle stays. What used to widen it -- a live stopwatch --
+    // hangs under the bar now, in TimerDrops.
+    Behavior on width { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
+    color: Services.Colors.pillPlate
     border.color: Services.Colors.fillRest
     border.width: 0
 
     // The bar pivots the centre group on this point, so the HOUR sits dead
     // centre on screen and the date and weather fall either side of it.
+    // Plain arithmetic, never mapToItem: a mapping is read once and never
+    // re-taken, so a rebuild left it stuck on scene coordinates.
     readonly property real pivot: root.vertical
         ? height / 2
         : (clockRow.visible && timeText.width > 0
-            ? clockRow.x + timeText.mapToItem(clockRow, timeText.width / 2, 0).x
+            ? clockRow.x + timeText.x + timeText.width / 2
             : width / 2)
 
     MouseArea {
@@ -72,38 +108,41 @@ Rectangle {
             }
         }
     }
-    // The card is back on the pill's rect at ~500 ms; fade in just under that
-    Timer { id: handBack; interval: 470; onTriggered: root.takenOverByPanel = false }
+    // The card only becomes a pill again at ~480 ms and lands on this rect at
+    // ~720; fade in just under that, so the two meet instead of leaving a hole.
+    Timer { id: handBack; interval: 330; onTriggered: root.takenOverByPanel = false }
 
     opacity: (root.takenOverByPanel && Services.Pills.wearsFace) ? 0.0 : 1.0
     Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
 
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: {
-            let now = new Date()
-            let h = now.getHours()
-            root.currentTime = Qt.formatDateTime(now, Services.Prefs.timeFormat)
-            root.currentDate = Qt.formatDateTime(now, "ddd, MMM d")
-            root.vertHour = Qt.formatDateTime(now, Services.Prefs.hourToken)
-            root.vertMinute = Qt.formatDateTime(now, "mm")
-            root.vertSecond = Services.Prefs.clockSeconds ? Qt.formatDateTime(now, "ss") : ""
-            root.vertSuffix = Services.Prefs.clock24h ? "" : Qt.formatDateTime(now, "AP")
-            if (h >= 0 && h < 5)        root.timeIcon = ""
-            else if (h >= 5 && h < 8)   root.timeIcon = ""
-            else if (h >= 8 && h < 17)  root.timeIcon = ""
-            else if (h >= 17 && h < 20) root.timeIcon = ""
-            else                         root.timeIcon = ""
-        }
-    }
 
     Column {
         id: vertCol
         visible: root.vertical
         anchors.centerIn: parent
         spacing: 0
+
+        // Date above, weather below, the hour between them: the three the
+        // horizontal pill shows in a row, stacked in the same order. No rules
+        // between them -- 15 px against 9 px already says which one is the
+        // headline, and two hairlines in a 44 px column read as a fence.
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.vertDay
+            color: Services.Colors.mist
+            font.pixelSize: 9
+            font.family: "JetBrainsMono NF"
+            font.bold: true
+        }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.vertDayNum
+            color: Services.Colors.mist
+            font.pixelSize: 11
+            font.family: "JetBrainsMono NF"
+            font.bold: true
+        }
+        Item { width: 1; height: 3 }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -126,7 +165,7 @@ Rectangle {
             visible: root.vertSecond !== ""
             text: root.vertSecond
             color: Services.Colors.mist
-            font.pixelSize: 11
+            font.pixelSize: 10
             font.family: "JetBrainsMono NF"
             font.bold: true
         }
@@ -140,18 +179,13 @@ Rectangle {
             font.bold: true
         }
 
-        // Weather rides under the time instead of beside it
-        Item { width: 1; height: 6 }
-        Rectangle {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 16; height: 1
-            color: Services.Colors.ghostAlpha(0.25)
-        }
-        Item { width: 1; height: 5 }
+        // Weather closes the pill the way the date opens it: the sky over its
+        // number, not beside it.
+        Item { width: 1; height: 3 }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Services.Weather.icon
-            font.pixelSize: 15
+            font.pixelSize: 14
             font.family: "Material Symbols Rounded"
             color: Services.Colors.neutral
         }
@@ -182,14 +216,14 @@ Rectangle {
             font.bold: true
         }
 
-        Text {
+        // Seconds at 9 px against the hour's 15: on a pill the one number that
+        // never stops moving is the one that must not ask for width.
+        Widgets.ClockText {
             id: timeText
             Layout.alignment: Qt.AlignVCenter
-            text: root.currentTime
-            color: Services.Colors.snow
-            font.pixelSize: 15
-            font.family: "JetBrainsMono NF"
-            font.bold: true
+            time: root.currentTime
+            px: 15
+            secRatio: 0.6
         }
 
         Row {

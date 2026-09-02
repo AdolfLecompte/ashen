@@ -141,16 +141,29 @@ Item {
                 root.shownArtUrl = root.coverOrNothing()
             }
         }
-        // It just worked out that what we are showing is the player's logo.
+        // It just worked out that what we are showing is the player's logo:
+        // drop it, and let the same call go and ask for a real one.
         function onDecoysChanged() {
-            if (Services.MediaArt.isDecoy(root.settledArt)) root.shownArtUrl = ""
+            if (Services.MediaArt.isDecoy(root.settledArt)) root.shownArtUrl = root.coverOrNothing()
+        }
+        // The web answered. It is only ours if it is the track we are on.
+        function onWebReady(key) {
+            if (key === Services.MediaArt.webKey(root.artArtist, root.artTitle))
+                root.shownArtUrl = root.coverOrNothing()
         }
     }
     readonly property string artTag: root.hasPlayer
         ? (root.activePlayer.trackAlbum || root.activePlayer.trackArtist || "") : ""
+    // One door: the player's own file while it is real, and the web's answer
+    // when the player gives nothing or gives its own logo. The service owns
+    // that decision -- this surface only draws it.
     function coverOrNothing() {
-        return Services.MediaArt.isDecoy(root.settledArt) ? "" : root.cachedArt
+        return Services.MediaArt.coverFor(root.settledArt, root.artArtist, root.artTitle)
     }
+    readonly property string artArtist: root.hasPlayer
+        ? (root.activePlayer.trackArtist || "") : ""
+    readonly property string artTitle: root.hasPlayer
+        ? (root.activePlayer.trackTitle || "") : ""
 
     Widgets.SlideSwap {
         id: trackSwap
@@ -189,10 +202,11 @@ Item {
         }
     }
 
-    height: root.vertical ? (hasPlayer ? pillH : 0) : pillH
+    height: root.vertical ? (hasPlayer ? expandedRow.implicitHeight + 20 : 0) : pillH
     width: root.vertical ? pillH : (hasPlayer ? expandedRow.implicitWidth + 20 : 0)
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("media") && (opacity > 0)
+    // No player, no pill, and no slot either.
+    readonly property bool wanted: root.opacity > 0
+    visible: root.wanted
     Behavior on height { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
     // The panel is a morphed copy of this pill, so while it is open the pill
     // itself steps aside: the card standing on its rect *is* the pill now.
@@ -212,10 +226,10 @@ Item {
             }
         }
     }
-    // The card is back on the pill's rect at ~500 ms (the shape only starts
-    // collapsing once the contents have regrouped); fade in just under that so
-    // the two overlap for a few frames instead of leaving a hole.
-    Timer { id: handBack; interval: 470; onTriggered: root.takenOverByPanel = false }
+    // The card un-transforms where it stands and only then travels home,
+    // landing on this rect at ~720 ms; fade in just under that so the two
+    // overlap for a few frames instead of leaving a hole.
+    Timer { id: handBack; interval: 330; onTriggered: root.takenOverByPanel = false }
 
     // Only the body fades out on takeover, never this Item: it has to keep
     // holding its slot in the bar or the row would close the gap and shift.
@@ -244,7 +258,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         // answer for themselves, and lighting the whole thing said "click me"
         // over three chips that do different things. It also animates its own
         // width, and a plate changing under a resizing box reads as a glitch.
-        color: Services.Colors.surfacePill
+        color: Services.Colors.pillPlate
         border.color: Services.Colors.fillRest
         border.width: 0
         clip: true
@@ -255,12 +269,23 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         opacity: (root.takenOverByPanel && Services.Pills.wearsFace) ? 0.0 : 1.0
         Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
 
-
-        Row {
+        Grid {
             id: expandedRow
             visible: root.hasPlayer
-            anchors.verticalCenter: parent.verticalCenter
-            // Side bar: only the album art fits, so it centres instead
+            // Along the bar on a top bar, across it on a side one: cover first,
+            // then transport. The title does not come along -- 44 px of column
+            // is not somewhere a song name can be read, and it was the one part
+            // that would have had to shrink to fit.
+            // EXACTLY the three cells it has, never a big number: a Grid with
+            // more columns than items still charges one `spacing` for the
+            // empty one, and that phantom lands on the right -- the pill sat
+            // 14 px wider past the last chip than before the cover.
+            columns: root.vertical ? 1 : 3
+            horizontalItemAlignment: Grid.AlignHCenter
+            verticalItemAlignment: Grid.AlignVCenter
+            anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
+            anchors.top: root.vertical ? parent.top : undefined
+            anchors.topMargin: 10
             anchors.left: root.vertical ? undefined : parent.left
             anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
             anchors.leftMargin: 10
@@ -272,7 +297,6 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
     width: Services.Sizes.pillH - 10; height: Services.Sizes.pillH - 10
     radius: Services.Sizes.innerR
     color: Services.Colors.abyss
-    anchors.verticalCenter: parent.verticalCenter
     // Paused, the cover stands down: it was the one part of the pill that
     // looked exactly the same whether anything was playing or not.
     readonly property real playingAmt: (root.activePlayer !== null && root.activePlayer.isPlaying) ? 1.0 : 0.45
@@ -314,7 +338,6 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
 
             Column {
                 visible: !root.vertical
-                anchors.verticalCenter: parent.verticalCenter
                 spacing: 3
                 width: root.vertical ? 0 : 120
                 opacity: trackSwap.fade
@@ -343,9 +366,11 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
             // language: a dim plate means "there, but idle", a lit plate means
             // "this is the one". Playing lights the play chip the same way the
             // workspace you are standing on is lit.
-            Row {
-                visible: !root.vertical
-                anchors.verticalCenter: parent.verticalCenter
+            Grid {
+                // Three chips, three columns: see the note above.
+                columns: root.vertical ? 1 : 3
+                horizontalItemAlignment: Grid.AlignHCenter
+                verticalItemAlignment: Grid.AlignVCenter
                 spacing: Services.Sizes.btnGap
 
                 Widgets.CtlChip {

@@ -5,8 +5,6 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
-    // Hidden from Settings > Bar > Pills
-    visible: Services.Prefs.pillVisible("power")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -21,7 +19,7 @@ Rectangle {
     // binding). Fills accent while the power menu is open; the plate does not
     // react to hover -- a top-level pill answers by growing, not by lighting.
     color: active ? Services.Colors.ghost
-                  : Services.Colors.surfacePill
+                  : Services.Colors.pillPlate
     gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
     border.width: 0
     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
