@@ -38,8 +38,9 @@ brightnessctl lm_sensors pciutils
 wl-clipboard cliphist grim slurp wf-recorder
 hypridle mpvpaper ffmpeg wlsunset
 nemo zenity fastfetch cava xdg-utils libnotify
+curl imagemagick pacman-contrib python gtk3 qt6ct
 papirus-icon-theme adw-gtk-theme
-ttf-jetbrains-mono-nerd ttf-material-symbols-variable
+ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
 xdg-desktop-portal-hyprland xdg-desktop-portal-gtk polkit-gnome
 ```
 
@@ -60,8 +61,10 @@ papirus-folders bibata-cursor-theme
   Material Symbols Rounded codepoint. Without it the bar renders empty boxes.
 - **awww** paints static images and gifs, **mpvpaper** paints video wallpapers.
 
-Plus [Oh My Zsh](https://ohmyz.sh) and [Powerlevel10k](https://github.com/romkatv/powerlevel10k),
-which are not packaged — follow their own install instructions.
+Plus [Oh My Zsh](https://ohmyz.sh), [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
+and the two zsh plugins the shipped `.zshrc` loads. None of them are packaged, so
+`scripts/setup-system.sh` clones them itself (and pulls them on a re-run); install
+them by hand only if you are not using the script.
 
 ### What each command is used for
 
@@ -83,12 +86,18 @@ which are not packaged — follow their own install instructions.
 | `hypridle` | idle → lock |
 | `wlsunset` | night light (blue-light filter), manual and scheduled |
 | `lm_sensors` | temperatures in the process panel |
+| `curl` | cover art and lyrics for the playing track |
+| `magick` (imagemagick) | wallpaper thumbnails in the picker |
+| `checkupdates` (pacman-contrib) | pending-updates readout and its widget |
+| `python` | reads `hyprctl monitors -j` when setting a wallpaper |
+| `gtk-launch` (gtk3) | opening the app behind a notification action |
+| `qt6ct` | Qt apps follow the palette (`QT_QPA_PLATFORMTHEME`) |
 | `nvidia-utils` (`nvidia-smi`) | dGPU stats — **only** read when the GPU is already awake |
 
 ## Install
 
 ```bash
-git clone https://github.com/AdolfLecompte/Ashen.git ~/ashen
+git clone https://github.com/AdolfLecompte/ashen.git ~/ashen
 cd ~/ashen
 bash scripts/setup-system.sh
 ```
@@ -108,8 +117,19 @@ system services. It is safe to re-run — see [Update](#update). Flags:
 To do it by hand instead:
 
 ```bash
-stow -t ~ cava dconf fastfetch gtk hypr kitty matugen quickshell zsh
+stow -t ~ cava dconf fastfetch gtk hypr kitty matugen quickshell wallpapers zsh
 ```
+
+Or without `stow` at all — `ashen-setup` does the same job, and `--link` makes
+the same symlinks a checkout needs:
+
+```bash
+ASHEN_CONFIG_SRC=~/ashen ~/ashen/scripts/ashen-setup --link
+```
+
+Without `--link` it copies instead, which is what the package does on a machine
+that has no checkout. Either way only the config packages are touched: `docs/`,
+`scripts/` and the rest of the repo stay where they are.
 
 Then set Zsh as your shell (`chsh -s $(which zsh)`), enable `NetworkManager`,
 `bluetooth` and `power-profiles-daemon`, and start the Hyprland session from your
@@ -198,9 +218,19 @@ The keyboard layout pill in the bar is **read-only**. Layouts are declared in
   `active_opacity`/`inactive_opacity` unless you append `override`. That is why the
   browser rule reads `opacity 0.85 override 0.80 override`.
 
+## Getting your bearings
+
+The first time the shell runs it opens a welcome card with the four keys that
+matter. It comes back with `ashen-welcome`, and `ashen-welcome notes` shows what
+changed in the version you are running — the same notes as `CHANGELOG.md`,
+because it reads that file.
+
+`ashen-widgets` does the same job for the desktop: `ashen-widgets` toggles the
+editor, `ashen-widgets list` says what is out there and where.
+
 ## Status
 
-2.1.1
+2.2.0
 
 ## License
 

@@ -311,6 +311,43 @@ unfolds, which is what `EdgeEntry` is for.
 
 ---
 
+## 6b. Voice — what the shell says
+
+Where another shell leaves a hole or cuts a moment short, Ashen says something.
+That is the seal, and it has three parts: **one voice, one moment, one motion.**
+
+**One voice.** Every remark in the shell comes out of `services/Voice.qml`, keyed
+by the moment it belongs to (`lock.wrong`, `usb.empty`, `record.start`). Nothing
+writes its own pool. Two pools already had to be deleted for growing locally —
+`NotificationPanel.emptyLines` and `MediaWidget.quiet` — and that is exactly the
+drift the bank exists to stop. Tone: dry, lowercase, more wry than funny. A line
+you will read a thousand times cannot be a joke.
+
+**One moment.** The shell is allowed to take a breath where the machine does not
+need one — the lock holds for ~2.6 s after the password is right, and says
+something, rather than snapping away. Time is part of the character.
+
+**One motion.** A line that belongs to a *moment* or a *wait* is typed out with
+`widgets/SaidLine`. A line that fills an *empty panel* is printed whole: watching
+a sentence be written every time a drawer opens gets old by the third time.
+
+Three rules that are not negotiable:
+
+- **Never where it has to be read to operate.** Labels, values, Settings rows and
+  placeholders that explain a control are not remarks. A launcher placeholder may
+  rotate, but every line in the pool still says what to type.
+- **One speaking line per surface.** Two at once is a shell chattering.
+- **Pick on the edge, never inside a binding.** `Voice.pick()` in a binding
+  re-rolls on every re-evaluation, and a line rewriting itself under the cursor
+  reads as a list still searching. Pick in `onShownChanged`, `onXChanged`, or a
+  property that is initialised once. A property *initialiser* is the usual place,
+  which is why `Voice.lastPick` is mutated in place and never reassigned:
+  reassigning it notified every one of those initialisers and the log filled with
+  binding loops.
+
+For a toast, the label stays the headline and the remark goes underneath:
+`addSystemToast(Voice.pick("dnd.on"), glyph, false, "dnd", { title: "DO NOT DISTURB ON" })`.
+
 ## 7. Components — use these, don't rewrite them
 
 | Need | Use | Never |
@@ -548,11 +585,141 @@ modules/
     components/   surfaces used only by settings
   lock/           the session lock surface
   net/            rows shared by the network and bluetooth panels
+  desktop/        the layer on the wallpaper
+    widgets/      one file per desktop widget
 services/         singletons: state, hardware, theme, geometry
 ```
 
 Rule: a file goes in `widgets/` only if it knows nothing about the feature using
 it. `SectionHead` qualifies; `NotifRow` does not.
+
+### The desktop layer
+
+Widgets sit on `WlrLayer.Bottom` above the wallpaper and below every window:
+furniture, not an overlay. Three rules hold it together.
+
+**It takes no clicks except where something can be pressed.** In rest the
+layer's mask is cut to the boxes of the widgets that say `wantsInput` -- today
+the music transport -- and nothing else, so a click anywhere else on the desktop
+goes wherever it went before and no widget can be shoved by accident. A shape
+with nothing to press (the lyric page) asks for no hole: one over it would eat
+clicks meant for the wallpaper. `Super+Shift+D`, `ashen-widgets`, or Arrange in
+Settings turns dragging on and opens the whole screen; Escape turns it off. That
+is also the only time a widget wears an outline.
+
+Those boxes live in `Desktop.inputMap`, **reassigned and never written in
+place**: the region is bound to it, and a map mutated in place never tells the
+binding to re-cut.
+
+**A canvas on the desktop paints only while the desktop is seen.** Everything
+that runs on a clock — the spectrum, a trend — hangs off `live`, which is false
+behind a fullscreen window. The bar learned this the expensive way: three
+canvases at 30 fps cost 29.5 % CPU against 12.68 %.
+
+**Never call a window `layer`.** Every `Item` has a `layer` group of its own and
+inside a `Component` that one wins over the outer id, so `layer.something` comes
+back undefined with no error worth the name. Same family as naming a property
+`focus`.
+
+### A widget's shape is a field, not a file
+
+Every desktop widget declares its shapes in `Desktop.catalogue`, and the chosen
+one is a field of its record beside `x`, `y` and `on`. Two things fall out of
+that for free: the row of shapes offered while arranging is generated, and a
+wallpaper profile carries the shapes with it, because the record it already
+saves is where they live.
+
+The row itself is drawn by the layer, never inside the widget: Qt does not
+deliver mouse events to anything painted outside its ancestors' bounds, so a
+strip hanging off a widget's own bottom edge would be visible and dead.
+
+While arranging, `Free` drops a widget where the hand left it, `Grid` rounds to
+`Desktop.gridStep`, and `Magnet` puts it beside its nearest neighbour with
+`Desktop.magnetGap` between them, lining the two up on the other axis so they
+read as one row. Nothing can end up closer than that gap. The guides are drawn
+only in the mode you can land on, and none of the three is saved -- how you are
+arranging is not part of the look.
+
+**A widget can have two axes.** `styles` says how much it shows; `skins` says
+how it draws -- the system widget is Large/Medium/Compact crossed with Water or
+Chart -- and the dry skin draws a reading with a past as the same stepped curve
+the day's temperature wears, a reading without one as a flat bar. A ring was
+tried there and pulled against the chart beside it. Both are fields of its record, so the chips are generated and a wallpaper
+profile carries them without anything else being told. A widget with no `skins`
+never hears about the second row.
+
+**A widget is content, never a card.** The plate belongs to `DesktopWidget`;
+anything drawing its own opaque box inside it is the double plate this shell
+threw out. The Process panel's cards ARE its surface -- out here there is
+already one underneath, so what carries over is the vocabulary (a glyph with a
+spaced NAME, the figure on the right, a past as a curve, a level as liquid) and
+not the box.
+
+### A cover, and the words
+
+`MediaArt` decides what a surface draws, and the surfaces only draw it: the
+player's own file while it is real, and iTunes' answer when the player gives
+nothing or gives its own logo -- which the service already recognises by the
+cover turning up under two unrelated albums. A good cover is never overruled;
+the card and the pill stopped each keeping their own copy of that reasoning.
+
+The lyrics are a **column of the card**, not a drawer under it. A drawer made
+the words something you had to ask for twice, and what a card is about should
+be on the card. The column and the cava beside it are **one block**: half the
+card's gap between them, the whole of it from the controls -- they are the same
+thing said twice, the words and what they sound like. No words for this track
+and the column takes its width back, so the panel is exactly as wide as it has
+to be; the card measures itself (`implicitWidth`) and the panel's `openW` reads
+that, so the box grows WITH the column instead of stepping once.
+
+A column can be turned off (`Prefs.mediaLyrics`, the chip on the card or
+Settings), and that answer is remembered. The chip only exists where there is a
+column to hide.
+
+**A gap that can close travels inside a width, never in a layout's `spacing`.**
+A layout charges its spacing for a child of no width too, so a closed column
+would leave a hole where it used to be.
+
+**The wave says the sound, and the dot says the place.** The progress line is a
+sine whose played half moves, with its height driven by the live cava level --
+a quiet passage flattens it, a drop swells it. What is still to come is a
+straight dim rule starting AT the playhead: a rule running under the wave
+crosses it twice per crest and reads as a seam. The wave is tapered to nothing
+over the last 30 px so it lands ON that rule instead of stopping mid-crest --
+that step was the break no round cap could hide -- and because a tapered end is
+too thin to point at, the playhead itself is a dot with a ring of plate under
+it.
+
+**Cava is drawn in the accent, never mixed into the plate.** Silence is said by
+the bars collapsing onto their axis; dimming the colour as well says it twice
+and leaves a picture of a visualiser rather than one.
+
+### Where a setting lives
+
+The wallpaper belongs with the desktop, not with the palette. Settings › Desktop
+holds the picture, its folder, the widgets, the pictures on it, and which look
+this wallpaper remembers; Settings › Appearance keeps what the shell itself
+looks like -- the scheme, the accent's gradient, how panels open. Before the
+split, one tab held both and was the biggest thing in the drawer.
+
+### A look belongs to a wallpaper
+
+`Services.Looks` keeps one profile per wallpaper path, opt-in per wallpaper. A
+profile is a photograph of the settings named in `Looks.keys` plus the two the
+theme keeps outside Prefs (the scheme and the dynamic style) — so adding
+something to what a wallpaper remembers is one line in that list, and nothing
+else has to know its name.
+
+A wallpaper nobody remembered wears `Looks.baseline` -- the default look, set
+from whatever is on screen in Settings, and the classic (no widgets, `pills`
+bar) until someone saves one. Without it, putting on a plain wallpaper left the
+last one's widgets and bar sitting there, and the whole feature read as not
+remembering anything.
+
+The order matters: `ashen-wallpaper.sh` runs matugen itself and reads the mode
+and the style off disk, so the picker stages the profile **before** it starts
+the script. A wallpaper that arrives any other way is reconciled afterwards, at
+the cost of one more matugen run.
 
 ---
 

@@ -1,5 +1,102 @@
 # Changelog
 
+## 2.2.0
+
+### Added
+- **A welcome screen, and a what's-new screen.** The first time the shell ever
+  runs it says what it is and the four keys that make it usable; after an
+  update it shows what changed, read straight out of this file rather than
+  written twice. `ashen-welcome` brings either one back.
+- **Settings is seven tabs instead of ten**, grouped by what you are trying to
+  change: Look, Bar & Desktop, Panels, Screen, Devices, System, About. The
+  weather no longer lives inside "Bar", the wallpaper sits with the palette it
+  generates, and Wi-Fi and Bluetooth stopped being a switch inside a switch.
+  Every old tab id still resolves, so keybinds and `ipc call settings tab …`
+  keep working.
+- **The Wi-Fi and Bluetooth rings page.** When more networks are in range than
+  the ring can hold, one slot becomes `+N`: pressing it folds the ring into the
+  hub and throws it back out with the next page, so a crowded café no longer
+  means opening Settings.
+- **The words stand beside the music.** The media panel's lyric drawer is gone;
+  the lyrics are a column of the card itself, next to the cava, and the card
+  measures itself so the panel grows with them. A track without words takes the
+  column's width back. The chip on the card (or Settings) hides them, and it
+  remembers.
+- **`ashen-widgets`** — the desktop widgets from a terminal: the editor, the
+  tray, what is out there and where, shapes, skins, snapping, copies.
+- **The lock screen keeps its music and its notices** even with nothing playing
+  and nothing waiting. Both cards already had a voice for silence; a column that
+  loses a card between one unlock and the next reads as something missing.
+- **The battery's last 24 hours draw themselves in** when the panel opens,
+  oldest hour first.
+- **The picture on the desktop is handled from outside itself.** The corners you
+  pull now float just off the frame instead of sitting on top of the picture,
+  and framing — sliding and zooming the picture inside its frame — is a button
+  beside them rather than a control laid over the thing it frames. Both belong
+  to the arrangement, not to the widget, so any widget can ask for them.
+
+### Changed
+- **Panels open in four beats instead of all at once.** The capsule's lit fill
+  drains and what it says goes quiet; still pill-shaped, it leaves the bar and
+  travels to where the panel lives; only once it has arrived does it become the
+  card, its contents sliding out as the box opens; and what it carried lights up
+  last, in place. Closing runs the beats backwards — the card becomes a pill
+  again, goes home, and only there takes its colour back. Every capsule on the
+  bar now opens the way the clock and the media panel always did, and no box
+  bounces on arrival any more.
+- **A card only travels between sizes in the transform style.** Choosing
+  "window" asked for a panel that does not transform, and a card that resized
+  itself as you walked between sections was doing exactly that.
+- **Less text.** The battery panel stopped saying its own captions again in
+  words, and stopped announcing "Fully charged" under "CHARGING". In Settings,
+  seven paragraphs that explained what the control next to them already says are
+  gone or down to a line.
+- **The image picker's places carry one travelling accent** rather than each row
+  lighting its own plate the instant you press it.
+- **Cava is drawn in the accent**, in the panel and on the desktop both. Mixed
+  into the plate it read as a picture of a visualiser; silence is said by the
+  bars collapsing onto their axis, not by the colour fading.
+- **The progress line breathes with the song**: its height follows the live
+  level, what is still to come is a straight dim rule, and the playhead is a dot.
+
+### Fixed
+- **A desktop widget could not be resized.** The area that drags a widget around
+  is declared after its contents, so while arranging it swallowed every press
+  meant for something inside — including the corners that size a picture.
+- **The piece carried out of a chip stayed in the bar** while the card travelled
+  away from it, then fell on its own afterwards: it was pinned to the chip's
+  place on screen rather than riding the card. It also arrived already lit, and
+  was drawn with a colour that resolved to nothing (a warning on every open).
+- **The installer was missing six packages** that features added since July need:
+  cover art and lyrics (`curl`), wallpaper thumbnails (`imagemagick`), the
+  pending-updates readout (`pacman-contrib`), the wallpaper script's monitor
+  lookup (`python`), opening the app behind a notification (`gtk3`), and the
+  palette Qt apps read (`qt6ct`). It also caches the wallpaper thumbnails on
+  install now: the picker used to open on blank cards, and a video has no
+  fallback to show meanwhile.
+- **Nothing on the desktop could be clicked.** The wallpaper layer took no input
+  at all unless you were arranging, so the music widget's transport was a row of
+  buttons that did nothing. The layer now cuts a hole for the widgets that have
+  something to press, and only those.
+- **The workspace preview obeys the panel style.** It rolled its own morph, so
+  it ignored the transform/window setting entirely and kept a bounce the rest of
+  the shell had given up. It arrives like every other panel now, and the windows
+  inside it drop in one at a time.
+- **Panels that outlived what they were about.** Pulling the last USB stick left
+  its card hanging off a pill that no longer existed, and so did the media panel
+  when the music stopped. Both close themselves now.
+- **The profile picture card was clipped on hover.** It grew by 6% — thirty-odd
+  pixels on a card that wide — instead of the four the shell gives a big surface.
+- **A group of notifications unrolls instead of appearing.** The rows came out
+  of a Repeater, which has no transitions, so opening a run built them in one
+  frame and closing destroyed them in another.
+- **Every remark in the shell was a binding loop.** `Voice.pick()` reassigned its
+  own "last line" map, and half the shell picks its line in a property
+  initialiser — so each pick re-ran all of them. The map is written in place now.
+- **The media pill was 14 px wider on one side than the other.** A `Grid` with
+  more columns than items still charges one `spacing` for the empty one, and it
+  landed past the last chip. Both grids count their cells.
+
 ## 2.1.1
 
 ### Changed
