@@ -28,3 +28,9 @@ Thumbs.db
 .zcompdump*
 __pycache__/
 *.pyc
+
+# Written by Settings > Input when you change a keybind: a table of id -> keys
+# that keybinds.lua asks before it binds anything. ~/.config/hypr is a symlink
+# into this checkout, so the generated file lands here; tracking it would make
+# the tree dirty and the installer skip its own self-update.
+hypr/.config/hypr/conf/userkeys.lua
