@@ -1,6 +1,6 @@
 -- ══════════════════════════════════════════
 --   Ashen — Hyprland Config
---   github.com/adolf/ashen
+--   github.com/AdolfLecompte/ashen
 -- ══════════════════════════════════════════
 
 -- Core

@@ -22,19 +22,22 @@ source ~/.config/zsh/.zshrc
 # prompt follows the theme without this rice having to own a p10k config.
 [[ ! -f ~/.cache/ashen_p10k.zsh ]] || source ~/.cache/ashen_p10k.zsh
 
-# Ashen: 'clear' tambien recarga fastfetch
+# `clear` brings the header back with it. Through the wrapper, never the bare
+# binary: that script is what carries the logo and the palette of the moment.
 clear() {
     command clear
-    fastfetch
+    ~/.config/fastfetch/fastfetch.sh
 }
 
-# Ashen: mostrar fastfetch al abrir una terminal nueva (diferido hasta
-# que el prompt este completamente listo, para que no lo pise el instant
-# prompt de p10k y salga con los colores correctos)
+# ...and it also runs when a terminal opens. In a precmd hook rather than
+# kitty's startup_session, which only runs for the FIRST window of the process:
+# with --single-instance every other window came up bare. Deferred until the
+# prompt is ready so p10k's instant prompt does not paint over it.
 autoload -Uz add-zsh-hook
 _ashen_fastfetch_once() {
-  sleep 0.3
-  fastfetch
+  # Unhooked FIRST: the old order slept 0.3s on every first prompt to dodge a
+  # race it had caused itself, and the sleep was felt on every new terminal.
   add-zsh-hook -d precmd _ashen_fastfetch_once
+  ~/.config/fastfetch/fastfetch.sh
 }
 add-zsh-hook precmd _ashen_fastfetch_once

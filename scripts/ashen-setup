@@ -12,15 +12,29 @@ set -uo pipefail
 SRC="${ASHEN_CONFIG_SRC:-/usr/share/ashen/config}"
 FORCE=0
 DRY=0
+LINK=0
+
+# The package dirs, by name. The shipped config holds nothing else, but a
+# CHECKOUT does -- docs/, scripts/, the PKGBUILD -- and without this list
+# `ASHEN_CONFIG_SRC=~/ashen ashen-setup` would faithfully copy the repo's
+# documentation into your home.
+PKGS="cava dconf fastfetch gtk hypr kitty matugen quickshell wallpapers zsh"
 
 for a in "$@"; do
     case "$a" in
         --force) FORCE=1 ;;
         --dry-run) DRY=1 ;;
+        --link) LINK=1 ;;
         -h|--help)
-            echo "usage: ashen-setup [--force] [--dry-run]"
+            echo "usage: ashen-setup [--force] [--dry-run] [--link]"
             echo "  --force    overwrite existing files instead of backing them up"
             echo "  --dry-run  only say what would happen"
+            echo "  --link     symlink instead of copying -- for working out of a"
+            echo "             checkout, where editing the repo has to be editing"
+            echo "             the live config (this is what stow was for)"
+            echo
+            echo "  ASHEN_CONFIG_SRC=<dir>   read the config from somewhere else,"
+            echo "                           e.g. a git checkout of the repo"
             exit 0 ;;
         *) echo "ashen-setup: unknown option: $a" >&2; exit 2 ;;
     esac
@@ -37,6 +51,7 @@ kept=0
 # Each package dir mirrors $HOME, the same layout stow used.
 for pkg in "$SRC"/*; do
     [ -d "$pkg" ] || continue
+    case " $PKGS " in *" $(basename "$pkg") "*) ;; *) continue ;; esac
     while IFS= read -r -d '' src; do
         rel="${src#$pkg/}"
         dst="$HOME/$rel"
@@ -57,7 +72,11 @@ for pkg in "$SRC"/*; do
                 warn "kept your $rel as $rel.bak"
             fi
         fi
-        install -Dm644 "$src" "$dst" && installed=$((installed + 1))
+        if [ "$LINK" -eq 1 ]; then
+            ln -s "$src" "$dst" && installed=$((installed + 1))
+        else
+            install -Dm644 "$src" "$dst" && installed=$((installed + 1))
+        fi
     done < <(find "$pkg" -type f -print0)
 done
 
@@ -66,5 +85,9 @@ done
 # Anything under hypr/ that is meant to be run has to stay executable.
 find "$HOME/.config/hypr" -name '*.sh' -exec chmod +x {} + 2>/dev/null
 
-say "$installed file(s) installed, $kept already up to date"
+if [ "$LINK" -eq 1 ]; then
+    say "$installed file(s) linked, $kept already in place"
+else
+    say "$installed file(s) installed, $kept already up to date"
+fi
 say "log out and back into Hyprland to pick it all up"

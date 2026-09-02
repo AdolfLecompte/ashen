@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# ══════════════════════════════════════════
+#   Ashen — open one of the four apps the keybinds reach for
+#
+#   usage: ashen-app terminal|browser|files|editor
+#
+#   What it opens, in order:
+#     1. what Settings > Devices > Keyboard has for it (~/.config/ashen/apps.json)
+#     2. what the SYSTEM says is the default (xdg-settings / xdg-open)
+#     3. the first of a short list that is actually installed
+#
+#   The keybinds used to name `brave` and `codium` outright, so on a machine
+#   without them SUPER+W and SUPER+C did nothing at all and said nothing either.
+#
+#   by Adolf — github.com/AdolfLecompte
+# ══════════════════════════════════════════
+set -uo pipefail
+
+what="${1:-}"
+[[ -n "$what" ]] || { echo "usage: ashen-app terminal|browser|files|editor" >&2; exit 2; }
+
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/ashen/apps.json"
+
+# What the user typed into Settings, if anything. One flat object of strings;
+# read with sed rather than a JSON parser so this has no dependencies of its own.
+configured() {
+    [[ -f "$CONF" ]] || return 1
+    local v
+    v=$(sed -n 's/.*"'"$1"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$CONF" | head -1)
+    [[ -n "$v" ]] || return 1
+    printf '%s' "$v"
+}
+
+# The first of these that exists on this machine.
+first_of() {
+    for c in "$@"; do
+        command -v "${c%% *}" >/dev/null 2>&1 && { printf '%s' "$c"; return 0; }
+    done
+    return 1
+}
+
+# The system's own default browser, resolved from its .desktop file. xdg-open
+# would do the same thing, but only for a URL -- we want the browser with no
+# page, which is what SUPER+W means.
+default_browser() {
+    local entry path exec
+    entry=$(xdg-settings get default-web-browser 2>/dev/null) || return 1
+    [[ -n "$entry" ]] || return 1
+    for dir in "$HOME/.local/share/applications" /usr/local/share/applications /usr/share/applications; do
+        [[ -f "$dir/$entry" ]] && { path="$dir/$entry"; break; }
+    done
+    [[ -n "${path:-}" ]] || return 1
+    # Field codes (%u, %U, %f...) are for a file being handed over; there is none.
+    exec=$(sed -n 's/^Exec=//p' "$path" | head -1 | sed 's/%[a-zA-Z]//g')
+    [[ -n "$exec" ]] || return 1
+    printf '%s' "$exec"
+}
+
+case "$what" in
+    terminal)
+        cmd=$(configured terminal) \
+            || cmd=$(first_of "kitty --single-instance --listen-on=unix:/tmp/kitty-ashen.sock" \
+                              alacritty foot wezterm ghostty gnome-terminal xterm) \
+            || { notify-send "Ashen" "No terminal found. Set one in Settings > Devices > Keyboard." 2>/dev/null; exit 1; }
+        ;;
+    browser)
+        cmd=$(configured browser) || cmd=$(default_browser) \
+            || cmd=$(first_of firefox brave chromium google-chrome-stable vivaldi-stable epiphany qutebrowser) \
+            || { notify-send "Ashen" "No browser found. Set one in Settings > Devices > Keyboard." 2>/dev/null; exit 1; }
+        ;;
+    files)
+        cmd=$(configured files) \
+            || cmd=$(first_of nemo nautilus thunar dolphin pcmanfm) \
+            || { notify-send "Ashen" "No file manager found. Set one in Settings > Devices > Keyboard." 2>/dev/null; exit 1; }
+        ;;
+    editor)
+        cmd=$(configured editor) \
+            || cmd=$(first_of codium code zed nvim-qt gnome-text-editor gedit) \
+            || { notify-send "Ashen" "No editor found. Set one in Settings > Devices > Keyboard." 2>/dev/null; exit 1; }
+        ;;
+    *)
+        echo "unknown app: $what (terminal|browser|files|editor)" >&2; exit 2 ;;
+esac
+
+exec setsid sh -c "$cmd" >/dev/null 2>&1 &
