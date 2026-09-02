@@ -395,10 +395,14 @@ Scope {
                         visible: leftCol.enter > 0.001
                         transform: Translate { x: -(1 - leftCol.enter) * 24 }
 
+                        // Compact, not the full shape: the full one is built
+                        // around a 384 wide body, and this column is 360 -- the
+                        // plate was cut off at both ends. Here the reading is
+                        // what the lock is for.
                         DeskWidgets.WeatherWidget {
                             managed: false
                             live: true
-                            styleOverride: "full"
+                            styleOverride: "compact"
                             width: leftCol.colW
                             visible: Services.Prefs.lockShowWeather
                         }
@@ -447,6 +451,10 @@ Scope {
                             managed: false
                             live: true
                             styleOverride: "medium"
+                            // Pinned like the shape: with no skin of its own
+                            // the card read off the desktop record, so changing
+                            // the wallpaper widget changed the lock screen too.
+                            skinOverride: "chart"
                             width: rightCol.colW
                             visible: Services.Prefs.lockShowSystem
                         }
