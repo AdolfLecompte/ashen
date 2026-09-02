@@ -367,9 +367,9 @@ PanelWindow {
                             // A leaf, a balance and a rocket are a guess until
                             // someone tells you which is which. The word costs
                             // one line of 9 px and ends the guessing.
-                                { id: "power-saver", icon: "", label: "SAVER" },
-                                { id: "balanced", icon: "", label: "BALANCED" },
-                                { id: "performance", icon: "", label: "TURBO" },
+                                { id: "power-saver", icon: ""},
+                                { id: "balanced", icon: ""},
+                                { id: "performance", icon: ""},
                             ]
                             delegate: Rectangle {
                                 required property var modelData
