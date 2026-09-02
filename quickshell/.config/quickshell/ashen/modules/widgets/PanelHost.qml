@@ -17,8 +17,7 @@ Item {
     // A tool is fixed to the utility pill, so it always has a chip to grow
     // from; only bar pills can be taken away.
     // Does this panel have a capsule on screen at all?
-    readonly property bool hasPill: pillKey !== ""
-        && (Services.Pills.isTool(pillKey) || Services.Prefs.pillVisible(pillKey))
+    readonly property bool hasPill: Services.Pills.onScreen(pillKey)
     // …and should it transform out of it, or just appear where it would have?
     readonly property bool fromPill: hasPill && Services.Pills.wearsFace
     // Is the capsule's face on this card right now? What a chip asks before it
@@ -36,8 +35,26 @@ Item {
     property string pillGlyph: ""
     property string pillLabel: ""
 
+    // A panel that measures its own contents changes size while you are looking
+    // at it -- a tab swapped, a list that found three more networks, a section
+    // shorter than the one before. The card travels between the two sizes
+    // rather than jumping, which is the difference between one panel changing
+    // and a second panel replacing the first. The animation sits on these
+    // properties themselves: a value copied into another one is written back by
+    // its binding before the copy can animate anywhere.
+    // A travelling card IS a transformation, so it belongs to the morph style:
+    // in window style the card takes its new size at once, the way a window
+    // that laid out its contents again does.
+    readonly property int resizeMs: Services.Pills.wearsFace ? Services.Sizes.msPanel : 0
     property real openW: 400
     property real openH: 300
+    Behavior on openW {
+        NumberAnimation { duration: host.resizeMs; easing.type: Services.Sizes.easeOut }
+    }
+    Behavior on openH {
+        NumberAnimation { duration: host.resizeMs; easing.type: Services.Sizes.easeOut }
+    }
+
     property real cardRadius: Services.Sizes.panelR
     // Only honoured when it unfolds; a panel that drops out of a chip carries
     // that chip's colour across instead.

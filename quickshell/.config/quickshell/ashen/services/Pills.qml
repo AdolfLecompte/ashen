@@ -19,7 +19,7 @@ Singleton {
     //   glyph — its compact face, for the utility pill
     //   opens — AppState flag its chip toggles there; "" means a readout
     readonly property var meta: ({
-        launcher:      { label: "Launcher",      glyph: "", opens: "launcherVisible" },
+        launcher:      { label: "Launcher",      glyph: "", opens: "launcherVisible" },
         notifications: { label: "Notifications", glyph: "", opens: "notificationsVisible" },
         workspaces:    { label: "Workspaces",    glyph: "", opens: "" },
         media:         { label: "Media",         glyph: "", opens: "mediaVisible" },
@@ -50,6 +50,23 @@ Singleton {
     // The utility pill's chips, in the order they sit in it.
     readonly property var tools: ["process", "settings", "clipboard"]
     function isTool(id) { return root.tools.indexOf(id) !== -1 }
+
+    // Four panel keys are CHIPS inside the system pill, not pills of their own:
+    // their capsule is on screen exactly when their host is.
+    readonly property var chipHost: ({
+        volume: "system", battery: "system", network: "system", bluetooth: "system"
+    })
+
+    // Has this panel got a capsule on screen to come out of?
+    function onScreen(key) {
+        if (key === "") return false
+        // Tools are fixed to the utility pill and always there.
+        if (root.isTool(key) || key === "utilities") return true
+        const host = root.chipHost[key] || key
+        // What the bar does not arrange is not the layout's business.
+        if (root.arrangeable.indexOf(host) === -1) return true
+        return Prefs.barSectionOf(host) !== ""
+    }
 
     function label(id) { const m = meta[id]; return m ? m.label : id }
     function glyph(id) { const m = meta[id]; return m ? m.glyph : "" }

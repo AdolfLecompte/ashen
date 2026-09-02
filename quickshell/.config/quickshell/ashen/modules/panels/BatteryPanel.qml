@@ -7,6 +7,7 @@ import "root:/modules/widgets" as Widgets
 
 PanelWindow {
     id: win
+    property string emptyLine: Services.Voice.pick("battery.noHistory")
     anchors { top: true; left: true; right: true; bottom: true }
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
@@ -20,26 +21,80 @@ PanelWindow {
     // Mapped until the drop is all the way home; see DropCard.closeMs.
     Timer { id: closeDelay; interval: card.closeMs }
 
-    // The vessel is held empty until the card is really on screen, then the
-    // water climbs to the charge; LiquidPane does the sweep off this flag.
+    // The line is held flat until the card has stopped travelling and opened
+    // out, then it draws itself in with the rest of the contents. Armed any
+    // earlier the whole 0->level trace played behind a box that had not
+    // revealed its contents yet.
     property bool battArmed: false
-    // Holds the sweep until the card's contents are on screen, so the whole
-    // 0->level trace is seen. It has to clear the drop's wait for the window
-    // plus the pause before the contents fade in.
     Timer {
         id: openDelay
-        interval: Services.Sizes.panelArmMs + 360
+        interval: Services.Sizes.panelArmMs + 350
         onTriggered: win.battArmed = true
     }
 
-    property string timeRemaining: "--"
+    // The curve, resampled to one slot per 40 minutes of the last day. Held
+    // empty until armed so the line grows in rather than being there already.
+    readonly property var plotted: win.battArmed ? Services.Battery.plot(36) : []
+
+    // How much of the last day there actually is. A pack that has only been
+    // watched for two hours must not draw those two hours as a full day.
+    readonly property string spanText: {
+        const s = Services.Battery.series
+        if (s.length < 2) return ""
+        const hours = (Date.now() / 1000 - s[0].t) / 3600
+        // Only worth saying when the window is genuinely short: an hour missing
+        // off a day is not news.
+        if (hours >= Services.Battery.seriesHours - 2) return ""
+        return hours < 1 ? Math.round(hours * 60) + " min of it"
+                         : Math.round(hours) + " h of it"
+    }
+
+    // A caption, a number and a footnote. Three of them stand in a row under
+    // the curve; the shape is the panel's, so it lives here and not in widgets.
+    component Fact: ColumnLayout {
+        property string caption: ""
+        property string value: ""
+        property string note: ""
+        spacing: 1
+        Text {
+            text: parent.caption
+            color: Services.Colors.ash
+            font.pixelSize: 9
+            font.bold: true
+            font.letterSpacing: 1
+            font.family: "JetBrainsMono NF"
+        }
+        Text {
+            text: parent.value
+            color: Services.Colors.snow
+            font.pixelSize: 17
+            font.bold: true
+            font.family: "JetBrainsMono NF"
+        }
+        Text {
+            visible: text !== ""
+            text: parent.note
+            color: Services.Colors.mist
+            font.pixelSize: 9
+            font.family: "JetBrainsMono NF"
+            elide: Text.ElideRight
+            Layout.fillWidth: true
+        }
+    }
+
     property var availableProfiles: []
     property string activeProfile: ""
 
-    function refreshBattery() { battProc.running = true }
+    function refreshBattery() { Services.Battery.refreshTime() }
     function refreshProfiles() { profProc.running = true }
     onShownChanged: {
-        if (shown) { refreshBattery(); refreshProfiles(); win.battArmed = false; openDelay.restart() }
+        if (shown) {
+            refreshBattery(); refreshProfiles()
+            // Picked on the open, never in the binding: a line that re-sorts
+            // itself while the panel is up reads as a list still thinking.
+            win.emptyLine = Services.Voice.pick("battery.noHistory")
+            win.battArmed = false; openDelay.restart()
+        }
         else { win.battArmed = false; closeDelay.restart() }
     }
 
@@ -47,23 +102,6 @@ PanelWindow {
         if (!win.availableProfiles.includes(name)) return
         Quickshell.execDetached(["sh", "-c", "powerprofilesctl set " + name])
         win.activeProfile = name
-    }
-
-    Process {
-        id: battProc
-        command: ["sh", "-c", "upower -i $(upower -e | grep BAT) 2>/dev/null | grep -E 'time to (empty|full)'"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let line = text.trim()
-                if (line.length > 0) {
-                    let parts = line.split(":")
-                    win.timeRemaining = parts.length > 1 ? parts.slice(1).join(":").trim() : "--"
-                } else {
-                    win.timeRemaining = "--"
-                }
-            }
-        }
     }
 
     Process {
@@ -111,112 +149,188 @@ PanelWindow {
         pillGlyph: Services.AppState.pillGlyph("battery")
         pillLabel: Services.AppState.pillLabel("battery")
         openW: 440
-        openH: 340
+        openH: 396
         cardRadius: 18
 
         body: Component {
             Item {
                 // Where the chip's glyph and reading land.
-                readonly property Item glyphTarget: gauge.glyphItem
-                readonly property Item labelTarget: gauge.labelItem
+                readonly property Item glyphTarget: battGlyph
+                readonly property Item labelTarget: battLabel
 
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 20
                     spacing: 12
 
-                    // The charge as water in a vessel, the same one sound got:
-                    // it climbs from empty when the card lands, and the state
-                    // and the reading standing in it are re-inked where the
-                    // water has passed them.
-                    Widgets.LiquidPane {
-                        id: gauge
+                    // ── The reading ──────────────────────────────────────
+                    // The number is the headline and the accent is the LINE
+                    // below it, not a slab behind it: full, the old vessel was
+                    // 400x150 of flat accent and the water it was meant to show
+                    // had nowhere left to rise.
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 150
-                        value: Math.max(0, Math.min(1, Services.Battery.level / 100))
-                        // Accent at every level, never red: error_ is for things
-                        // that actually went wrong, and a low battery is the panel
-                        // doing its job. The old gauge made the same choice.
-                        fillColor: Services.Colors.ghost
-                        // Charging is the one state here that is still happening
-                        // rather than simply being: the surface keeps moving and
-                        // the vessel breathes, the way the dial's halo did.
-                        lively: Services.Battery.charging
-                        glow: Services.Battery.charging
-                        armed: win.battArmed
-                        sweepMs: 1500
-
-                        readonly property Item glyphItem: battGlyph
-                        readonly property Item labelItem: battLabel
-
-                        // Charging state and time to full/empty, in the water.
-                        Row {
-                            x: 18
-                            y: 16
-                            width: parent.width - 36
-                            spacing: 8
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: Services.Battery.charging
-                                text: "\uea0b"
-                                font.family: "Material Symbols Rounded"
-                                font.pixelSize: 16
-                                color: Services.Colors.snow
-                            }
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Services.Battery.charging ? "Charging" : "On battery"
-                                color: Services.Colors.snow
-                                font.pixelSize: 13
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
+                        spacing: 12
 
                         Text {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 18
-                            y: 18
-                            text: win.timeRemaining !== "--"
-                                ? (Services.Battery.charging ? ("Full in " + win.timeRemaining) : (win.timeRemaining + " left"))
-                                : (Services.Battery.charging ? "Fully charged" : "Calculating...")
-                            color: Services.Colors.mist
-                            font.pixelSize: 11
+                            id: battGlyph
+                            Layout.alignment: Qt.AlignVCenter
+                            text: Services.AppState.pillGlyph("battery")
+                            visible: !card.morphingGlyph
+                            color: Services.Battery.charging ? Services.Colors.ghost
+                                                             : Services.Colors.snow
+                            font.pixelSize: 34
+                            font.family: "Material Symbols Rounded"
+                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        }
+                        Text {
+                            id: battLabel
+                            Layout.alignment: Qt.AlignVCenter
+                            text: Services.Battery.level + "%"
+                            visible: !card.morphingLabel
+                            color: Services.Colors.snow
+                            font.pixelSize: 44
                             font.bold: true
                             font.family: "JetBrainsMono NF"
                         }
 
-                        // The reading sits low, where the water reaches it first.
-                        Row {
-                            x: 18
-                            anchors.bottom: parent.bottom
-                            anchors.bottomMargin: 16
-                            spacing: 10
+                        Item { Layout.fillWidth: true }
 
+                        ColumnLayout {
+                            Layout.alignment: Qt.AlignVCenter
+                            spacing: 2
                             Text {
-                                id: battGlyph
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Services.AppState.pillGlyph("battery")
-                                visible: !card.morphingGlyph
-                                color: Services.Colors.snow
-                                font.pixelSize: 30
-                                font.family: "Material Symbols Rounded"
+                                Layout.alignment: Qt.AlignRight
+                                text: Services.Battery.charging ? "CHARGING" : "ON BATTERY"
+                                color: Services.Battery.charging ? Services.Colors.ghost
+                                                                 : Services.Colors.mist
+                                font.pixelSize: 10
+                                font.bold: true
+                                font.letterSpacing: 1
+                                font.family: "JetBrainsMono NF"
                             }
                             Text {
-                                id: battLabel
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Math.round(gauge.frac * 100) + "%"
-                                visible: !card.morphingLabel
+                                Layout.alignment: Qt.AlignRight
+                                // Only when it has something the line above does
+                                // not already say: "CHARGING / Fully charged" is
+                                // the same fact twice, and "Calculating..." is
+                                // the panel talking about itself.
+                                visible: text !== ""
+                                text: Services.Battery.timeRemaining === "--" ? ""
+                                    : Services.Battery.charging
+                                        ? ("Full in " + Services.Battery.timeRemaining)
+                                        : (Services.Battery.timeRemaining + " left")
                                 color: Services.Colors.snow
-                                font.pixelSize: 40
-                                font.bold: true
+                                font.pixelSize: 13
                                 font.family: "JetBrainsMono NF"
                             }
                         }
                     }
 
-                    Rectangle { Layout.fillWidth: true; height: 1; color: Services.Colors.ghostAlpha(0.15) }
+                    // ── The last day ─────────────────────────────────────
+                    // The same stepped line the weather and the CPU use: this
+                    // is a past, and a past is drawn as a past. Sunk into its
+                    // own plate so the line has a floor to stand on.
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 104
+                        radius: Services.Sizes.cardR
+                        color: Services.Colors.fillInset
+
+                        Text {
+                            x: 12; y: 10
+                            text: "LAST 24 HOURS"
+                            color: Services.Colors.ash
+                            font.pixelSize: 9
+                            font.bold: true
+                            font.letterSpacing: 1
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Text {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12
+                            y: 10
+                            visible: win.spanText !== ""
+                            text: win.spanText
+                            color: Services.Colors.mist
+                            font.pixelSize: 9
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+
+                        Widgets.Trend {
+                            id: curve
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
+                            anchors.bottomMargin: 12
+                            height: 60
+                            stepped: true
+                            maxValue: 100
+                            values: win.plotted
+                            color_: Services.Colors.ghost
+                            // The day draws itself in, oldest hour first. Linear
+                            // on purpose: an ease front-loads the trace and the
+                            // duration stops being felt (same lesson as the
+                            // gauge's sweep).
+                            reveal: win.battArmed && win.plotted.length > 1 ? 1 : 0
+                            Behavior on reveal {
+                                NumberAnimation { duration: 1100; easing.type: Easing.Linear }
+                            }
+                        }
+
+                        // Nothing to draw is worth saying so: an empty plate
+                        // reads as a bug, and this one is empty on a machine
+                        // whose upower history is not readable.
+                        Widgets.SaidLine {
+                            anchors.centerIn: curve
+                            visible: win.battArmed && win.plotted.length === 0
+                            line: win.emptyLine
+                            // A hole prints whole; only waits type.
+                            msPerChar: 0
+                            armed: win.shown
+                            color: Services.Colors.ash
+                            font.pixelSize: 11
+                        }
+                    }
+
+                    // ── What the pack IS ─────────────────────────────────
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Fact {
+                            Layout.fillWidth: true
+                            caption: "HEALTH"
+                            value: Services.Battery.health > 0
+                                ? Services.Battery.health + "%" : "--"
+                            // The two numbers the percentage is made of. The
+                            // other facts only said their own caption again in
+                            // words ("full charges", "Wh in it"); those are gone.
+                            note: Services.Battery.energyDesign > 0
+                                ? (Services.Battery.energyFull.toFixed(1) + " / "
+                                   + Services.Battery.energyDesign.toFixed(1) + " Wh") : ""
+                        }
+                        Fact {
+                            Layout.fillWidth: true
+                            caption: "CYCLES"
+                            value: Services.Battery.cycles > 0
+                                ? String(Services.Battery.cycles) : "--"
+                        }
+                        Fact {
+                            Layout.fillWidth: true
+                            // Full and plugged in, nothing is moving -- which
+                            // is a reading, not a blank.
+                            caption: !Services.Battery.charging ? "DRAWING"
+                                   : Services.Battery.watts > 0 ? "GOING IN" : "TOPPED UP"
+                            value: Services.Battery.hasRate
+                                ? Services.Battery.watts.toFixed(1) + " W" : "--"
+                        }
+                    }
+
+                    Widgets.Divider {}
 
                     Text {
                         text: "POWER PROFILE"
@@ -250,9 +364,12 @@ PanelWindow {
 
                         Repeater {
                             model: [
-                                { id: "power-saver", icon: "" },
-                                { id: "balanced", icon: "" },
-                                { id: "performance", icon: "" },
+                            // A leaf, a balance and a rocket are a guess until
+                            // someone tells you which is which. The word costs
+                            // one line of 9 px and ends the guessing.
+                                { id: "power-saver", icon: "", label: "SAVER" },
+                                { id: "balanced", icon: "", label: "BALANCED" },
+                                { id: "performance", icon: "", label: "TURBO" },
                             ]
                             delegate: Rectangle {
                                 required property var modelData
@@ -264,19 +381,38 @@ PanelWindow {
                                 height: 64
                                 radius: 12
                                 // Only the sliding indicator carries the active fill;
-                                // idle slots are bare (hover just brightens them).
-                                color: active ? "transparent"
-                                    : profHover.containsMouse ? Services.Colors.ghostAlpha(0.12) : "transparent"
+                                // idle slots are bare -- hover only brightens them,
+                                // it never paints a plate.
+                                color: "transparent"
                                 opacity: available ? 1.0 : 0.35
                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.icon
-                                    font.family: "Material Symbols Rounded"
-                                    font.pixelSize: 28
-                                    color: active ? Services.Colors.accentText : Services.Colors.mist
-                                }
+                                    Column {
+                                        anchors.centerIn: parent
+                                        spacing: 3
+                                        readonly property color tone: active ? Services.Colors.accentText
+                                            : profHover.containsMouse ? Services.Colors.snow
+                                            : Services.Colors.mist
+
+                                        Text {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: modelData.icon
+                                            font.family: "Material Symbols Rounded"
+                                            font.pixelSize: 24
+                                            color: parent.tone
+                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                        }
+                                        Text {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: modelData.label
+                                            font.family: "JetBrainsMono NF"
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            font.letterSpacing: 1
+                                            color: parent.tone
+                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                        }
+                                    }
 
                                 MouseArea {
                                     id: profHover

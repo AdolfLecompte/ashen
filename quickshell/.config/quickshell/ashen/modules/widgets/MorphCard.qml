@@ -16,8 +16,23 @@ Item {
     property real pillH: 1
     property real pillCX: 0
     property real pillCY: 0
+    // Where the blob is going. Once it has landed these can still change --
+    // a tab swapped inside the card, a list that grew -- and the card travels
+    // between the two sizes instead of jumping, the same way a panel does.
+    // Armed only after the landing: while the blob is on its way the size IS
+    // the destination, and `spread` is already the thing interpolating it.
     property real openW: 100
     property real openH: 100
+    // …and only in the morph style: a card that travels is a transformation,
+    // which is the one thing the window style asked not to have.
+    Behavior on openW {
+        enabled: plate.spread >= 1 && !plate.plain
+        NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut }
+    }
+    Behavior on openH {
+        enabled: plate.spread >= 1 && !plate.plain
+        NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut }
+    }
 
     // What the blob is made of. Transparent for a card whose content already
     // carries its own plates and wants no container around them.
@@ -31,8 +46,8 @@ Item {
     // downwards first, but one that comes out of the SIDE of its capsule has to
     // sweep sideways, or it reads as falling from somewhere it never was.
     property bool sideways: false
-    readonly property int leadMs: 360
-    readonly property int trailMs: 560
+    readonly property int leadMs: 130
+    readonly property int trailMs: 180
 
     // Where it lands. Left alone, it goes where a panel dropping out of that
     // pill belongs -- which is a question about the BAR. A morph that happens
@@ -66,6 +81,20 @@ Item {
     property alias morph: plate.morph
     // Fade for everything that exists only in the card
     property alias contentAmt: plate.contentAmt
+
+    // The body's pieces arrive one after another rather than all together --
+    // the same reckoning PanelArrive does, so a panel reads the same whichever
+    // style it is wearing. The blob is the box; this is only what is inside it,
+    // which is why it can be had on top of the morph rather than instead of it.
+    // In the plain (window) style there is no choreography to join: the content
+    // simply fades, and staggering a fade reads as lag.
+    function stage(i) {
+        if (plate.plain) return plate.contentAmt
+        const start = Math.min(0.5, i * 0.1)
+        return Math.max(0, Math.min(1, (plate.contentAmt - start) / (1 - start)))
+    }
+    // A few pixels of rise, so a piece settles rather than appears.
+    function riseOf(i) { return plate.plain ? 0 : (1 - root.stage(i)) * 10 }
 
     // Where the blob actually is, for anything that has to line up with it.
     readonly property alias plateX: plate.x
@@ -112,8 +141,9 @@ Item {
         }
     },
 
-    // Long enough to cover the slowest leg of the morph back into the pill
-    Timer { id: closeDelay; interval: 560 },
+    // Long enough to cover the slowest leg of the way back: un-transform,
+    // then travel home.
+    Timer { id: closeDelay; interval: 400 },
 
     // The goo bridge, drawn under the card so the card's own edge hides where
     // the two meet. Alive only while the blob is on its way out of the bar.
@@ -183,39 +213,45 @@ Item {
                 target: plate; property: "plainFade"; to: 1
                 duration: plate.plain ? 260 : 0; easing.type: Services.Sizes.easeOut
             }
+            // 1. STILL A PILL, it leaves the bar. Nothing grows yet: a box
+            // that opens on the way down is a drop, not a pill that moved.
             NumberAnimation {
                 target: plate; property: "fall"; to: 1
-                duration: plate.plain ? 0 : 460; easing.type: Services.Sizes.easeOut
+                duration: plate.plain ? 0 : 120; easing.type: Services.Sizes.easeOut
             }
-            // The leading axis elongates as the blob detaches; the trailing one
-            // lands wide with a hair of overshoot -- the flatten-on-impact part.
-            // The overshoot is tiny (~5 px): a real bounce reads as a pop.
-            NumberAnimation {
-                target: plate; property: "stretch"; to: 1
-                duration: plate.plain ? 0 : (root.sideways ? root.trailMs : root.leadMs)
-                easing.type: root.sideways ? Easing.OutBack : Services.Sizes.easeOut
-                easing.overshoot: Services.Sizes.overshoot
-            }
-            NumberAnimation {
-                target: plate; property: "spread"; to: 1
-                duration: plate.plain ? 0 : (root.sideways ? root.leadMs : root.trailMs)
-                easing.type: root.sideways ? Services.Sizes.easeOut : Easing.OutBack
-                easing.overshoot: Services.Sizes.overshoot
-            }
-            // Box first, contents after: the shared items hold the pill's
-            // arrangement while the blob grows around them, then travel.
+            // 2. Only once it has arrived does it become the card: the axis it
+            // travelled on leads, the other trails, and neither overshoots --
+            // a bounce reads as a pop rather than as something arriving.
             SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 200 }
+                PauseAnimation { duration: plate.plain ? 0 : 110 }
                 NumberAnimation {
-                    target: plate; property: "morph"; to: 1
-                    duration: plate.plain ? 0 : 340; easing.type: Services.Sizes.easeOut
+                    target: plate; property: "stretch"; to: 1
+                    duration: plate.plain ? 0 : (root.sideways ? root.trailMs : root.leadMs)
+                    easing.type: Services.Sizes.easeOut
                 }
             }
-            // The card-only extras arrive last, filling the gaps the travelling
-            // items have opened up by then.
             SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 380 }
-                NumberAnimation { target: plate; property: "contentAmt"; to: 1; duration: plate.plain ? 0 : 200 }
+                PauseAnimation { duration: plate.plain ? 0 : 110 }
+                NumberAnimation {
+                    target: plate; property: "spread"; to: 1
+                    duration: plate.plain ? 0 : (root.sideways ? root.leadMs : root.trailMs)
+                    easing.type: Services.Sizes.easeOut
+                }
+            }
+            // 3. What the pill was carrying slides into the card's arrangement
+            // WHILE the box opens: the box and its contents are one movement.
+            SequentialAnimation {
+                PauseAnimation { duration: plate.plain ? 0 : 140 }
+                NumberAnimation {
+                    target: plate; property: "morph"; to: 1
+                    duration: plate.plain ? 0 : 160; easing.type: Services.Sizes.easeOut
+                }
+            }
+            // 4. The card-only extras arrive last, filling the gaps the
+            // travelling items have opened up by then.
+            SequentialAnimation {
+                PauseAnimation { duration: plate.plain ? 0 : 290 }
+                    NumberAnimation { target: plate; property: "contentAmt"; to: 1; duration: plate.plain ? 0 : 130 }
             }
         }
 
@@ -233,24 +269,31 @@ Item {
                 PauseAnimation { duration: plate.plain ? 0 : 40 }
                 NumberAnimation {
                     target: plate; property: "morph"; to: plate.plain ? 1 : 0
-                    duration: plate.plain ? 0 : 260; easing.type: Services.Sizes.easeInOut
+                    duration: plate.plain ? 0 : 130; easing.type: Services.Sizes.easeInOut
                 }
             }
+            // The card becomes a pill again where it stands…
             SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 160 }
+                PauseAnimation { duration: plate.plain ? 0 : 110 }
                 ParallelAnimation {
                     NumberAnimation {
-                        target: plate; property: "fall"; to: plate.plain ? 1 : 0
-                        duration: plate.plain ? 0 : 340; easing.type: Services.Sizes.easeInOut
-                    }
-                    NumberAnimation {
                         target: plate; property: "stretch"; to: plate.plain ? 1 : 0
-                        duration: plate.plain ? 0 : 300; easing.type: Services.Sizes.easeInOut
+                        duration: plate.plain ? 0 : (root.sideways ? 140 : 120)
+                        easing.type: Services.Sizes.easeInOut
                     }
                     NumberAnimation {
                         target: plate; property: "spread"; to: plate.plain ? 1 : 0
-                        duration: plate.plain ? 0 : 300; easing.type: Services.Sizes.easeInOut
+                        duration: plate.plain ? 0 : (root.sideways ? 120 : 140)
+                        easing.type: Services.Sizes.easeInOut
                     }
+                }
+            }
+            // …and only then does the pill go home.
+            SequentialAnimation {
+                PauseAnimation { duration: plate.plain ? 0 : 220 }
+                NumberAnimation {
+                    target: plate; property: "fall"; to: plate.plain ? 1 : 0
+                    duration: plate.plain ? 0 : 130; easing.type: Services.Sizes.easeInOut
                 }
             }
         }

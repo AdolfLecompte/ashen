@@ -7,28 +7,34 @@ import "root:/services" as Services
 
 PanelWindow {
     id: win
-    anchors { top: true; right: true; bottom: true }
+    anchors { top: true; left: true; right: true; bottom: true }
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    implicitWidth: 400
     visible: Services.Notifications.activePopups.length > 0
 
-    // The surface spans the full right edge but only the toast column should grab
+    // The surface spans the whole screen but only the toast column should grab
     // the pointer — otherwise the invisible rest of the window eats clicks meant
     // for the bar pills underneath. Mask input to the cards' region.
     mask: Region { item: col }
 
+    // Where the rail will open (it follows its pill), so the stack can take the
+    // other side and both can be open at once.
+    readonly property real railX: Services.Sizes.panelX(win.width, Services.Sizes.notifRailW,
+                                                        Services.AppState.notificationPillCenterX)
+    readonly property bool railLeft: win.railX + Services.Sizes.notifRailW / 2 < win.width / 2
+    readonly property bool stackRight: win.railLeft
+
     // Cards enter from, and leave towards, the edge the stack hugs, so the
     // motion always points at where the stack lives.
-    readonly property int offEdge: Services.Sizes.barPosition === "right" ? -40 : 40
+    readonly property int offEdge: win.stackRight ? 40 : -40
 
     Column {
         id: col
-        // Opposite corner from the notification rail, so both can be open
-        x: Services.Sizes.barPosition === "right"
-           ? Services.Sizes.marginLeft
-           : parent.width - width - Services.Sizes.marginRight
+        // Opposite side from the notification rail, so both can be open
+        x: win.stackRight
+           ? parent.width - width - Services.Sizes.marginRight
+           : Services.Sizes.marginLeft
         y: Services.Sizes.pinBottom
            ? parent.height - height - Services.Sizes.marginBottom
            : Services.Sizes.marginTop
@@ -54,10 +60,17 @@ PanelWindow {
                 // is what clicking the card itself does. They only work while
                 // the live notification is around to invoke them.
                 readonly property var acts: (modelData.actions || []).filter(a => a.id !== "default")
+                // A system toast carries its own actions (a shell line each),
+                // so it is not held to the live-notification test.
                 readonly property bool hasActs: acts.length > 0
-                                                && Services.Notifications.liveIds.indexOf(modelData.id) !== -1
+                                                && (isSystem
+                                                    || Services.Notifications.liveIds.indexOf(modelData.id) !== -1)
 
-                readonly property int contentH: isSystem ? 62 : (bodyTxt.visible ? 94 : 70)
+                // A system toast with a picture (the screenshot) gets a taller
+                // row: a 16:9 frame squeezed into the glyph's box is a smudge.
+                readonly property bool hasShot: isSystem && (modelData.image || "") !== ""
+                readonly property int contentH: isSystem ? (hasShot ? 78 : 62)
+                                                        : (bodyTxt.visible ? 94 : 70)
                 readonly property int fullH: contentH + (hasActs ? 42 : 0)
 
                 // Collapsing to nothing is the second beat of the exit, so the
@@ -173,14 +186,27 @@ PanelWindow {
                         anchors.margins: 12
                         height: card.contentH - 24
 
-                        Rectangle {
+                        ClippingRectangle {
                             id: sysBox
-                            width: 38; height: 38
+                            // The shot keeps the screen's shape; everything
+                            // else stays the square glyph box it always was.
+                            width: card.hasShot ? 92 : 38
+                            height: card.hasShot ? 52 : 38
                             radius: 11
                             anchors.verticalCenter: parent.verticalCenter
-                            color: Services.Colors.ghostAlpha(0.15)
+                            color: Services.Colors.fillLine
+                            Image {
+                                id: sysShot
+                                anchors.fill: parent
+                                visible: card.hasShot && status === Image.Ready
+                                source: card.modelData.image || ""
+                                sourceSize.width: 256
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                            }
                             Text {
                                 anchors.centerIn: parent
+                                visible: !sysShot.visible
                                 text: card.modelData.glyph || ""
                                 color: Services.Colors.ghost
                                 font.pixelSize: card.modelData.glyphIsLetter ? 17 : 18
@@ -231,7 +257,7 @@ PanelWindow {
                             width: 40; height: 40
                             radius: 13
                             anchors.top: parent.top
-                            color: Services.Colors.ghostAlpha(0.15)
+                            color: Services.Colors.fillLine
                             Image {
                                 id: toastIconImg
                                 // The notice's own art (a sender's avatar) fills
@@ -333,7 +359,8 @@ PanelWindow {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
-                        anchors.leftMargin: 64
+                        // Under the text, whatever the box to its left is.
+                        anchors.leftMargin: card.hasShot ? 116 : 64
                         anchors.rightMargin: 12
                         anchors.bottomMargin: 10
                         spacing: 6
@@ -345,8 +372,7 @@ PanelWindow {
                                 height: 28
                                 width: Math.min(140, actLabel.implicitWidth + 22)
                                 radius: 9
-                                color: actHover.containsMouse ? Services.Colors.ghostAlpha(0.4)
-                                                              : Services.Colors.ghostAlpha(0.16)
+                                color: Services.Colors.fillRest
                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                                 scale: Services.Sizes.hoverScale(actHover.containsMouse, actHover.pressed)
                                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
@@ -388,8 +414,7 @@ PanelWindow {
                 width: 46
                 height: 30
                 radius: 9
-                color: countHover.containsMouse ? Services.Colors.ghostAlpha(0.35)
-                                                : Services.Colors.surfacePanel
+                color: Services.Colors.surfacePanel
                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                 border.width: 0
                 scale: Services.Sizes.hoverScale(countHover.containsMouse, countHover.pressed)
@@ -418,8 +443,7 @@ PanelWindow {
                 width: 34
                 height: 30
                 radius: 9
-                color: sweepHover.containsMouse ? Services.Colors.ghostAlpha(0.35)
-                                                : Services.Colors.surfacePanel
+                color: Services.Colors.surfacePanel
                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                 border.width: 0
                 scale: Services.Sizes.hoverScale(sweepHover.containsMouse, sweepHover.pressed)

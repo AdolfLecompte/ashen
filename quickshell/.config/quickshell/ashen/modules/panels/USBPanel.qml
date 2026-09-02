@@ -17,8 +17,21 @@ PanelWindow {
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
     mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    // The line for an empty list, picked when it empties and not per frame.
+    property string emptyLine: Services.Voice.pick("usb.empty")
+
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.usbVisible
+
+    // The last stick pulled out takes the panel with it. This card hangs off a
+    // pill that only exists while something is plugged in, so once the pill
+    // goes the panel is a card pointing at nothing.
+    Connections {
+        target: Services.USB
+        function onDevicesChanged() {
+            if (Services.USB.devices.length === 0) Services.AppState.usbVisible = false
+        }
+    }
     visible: shown || closeDelay.running
     onShownChanged: if (!shown) closeDelay.restart()
     // Mapped until the drop is all the way home; see DropCard.closeMs.
@@ -92,7 +105,7 @@ PanelWindow {
 
                     Text {
                         visible: Services.USB.devices.length === 0
-                        text: "No USB devices connected"
+                        text: root.emptyLine
                         color: Services.Colors.ash
                         font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
@@ -108,7 +121,7 @@ PanelWindow {
                             width: panelCol.width
                             height: 66
                             radius: 10
-                            color: Services.Colors.ghostAlpha(0.08)
+                            color: Services.Colors.fillInset
 
                             RowLayout {
                                 anchors.fill: parent
@@ -118,7 +131,7 @@ PanelWindow {
                                 Rectangle {
                                     width: 36; height: 36
                                     radius: 9
-                                    color: Services.Colors.ghostAlpha(0.15)
+                                    color: Services.Colors.fillLine
                                     Text {
                                         anchors.centerIn: parent
                                         text: "\ue1e0"
@@ -154,7 +167,7 @@ PanelWindow {
                                     width: mountLabel.implicitWidth + 16
                                     height: 28
                                     radius: 8
-                                    color: modelData.mountpoint ? Services.Colors.ghostAlpha(0.15) : Services.Colors.ghost
+                                    color: modelData.mountpoint ? Services.Colors.fillLine : Services.Colors.ghost
                                     Text {
                                         id: mountLabel
                                         anchors.centerIn: parent
@@ -173,24 +186,9 @@ PanelWindow {
                                     }
                                 }
 
-                                Rectangle {
-                                    width: 28; height: 28; radius: 8
-                                    color: "transparent"
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "\ue8fb"
-                                        color: Services.Colors.ash
-                                        font.pixelSize: 16
-                                        font.family: "Material Symbols Rounded"
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-                                        onEntered: parent.color = Services.Colors.ghostAlpha(0.15)
-                                        onExited: parent.color = "transparent"
-                                        onClicked: Services.USB.eject(modelData.parentName)
-                                    }
+                                Widgets.IconButton {
+                                    glyph: "\ue8fb"
+                                    onActivated: Services.USB.eject(modelData.parentName)
                                 }
                             }
                         }

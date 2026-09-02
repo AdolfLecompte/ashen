@@ -114,7 +114,11 @@ PanelWindow {
         // not a margin you can see.
         readonly property int pad: 16
         openW: 4 * tileW + 3 * gap + pad * 2
-        openH: tileH + pad * 2
+        // The tiles, plus the strip under them the card speaks into while one
+        // is held. Reserved always: a card that grows when you press it moves
+        // the very tile you are pressing.
+        readonly property int sayH: 22
+        openH: tileH + sayH + pad * 2
         cardColor: "transparent"
         // Centred whichever way it arrives: it is the most consequential thing
         // in the shell and should not be read out of the corner of your eye.
@@ -133,10 +137,30 @@ PanelWindow {
                     return Math.max(0, Math.min(1, (host.contentAmt - start) / (1 - start)))
                 }
 
+                // Whether any tile is being held down right now, and what to
+                // say about it. Held is the one moment in this panel where
+                // there is time to say anything at all -- and where letting go
+                // is still an option worth mentioning.
+                property bool holding: false
+                property string holdLine: ""
+                onHoldingChanged: card.holdLine = card.holding
+                    ? Services.Voice.pick("power.hold") : ""
+
                 // What the pointer is on. The tiles carry no words of their own:
                 // an icon the size of a fist is the thing you press, and the
                 // name belongs where it cannot make four tiles into a paragraph.
                 property string hovered: ""
+
+                Widgets.SaidLine {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: tileRow.bottom
+                    anchors.topMargin: 14
+                    width: tileRow.width
+                    horizontalAlignment: Text.AlignHCenter
+                    line: card.holdLine
+                    opacity: card.holding ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                }
 
                 Row {
                     id: tileRow
@@ -163,6 +187,7 @@ PanelWindow {
                             onKeyHeldChanged: {
                                 if (tile.keyHeld) { holdDrain.stop(); holdFill.restart() }
                                 else { holdFill.stop(); holdDrain.restart() }
+                                card.holding = tile.keyHeld
                             }
 
                             opacity: card.stage(index)
@@ -314,14 +339,15 @@ PanelWindow {
                                 // so only one tile is ever lit, and leaving the
                                 // tiles leaves nothing picked.
                                 onEntered: root.sel = tile.index
-                                onPressed: { holdDrain.stop(); holdFill.restart() }
+                                onPressed: { holdDrain.stop(); holdFill.restart(); card.holding = true }
                                 // Released, cancelled, or the pointer sliding
                                 // off are all "changed your mind", and only the
                                 // first of the three fires `released`.
-                                onReleased: { holdFill.stop(); holdDrain.restart() }
-                                onCanceled: { holdFill.stop(); holdDrain.restart() }
+                                onReleased: { holdFill.stop(); holdDrain.restart(); card.holding = false }
+                                onCanceled: { holdFill.stop(); holdDrain.restart(); card.holding = false }
                                 onExited: {
                                     holdFill.stop(); holdDrain.restart()
+                                    card.holding = false
                                     if (root.sel === tile.index) root.sel = -1
                                 }
                             }

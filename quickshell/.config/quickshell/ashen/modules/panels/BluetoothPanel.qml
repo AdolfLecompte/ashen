@@ -30,11 +30,30 @@ PanelWindow {
 
     property var adapter: Bluetooth.defaultAdapter
 
+    // The two things this card waits on, and the one line that says which.
+    // Pairing outranks the sweep: it is the one you asked for.
+    readonly property bool pairing: Services.BtLink.pendingAddr !== ""
+    readonly property bool sweeping: root.adapter ? root.adapter.discovering : false
+    property string waitLine: ""
+    function retune() {
+        root.waitLine = root.pairing ? Services.Voice.pick("bt.pairing")
+            : root.sweeping ? Services.Voice.pick("bt.scanning") : ""
+    }
+    onPairingChanged: root.retune()
+    onSweepingChanged: root.retune()
+
     function startScan() {
         if (adapter && adapter.enabled && !adapter.discovering) {
             adapter.discovering = true
             scanTimer.restart()
         }
+    }
+
+    // The scan window is the panel's; what happens when you press a device is
+    // Services.BtLink's, so the ring and the rows in Settings behave alike.
+    function stopScan() {
+        scanTimer.stop()
+        Services.BtLink.stopScan()
     }
 
     Timer {
@@ -47,10 +66,7 @@ PanelWindow {
         if (shown) Qt.callLater(startScan)
         else {
             closeDelay.restart()
-            if (adapter && adapter.discovering) {
-                scanTimer.stop()
-                adapter.discovering = false
-            }
+            root.stopScan()
         }
     }
 
@@ -134,7 +150,7 @@ PanelWindow {
                         // they differed.
                         Rectangle {
                             width: 52; height: 28; radius: 14
-                            color: (root.adapter && root.adapter.enabled) ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.25)
+                            color: (root.adapter && root.adapter.enabled) ? Services.Colors.ghost : Services.Colors.fillRest
                             gradient: Services.Prefs.useGradients && ((root.adapter && root.adapter.enabled)) ? Services.Colors.accentGradient : null
                             Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
@@ -174,8 +190,14 @@ PanelWindow {
                         handOverGlyph: btCard.morphingGlyph
                         handOverLabel: btCard.morphingLabel
 
+                        // Trusted counts as remembered, same as the rows in
+                        // Settings: a controller often shows up trusted-only
+                        // (paired:no bonded:no) and had no ring at all. Safe to
+                        // key off now that nothing marks a device trusted
+                        // BEFORE it has actually paired.
                         readonly property var known: root.adapter
-                            ? root.adapter.devices.values.filter(d => d.paired || d.bonded || d.connected)
+                            ? root.adapter.devices.values.filter(
+                                d => d.paired || d.bonded || d.trusted || d.connected)
                             : []
                         readonly property var linked: graph.known.find(d => d.connected) || null
 
@@ -191,19 +213,24 @@ PanelWindow {
                         // the same source, and a piece only flies on an exact match.
                         hubLabel: graph.linked
                                 ? (Services.Network.btDevice !== "" ? Services.Network.btDevice
-                                                                    : graph.linked.name)
+                                                                    : Services.BtLink.displayName(graph.linked))
                                 : (Services.Network.btEnabled ? "Scanning" : "Disabled")
                         hubSub: graph.linked
                             ? (graph.linked.batteryAvailable
                                 ? Math.round(graph.linked.battery * 100) + "%" : "Connected")
                             : ""
+                        // Nothing in the ring is not the same as nothing at all:
+                        // with the one device you own connected, it IS the hub,
+                        // and the card was still saying "No paired devices yet".
                         emptyHint: !(root.adapter && root.adapter.enabled) ? "Bluetooth is off"
                             : graph.scanMode ? "Nothing in range"
+                            : graph.linked ? ""
                             : "No paired devices yet \u2014 press Scan"
 
                         // Same scan chip as Wi-Fi, in the same slot: press it and the
                         // ring fills with everything the radio can see, six at a time.
                         // Strangers get no wire — nothing is paired with them yet.
+                        waitLine: root.waitLine
                         scanEnabled: true
                         scanGlyph: "\ue8b6"
                         scanLabel: "Scan"
@@ -211,44 +238,44 @@ PanelWindow {
                             ? (root.adapter && root.adapter.discovering
                                 ? "Scanning\u2026" : graph.strangers.length + " nearby")
                             : "Nearby"
+                        // The exact complement of `known`: the two lists used to
+                        // disagree about `trusted`, so a device that had been
+                        // marked trusted and then failed to pair was in neither
+                        // of them -- it simply vanished off the card.
                         readonly property var strangers: root.adapter
                             ? root.adapter.devices.values
                                 .filter(d => !(d.paired || d.bonded || d.trusted || d.connected))
                                 .slice().sort((a, b) => String(a.name).localeCompare(String(b.name)))
                             : []
-                        scanNodes: graph.strangers.slice(0, 6).map(d => ({
+                        // The ring pages, so it is handed everything the sweep
+                        // found rather than the first six.
+                        scanNodes: graph.strangers.slice(0, 24).map(d => ({
                             id: d.address,
                             glyph: "\ue1a8",
-                            label: d.name,
-                            sub: d.pairing ? "Pairing\u2026" : "",
+                            label: Services.BtLink.displayName(d),
+                            // What it is in the middle of: without it a pair
+                            // that takes eight seconds looked like a dead button.
+                            sub: Services.BtLink.busyText(d),
                             active: false
                         }))
                         onScanActivated: root.startScan()
                         onScanNodeActivated: function(id) {
-                            const d = graph.strangers.find(x => x.address === id)
-                            if (!d) return
-                            // BlueZ rejects connect() without prior bonding
-                            d.trusted = true
-                            d.pair()
+                            Services.BtLink.request(graph.strangers.find(x => x.address === id))
                         }
-                        onScanClosed: if (root.adapter && root.adapter.discovering) {
-                            scanTimer.stop()
-                            root.adapter.discovering = false
-                        }
+                        onScanClosed: root.stopScan()
 
                         // The hub is already the connected one, so it does not get a
                         // slot as well.
                         nodes: graph.known.filter(d => !d.connected).map(d => ({
                             id: d.address,
                             glyph: "\ue1a8",
-                            label: d.name,
-                            sub: d.paired || d.bonded ? "Paired" : "",
+                            label: Services.BtLink.displayName(d),
+                            sub: Services.BtLink.busyText(d) || (d.paired || d.bonded ? "Paired" : ""),
                             active: false
                         }))
 
                         onNodeActivated: function(id) {
-                            const d = graph.known.find(x => x.address === id)
-                            if (d) d.connect()
+                            Services.BtLink.request(graph.known.find(x => x.address === id))
                         }
                         onHubActivated: if (graph.linked) graph.linked.disconnect()
                     }

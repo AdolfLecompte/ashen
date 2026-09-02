@@ -28,7 +28,6 @@ PanelWindow {
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.networkVisible
     visible: shown || closeDelay.running
-    onShownChanged: if (!shown) closeDelay.restart()
     // Mapped until the drop is all the way home; see DropCard.closeMs.
     Timer { id: closeDelay; interval: netCard.closeMs }
 
@@ -42,10 +41,49 @@ PanelWindow {
     property bool showPassword: false
     property bool showConnectDialog: false
 
+    // Read what NetworkManager already knows. `nmcli dev wifi` on its own asks
+    // for a scan when the cache is stale and BLOCKS on it -- that wait was the
+    // panel taking seconds to draw anything.
     function refreshNetworks() {
         scanProc.running = true
-        knownProc.running = true
         ethProc.running = true
+    }
+    // The saved-profile list barely ever changes, and resolving it costs one
+    // nmcli per profile. It is not part of a poll: opening the card and
+    // connecting are the only things that can move it.
+    function refreshKnown() { knownProc.running = true }
+    // Ask the radio for a real sweep. Ghost networks are NetworkManager's own
+    // cache of APs it has not seen for a while; only a fresh scan prunes them.
+    // What the graph says while a sweep is out. Picked when the sweep starts,
+    // cleared when it lands: see docs/DESIGN.md §6b.
+    property string scanLine: ""
+    function rescan() {
+        Quickshell.execDetached(["nmcli", "device", "wifi", "rescan"])
+        root.scanLine = Services.Voice.pick("wifi.scanning")
+        rescanSettle.restart()
+    }
+    Timer {
+        id: rescanSettle
+        interval: 1500
+        onTriggered: { root.refreshNetworks(); root.scanLine = "" }
+    }
+
+    // NetworkManager tells us the moment anything moves; no reason to sit on a
+    // 15 s poll waiting to notice a connection that already landed.
+    Connections {
+        target: Services.Network
+        function onChanged() {
+            if (!root.shown) return
+            root.refreshNetworks()
+            root.refreshKnown()
+        }
+    }
+
+    onShownChanged: {
+        if (!shown) { closeDelay.restart(); return }
+        root.refreshNetworks()
+        root.refreshKnown()
+        root.rescan()
     }
 
     // ── The scan ring, slot by slot ─────────────────────────────────────
@@ -58,6 +96,10 @@ PanelWindow {
     // on every sweep, so networks traded places in and out of the ring while
     // you were looking at it — a node appearing from nowhere, wired to nothing.
     // A slot is only given up when its network stops being in range.
+    // Six was the ring's whole capacity; the ring pages now, so this holds as
+    // many as the air has -- capped, because a busy café hands back sixty and
+    // nobody pages through sixty.
+    readonly property int scanCap: 24
     property var scanSlots: [null, null, null, null, null, null]
     onStrangersAllChanged: updateScanSlots()
     function updateScanSlots() {
@@ -72,6 +114,13 @@ PanelWindow {
                                   .slice().sort((a, b) => b.signal - a.signal)
         for (let i = 0; i < slots.length && fresh.length > 0; i++)
             if (!slots[i]) slots[i] = fresh.shift().ssid
+        // Anything still left gets a NEW slot at the end rather than being
+        // dropped: the ones already placed keep their page, and the rest land
+        // on the pages after it.
+        while (fresh.length > 0 && slots.length < root.scanCap)
+            slots.push(fresh.shift().ssid)
+        // A page's worth of trailing holes is a page of nothing: trim them.
+        while (slots.length > 6 && slots[slots.length - 1] === null) slots.pop()
         scanSlots = slots
     }
 
@@ -92,7 +141,10 @@ PanelWindow {
 
     Process {
         id: scanProc
-        command: ["nmcli", "-t", "-f", "active,ssid,signal,security", "dev", "wifi"]
+        // `list --rescan no`: read the cache, never trigger a sweep. The bare
+        // form starts one and waits for it, which is what made opening the
+        // card feel like it had hung. Sweeps are asked for by root.rescan().
+        command: ["nmcli", "-t", "-f", "active,ssid,signal,security", "dev", "wifi", "list", "--rescan", "no"]
         running: Services.AppState.networkVisible
         stdout: StdioCollector {
             onStreamFinished: {
@@ -101,10 +153,17 @@ PanelWindow {
                 for (let line of lines) {
                     let parts = line.split(":")
                     if (parts.length >= 3 && parts[1].length > 0) {
+                        const sig = parseInt(parts[2]) || 0
+                        const act = parts[0] === "yes"
+                        // Signal zero and not ours: an AP NetworkManager still
+                        // has on file but nothing can hear. Those were the
+                        // networks on the ring that did not exist.
+                        if (sig <= 0 && !act)
+                            continue
                         nets.push({
-                            active: parts[0] === "yes",
+                            active: act,
                             ssid: parts[1],
-                            signal: parseInt(parts[2]) || 0,
+                            signal: sig,
                             secure: parts[3] !== "" && parts[3] !== "--",
                         })
                     }
@@ -166,11 +225,17 @@ PanelWindow {
         }
     }
 
+    // Reading the cache is cheap, so it happens often; a real sweep every other
+    // turn, which is what retires an AP that has gone away.
     Timer {
         interval: 15000
         running: root.shown
         repeat: true
-        onTriggered: root.refreshNetworks()
+        property int ticks: 0
+        onTriggered: {
+            root.refreshNetworks()
+            if (++ticks % 2 === 0) root.rescan()
+        }
     }
 
     // While a connection is landing the 10 s service poll is too slow to end
@@ -192,6 +257,9 @@ PanelWindow {
         onTriggered: {
             Services.Network.refresh()
             root.refreshNetworks()
+            // Joining a stranger writes a new profile: without this the network
+            // you just connected to stayed a stranger on the ring.
+            root.refreshKnown()
             if (++ticks >= 12) stop()
         }
     }
@@ -269,7 +337,7 @@ PanelWindow {
                             id: tabTrack
                             anchors.fill: parent
                             radius: 10
-                            color: Services.Colors.ghostAlpha(0.12)
+                            color: Services.Colors.fillLine
                         }
 
                         Rectangle {
@@ -370,7 +438,7 @@ PanelWindow {
                                 // the one place a scan is started from.
                                 Rectangle {
                                     width: 52; height: 28; radius: 14
-                                    color: root.wifiEnabled ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.25)
+                                    color: root.wifiEnabled ? Services.Colors.ghost : Services.Colors.fillRest
                                     gradient: Services.Prefs.useGradients && (root.wifiEnabled) ? Services.Colors.accentGradient : null
                                     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
                                     Rectangle {
@@ -430,6 +498,7 @@ PanelWindow {
 
                                 // The scan chip keeps the last slot for good. Pressing it
                                 // takes the middle and the ring fills with strangers.
+                                waitLine: root.scanLine
                                 scanEnabled: true
                                 scanGlyph: "\ue8b6"
                                 scanLabel: "Scan"
@@ -439,7 +508,9 @@ PanelWindow {
                                 // six strongest every sweep meant the ring swapped members
                                 // while you were looking at it.
                                 scanNodes: root.scanRing
-                                onScanActivated: root.refreshNetworks()
+                                // Pressing Scan means scan: the cache read is
+                                // instant, the sweep lands a beat later.
+                                onScanActivated: { root.refreshNetworks(); root.rescan() }
                                 // Nothing is agreed with a stranger yet, so this only asks:
                                 // the wire is strung to it and the password panel follows a
                                 // beat later, so you see which one you picked before the
@@ -498,7 +569,7 @@ PanelWindow {
                                 id: askRow
                                 width: parent.width
                                 radius: 10
-                                color: Services.Colors.ghostAlpha(0.12)
+                                color: Services.Colors.fillLine
                                 clip: true
                                 height: root.showConnectDialog ? 92 : 0
                                 opacity: root.showConnectDialog ? 1 : 0
@@ -543,9 +614,9 @@ PanelWindow {
                                             Layout.fillWidth: true
                                             height: 36
                                             radius: 8
-                                            color: Services.Colors.ghostAlpha(0.12)
+                                            color: Services.Colors.fillLine
                                             border.color: passInput.activeFocus
-                                                ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.3)
+                                                ? Services.Colors.ghost : Services.Colors.fillStrong
                                             border.width: 1
                                             Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
@@ -601,20 +672,22 @@ PanelWindow {
                                         Rectangle {
                                             Layout.preferredWidth: 84
                                             height: 36; radius: 8
-                                            color: Services.Colors.ghostAlpha(0.18)
+                                            color: Services.Colors.fillRest
+                                            scale: Services.Sizes.hoverScale(cancelMouse.containsMouse, cancelMouse.pressed)
+                                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: "Cancel"
-                                                color: Services.Colors.snow
+                                                color: cancelMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                                                 font.pixelSize: 12
                                                 font.family: "JetBrainsMono NF"
                                             }
                                             MouseArea {
+                                                id: cancelMouse
                                                 anchors.fill: parent
                                                 cursorShape: Qt.PointingHandCursor
                                                 hoverEnabled: true
-                                                onEntered: parent.color = Services.Colors.ghostAlpha(0.3)
-                                                onExited: parent.color = Services.Colors.ghostAlpha(0.18)
                                                 onClicked: askRow.cancel()
                                             }
                                         }
@@ -624,13 +697,8 @@ PanelWindow {
                                             height: 36; radius: 8
                                             color: Services.Colors.ghost
                                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
-                                            Rectangle {
-                                                anchors.fill: parent
-                                                radius: parent.radius
-                                                color: Services.Colors.snowAlpha(0.16)
-                                                opacity: joinMouse.containsMouse ? 1 : 0
-                                                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
-                                            }
+                                            scale: Services.Sizes.hoverScale(joinMouse.containsMouse, joinMouse.pressed)
+                                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: "Join"

@@ -29,7 +29,11 @@ PanelWindow {
         value: card.wearingFace
     }
 
-    readonly property real openW: panelRef.contentW + panelRef.pad * 2
+    // Measured off the card itself, never off a constant: the card grows a
+    // column when the track has words, and the box has to grow WITH it -- the
+    // column animates its own width, so this changes continuously instead of
+    // stepping once.
+    readonly property real openW: panelRef.implicitWidth + panelRef.pad * 2
     readonly property real openH: panelRef.artSize + panelRef.pad * 2
 
     // `hasPlayer` is derived from the copy we hold, not fetched separately:
@@ -37,6 +41,13 @@ PanelWindow {
     // for a frame `hasPlayer` was true while `activePlayer` was already null.
     readonly property var activePlayer: panelRef.activePlayer
     readonly property bool hasPlayer: root.activePlayer !== null
+
+    // The music stopping closes the card. The pill it wears the face of is gone
+    // the moment there is no player, so a panel left open is a card standing on
+    // a rect that no longer exists. `activePlayer` already survives the few ms
+    // MPRIS goes null between tracks, so this only fires when it is really over.
+    onHasPlayerChanged: if (!root.hasPlayer && Services.AppState.mediaVisible)
+        Services.AppState.mediaVisible = false
 
     // Chip sizes at each end of the trip
     readonly property real chipSm: Services.Sizes.innerH
@@ -148,9 +159,18 @@ PanelWindow {
         // has no counterpart for until the blob has finished opening.
         Widgets.MediaCard {
             id: panelRef
-            anchors.centerIn: parent
+            // Top, WITH the padding the box is sized for: anchoring to the
+            // bare top edge put the cover and the title against the plate,
+            // which clips.
+            anchors.top: parent.top
+            anchors.topMargin: panelRef.pad
+            anchors.horizontalCenter: parent.horizontalCenter
             ghostShared: true
             extrasOpacity: card.contentAmt
+            // The blob is the box; this is what happens inside it once the box
+            // has landed. Morph gets both animations, not one instead of the other.
+            stageFn: card.stage
+            offerLyrics: true
         }
 
         // ── The shared items ────────────────────────────────────────────

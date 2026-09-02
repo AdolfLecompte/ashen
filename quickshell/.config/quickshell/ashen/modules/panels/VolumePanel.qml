@@ -10,6 +10,7 @@ import "root:/modules/widgets" as Widgets
 // between them moves nothing on screen except the reading.
 PanelWindow {
     id: win
+    property string quietLine: Services.Voice.pick("audio.noApps")
     anchors { top: true; left: true; right: true; bottom: true }
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
@@ -56,8 +57,7 @@ PanelWindow {
         ratio = Math.max(0, Math.min(1, ratio))
         const pct = Math.round(ratio * 100)
         if (win.isOut) {
-            Quickshell.execDetached(["sh", "-c",
-                "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ " + pct + "%"])
+            Services.Audio.setVolume(pct)
         } else {
             Services.Audio.setMicVolume(pct)
         }
@@ -342,7 +342,7 @@ PanelWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 topPadding: 14
                                 bottomPadding: 14
-                                text: "Nothing is playing"
+                                text: win.quietLine
                                 color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsBody
                                 font.family: "JetBrainsMono NF"
@@ -352,7 +352,10 @@ PanelWindow {
                                 model: Services.Audio.streams
 
                                 delegate: Rectangle {
+                                    id: streamRow
                                     required property var modelData
+                                    readonly property bool sMuted: modelData.audio ? modelData.audio.muted : false
+                                    readonly property int sVol: modelData.audio ? Math.round(modelData.audio.volume * 100) : 0
                                     width: parent.width
                                     height: 54
                                     radius: Services.Sizes.cardR
@@ -371,22 +374,22 @@ PanelWindow {
 
                                             Text {
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                text: modelData.muted ? "\ue04f" : "\ue050"
-                                                color: modelData.muted ? Services.Colors.mist
-                                                                       : Services.Colors.ghost
+                                                text: streamRow.sMuted ? "\ue04f" : "\ue050"
+                                                color: streamRow.sMuted ? Services.Colors.mist
+                                                                        : Services.Colors.ghost
                                                 font.pixelSize: 14
                                                 font.family: "Material Symbols Rounded"
                                                 MouseArea {
                                                     anchors.fill: parent
                                                     anchors.margins: -6
                                                     cursorShape: Qt.PointingHandCursor
-                                                    onClicked: Services.Audio.toggleStreamMute(modelData.id)
+                                                    onClicked: Services.Audio.toggleStreamMute(modelData)
                                                 }
                                             }
                                             Text {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 width: parent.width - 60
-                                                text: modelData.app
+                                                text: Services.Audio.streamLabel(modelData)
                                                 color: Services.Colors.snow
                                                 font.pixelSize: 11
                                                 font.bold: true
@@ -395,7 +398,7 @@ PanelWindow {
                                             }
                                             Text {
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                text: modelData.volume + "%"
+                                                text: streamRow.sVol + "%"
                                                 color: Services.Colors.mist
                                                 font.pixelSize: 10
                                                 font.family: "JetBrainsMono NF"
@@ -405,11 +408,11 @@ PanelWindow {
                                         Widgets.SliderTrack {
                                             width: parent.width
                                             hitMargin: 10
-                                            dimmed: modelData.muted
-                                            fillColor: modelData.muted ? Services.Colors.mist
-                                                                       : Services.Colors.ghost
-                                            value: modelData.volume / 100
-                                            onMoved: r => Services.Audio.setStreamVolume(modelData.id, r * 100)
+                                            dimmed: streamRow.sMuted
+                                            fillColor: streamRow.sMuted ? Services.Colors.mist
+                                                                        : Services.Colors.ghost
+                                            value: streamRow.sVol / 100
+                                            onMoved: r => Services.Audio.setStreamVolume(modelData, r * 100)
                                         }
                                     }
                                 }
@@ -421,43 +424,16 @@ PanelWindow {
                     // It had a card of its own once, for one number the keys
                     // already change. Down here it is a line at the foot of the
                     // panel you open to change a level anyway.
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-                        color: Services.Colors.fillLine
-                    }
+                    Widgets.Divider { width: parent.width }
 
-                    Row {
+                    // The same row Settings uses, laid out inline: one glyph,
+                    // one track, one number.
+                    Widgets.SliderRow {
                         width: parent.width
-                        spacing: 10
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Services.Brightness.icon(Services.Brightness.level)
-                            color: Services.Colors.ghost
-                            font.pixelSize: 15
-                            font.family: "Material Symbols Rounded"
-                        }
-                        Widgets.SliderTrack {
-                            id: brightBar
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 76
-                            trackHeight: 16
-                            hitMargin: 10
-                            value: Services.Brightness.level / 100
-                            onMoved: r => {
-                                const pct = Math.round(Math.max(0.01, r) * 100)
-                                Quickshell.execDetached(["sh", "-c",
-                                    "brightnessctl set \"$1\"%", "sh", String(pct)])
-                            }
-                        }
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Math.round(brightBar.shown * 100) + "%"
-                            color: Services.Colors.mist
-                            font.pixelSize: Services.Sizes.fsMeta
-                            font.family: "JetBrainsMono NF"
-                        }
+                        inline: true
+                        glyph: Services.Brightness.icon(Services.Brightness.level)
+                        value: Services.Brightness.level
+                        onMoved: pct => Services.Brightness.setLevel(pct)
                     }
                 }
             }

@@ -84,13 +84,12 @@ PanelWindow {
                 font.family: "JetBrainsMono NF"
             }
 
-            Text {
+            Widgets.ClockText {
                 id: refTime
                 anchors.verticalCenter: parent.verticalCenter
-                text: panelRef.timeText
-                font.pixelSize: 15
-                font.bold: true
-                font.family: "JetBrainsMono NF"
+                time: panelRef.timeText
+                px: 15
+                secRatio: 0.6
             }
 
             Row {
@@ -121,6 +120,9 @@ PanelWindow {
             anchors.centerIn: parent
             ghostShared: true
             extrasOpacity: card.contentAmt
+            // The blob is the box; this is what happens inside it once the box
+            // has landed. Morph gets both.
+            stageFn: card.stage
         }
 
         // ── The shared pieces ───────────────────────────────────────────
@@ -128,14 +130,14 @@ PanelWindow {
         // stepping font.pixelSize would reflow the glyphs in integer jumps.
         // Positioned by centre, so the scaling never drags the item sideways.
 
-        Text {
+        // One piece, not three: the seconds ride inside it. It flies at the
+        // card's proportions, and the pill's smaller seconds only differ while
+        // the whole thing is scaled down to pill size anyway.
+        Widgets.ClockText {
             id: flyTime
             readonly property real s: card.lerp(15 / panelRef.clockPx, 1, card.morph)
-            text: panelRef.timeText
-            color: Services.Colors.snow
-            font.pixelSize: panelRef.clockPx
-            font.bold: true
-            font.family: "JetBrainsMono NF"
+            time: panelRef.timeText
+            px: panelRef.clockPx
             x: card.lerp(pillRef.x + refTime.x + refTime.width / 2,
                          panelRef.x + panelRef.timeCX, card.morph) - width / 2
             y: card.lerp(pillRef.y + refTime.y + refTime.height / 2,
@@ -154,9 +156,12 @@ PanelWindow {
             id: flyDate
             text: card.morph < 0.5
                 ? Qt.formatDateTime(panelRef.now, "ddd, MMM d")
-                : panelRef.dateText
-            color: Services.Colors.mist
+                : panelRef.dateText.toUpperCase()
+            // The card wears it as a title -- spaced out and in caps -- so the
+            // flying copy has to arrive dressed the same way.
+            color: card.mix(Services.Colors.mist, Services.Colors.snow, card.morph)
             font.pixelSize: card.lerp(15, 13, card.morph)
+            font.letterSpacing: card.lerp(0, 2, card.morph)
             font.bold: true
             font.family: "JetBrainsMono NF"
             x: card.lerp(pillRef.x + refDate.x + refDate.width / 2,

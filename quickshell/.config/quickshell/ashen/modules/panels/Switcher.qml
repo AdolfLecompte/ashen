@@ -11,6 +11,7 @@ import "root:/services" as Services
 // so a window sitting on another workspace still shows what is on it.
 PanelWindow {
     id: root
+    property string emptyLine: Services.Voice.pick("switcher.empty")
 
     anchors { top: true; left: true; right: true; bottom: true }
     screen: Services.Screens.active
@@ -278,7 +279,7 @@ PanelWindow {
                     anchors.centerIn: parent
                     visible: root.wins.length === 0
                     opacity: host.contentAmt
-                    text: "NO WINDOWS"
+                    text: root.emptyLine.toUpperCase()
                     color: Services.Colors.ash
                     font.pixelSize: 11
                     font.bold: true

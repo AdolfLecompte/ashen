@@ -2,9 +2,18 @@ import QtQuick
 
 import "root:/services" as Services
 
-// A panel that falls out of its bar pill like a drop of water: it starts the
-// size of the pill, stretches away, and the goo bridge pinches off. The caller
-// gives it the pill's rect and the open size. Box first, contents after.
+// A panel that comes out of its bar pill, in four beats that do NOT run at
+// once -- that is the whole point of them:
+//   1. the chip lets go of its colour: the lit fill drains away and what it
+//      says lights up instead, still sitting in the bar;
+//   2. STILL A PILL, it leaves the bar and travels to where the panel lives;
+//   3. only once it has arrived does it become the card: the box opens along
+//      two axes, the one it travelled on leading, and what it carries slides
+//      out into the panel's arrangement while it does;
+//   4. everything that was never in the chip fades in last.
+// Closing runs the beats backwards: the card becomes a pill again, the pill
+// goes home, and only then does it light back up.
+// Same beats in MorphCard, which is the clock's and the media panel's.
 Item {
     id: root
     anchors.fill: parent
@@ -45,10 +54,19 @@ Item {
     readonly property real plateFade: card.plateless ? 0 : 1
     // A flying piece still needs a tone to be read against, and it is not the
     // plate that is not there: it is the surface the panel sits on.
-    readonly property color inkAgainst: card.plateless
-        ? Services.Colors.surfacePanel : card.cardColor
-    // Once the card has settled a flying piece wears its landing colour.
-    readonly property bool pieceSettled: card.relay >= 0.999
+    readonly property color inkAgainst: root.plateless
+        ? Services.Colors.surfacePanel : root.cardColor
+    // What a carried piece looks like while it is on its way: OFF, the way a
+    // disabled chip reads. It is lit only once it is in its place -- see the
+    // `ink` driver.
+    property color pieceDim: Services.Colors.mist
+    // Chip ink -> off -> lit. Written once here because both pieces cross the
+    // same three colours and only their landing colour differs.
+    function pieceColor(settled) {
+        return card.mix(card.mix(Services.Colors.onColor(root.pillColor),
+                                 root.pieceDim, card.relay),
+                        settled, card.ink)
+    }
     // A piece only travels if it is the same piece at both ends.
     readonly property bool glyphFlies: glyphTarget !== null && pillGlyph !== ""
         && glyphTarget.text === pillGlyph
@@ -66,10 +84,10 @@ Item {
     property real speed: 1.0
     function ms(v) { return Math.max(1, Math.round(v / root.speed)) }
 
-    // How long the whole retraction takes: contents out (90), pieces home
-    // (40 + 230), then the box itself (140 + 290). The panel window has to
-    // stay mapped for all of it — unmapping earlier cuts the drop off halfway
-    // and the panel reads as vanishing instead of climbing back into its chip.
+    // How long the whole retraction takes, last beat included: contents out,
+    // pieces home, the box back to a pill, the pill back to the bar, then the
+    // colour. The panel window has to stay mapped for all of it -- unmapping
+    // earlier leaves the pill halfway to its slot and reads as vanishing.
     readonly property int closeMs: root.ms(Services.Sizes.panelCloseMs)
 
     // Content fades in only once the drop has landed, and the caller can hang
@@ -81,7 +99,6 @@ Item {
     readonly property alias card: card
     // Everything declared inside goes in the card, clipped to it.
     default property alias content: body.data
-
     // Normally the drop hangs off the bar, and where it lands is decided by the
     // bar's edge. A panel whose pill is NOT on the bar -- Process, off its peek
     // button on the bottom of the screen -- says so here instead, and the neck
@@ -110,6 +127,15 @@ Item {
     readonly property bool neckable: neckEnabled && (ownEdge
         ? (sourceEdge === "top" || sourceEdge === "bottom")
         : !Services.Sizes.barVertical)
+
+    // Which axis leads the growth, the way MorphCard reckons it: a card leaving
+    // a capsule glued to the SIDE of the screen has to sweep sideways, or it
+    // reads as falling from somewhere it never was.
+    readonly property bool sideways: ownEdge
+        ? (sourceEdge === "left" || sourceEdge === "right")
+        : Services.Sizes.barVertical
+    readonly property int leadMs: root.ms(120)
+    readonly property int trailMs: root.ms(160)
 
     readonly property real openX: isNaN(openXOverride)
         ? Services.Sizes.panelX(width, root.openW, root.pillCX) : openXOverride
@@ -151,6 +177,9 @@ Item {
         property real spread: 0
         property real contentAmt: 0
         property real morph: 0
+        // How lit the carried pieces are. Last of all: they arrive off and
+        // light up once they are where they belong.
+        property real ink: 0
         // How far along the colour hand-over is; see `tone` on the root.
         property real relay: 0
 
@@ -179,82 +208,124 @@ Item {
             return p.y
         }
 
+        // The beats, as pauses off a single clock. Named here so the order can
+        // be read in one place instead of totted up from six animations.
+        readonly property int tColour: root.ms(100)   // 1. the lit fill drains
+        readonly property int tGo: root.ms(100)       // 2. leaves the bar…
+        readonly property int tGoMs: root.ms(100)     //    …still pill-shaped
+        readonly property int tOpen: root.ms(190)     // 3. becomes the card
+        readonly property int tSlide: root.ms(210)    //    contents slide out
+        readonly property int tFill: root.ms(350)     // 4. the rest fades in
+        readonly property int tInk: root.ms(370)      //    and the pieces light
+
         ParallelAnimation {
             id: openAnim
-            NumberAnimation {
-                target: card; property: "fall"; to: 1
-                duration: root.ms(380); easing.type: Services.Sizes.easeOut
-            }
-            NumberAnimation {
-                target: card; property: "stretch"; to: 1
-                duration: root.ms(300); easing.type: Services.Sizes.easeOut
-            }
-            NumberAnimation {
-                target: card; property: "spread"; to: 1
-                duration: root.ms(460); easing.type: Easing.OutBack; easing.overshoot: Services.Sizes.overshoot
-            }
-            // The colour goes over first and fast, while the box is still
-            // opening out: by the time anything travels, the card has settled
-            // on one tone and the pieces know what colour to be against it.
+            // 1. The chip hands its colour over before anything moves: the card
+            // is a copy of the chip until this is done, so what you see is the
+            // pill going quiet, not a second pill appearing.
             NumberAnimation {
                 target: card; property: "relay"; to: 1
-                duration: root.ms(180); easing.type: Services.Sizes.easeInOut
+                duration: card.tColour; easing.type: Services.Sizes.easeInOut
             }
-            // Box and flight overlap on purpose -- that is what makes them one
-            // movement. Flight and contents must NOT: the carried piece lands
-            // first, then everything that was never in the chip fades in.
+            // …and what it says goes OFF with it: the piece travels dim and is
+            // lit only at the end, so the journey is one quiet thing moving.
             SequentialAnimation {
-                PauseAnimation { duration: root.ms(190) }
+                PauseAnimation { duration: card.tInk }
                 NumberAnimation {
-                    target: card; property: "morph"; to: 1
-                    duration: root.ms(300); easing.type: Services.Sizes.easeOut
+                    target: card; property: "ink"; to: 1
+                    duration: root.ms(130); easing.type: Services.Sizes.easeOut
+                }
+            }
+            // 2. It leaves the bar at pill size. Nothing grows yet -- a box
+            // that opens on the way down is the drop this used to be.
+            SequentialAnimation {
+                PauseAnimation { duration: card.tGo }
+                NumberAnimation {
+                    target: card; property: "fall"; to: 1
+                    duration: card.tGoMs; easing.type: Services.Sizes.easeOut
+                }
+            }
+            // 3. Arrived, it opens out: the axis it travelled on leads and the
+            // other trails, so it unfolds rather than zooms.
+            SequentialAnimation {
+                PauseAnimation { duration: card.tOpen }
+                NumberAnimation {
+                    target: card; property: "stretch"; to: 1
+                    duration: root.sideways ? root.trailMs : root.leadMs
+                    easing.type: Services.Sizes.easeOut
                 }
             }
             SequentialAnimation {
-                PauseAnimation { duration: root.ms(500) }
-                NumberAnimation { target: card; property: "contentAmt"; to: 1; duration: root.ms(220) }
+                PauseAnimation { duration: card.tOpen }
+                NumberAnimation {
+                    target: card; property: "spread"; to: 1
+                    duration: root.sideways ? root.leadMs : root.trailMs
+                    easing.type: Services.Sizes.easeOut
+                }
+            }
+            // …and what the chip was carrying travels to its place in the panel
+            // WHILE the box opens: the box and its contents are one movement.
+            SequentialAnimation {
+                PauseAnimation { duration: card.tSlide }
+                NumberAnimation {
+                    target: card; property: "morph"; to: 1
+                    duration: root.ms(150); easing.type: Services.Sizes.easeOut
+                }
+            }
+            // 4. Never before the carried piece has landed: with the two at
+            // once the panel reads as assembling backwards.
+            SequentialAnimation {
+                PauseAnimation { duration: card.tFill }
+                NumberAnimation { target: card; property: "contentAmt"; to: 1; duration: root.ms(120) }
             }
         }
 
         ParallelAnimation {
             id: closeAnim
-            // Backwards, same order: the extra contents go first, then the two
-            // pieces travel home, then the box follows them up.
+            // Backwards, beat for beat: the extras go, the carried pieces
+            // regroup into the chip's arrangement, the card becomes a pill
+            // again, the pill goes home, and only there does it light up.
             NumberAnimation { target: card; property: "contentAmt"; to: 0; duration: root.ms(90) }
-            // Mirrored: the contents are gone before the piece sets off home,
-            // the same way nothing appeared until it had landed on the way in.
+            // The pieces go off before they set off, the way they arrived.
+            NumberAnimation { target: card; property: "ink"; to: 0; duration: root.ms(110) }
             SequentialAnimation {
-                PauseAnimation { duration: root.ms(100) }
+                PauseAnimation { duration: root.ms(40) }
                 NumberAnimation {
                     target: card; property: "morph"; to: 0
-                    duration: root.ms(230); easing.type: Services.Sizes.easeInOut
-                }
-            }
-            // The colour goes back last, so the card is already shrinking into
-            // the pill by the time it takes the accent again — arriving lit
-            // before it has moved would just be a flash on the way out.
-            SequentialAnimation {
-                PauseAnimation { duration: root.ms(250) }
-                NumberAnimation {
-                    target: card; property: "relay"; to: 0
-                    duration: root.ms(180); easing.type: Services.Sizes.easeInOut
+                    duration: root.ms(130); easing.type: Services.Sizes.easeInOut
                 }
             }
             SequentialAnimation {
-                PauseAnimation { duration: root.ms(140) }
+                PauseAnimation { duration: root.ms(120) }
                 ParallelAnimation {
-                    NumberAnimation {
-                        target: card; property: "fall"; to: 0
-                        duration: root.ms(290); easing.type: Services.Sizes.easeInOut
-                    }
+                    // The leading axis closes last, so it leaves along the line
+                    // it arrived on.
                     NumberAnimation {
                         target: card; property: "stretch"; to: 0
-                        duration: root.ms(260); easing.type: Services.Sizes.easeInOut
+                        duration: root.sideways ? root.ms(140) : root.ms(120)
+                        easing.type: Services.Sizes.easeInOut
                     }
                     NumberAnimation {
                         target: card; property: "spread"; to: 0
-                        duration: root.ms(260); easing.type: Services.Sizes.easeInOut
+                        duration: root.sideways ? root.ms(120) : root.ms(140)
+                        easing.type: Services.Sizes.easeInOut
                     }
+                }
+            }
+            SequentialAnimation {
+                PauseAnimation { duration: root.ms(240) }
+                NumberAnimation {
+                    target: card; property: "fall"; to: 0
+                    duration: root.ms(120); easing.type: Services.Sizes.easeInOut
+                }
+            }
+            // Home first, lit after: taking the accent back mid-flight is a
+            // flash on the way out.
+            SequentialAnimation {
+                PauseAnimation { duration: root.ms(350) }
+                NumberAnimation {
+                    target: card; property: "relay"; to: 0
+                    duration: root.ms(100); easing.type: Services.Sizes.easeInOut
                 }
             }
         }
@@ -268,7 +339,8 @@ Item {
         x: root.pillCX + (root.openX + root.openW / 2 - root.pillCX) * fall - width / 2
         y: root.pillCY + (root.openY + root.openH / 2 - root.pillCY) * fall - height / 2
 
-        radius: Services.Sizes.pillR + (root.cardRadius - Services.Sizes.pillR) * Math.min(1, spread)
+        radius: Services.Sizes.pillR + (root.cardRadius - Services.Sizes.pillR)
+                * Math.min(1, Math.max(spread, stretch))
         // The alpha rides on the COLOUR, never on the item: `opacity` here would
         // take the tiles standing on the plate down with it.
         color: Qt.rgba(root.cardColor.r, root.cardColor.g, root.cardColor.b,
@@ -289,20 +361,23 @@ Item {
             text: root.pillGlyph
             font.family: "Material Symbols Rounded"
             font.pixelSize: root.glyphTarget ? root.glyphTarget.font.pixelSize : 18
-            color: root.pieceSettled
-                ? (root.glyphTarget ? root.glyphTarget.color : Services.Colors.ghost)
-                : Services.Colors.onColor(root.inkAgainst)
-            Behavior on color { ColorAnimation { duration: root.ms(140) } }
+            color: root.pieceColor(root.glyphTarget ? root.glyphTarget.color
+                                                    : Services.Colors.ghost)
 
             readonly property real s: card.lerp(18 / font.pixelSize, 1, card.morph)
-            // Start: where it sits inside the chip. Next to a name it is tucked
-            // against the left edge; on its own (the USB pill) it is centred,
-            // and starting it off to one side made it come home crooked.
-            readonly property real fromCX: (root.pillLabel !== ""
-                ? root.pillCX - root.pillW / 2 + 8
+            // Start: where it sits inside the CHIP, expressed against the card
+            // itself -- the card is born on the chip's rect, so the two are the
+            // same place. Read off the pill's screen position instead, the
+            // piece would stay in the bar while the card travelled away from
+            // it and then fall on its own afterwards.
+            // Next to a name it is tucked against the left edge; on its own
+            // (the USB pill) it is centred, and starting it off to one side
+            // made it come home crooked.
+            readonly property real fromCX: root.pillLabel !== ""
+                ? (card.width - root.pillW) / 2 + 8
                   + flyGlyph.width * (18 / flyGlyph.font.pixelSize) / 2
-                : root.pillCX) - card.x
-            readonly property real fromCY: root.pillCY - card.y
+                : card.width / 2
+            readonly property real fromCY: card.height / 2
             x: card.lerp(fromCX, card.tgtX(root.glyphTarget), card.morph) - width / 2
             y: card.lerp(fromCY, card.tgtY(root.glyphTarget), card.morph) - height / 2
             transform: Scale {
@@ -320,15 +395,14 @@ Item {
             font.family: "JetBrainsMono NF"
             font.bold: true
             font.pixelSize: root.labelTarget ? root.labelTarget.font.pixelSize : 12
-            color: root.pieceSettled
-                ? (root.labelTarget ? root.labelTarget.color : Services.Colors.snow)
-                : Services.Colors.onColor(root.inkAgainst)
-            Behavior on color { ColorAnimation { duration: root.ms(140) } }
+            color: root.pieceColor(root.labelTarget ? root.labelTarget.color
+                                                    : Services.Colors.snow)
 
             readonly property real s: card.lerp(12 / font.pixelSize, 1, card.morph)
-            readonly property real fromCX: root.pillCX + root.pillW / 2 - 8
-                - flyLabel.width * (12 / flyLabel.font.pixelSize) / 2 - card.x
-            readonly property real fromCY: root.pillCY - card.y
+            // Against the card, for the same reason as the glyph above.
+            readonly property real fromCX: (card.width + root.pillW) / 2 - 8
+                - flyLabel.width * (12 / flyLabel.font.pixelSize) / 2
+            readonly property real fromCY: card.height / 2
             x: card.lerp(fromCX, card.tgtX(root.labelTarget), card.morph) - width / 2
             y: card.lerp(fromCY, card.tgtY(root.labelTarget), card.morph) - height / 2
             transform: Scale {
@@ -345,7 +419,8 @@ Item {
             id: body
             width: root.openW
             height: root.openH
-            anchors.centerIn: parent
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: (parent.height - height) / 2
             opacity: card.contentAmt
             visible: opacity > 0.01
         }

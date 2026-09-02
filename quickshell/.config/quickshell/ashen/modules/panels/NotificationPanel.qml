@@ -26,7 +26,7 @@ Scope {
         if (shown) {
             // Picked once per opening: it should have a bit of character
             // without flickering while you look at it.
-            win.emptyLine = win.emptyLines[Math.floor(Math.random() * win.emptyLines.length)]
+            win.emptyLine = Services.Voice.pick("notify.empty")
         } else {
             closeDelay.restart()
             // Marked on the way out, not on the way in: while the rail is open
@@ -41,16 +41,10 @@ Scope {
         shown: win.shown
     }
 
-    // Nothing to show is not an error, so it does not get an error's voice.
-    readonly property var emptyLines: [
-        "Nothing over here",
-        "All quiet",
-        "Lost something?",
-        "Not a peep",
-        "You're all caught up",
-        "Clean slate"
-    ]
-    property string emptyLine: "All quiet"
+    // What the empty rail says. Picked once per opening -- it should have a
+    // bit of character without shuffling while you look at it. The lines live
+    // in services/Voice.qml with the rest of the shell's asides.
+    property string emptyLine: Services.Voice.pick("notify.empty")
 
     // Clearing the history sweeps the rows out one after another and only then
     // wipes the model -- a whole list blinking out at once reads as a glitch.
@@ -80,6 +74,14 @@ Scope {
     // and a group of eighty was making the model wait four seconds.
     readonly property int sweepCap: 8
     function sweepSpan(n) { return Math.min(n, win.sweepCap) * win.clearStepMs }
+
+    // How many rows of a group are actually drawn. A folded group shows only
+    // its newest one, so the sweep must not wait out turns nobody can see --
+    // that wait was the dead pause before a folded group finally went away.
+    function shownRows(g) {
+        return (g.items.length > 1 && win.expandedApps.indexOf(g.app) === -1)
+            ? 1 : g.items.length
+    }
 
     property var pendingRemovals: []
     function scheduleRemoval(ids, afterMs) {
@@ -116,8 +118,10 @@ Scope {
             .filter(id => win.leavingIds.indexOf(id) === -1)
         if (ids.length === 0) return
         win.leavingIds = win.leavingIds.concat(ids)
-        // Long enough for the last row's turn to have played.
-        win.scheduleRemoval(ids, win.rowLeaveMs + 120 + win.sweepSpan(ids.length))
+        // Long enough for the last VISIBLE row's turn to have played.
+        const g = Services.Notifications.groupedHistory.filter(x => x.app === app)
+        const shown = g.length > 0 ? win.shownRows(g[0]) : 1
+        win.scheduleRemoval(ids, win.rowLeaveMs + 120 + win.sweepSpan(shown - 1))
     }
 
     function fadeClear() {
@@ -128,8 +132,7 @@ Scope {
         const groups = Services.Notifications.groupedHistory
         let last = 0
         for (let g = 0; g < groups.length; g++) {
-            const rows = groups[g].items.length
-            last = Math.max(last, g * 70 + win.sweepSpan(rows - 1))
+            last = Math.max(last, g * 70 + win.sweepSpan(win.shownRows(groups[g]) - 1))
         }
         clearTimer.interval = last + 260
         clearTimer.restart()
@@ -182,12 +185,14 @@ Scope {
     Rectangle {
         id: card
         // What it becomes. The pill grows into these.
-        readonly property int fullW: 400
+        readonly property int fullW: Services.Sizes.notifRailW
         readonly property int fullH: parent.height - Services.Sizes.marginTop - Services.Sizes.marginBottom
 
-        // Always on the left, whatever the bar is doing: the place you look
-        // for your notifications must not move with an unrelated setting.
-        x: arrive.boxX(Services.Sizes.marginLeft, fullW)
+        // Opens under its own pill: on a horizontal bar it follows the pill
+        // across, on a vertical one it takes the bar's side. Same rule every
+        // other panel uses (Sizes.panelX).
+        x: arrive.boxX(Services.Sizes.panelX(parent.width, fullW,
+                                             Services.AppState.notificationPillCenterX), fullW)
         y: arrive.boxY(Services.Sizes.marginTop, fullH)
         width: arrive.boxW(fullW)
         height: arrive.boxH(fullH)
@@ -264,12 +269,7 @@ Scope {
                 }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color: Services.Colors.ghostAlpha(0.12)
-                opacity: arrive.stage(1)
-            }
+            Widgets.Divider { opacity: arrive.stage(1) }
 
             // Empty state: a drawn bell rather than a sentence on its own, so
             // the panel does not look broken when there is simply nothing.
@@ -295,7 +295,7 @@ Scope {
                         text: "\ue877"
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 42
-                        color: Services.Colors.ghostAlpha(0.25)
+                        color: Services.Colors.fillRest
                     }
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -356,7 +356,27 @@ Scope {
                     readonly property bool open: win.expandedApps.indexOf(modelData.app) !== -1
                     // A single notice needs no section chrome; a run of them
                     // shows the newest until you ask for the rest.
-                    readonly property var rows: (!many || open) ? modelData.items : modelData.items.slice(0, 1)
+                    // Folded-ness comes from the model, NOT from `alive`:
+                    // clearing a group marks every row as leaving at once, so an
+                    // alive-based test flipped the group open in that same frame
+                    // and swept out rows that were never on screen.
+                    readonly property bool folded: modelData.items.length > 1 && !open
+                    // The rows the Repeater actually builds. Opening puts them
+                    // all there FIRST and lets the box unroll over them; closing
+                    // rolls the box up first and drops them after, or the run
+                    // would vanish and leave an empty box closing on nothing.
+                    property bool holdRows: group.open
+                    onOpenChanged: {
+                        if (group.open) { unhold.stop(); group.holdRows = true }
+                        else unhold.restart()
+                    }
+                    Timer {
+                        id: unhold
+                        interval: Services.Sizes.msPanel
+                        onTriggered: group.holdRows = false
+                    }
+                    readonly property var rows: (group.folded && !group.holdRows)
+                        ? modelData.items.slice(0, 1) : modelData.items
                     width: list.width
                     spacing: 4
 
@@ -409,7 +429,7 @@ Scope {
                             anchors.rightMargin: 10
                             anchors.verticalCenter: parent.verticalCenter
                             height: 1
-                            color: Services.Colors.ghostAlpha(0.09)
+                            color: Services.Colors.fillInset
                         }
 
                         Row {
@@ -437,22 +457,66 @@ Scope {
                         }
                     }
 
-                    Repeater {
-                        model: group.rows
-                        delegate: NotifRow {
-                            required property var modelData
-                            required property int index
-                            entry: modelData
-                            width: group.width
-                            // The sweep runs down the list rather than taking
-                            // every row in the same frame.
-                            // Staggered only when a whole run is being swept; a
-                            // single delete has no queue to wait behind.
-                            clearDelay: win.clearing ? (group.index * 70) + (index * win.clearStepMs)
-                                     : (win.leavingIds.length > 1
-                                        ? Math.min(index, win.sweepCap) * win.clearStepMs : 0)
-                            clearing: win.clearing
-                                || win.leavingIds.indexOf(modelData.id) !== -1
+                    // A run unrolls and rolls back up. The rows are not what
+                    // moves -- the box over them is, and it clips: opening drops
+                    // the older ones into view from under the newest, closing
+                    // takes them back under it. Rows appearing and disappearing
+                    // in place was the one part of the shell that still cut.
+                    Item {
+                        id: rowsBox
+                        width: parent.width
+                        clip: true
+                        // Measured off the newest row itself, never assumed: a
+                        // row is 38, 62 or 84 px tall depending on what the
+                        // sender put in it, plus another 38 if it brought
+                        // buttons. The Repeater is a child of the column too and
+                        // has no height, hence the skip.
+                        readonly property real firstRowH: {
+                            for (let i = 0; i < rowsCol.children.length; i++) {
+                                const c = rowsCol.children[i]
+                                if (c && c.height > 0) return c.height
+                            }
+                            return 62
+                        }
+                        height: (group.open || !group.folded)
+                              ? rowsCol.implicitHeight : rowsBox.firstRowH
+                        Behavior on height {
+                            NumberAnimation {
+                                duration: Services.Sizes.msPanel
+                                easing.type: Services.Sizes.easeBox
+                            }
+                        }
+
+                        Column {
+                            id: rowsCol
+                            width: parent.width
+                            spacing: 4
+
+                            Repeater {
+                                model: group.rows
+                                delegate: NotifRow {
+                                    required property var modelData
+                                    required property int index
+                                    entry: modelData
+                                    width: group.width
+                                    // The ones under the newest fade with the
+                                    // roll, so a half-open group reads as one
+                                    // thing opening and not as a list cut off.
+                                    opacity: (index === 0 || group.open) ? 1 : 0
+                                    Behavior on opacity {
+                                        NumberAnimation { duration: Services.Sizes.msPanel }
+                                    }
+                                    // The sweep runs down the list rather than taking
+                                    // every row in the same frame.
+                                    // Staggered only when a whole run is being swept; a
+                                    // single delete has no queue to wait behind.
+                                    clearDelay: win.clearing ? (group.index * 70) + (index * win.clearStepMs)
+                                             : (win.leavingIds.length > 1
+                                                ? Math.min(index, win.sweepCap) * win.clearStepMs : 0)
+                                    clearing: win.clearing
+                                        || win.leavingIds.indexOf(modelData.id) !== -1
+                                }
+                            }
                         }
                     }
                 }
@@ -585,7 +649,7 @@ Scope {
                     width: 34; height: 34
                     radius: 11
                     anchors.top: parent.top
-                    color: Services.Colors.ghostAlpha(0.15)
+                    color: Services.Colors.fillLine
                     Image {
                         id: appIconImg
                         // The notice's own art fills the frame; a bare app icon
@@ -709,8 +773,7 @@ Scope {
                         height: 26
                         width: Math.min(130, rowActLabel.implicitWidth + 20)
                         radius: 8
-                        color: rowActHover.containsMouse ? Services.Colors.ghostAlpha(0.4)
-                                                         : Services.Colors.ghostAlpha(0.16)
+                        color: Services.Colors.fillRest
                         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                         scale: Services.Sizes.hoverScale(rowActHover.containsMouse, rowActHover.pressed)
                         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }

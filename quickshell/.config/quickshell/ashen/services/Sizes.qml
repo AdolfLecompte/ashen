@@ -9,11 +9,31 @@ Singleton {
     id: root
 
     // Bar thickness: height on a horizontal bar, width on a vertical one
+    // The same in every style: the bar IS the frame's top side, so it needs no
+    // room for it.
     readonly property int barH: 56
 
     // Pill (top level bar item) size and corner radius
     readonly property int pillH: 44
     readonly property int pillR: 10
+    // Air between capsules in a group. One gap for everything read as a list:
+    // a 44 px square sat as far from its neighbour as a 230 px column did. So
+    // the gap is now the TIGHT one -- two buttons in a row belong together --
+    // and a pill tall enough to be a block buys its own air below.
+    readonly property int barGap: root.barVertical ? 4 : 6
+
+    // What a block adds on each side of itself, on a side bar. A pill taller
+    // than this many slots is a paragraph, not a bullet: workspaces, the clock,
+    // the system column, media with its transport. Derived from the height and
+    // not from a list of ids, so a column that grows or shrinks keeps the rule.
+    readonly property int barBlockAir: 8
+
+    // A side bar is 56 px of INPUT but its window is wider, so a chip can paint
+    // its reading out past the strip instead of growing taller. The mask stays
+    // on the strip, so the extra width is only ever pixels: nothing there hears
+    // the pointer and nothing under it stops hearing it.
+    readonly property int barSpill: 220
+    readonly property real barBlockAt: root.pillH * 1.5
 
     // The utility pill that peeks out of the edges the bar is not on. Slimmer
     // than a bar pill, so it reads as a ledge. Here because panels grow from it.
@@ -45,8 +65,8 @@ Singleton {
     }
 
     // The tint a thing takes on under the pointer is NOT here: it is a colour,
-    // and it lives with the other fills in Colors (fillRest / fillHover /
-    // fillHoverPill). Sizes owns how things move, Colors owns how they look.
+    // and it lives with the other fills in Colors (fillRest / fillStrong /
+    // fillSunken). Sizes owns how things move, Colors owns how they look.
 
     // Inner chip (item nested inside a pill) size and corner radius
     readonly property int innerH: 32
@@ -107,12 +127,44 @@ Singleton {
     // How long a panel takes to climb back into its pill. The window has to
     // stay mapped for all of it and the pill only comes back at the end, so
     // the panel, its dismiss layer and the chip all read it from here.
-    readonly property int panelCloseMs: 440
+    // Four beats, so it is longer than a single collapse was: extras out,
+    // pieces home, card back to a pill, pill back to its slot, colour last.
+    readonly property int panelCloseMs: 470
 
     // Gap between the bar and a panel hanging off it, and between a panel and
     // the far screen edges
     readonly property int panelGap: 8
-    readonly property int edgeGap: 12
+    // Room a panel keeps from a screen edge; inside the frame, never on it.
+    readonly property int edgeGap: 12 + (root.barFramed ? root.frameW : 0)
+
+    // ── Bar style ────────────────────────────────────────────────────────
+    // `solid` and `framed` share the plate; only `framed` lines the other three
+    // edges. Read from `appliedStyle`, so the change rides the fade.
+    readonly property bool barSolid: root.appliedStyle === "solid" || root.barFramed
+    readonly property bool barFramed: root.appliedStyle === "framed"
+    // Framed draws no plate of its own: the frame is it.
+    readonly property bool barPlate: root.appliedStyle === "solid"
+    // Border thickness, and the outer gap it stands in for while it is up.
+    // `shippedGap` is what hypr/conf/general.lua sets.
+    readonly property int frameW: 10
+    readonly property int shippedGap: 8
+    // Line of wallpaper between a window and the border.
+    readonly property int framedGap: 8
+    // Corner of the hole the frame leaves.
+    readonly property int frameR: 16
+
+    // The plate sits exactly where the capsules sit, so switching style moves
+    // nothing: `plateAlong` is the gap at the ends, `plateCross` the long sides.
+    // One slot of the visualiser's wave, in PIXELS. A count would make the same
+    // 96 bars thinner on a shorter edge, so the wave changed with the bar's side.
+    readonly property int cavaSlot: 20
+    // How far the wave may reach past the frame's inner edge in the framed
+    // style, where the ring covers the whole bar: without it nothing shows.
+    readonly property int cavaSpill: 24
+
+    readonly property int plateAlong: 12
+    readonly property int plateCross: (root.barH - root.pillH) / 2
+    readonly property int barR: root.pillR
 
     // ── Bar placement ────────────────────────────────────────────────────
     // `barPosition` is what the user picked; `applied` is the edge everything
@@ -121,6 +173,26 @@ Singleton {
     readonly property string wanted: Prefs.barPosition
     property string applied: Prefs.barPosition
     property bool hidden: false
+
+    // Both are still BINDINGS until something assigns them, so the first change
+    // of the session skipped the fade. Assigning here cuts them loose.
+    Connections {
+        target: Prefs
+        function onLoadedChanged() {
+            if (!Prefs.loaded) return
+            root.applied = Prefs.barPosition
+            root.appliedStyle = Prefs.barStyle
+        }
+    }
+
+    // The style rides the same swap as the edge.
+    readonly property string wantedStyle: Prefs.barStyle
+    property string appliedStyle: Prefs.barStyle
+
+    onWantedStyleChanged: if (wantedStyle !== appliedStyle) {
+        hidden = true
+        swapTimer.restart()
+    }
 
     onWantedChanged: if (wanted !== applied) {
         hidden = true
@@ -133,6 +205,7 @@ Singleton {
         interval: 240
         onTriggered: {
             root.applied = root.wanted
+            root.appliedStyle = root.wantedStyle
             revealTimer.restart()
         }
     }
@@ -150,8 +223,28 @@ Singleton {
     readonly property string utilEdge: applied === "bottom" ? "left" : "bottom"
     readonly property bool barVertical: applied === "left" || applied === "right"
 
+    // ── Auto-hide ────────────────────────────────────────────────────────
+    // The bar hides at its edge and comes back under the pointer. It stops
+    // reserving room, so windows get the whole screen.
+    readonly property bool autohide: Prefs.barAutohide
+    // Input strip left alive at the very edge while the bar is away.
+    readonly property int peekPx: 6
+    // How long a revealed bar waits after the pointer leaves.
+    readonly property int peekHideMs: 400
+    // …and the least it stays out once it is out, so a hover lost for a frame
+    // while the windows reflow cannot bounce it.
+    readonly property int peekStayMs: 600
+
+    // How deep the bar is on screen: framed, that includes the same line of
+    // wallpaper the border keeps, since the outer gap is zero while it is up.
+    // This is what it reserves whenever it is standing there.
+    readonly property int barDepth: root.barH + (root.barFramed ? root.framedGap : 0)
+    // …and what its edge keeps while it is away: nothing, except in framed,
+    // where the border is still drawn and windows must stay off it.
+    readonly property int barZoneAway: root.barFramed ? root.frameW + root.framedGap : 0
+
     // Distance from the bar's edge to the first pixel a panel may use
-    readonly property int panelTop: barH + panelGap
+    readonly property int panelTop: barDepth + panelGap
 
     // Margins for a panel pinned to a screen corner: the side the bar is on has
     // to clear it, the other three only keep the usual breathing room.
@@ -161,6 +254,10 @@ Singleton {
     readonly property int marginRight: applied === "right" ? panelTop : edgeGap
     // Corner-pinned panels hang from the bottom edge only when the bar is there
     readonly property bool pinBottom: applied === "bottom"
+
+    // Width of the notification rail. Lives here because the toasts have to
+    // know where the rail lands to take the other corner.
+    readonly property int notifRailW: 400
 
     // Where the bar's own window starts on `s`. mapToGlobal on a layer surface
     // hands back window-local coordinates, so anything reporting a position out

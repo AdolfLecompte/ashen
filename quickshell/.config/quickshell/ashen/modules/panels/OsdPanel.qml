@@ -6,55 +6,31 @@ import "root:/services" as Services
 Scope {
     id: root
 
-    // Each reading is a process, and a key held down asks faster than one can
-    // answer. Asking again while one is in flight used to be dropped on the
-    // floor, so the OSD showed the value from two steps ago; now the last ask
-    // is remembered and replayed the moment the reply lands.
-    property bool volPending: false
-    property bool brtPending: false
-
     IpcHandler {
         target: "osd"
         function volume() {
-            if (volumeProc.running) root.volPending = true
-            else volumeProc.running = true
+            // Live, not a snapshot: the keybind sets the volume and calls this
+            // in the same breath, so the graph may still be a few ms behind.
+            // `volumeOsd` keeps following it while the OSD is up.
+            root.volumeOsd = true
+            win.shown = true
+            hideTimer.restart()
         }
         function brightness() {
-            if (brightnessProc.running) root.brtPending = true
-            else brightnessProc.running = true
+            // The key already ran brightnessctl; the service goes and reads
+            // what it did, and the OSD follows that number live.
+            Services.Brightness.refresh()
+            root.volumeOsd = false
+            win.shown = true
+            hideTimer.restart()
         }
     }
 
-    Process {
-        id: volumeProc
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let muted = text.indexOf("MUTED") !== -1
-                let match = text.match(/([0-9]*\.?[0-9]+)/)
-                let vol = match ? parseFloat(match[1]) : 0
-                let ic = Services.Audio.icon(muted ? 0 : Math.round(vol * 100), muted, Services.Audio.headphones)
-                win.showOsd(ic, muted ? 0 : vol)
-                if (root.volPending) { root.volPending = false; volumeProc.running = true }
-            }
-        }
-    }
-
-    Process {
-        id: brightnessProc
-        command: ["sh", "-c", "brightnessctl -m"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let parts = text.trim().split(",")
-                let pctStr = parts.length > 3 ? parts[3].replace("%", "") : "0"
-                let pct = parseFloat(pctStr) / 100.0
-                win.showOsd("", pct)
-                if (root.brtPending) { root.brtPending = false; brightnessProc.running = true }
-            }
-        }
-    }
+    // Whichever side the OSD is showing, what it draws is a binding on the live
+    // service value rather than a number copied into it once -- so a key held
+    // down never shows a stale step. Brightness reads its own process in
+    // services/Brightness; there is no second one here.
+    property bool volumeOsd: false
 
     PanelWindow {
         id: win
@@ -65,19 +41,17 @@ Scope {
         exclusionMode: ExclusionMode.Ignore
         visible: shown || unmapDelay.running
 
-        property real level: 0
-        property string icon: ""
+        readonly property real drawLevel: root.volumeOsd
+            ? (Services.Audio.muted ? 0 : Services.Audio.volume / 100)
+            : Services.Brightness.level / 100
+        readonly property string drawIcon: root.volumeOsd
+            ? Services.Audio.icon(Services.Audio.muted ? 0 : Services.Audio.volume,
+                                  Services.Audio.muted, Services.Audio.headphones)
+            : Services.Brightness.icon(Services.Brightness.level)
         // Own flag instead of the timer: restart() drops running to false for an
         // instant, and anything bound to it unmapped and rebuilt the OSD on every
         // key press. Held down, only the bar should move.
         property bool shown: false
-
-        function showOsd(ic, lv) {
-            win.icon = ic
-            win.level = lv
-            win.shown = true
-            hideTimer.restart()
-        }
 
         Timer {
             id: hideTimer
@@ -115,7 +89,7 @@ Scope {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: win.icon
+                    text: win.drawIcon
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 20
                     color: Services.Colors.ghost
@@ -126,7 +100,7 @@ Scope {
                     height: parent.height - 70
                     anchors.horizontalCenter: parent.horizontalCenter
                     radius: 4
-                    color: Services.Colors.ghostAlpha(0.15)
+                    color: Services.Colors.fillLine
 
                     Rectangle {
                         anchors.bottom: parent.bottom
@@ -135,7 +109,7 @@ Scope {
                         color: Services.Colors.ghost
                         // Down the bar, not across it: the fill IS vertical.
                         gradient: Services.Prefs.useGradients ? Services.Colors.accentGradientV : null
-                        height: parent.height * Math.max(0, Math.min(1, win.level))
+                        height: parent.height * Math.max(0, Math.min(1, win.drawLevel))
                         // Short: at 260 ms every tap on the volume key restarted
                         // an animation the next tap interrupted, so the bar
                         // crawled a step behind the key being held down.
@@ -144,7 +118,7 @@ Scope {
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: Math.round(win.level * 100) + "%"
+                    text: Math.round(win.drawLevel * 100) + "%"
                     font.family: "JetBrainsMono NF"
                     font.pixelSize: 11
                     font.bold: true

@@ -15,7 +15,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; utilEdge: Services.AppState.processSourceEdge }
     // stay mapped through the close animation
     visible: Services.AppState.processVisible || closeDelay.running
 
@@ -26,7 +26,7 @@ PanelWindow {
 
     // sampling only runs while the panel is up
     onShownChanged: {
-        Services.SysMon.active = shown
+        Services.SysMon.claim("process", shown)
         // The chip steps aside for as long as the panel wears its face -- and
         // in "window" style it never does.
         Services.AppState.processTakenOver = shown && card.wearingFace

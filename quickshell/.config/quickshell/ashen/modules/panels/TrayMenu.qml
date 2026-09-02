@@ -97,7 +97,9 @@ PanelWindow {
 
                 Text {
                     visible: opener.children.values.length === 0
-                    text: "No menu"
+                    // Picked once with the menu, not on every evaluation.
+                    readonly property string noMenuLine: Services.Voice.pick("tray.noMenu")
+                    text: noMenuLine
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsBody
                     font.family: "JetBrainsMono NF"
@@ -179,7 +181,8 @@ PanelWindow {
 
         height: sep ? 5 : 32
         radius: Services.Sizes.innerR
-        color: mouse.containsMouse && mrow.usable ? Services.Colors.fillLine : "transparent"
+        // The plate does not answer the pointer -- the label does, below.
+        color: "transparent"
         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
         // A separator is a hairline, not a row: it keeps its own margins so a
@@ -236,9 +239,8 @@ PanelWindow {
                 // Under the pointer the label lifts, the way every other row in
                 // the shell answers a hover.
                 color: !mrow.usable ? Services.Colors.ash
-                     : (mouse.containsMouse ? Services.Colors.snow
-                                            : (mrow.depth > 0 ? Services.Colors.mist
-                                                              : Services.Colors.snow))
+                     : mouse.containsMouse ? Services.Colors.snow
+                                           : Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsBody
                 font.family: "JetBrainsMono NF"
                 elide: Text.ElideRight
