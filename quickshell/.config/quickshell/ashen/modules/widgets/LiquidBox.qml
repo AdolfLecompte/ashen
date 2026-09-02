@@ -53,8 +53,7 @@ Item {
         radius: Services.Sizes.panelR
         color: Services.Colors.fillInset
         border.width: 1
-        border.color: hover.containsMouse ? Services.Colors.ghostAlpha(0.4)
-                                          : Services.Colors.ghostAlpha(0.22)
+        border.color: Services.Colors.fillRest
         Behavior on border.color { ColorAnimation { duration: Services.Sizes.msStandard } }
     }
 

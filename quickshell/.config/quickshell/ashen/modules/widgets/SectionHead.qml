@@ -26,7 +26,7 @@ RowLayout {
         Layout.preferredWidth: 40
         Layout.preferredHeight: 40
         radius: 13
-        color: Services.Colors.ghostAlpha(0.14)
+        color: Services.Colors.fillLine
         Text {
             id: shGlyph
             anchors.centerIn: parent

@@ -23,9 +23,13 @@ Region {
     // A card that reaches INTO the bar's strip and still has to be clickable.
     // Added back after the cut, so it wins over it.
     property Item keep: null
+    // The edge the utility pill is standing on, for a panel that came out of
+    // it: its chips need the same right of way the bar's capsules have.
+    property string utilEdge: ""
 
     readonly property int barH: Services.Sizes.barH
     readonly property string edge: Services.Sizes.barPosition
+    readonly property bool utilVertical: root.utilEdge === "left" || root.utilEdge === "right"
 
     x: 0
     y: 0
@@ -38,6 +42,22 @@ Region {
         y: root.edge === "bottom" ? root.height - root.barH : 0
         width: (root.edge === "left" || root.edge === "right") ? root.barH : root.width
         height: (root.edge === "top" || root.edge === "bottom") ? root.barH : root.height
+    }
+
+    // The utility pill itself, never the whole 62 px lane: a bigger cut would
+    // leave dead air where no chip ever appears.
+    Region {
+        intersection: Intersection.Subtract
+        x: root.utilEdge === "" ? 0
+           : root.utilVertical ? (root.utilEdge === "right" ? root.width - Services.Sizes.utilPillThick : 0)
+                               : (root.width - Services.Sizes.utilPillLen) / 2
+        y: root.utilEdge === "" ? 0
+           : root.utilVertical ? (root.height - Services.Sizes.utilPillLen) / 2
+                               : (root.utilEdge === "bottom" ? root.height - Services.Sizes.utilPillThick : 0)
+        width: root.utilEdge === "" ? 0
+               : (root.utilVertical ? Services.Sizes.utilPillThick : Services.Sizes.utilPillLen)
+        height: root.utilEdge === "" ? 0
+                : (root.utilVertical ? Services.Sizes.utilPillLen : Services.Sizes.utilPillThick)
     }
 
     Region {

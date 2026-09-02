@@ -27,7 +27,27 @@ Canvas {
     // How round those joints are. Capped by the slot and by the size of the
     // step itself, so a small change cannot bulge past the level it came from.
     property real cornerR: 9
+    // How much of the run is on screen, 0..1, wiped in from the left. The line
+    // is traced whole and clipped, so the shape never changes while it arrives
+    // -- animate this and the past draws itself the way it happened.
+    property real reveal: 1
 
+    // Where a sample sits, for whoever wants to hang something over the line --
+    // a reading, a dot, an hour. Same arithmetic the paint uses, so a label and
+    // the curve under it can never drift apart. In steps a sample owns a
+    // plateau and is read at its middle; smooth, it is a point.
+    function xOf(i) {
+        const n = (root.values || []).length
+        if (n < 2) return 0
+        return root.stepped ? (i + 0.5) * (width / n) : i * (width / (n - 1))
+    }
+    function yOf(v) {
+        const top = root.padding, bot = height - root.padding
+        const f = Math.max(0, Math.min(1, v / Math.max(1, root.maxValue)))
+        return bot - (bot - top) * f
+    }
+
+    onRevealChanged: requestPaint()
     onSteppedChanged: requestPaint()
     onValuesChanged: requestPaint()
     onColor_Changed: requestPaint()
@@ -41,7 +61,14 @@ Canvas {
         const vs = root.values || []
         if (vs.length < 2) return
 
+        const shown = Math.max(0, Math.min(1, root.reveal))
+        if (shown <= 0) return
         const w = width, h = height, p = root.padding
+        if (shown < 1) {
+            ctx.beginPath()
+            ctx.rect(0, 0, w * shown, h)
+            ctx.clip()
+        }
         const top = p, bot = h - p
         const dx = w / (vs.length - 1)
         const cap = Math.max(1, root.maxValue)

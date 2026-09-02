@@ -68,7 +68,8 @@ Column {
         width: parent.width
         height: picker.rowH
         radius: 8
-        color: headArea.containsMouse ? Services.Colors.ghostAlpha(0.14) : Services.Colors.ghostAlpha(0.06)
+        // A control at rest, and it stays that plate: hover lifts the name.
+        color: Services.Colors.fillInset
         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
         Row {
@@ -91,7 +92,8 @@ Column {
                 width: parent.width - 26
                 text: picker.currentDesc()
                 elide: Text.ElideRight
-                color: Services.Colors.snow
+                color: headArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                 font.pixelSize: 11
                 font.family: "JetBrainsMono NF"
             }
@@ -160,9 +162,8 @@ Column {
                         width: optsCol.width
                         height: picker.rowH
                         radius: 8
-                        color: active ? Services.Colors.ghostAlpha(0.2)
-                             : optArea.containsMouse ? Services.Colors.ghostAlpha(0.1)
-                             : "transparent"
+                        // Picked is a state and takes a fill; hover is not.
+                        color: active ? Services.Colors.fillRest : "transparent"
                         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
                         Text {
@@ -173,7 +174,9 @@ Column {
                             anchors.verticalCenter: parent.verticalCenter
                             text: modelData.desc
                             elide: Text.ElideRight
-                            color: active ? Services.Colors.snow : Services.Colors.mist
+                            color: (active || optArea.containsMouse)
+                                ? Services.Colors.snow : Services.Colors.mist
+                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                             font.pixelSize: 11
                             font.family: "JetBrainsMono NF"
                             font.bold: active

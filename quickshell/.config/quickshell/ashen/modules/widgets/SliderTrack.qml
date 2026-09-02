@@ -61,7 +61,7 @@ Item {
         width: parent.width
         height: root.trackHeight
         radius: height / 2
-        color: Services.Colors.ghostAlpha(0.15)
+        color: Services.Colors.fillLine
         opacity: root.dimmed ? 0.4 : 1.0
 
         Rectangle {

@@ -32,7 +32,7 @@ Item {
     // hold said the same thing the rim already says, and it left the reading
     // sitting in a puddle.
     property color fillColor: Services.Colors.ghost
-    property color trackColor: Services.Colors.ghostAlpha(0.14)
+    property color trackColor: Services.Colors.fillLine
     // The ring breathes: for something that is still happening (charging), not
     // for something that merely is. Opacity on a second canvas, so the pulse
     // costs a recomposite per frame and not a repaint.
@@ -211,6 +211,13 @@ Item {
             font.pixelSize: root.captionSize
             font.bold: true
             font.family: "JetBrainsMono NF"
+            // A caption is given a width but nothing made it honour one: "Full
+            // in 4.7 minutes" painted straight across the ring and out the
+            // sides. It shrinks to fit, and only gives up if even that is not
+            // enough.
+            fontSizeMode: Text.HorizontalFit
+            minimumPixelSize: 7
+            elide: Text.ElideRight
             opacity: root.caption === "" ? 0 : 1
             Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
         }

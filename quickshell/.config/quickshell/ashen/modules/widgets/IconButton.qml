@@ -31,7 +31,7 @@ Rectangle {
     readonly property int glyphSize: size <= 24 ? 14 : (size <= 28 ? 16 : 18)
 
     // Hover does not touch the plate: the button grows and its glyph lifts.
-    color: !available ? Services.Colors.ghostAlpha(0.08)
+    color: !available ? Services.Colors.fillDisabled
          : active ? Services.Colors.ghost
          : Services.Colors.fillRest
     gradient: Services.Prefs.useGradients && active && available

@@ -30,7 +30,7 @@ Rectangle {
     height: size
     radius: size / 4
     // Hover does not touch the plate: the chip grows and its glyph lifts.
-    color: !available ? Services.Colors.ghostAlpha(0.08)
+    color: !available ? Services.Colors.fillDisabled
          : lit ? Services.Colors.ghost
          : Services.Colors.fillRest
     gradient: Services.Prefs.useGradients && lit ? Services.Colors.accentGradient : null

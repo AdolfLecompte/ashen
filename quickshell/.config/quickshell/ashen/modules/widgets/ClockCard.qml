@@ -28,25 +28,20 @@ Item {
     property bool ghostShared: false
     readonly property real sharedOpacity: ghostShared ? 0 : 1
     property real extrasOpacity: 1
+    // Where each part of the card is in the arrival, when whoever opened it
+    // hands one in. Without it every part shares a single fade, which is what a
+    // card looks like when it is a picture of a card.
+    property var stageFn: null
+    function beat(i) {
+        return root.stageFn ? root.stageFn(i) * root.extrasOpacity : root.extrasOpacity
+    }
 
     // ── Clock ───────────────────────────────────────────────────────────
     // One formatted string, exactly the pill's, so the two can be the same
     // object growing rather than two different clocks crossfading.
-    property string timeText: Qt.formatDateTime(new Date(), Services.Prefs.timeFormat)
-    property string dateText: Qt.formatDateTime(new Date(), "dddd, MMMM d")
-    property date now: new Date()
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: {
-            let d = new Date()
-            root.now = d
-            root.timeText = Qt.formatDateTime(d, Services.Prefs.timeFormat)
-            root.dateText = Qt.formatDateTime(d, "dddd, MMMM d")
-        }
-    }
+    readonly property string timeText: Services.Time.fmt(Services.Prefs.timeFormat)
+    readonly property string dateText: Services.Time.fmt("dddd, MMMM d")
+    readonly property date now: Services.Time.now
 
     // The column always reserves room for the longest clock there is: twelve
     // hour, with seconds and a meridiem. Sizing the type to *that* and centring
@@ -64,8 +59,8 @@ Item {
         Math.floor(100 * (clockW - 30) / Math.max(1, probe.width)))
 
     // ── Where the shared pieces sit, in this item's coordinates ─────────
-    readonly property real timeCX: row.x + clockCol.x + head.x + timeT.x + timeT.width / 2
-    readonly property real timeCY: row.y + clockCol.y + head.y + timeT.y + timeT.height / 2
+    readonly property real timeCX: row.x + clockCol.x + timeT.x + timeT.width / 2
+    readonly property real timeCY: row.y + clockCol.y + timeT.y + timeT.height / 2
     readonly property real dateCX: row.x + clockCol.x + head.x + dateT.x + dateT.width / 2
     readonly property real dateCY: row.y + clockCol.y + head.y + dateT.y + dateT.height / 2
     readonly property real wIconCX: row.x + wxCol.x + wxNow.x + wIcon.x + wIcon.width / 2
@@ -73,8 +68,10 @@ Item {
     readonly property real wTempCX: row.x + wxCol.x + wxNow.x + wTemp.x + wTemp.width / 2
     readonly property real wTempCY: row.y + wxCol.y + wxNow.y + wTemp.y + wTemp.height / 2
 
-    // Which tool is showing under the clock
-    property int tab: 0
+    // Which tool is showing under the clock. Held in AppState so the bar's
+    // readout can open the panel straight on its tool, and so a tool you left
+    // running is where you left it next time.
+    property int tab: Services.AppState.clockTab
 
     // How far through the day it is -- what is left of the light is measured
     // against it. Off `now`, so it ticks with everything else on this card
@@ -82,7 +79,77 @@ Item {
     readonly property real dayFrac:
         (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400
 
-    readonly property var hours: Services.Weather.hourly || []
+    // Which day of the strip the weather column is showing. 0 is today, and
+    // today is the live reading -- every other day is a forecast summary.
+    property int selDay: 0
+    // What the column is DRAWN from: follows `selDay` on the slide's commit, so
+    // the figures change halfway through, off screen. Assigned, never bound --
+    // a binding would swap them on the click and the sweep would carry the new
+    // day out and back in.
+    property int shownDay: 0
+    // The sweep itself: the same one the calendar's months ride on.
+    SlideSwap {
+        id: daySlide
+        axis: "horizontal"
+        travel: 30
+        index: root.selDay
+        onCommit: root.shownDay = root.selDay
+    }
+    readonly property real wxSlideX: daySlide.offX
+    readonly property real wxSlideFade: daySlide.fade
+
+    readonly property bool live: shownDay === 0
+    readonly property var day: Services.Weather.forecast[shownDay] || null
+    // A future day has no "now", so its curve is its own 24 hours; today's
+    // starts at this hour, which is what the card has always drawn.
+    readonly property var hours: live || !day
+        ? (Services.Weather.hourly || [])
+        : Services.Weather.hoursFor(day.date)
+
+    // What the column says, from whichever day is picked. Today reads live;
+    // a forecast day has no reading of "now", so its headline is the high.
+    readonly property string wxIcon: live || !day ? Services.Weather.icon : day.icon
+    readonly property string wxTemp: live || !day
+        ? Services.Weather.temp : Services.Weather.tempString(day.maxC)
+    // Just the condition: which day it is now has a title of its own above the
+    // reading, so repeating it here said the same word twice.
+    readonly property string wxCondition: live || !day
+        ? Services.Weather.condition : day.condition
+    // Same shape every day. The city moved up to the title, so this line is
+    // only what the air feels like. A forecast day has no apparent temperature
+    // of "now", so it uses its high, which is the number the headline pairs with.
+    readonly property string wxSub: "feels "
+        + (live || !day ? Services.Weather.feels
+                        : Services.Weather.tempString(day.feelsC))
+    readonly property int wxHumidity: live || !day ? Services.Weather.humidity : day.humidity
+    readonly property int wxWindKph: live || !day ? Services.Weather.windKph : day.windKph
+    readonly property int wxWindDir: live || !day ? Services.Weather.windDir : day.windDir
+    readonly property int wxUv: live || !day ? Services.Weather.uvMax : day.uv
+    readonly property int wxRain: live || !day ? Services.Weather.rainProb : day.rain
+    readonly property string wxRange: day
+        ? Services.Weather.degrees(day.minC) + " / " + Services.Weather.degrees(day.maxC) : ""
+
+    // The title over the reading: TODAY, or the day and its date. Built from
+    // the date's FIELDS -- new Date("2026-08-15") is midnight UTC, which west
+    // of Greenwich reads back as the day before.
+    readonly property string wxDayTitle: {
+        if (!day) return ""
+        if (shownDay === 0) return "TODAY"
+        const p = String(day.date).split("-")
+        if (p.length < 3) return day.label.toUpperCase()
+        const d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]))
+        return day.label.toUpperCase() + " " + parseInt(p[2]) + " "
+             + Qt.formatDate(d, "MMM").toUpperCase()
+    }
+
+    // Pick a day back to today whenever the reading underneath it changes:
+    // a new city (or a re-fetch that shortens the strip) would otherwise leave
+    // the column showing a day that is no longer the one it named.
+    onDayChanged: if (!day) { selDay = 0; shownDay = 0 }
+    Connections {
+        target: Services.Weather
+        function onCityChanged() { root.selDay = 0 }
+    }
 
     // The 24 hours folded into eight plateaus of three. Drawn hour by hour the
     // joints are 14 px apart and any rounding swallows the step, which put the
@@ -195,9 +262,9 @@ Item {
         return "UNTIL SUNRISE"
     }
 
-    // The days after today. Today is the hero at the top of the column, so
-    // repeating it in the strip would be the same day said twice.
-    readonly property var fcDays: Services.Weather.forecast.slice(1)
+    // The whole strip, today included: today's card is the way back from a day
+    // that was picked, and with it in the row a card's index IS `selDay`.
+    readonly property var fcDays: Services.Weather.forecast
 
     // ── Inline components ───────────────────────────────────────────────
     // These must be declared on the document's root object; nested inside a
@@ -208,65 +275,11 @@ Item {
     component VRule: Rectangle {
         Layout.preferredWidth: 1
         Layout.fillHeight: true
-        color: Services.Colors.ghostAlpha(0.09)
+        color: Services.Colors.fillInset
     }
 
-    // A weather fact on one line: its icon and its number, nothing else.
-    component WxFact: Row {
-        property string glyph: ""
-        property string value: ""
-        spacing: 4
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: parent.glyph
-            color: Services.Colors.ghost
-            font.pixelSize: 13
-            font.family: "Material Symbols Rounded"
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: parent.value
-            color: Services.Colors.mist
-            font.pixelSize: 11
-            font.family: "JetBrainsMono NF"
-        }
-    }
-
-    // One fact of the day: a plain centered row -- glyph, name, number. No
-    // plate and no rule; the list is four lines, it does not need furniture.
-    component Fact: Row {
-        property string glyph: ""
-        property string label: ""
-        property string value: ""
-        spacing: 12
-        Text {
-            text: parent.glyph
-            color: Services.Colors.ghost
-            font.pixelSize: 16
-            font.family: "Material Symbols Rounded"
-            anchors.verticalCenter: parent.verticalCenter
-        }
-        Text {
-            text: parent.label
-            color: Services.Colors.ash
-            font.pixelSize: 11
-            font.bold: true
-            font.family: "JetBrainsMono NF"
-            anchors.verticalCenter: parent.verticalCenter
-            width: 92
-        }
-        Text {
-            text: parent.value
-            color: Services.Colors.snow
-            font.pixelSize: 13
-            font.bold: true
-            font.family: "JetBrainsMono NF"
-            anchors.verticalCenter: parent.verticalCenter
-            horizontalAlignment: Text.AlignRight
-            width: 78
-        }
-    }
-
+    // One cell of the weather grid: glyph and number on a line, its name under
+    // them. No plate and no rule -- the grid is held together by its columns.
     // One column of a hh:mm:ss picker. A ListView with its highlight range
     // nailed to the middle row IS a wheel -- no Controls dependency and no
     // hand-rolled flicking. Nothing here reads `preset` as a binding: the wheel
@@ -414,7 +427,7 @@ Item {
     component Tool: Item {
         property int index: 0
         anchors.fill: parent
-        opacity: root.shownTool === index ? root.extrasOpacity * toolSlide.fade : 0
+        opacity: root.shownTool === index ? root.beat(1) * toolSlide.fade : 0
         visible: opacity > 0.01
         transform: Translate { x: toolSlide.offX }
     }
@@ -430,55 +443,48 @@ Item {
             Layout.preferredWidth: root.clockW
             Layout.fillHeight: true
 
+            // The clock leads and the day reads under it: the hour is what
+            // this column is for, and a date on top made the reading feel like
+            // a footnote to its own label.
+            ClockText {
+                id: timeT
+                opacity: root.sharedOpacity
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                time: root.timeText
+                px: root.clockPx
+            }
+
             Column {
                 id: head
-                anchors.top: parent.top
+                anchors.top: timeT.bottom
+                anchors.topMargin: 2
                 width: parent.width
                 spacing: 2
 
-                Text {
-                    id: timeT
-                    opacity: root.sharedOpacity
-                    width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    text: root.timeText
-                    color: Services.Colors.snow
-                    font.pixelSize: root.clockPx
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
                 Text {
                     id: dateT
                     opacity: root.sharedOpacity
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
-                    text: root.dateText
-                    color: Services.Colors.mist
+                    text: root.dateText.toUpperCase()
+                    color: Services.Colors.snow
                     font.pixelSize: 13
                     font.bold: true
+                    font.letterSpacing: 2
                     font.family: "JetBrainsMono NF"
                 }
-            }
-
-            Rectangle {
-                id: headRule
-                anchors.top: head.bottom
-                anchors.topMargin: 20
-                width: parent.width
-                height: 1
-                color: Services.Colors.ghostAlpha(0.09)
-                opacity: root.extrasOpacity
             }
 
             // Category strip: one container pill holding the mode pills, the
             // whole thing centred under the clock it belongs to.
             Item {
                 id: tabsWrap
-                anchors.top: headRule.bottom
-                anchors.topMargin: 20
+                anchors.top: head.bottom
+                anchors.topMargin: 16
                 width: parent.width
                 height: 34
-                opacity: root.extrasOpacity
+                opacity: root.beat(0)
                 property Item activeTab: null
 
                 Rectangle {
@@ -526,10 +532,10 @@ Item {
                                 height: 26
                                 width: tabRow.implicitWidth + 18
                                 radius: 9
-                                // Only the sliding indicator carries the active
-                                // fill; idle pills are bare and just brighten.
-                                color: active ? "transparent"
-                                    : tabHover.containsMouse ? Services.Colors.ghostAlpha(0.12) : "transparent"
+                                // Only the sliding indicator carries the active fill;
+                                // idle pills are bare -- hover only brightens them,
+                                // it never paints a plate.
+                                color: "transparent"
                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
                                 Row {
@@ -539,14 +545,18 @@ Item {
 
                                     Text {
                                         text: parent.parent.modelData.icon
-                                        color: parent.parent.active ? Services.Colors.accentText : Services.Colors.snow
+                                        color: parent.parent.active ? Services.Colors.accentText
+                                             : tabHover.containsMouse ? Services.Colors.snow
+                                             : Services.Colors.mist
                                         font.pixelSize: 13
                                         font.family: "Material Symbols Rounded"
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
                                     Text {
                                         text: parent.parent.modelData.label
-                                        color: parent.parent.active ? Services.Colors.accentText : Services.Colors.snow
+                                        color: parent.parent.active ? Services.Colors.accentText
+                                             : tabHover.containsMouse ? Services.Colors.snow
+                                             : Services.Colors.mist
                                         font.pixelSize: 11
                                         font.bold: parent.parent.active
                                         font.family: "JetBrainsMono NF"
@@ -559,7 +569,9 @@ Item {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.tab = parent.modelData.id
+                                    // Through AppState: assigning root.tab here
+                                    // would break its binding on the first click.
+                                    onClicked: Services.AppState.clockTab = parent.modelData.id
                                 }
                             }
                         }
@@ -571,7 +583,7 @@ Item {
             Item {
                 id: tools
                 anchors.top: tabsWrap.bottom
-                anchors.topMargin: 24
+                anchors.topMargin: 14
                 anchors.bottom: parent.bottom
                 width: parent.width
 
@@ -579,75 +591,107 @@ Item {
                 // No ring, no plates, no rules: a short centred list.
                 Tool {
                     index: 0
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 14
+                    Item {
+                        anchors.fill: parent
 
-                        // Daylight leads the list -- it is the one reading
-                        // nothing else on the card gives.
+                        // The sun's own path. The headline sits ABOVE the
+                        // curve, not inside its bowl: the box has to reserve
+                        // room for a noon peak, and the band left over at the
+                        // top is exactly where a line of text belongs (the
+                        // shape iOS's solar module settled on).
                         Row {
+                            id: sunLine
+                            anchors.bottom: clockHead.top
+                            anchors.bottomMargin: 10
                             anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 12
+                            spacing: 8
                             Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Services.Weather.icon
-                                color: Services.Colors.ghost
-                                font.pixelSize: 20
-                                font.family: "Material Symbols Rounded"
+                                anchors.baseline: sunCap.baseline
+                                text: root.daylightLeft
+                                color: Services.Colors.snow
+                                font.pixelSize: 16
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
                             }
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: 1
-                                Text {
-                                    text: root.daylightLeft
-                                    color: Services.Colors.snow
-                                    font.pixelSize: 18
-                                    font.bold: true
-                                    font.family: "JetBrainsMono NF"
-                                }
-                                Text {
-                                    text: root.daylightCaption
-                                    color: Services.Colors.mist
-                                    font.pixelSize: 9
-                                    font.bold: true
-                                    font.family: "JetBrainsMono NF"
-                                }
+                            Text {
+                                id: sunCap
+                                text: root.daylightCaption
+                                color: Services.Colors.mist
+                                font.pixelSize: 9
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
                             }
                         }
 
-                        Fact {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            glyph: ""
-                            label: "SUNRISE"
-                            value: Services.Weather.sunrise || "—"
-                        }
-                        Fact {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            glyph: ""
-                            label: "SUNSET"
-                            value: Services.Weather.sunset || "—"
-                        }
-                        Fact {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            glyph: ""
-                            label: "WEEK"
-                            value: {
-                                // ISO week: the Thursday of this week owns the year
-                                let d = new Date(root.now.getFullYear(), root.now.getMonth(), root.now.getDate())
-                                d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
-                                let jan4 = new Date(d.getFullYear(), 0, 4)
-                                let n = 1 + Math.round(((d - jan4) / 86400000
-                                        - 3 + ((jan4.getDay() + 6) % 7)) / 7)
-                                return String(n)
+                        Item {
+                            id: clockHead
+                            // Hung off the figures rather than centred with
+                            // them: the arc can change height without dragging
+                            // the row of numbers down the column with it.
+                            anchors.bottom: clockRow.top
+                            anchors.bottomMargin: 22
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            height: 132
+
+                            SunArc {
+                                id: sunArc
+                                anchors.fill: parent
+                                sunUp: root.sunUpFrac
+                                sunDown: root.sunDownFrac
+                                // To the minute, not to the second: the dot
+                                // moves a pixel an hour, and the canvas has no
+                                // reason to repaint sixty times a minute.
+                                nowFrac: Math.floor(root.dayFrac * 1440) / 1440
                             }
                         }
-                        Fact {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            glyph: ""
-                            label: "DAY of " + (root.isLeap ? "366" : "365")
-                            value: {
-                                let start = new Date(root.now.getFullYear(), 0, 0)
-                                return String(Math.floor((root.now - start) / 86400000))
+
+                        // The day's four figures, on one line and in the same
+                        // shape the weather column uses: glyph and number on
+                        // top, what they are underneath. Stacked rows put two
+                        // gaps inside every line of a narrow column.
+                        Grid {
+                            id: clockRow
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 24
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            columns: 4
+
+                            WxCell {
+                                width: parent.width / 4
+                                glyph: "\ue1c6"
+                                value: Services.Weather.sunrise || "\u2014"
+                                caption: "SUNRISE"
+                            }
+                            WxCell {
+                                width: parent.width / 4
+                                glyph: "\ue916"
+                                value: {
+                                    // ISO week: the Thursday of this week owns the year
+                                    let d = new Date(root.now.getFullYear(), root.now.getMonth(), root.now.getDate())
+                                    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
+                                    let jan4 = new Date(d.getFullYear(), 0, 4)
+                                    let n = 1 + Math.round(((d - jan4) / 86400000
+                                            - 3 + ((jan4.getDay() + 6) % 7)) / 7)
+                                    return String(n)
+                                }
+                                caption: "WEEK"
+                            }
+                            WxCell {
+                                width: parent.width / 4
+                                glyph: "\ue88b"
+                                value: {
+                                    let start = new Date(root.now.getFullYear(), 0, 0)
+                                    return String(Math.floor((root.now - start) / 86400000))
+                                }
+                                caption: root.isLeap ? "DAY / 366" : "DAY / 365"
+                            }
+                            WxCell {
+                                width: parent.width / 4
+                                glyph: "\ue1f9"
+                                value: Services.Weather.sunset || "\u2014"
+                                caption: "SUNSET"
                             }
                         }
                     }
@@ -838,14 +882,14 @@ Item {
             }
         }
 
-        VRule { opacity: root.extrasOpacity }
+        VRule { opacity: root.beat(2) }
 
         // ── Middle: calendar ────────────────────────────────────────────
         Item {
             id: calCol
             Layout.fillWidth: true
             Layout.fillHeight: true
-            opacity: root.extrasOpacity
+            opacity: root.beat(3)
 
             Column {
                 id: calStack
@@ -865,11 +909,14 @@ Item {
                     Text {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Qt.locale().monthName(grid.curMonth) + " " + grid.curYear
+                        // Caps, like every other title on this card -- the
+                        // city, TODAY, the four figures under the arc.
+                        text: (Qt.locale().monthName(grid.curMonth) + " " + grid.curYear).toUpperCase()
                         color: Services.Colors.snow
                         font.pixelSize: 14
                         font.family: "JetBrainsMono NF"
                         font.bold: true
+                        font.letterSpacing: 1.4
                         opacity: monthSlide.fade
                         transform: Translate { x: monthSlide.offX }
                     }
@@ -919,7 +966,7 @@ Item {
                 Row {
                     width: parent.width
                     Repeater {
-                        model: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+                        model: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
                         Text {
                             width: calStack.width / 7
                             horizontalAlignment: Text.AlignHCenter
@@ -931,102 +978,123 @@ Item {
                     }
                 }
 
-                Grid {
+                MonthGrid {
                     id: grid
                     width: parent.width
-                    columns: 7
-                    spacing: 3
-
-                    // fixed cell size + a reserved height of 6 rows, so a
-                    // 5-week month does not shift the column
-                    readonly property int cellSize: Math.min(calStack.width / 7 - 3, 34)
-                    height: 6 * cellSize + 5 * spacing
-
-                    // ONE property moves the calendar. It used to be month and
-                    // year, and stepping past December changed both -- two
-                    // changes, so the slide ran twice for one press.
-                    property int monthIndex: new Date().getFullYear() * 12 + new Date().getMonth()
-                    // The month the days are drawn from, following `monthIndex` on the slide's
-                    // commit so the grid changes off screen. Assigned, never bound: a binding
-                    // would track the month live and the days would change on the press.
-                    property int shownIndex: 0
-                    Component.onCompleted: grid.shownIndex = grid.monthIndex
-                    // The days slide the way the arrow points.
+                    cellW: calStack.width / 7 - 3
+                    cellSize: Math.min(calStack.width / 7 - 3, 34)
+                    // The days slide the way the arrow points; `shownIndex` is
+                    // moved by that slide's commit, above.
                     opacity: monthSlide.fade
                     transform: Translate { x: monthSlide.offX }
-
-                    readonly property int curMonth: shownIndex % 12
-                    readonly property int curYear: Math.floor(shownIndex / 12)
-                    readonly property int today: root.now.getDate()
-                    readonly property int todayMonth: root.now.getMonth()
-                    readonly property int todayYear: root.now.getFullYear()
-                    readonly property int firstDay: new Date(curYear, curMonth, 1).getDay()
-                    readonly property int daysInMonth: new Date(curYear, curMonth + 1, 0).getDate()
-
-                    Repeater {
-                        model: grid.firstDay + grid.daysInMonth
-                        delegate: Rectangle {
-                            required property int index
-                            readonly property int day: index - grid.firstDay + 1
-                            readonly property bool isValid: index >= grid.firstDay
-                            readonly property bool isToday: isValid && day === grid.today
-                                && grid.curMonth === grid.todayMonth && grid.curYear === grid.todayYear
-
-                            width: calStack.width / 7 - 3
-                            height: grid.cellSize
-                            radius: 8
-                            color: isToday ? Services.Colors.ghost
-                                : dayHover.containsMouse && isValid ? Services.Colors.ghostAlpha(0.15)
-                                : "transparent"
-                            gradient: Services.Prefs.useGradients && isToday ? Services.Colors.accentGradient : null
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: parent.isValid ? parent.day : ""
-                                color: parent.isToday ? Services.Colors.accentText : Services.Colors.snow
-                                font.pixelSize: 12
-                                font.family: "JetBrainsMono NF"
-                                font.bold: parent.isToday
-                            }
-
-                            MouseArea {
-                                id: dayHover
-                                anchors.fill: parent
-                                hoverEnabled: parent.isValid
-                                cursorShape: Qt.PointingHandCursor
-                            }
-                        }
-                    }
                 }
             }
         }
 
-        VRule { opacity: root.extrasOpacity }
+        VRule { opacity: root.beat(4) }
 
         // ── Right: weather ──────────────────────────────────────────────
-        // City, the reading, three facts on one line, and the days. Nothing
-        // else: the hour-by-hour strip made this the loudest column on a card
-        // that is mostly a clock.
+        // The city as the title, one day under it with an arrow to each side,
+        // the reading, its 24 hours and six figures. No plates anywhere: the
+        // strip of day cards was the last box left on this card.
         Item {
             id: wxCol
             Layout.preferredWidth: root.weatherW
             Layout.fillHeight: true
 
+            // The title. It does NOT ride the day sweep -- the city is the same
+            // city on every day of the strip.
+            Text {
+                id: wxCity
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                opacity: root.beat(5)
+                text: Services.Weather.city.toUpperCase()
+                color: Services.Colors.snow
+                font.pixelSize: 13
+                font.bold: true
+                font.letterSpacing: 2
+                font.family: "JetBrainsMono NF"
+            }
+
+            // Which day, and the way to the next one. The arrows answer the
+            // click, so they hang off the live `selDay`; the name between them
+            // belongs to the body and changes mid-sweep with the figures.
+            Row {
+                id: wxDayNav
+                anchors.top: wxCity.bottom
+                anchors.topMargin: 6
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 6
+                opacity: root.beat(5)
+
+                CtlChip {
+                    anchors.verticalCenter: parent.verticalCenter
+                    glyph: ""
+                    size: 26
+                    glyphSize: 16
+                    available: root.selDay > 0
+                    onTriggered: if (root.selDay > 0) root.selDay--
+                }
+                // A fixed width, or the arrows would shuffle sideways every
+                // time a day's name changed length.
+                Item {
+                    width: 158
+                    height: 26
+                    anchors.verticalCenter: parent.verticalCenter
+                    Text {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        opacity: root.wxSlideFade
+                        transform: Translate { x: root.wxSlideX }
+                        text: root.wxDayTitle
+                        color: Services.Colors.mist
+                        font.pixelSize: 11
+                        font.bold: true
+                        font.letterSpacing: 1
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
+                CtlChip {
+                    anchors.verticalCenter: parent.verticalCenter
+                    glyph: ""
+                    size: 26
+                    glyphSize: 16
+                    available: root.selDay < root.fcDays.length - 1
+                    onTriggered: if (root.selDay < root.fcDays.length - 1) root.selDay++
+                }
+            }
+
             // Conditions now: the glyph and the number are shared with the bar
             // pill, so they are slots here and fly in from it.
             Item {
                 id: wxNow
-                anchors.top: parent.top
+                anchors.top: wxDayNav.bottom
+                anchors.topMargin: 14
                 width: parent.width
                 height: 76
+                // Rides the day sweep. The glyph and the number are drawn by
+                // the panel's flying copies, which carry the same two numbers.
+                opacity: root.wxSlideFade
+                transform: Translate { x: root.wxSlideX }
+
+                // The headline is centred as one block: glyph, number, range.
+                // wIcon is placed by hand instead of anchored to the middle so
+                // the coordinates the panel's flying copies aim at stay a plain
+                // sum of parents (see wIconCX).
+                readonly property real heroW:
+                    wIcon.width + 12 + wTemp.width + 10 + wRange.width
 
                 Text {
                     id: wIcon
                     opacity: root.sharedOpacity
-                    anchors.left: parent.left
+                    x: Math.max(0, (wxNow.width - wxNow.heroW) / 2)
                     anchors.top: parent.top
-                    text: Services.Weather.icon
+                    text: root.wxIcon
                     color: Services.Colors.neutral
                     font.pixelSize: 48
                     font.family: "Material Symbols Rounded"
@@ -1038,54 +1106,47 @@ Item {
                     anchors.leftMargin: 12
                     anchors.top: parent.top
                     anchors.topMargin: 2
-                    text: Services.Weather.temp
+                    text: root.wxTemp
                     color: Services.Colors.snow
                     font.pixelSize: 30
                     font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
+                // The day's range, next to the number it belongs to. Never a
+                // flying piece -- the bar pill has no room for it -- so it
+                // arrives with the rest of the extras.
+                Text {
+                    id: wRange
+                    anchors.left: wTemp.right
+                    anchors.leftMargin: 10
+                    anchors.baseline: wTemp.baseline
+                    opacity: root.beat(5)
+                    text: root.wxRange
+                    color: Services.Colors.ash
+                    font.pixelSize: 11
+                    font.family: "JetBrainsMono NF"
+                }
                 Column {
-                    anchors.left: wIcon.right
-                    anchors.leftMargin: 12
                     anchors.top: wTemp.bottom
-                    anchors.topMargin: 2
+                    anchors.topMargin: 4
+                    anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 1
-                    opacity: root.extrasOpacity
+                    opacity: root.beat(5)
                     Text {
-                        text: Services.Weather.condition
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.wxCondition
                         color: Services.Colors.mist
                         font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
                     }
                     Text {
-                        text: Services.Weather.city + " \u00b7 feels " + Services.Weather.feels
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.wxSub
                         color: Services.Colors.ash
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
                     }
                 }
-            }
-
-            // The three figures, as figures. They used to be three dials, and
-            // a dial that says "62%" next to the number 62% is drawing the same
-            // sentence twice.
-            Row {
-                id: wxFacts
-                anchors.top: wxNow.bottom
-                anchors.topMargin: 10
-                anchors.left: parent.left
-                spacing: 16
-                opacity: root.extrasOpacity
-
-                WxFact { glyph: ""; value: Services.Weather.humidity + "%" }
-                WxFact {
-                    glyph: ""
-                    value: Services.Weather.windKph + " km/h "
-                         + Services.Weather.windCompass(Services.Weather.windDir)
-                }
-                // Both already computed by the service and never shown.
-                WxFact { glyph: "\uf157"; value: "UV " + Services.Weather.uvMax }
-                WxFact { glyph: "\uf176"; value: Services.Weather.rainProb + "%" }
             }
 
             // The next 24 hours: the one thing this column can say that no
@@ -1094,12 +1155,13 @@ Item {
             // floor -- a chart of absolute temperature is a flat line all day.
             Item {
                 id: hourly
-                anchors.top: wxFacts.bottom
+                anchors.top: wxNow.bottom
                 anchors.topMargin: 14
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: 88
-                opacity: root.extrasOpacity
+                height: 160
+                opacity: root.beat(5) * root.wxSlideFade
+                transform: Translate { x: root.wxSlideX }
                 visible: root.hours.length > 1
 
                 // The curve, with the temperature written ON it every three
@@ -1112,7 +1174,7 @@ Item {
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.topMargin: 14
-                    height: 46
+                    height: 116
                     stepped: true
                     values: {
                         const out = []
@@ -1167,82 +1229,46 @@ Item {
                 }
             }
 
-            // The days, as cards again -- but with what they were missing.
-            // The bar was the problem: it drew rain while the numbers beside it
-            // said temperature, so the row spoke of two things at once and the
-            // eye kept trying to join them. A card carries one day's figures
-            // with nothing to compare across, which is the honest shape for
-            // four days that barely differ.
-            Row {
-                id: fcCol
+            // The day's four figures, on one line. No plate under any of
+            // them: the strip of day cards used to live here, and the arrows
+            // over the reading replaced it. Sunrise and sunset are not here --
+            // the clock column already says both, and the light it has left.
+            Grid {
+                id: wxGrid
                 anchors.top: hourly.bottom
-                anchors.topMargin: 16
+                anchors.topMargin: 24
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: 92
-                spacing: 8
-                opacity: root.extrasOpacity
+                columns: 4
+                opacity: root.beat(5) * root.wxSlideFade
+                transform: Translate { x: root.wxSlideX }
 
-                Repeater {
-                    model: root.fcDays
-
-                    delegate: Rectangle {
-                        required property var modelData
-                        width: (fcCol.width - fcCol.spacing * (root.fcDays.length - 1))
-                               / Math.max(1, root.fcDays.length)
-                        height: fcCol.height
-                        radius: Services.Sizes.cardR
-                        color: Services.Colors.fillInset
-
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: 4
-
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: modelData.label.toUpperCase()
-                                color: Services.Colors.mist
-                                font.pixelSize: 9
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: modelData.icon
-                                color: Services.Colors.ghost
-                                font.pixelSize: 20
-                                font.family: "Material Symbols Rounded"
-                            }
-                            // Under the icon, where every weather app puts it:
-                            // the icon says rain, this says how sure it is.
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                text: (modelData.rain || 0) + "%"
-                                color: Services.Colors.ash
-                                font.pixelSize: 9
-                                font.family: "JetBrainsMono NF"
-                            }
-                            // Low then high, told apart by weight rather than by
-                            // a label: the dim one is the night.
-                            Row {
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: 3
-                                Text {
-                                    text: Services.Weather.degrees(modelData.minC)
-                                    color: Services.Colors.ash
-                                    font.pixelSize: 11
-                                    font.family: "JetBrainsMono NF"
-                                }
-                                Text {
-                                    text: Services.Weather.degrees(modelData.maxC)
-                                    color: Services.Colors.snow
-                                    font.pixelSize: 11
-                                    font.bold: true
-                                    font.family: "JetBrainsMono NF"
-                                }
-                            }
-                        }
-                    }
+                WxCell {
+                    width: wxGrid.width / 4
+                    glyph: "\ue798"
+                    value: root.wxHumidity + "%"
+                    caption: "HUMIDITY"
+                }
+                // The bearing as an arrow instead of two letters to decode: the
+                // glyph points where the wind comes FROM, which is what the
+                // reading means.
+                WxCell {
+                    width: wxGrid.width / 4
+                    glyph: Services.Weather.windGlyph(root.wxWindDir)
+                    value: root.wxWindKph + " km/h"
+                    caption: "WIND"
+                }
+                WxCell {
+                    width: wxGrid.width / 4
+                    glyph: "\uf157"
+                    value: "UV " + root.wxUv
+                    caption: "UV INDEX"
+                }
+                WxCell {
+                    width: wxGrid.width / 4
+                    glyph: "\uf176"
+                    value: root.wxRain + "%"
+                    caption: "RAIN"
                 }
             }
         }
