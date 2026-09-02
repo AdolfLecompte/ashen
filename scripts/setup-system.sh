@@ -82,6 +82,15 @@ PKGS_OFFICIAL=(
     wl-clipboard cliphist grim slurp wf-recorder
     hypridle mpvpaper ffmpeg wlsunset
     nemo zenity fastfetch cava xdg-utils libnotify
+    # Added after the July audit, when the features that need them landed:
+    #   curl            <- cover art and lyrics (services/MediaArt, services/Lyrics)
+    #   imagemagick     <- wallpaper thumbnails (scripts/ashen-wallpaper-thumbs.sh)
+    #   pacman-contrib  <- `checkupdates` for the updates readout (services/Updates)
+    #   python          <- parses `hyprctl monitors -j` in scripts/ashen-wallpaper.sh
+    #   gtk3            <- `gtk-launch`, how a notification action opens its app
+    #   qt6ct           <- conf/env.lua points QT_QPA_PLATFORMTHEME at it and
+    #                      ashen-accent.sh writes its palette
+    curl imagemagick pacman-contrib python gtk3 qt6ct
     papirus-icon-theme adw-gtk-theme
     # Fonts the QML asks for BY FAMILY NAME -- a miss renders tofu, not a fallback:
     #   "JetBrainsMono NF"        <- ttf-jetbrains-mono-nerd
@@ -106,7 +115,12 @@ PKGS_AUR=(
 
 SERVICES=(NetworkManager bluetooth power-profiles-daemon)
 
-STOW_PKGS=(cava dconf fastfetch gtk hypr kitty matugen quickshell zsh)
+# `wallpapers` carries the shipped default picture into ~/Pictures. Without
+# it the "default wallpaper" step below finds no file and skips without a
+# word, and matugen has nothing to take a palette from -- a black desktop on
+# first login, which is what that step exists to prevent. ashen-setup has
+# always stowed it; this list had not.
+STOW_PKGS=(cava dconf fastfetch gtk hypr kitty matugen quickshell wallpapers zsh)
 
 # ── 1. Packages ───────────────────────────────────────────────────────────
 if [[ $DO_PACKAGES -eq 1 ]]; then
@@ -251,6 +265,22 @@ done
 # again on every switch. Dark is what it reads when nothing has been chosen.
 "$REPO_DIR/scripts/ashen-gtk-mode.sh" >/dev/null 2>&1 || true
 
+# A machine that has never picked a wallpaper gets the one this project ships:
+# a black desktop on first login reads as a broken install. The shipped picture
+# is a black-sand shore -- near-black ground, grey sky, no hue anywhere -- which
+# is the Classic scheme in a photograph, so the two agree out of the box.
+# Only when NOTHING has been chosen: picking your own is never overruled.
+if [[ ! -s "$HOME/.cache/ashen_wallpaper.txt" \
+      && -f "$HOME/Pictures/Wallpapers/ashen-default.jpg" ]]; then
+    say "Setting the default wallpaper..."
+    if "$REPO_DIR/scripts/ashen-wallpaper.sh" \
+           "$HOME/Pictures/Wallpapers/ashen-default.jpg" >/dev/null 2>&1; then
+        ok "wallpaper set to ashen-default.jpg"
+    else
+        warn "could not set the default wallpaper (is the session running?)"
+    fi
+fi
+
 # adw-gtk3 supplies the widget shapes; matugen paints them from the wallpaper
 # into ~/.config/gtk-{3,4}.0/gtk.css. Those files are generated, never
 # committed — without a wallpaper there is nothing to derive colors from.
@@ -279,6 +309,15 @@ if command -v matugen >/dev/null; then
     fi
     # On a FIXED scheme the palette is written by the shell, not from here:
     # pick the scheme again in Settings > Appearance once after updating.
+fi
+
+# The picker shows a cached thumb per wallpaper and falls back to the full
+# file while one is missing -- and a video has no fallback at all, so a fresh
+# install opens the picker on blank cards until something bakes them. Do it
+# here, in the background: it is a one-off cost and nothing waits on it.
+if command -v magick >/dev/null; then
+    say "Caching wallpaper thumbnails in the background..."
+    "$REPO_DIR/scripts/ashen-wallpaper-thumbs.sh" >/dev/null 2>&1 &
 fi
 
 # The folders follow the accent through our own theme. papirus-folders is not

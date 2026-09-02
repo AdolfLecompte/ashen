@@ -19,6 +19,10 @@ depends=(
     wl-clipboard cliphist grim slurp wf-recorder
     hypridle mpvpaper ffmpeg wlsunset
     zenity fastfetch cava xdg-utils libnotify
+    # curl: cover art and lyrics. imagemagick: wallpaper thumbnails.
+    # python: parses `hyprctl monitors -j` in ashen-wallpaper.sh.
+    # gtk3: `gtk-launch`, how a notification action opens its app.
+    curl imagemagick python gtk3
     ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
     awww matugen
     xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
@@ -28,12 +32,14 @@ optdepends=(
     'zsh: the shipped prompt and shell config'
     'nemo: the file manager the keybinds open'
     'grimblast-git: screenshot keybinds'
+    'xdg-utils: lets SUPER+W open the browser this machine already defaults to'
     'papirus-icon-theme: app icons in the launcher and the tray'
     'adw-gtk-theme: GTK apps that match the palette'
     'bibata-cursor-theme: the shipped cursor'
     'papirus-folders: tints the folder icons to the palette'
     'polkit-gnome: the agent that asks when something needs root'
     'btop: matugen writes it a theme'
+    'pacman-contrib: checkupdates, for the pending-updates readout'
     'qt6ct: matugen writes it a palette for Qt apps'
 )
 makedepends=('git')
@@ -60,13 +66,16 @@ package() {
     for s in scripts/ashen-*.sh; do
         install -Dm755 "$s" "$pkgdir/usr/bin/$(basename "$s")"
     done
+    install -Dm755 scripts/ashen-app "$pkgdir/usr/bin/ashen-app"
     install -Dm755 scripts/ashen-setup "$pkgdir/usr/bin/ashen-setup"
+    install -Dm755 scripts/ashen-widgets "$pkgdir/usr/bin/ashen-widgets"
+    install -Dm755 scripts/ashen-welcome "$pkgdir/usr/bin/ashen-welcome"
 
     # The dotfiles that HAVE to live in the user's home to take effect
     # (Hyprland, kitty, zsh…). `ashen-setup` puts them there; the package only
     # ships the master copies, because a package may not write to a home.
     install -dm755 "$pkgdir/usr/share/$_pkgname/config"
-    for d in cava dconf fastfetch gtk hypr kitty matugen zsh; do
+    for d in cava dconf fastfetch gtk hypr kitty matugen wallpapers zsh; do
         cp -r "$d" "$pkgdir/usr/share/$_pkgname/config/$d"
     done
 
