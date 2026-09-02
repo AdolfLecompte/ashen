@@ -24,6 +24,12 @@ Singleton {
     property string sunset: ""
     // Next 24 h: { label, tempC, rain, icon, now }
     property var hourly: []
+    // Every hour the request carried (five days), each tagged with its date, so
+    // a day picked in the card has a curve of its own without asking again.
+    property var allHours: []
+    function hoursFor(dateStr) {
+        return root.allHours.filter(h => h.date === dateStr)
+    }
 
     readonly property string feels: tempString(feelsC)
 
@@ -44,6 +50,13 @@ Singleton {
     // screen shows the speed in km/h, where the bearing said nothing.
     function windCompass(deg) {
         const pts = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        return pts[Math.round((deg % 360) / 45) % 8]
+    }
+    // The same eight sectors as an arrow instead of two letters: the glyph
+    // named after the bearing points that way, so it reads without decoding.
+    function windGlyph(deg) {
+        const pts = ["\uf1e0", "\uf1e1", "\uf1df", "\uf1e4",   // N NE E SE
+                     "\uf1e3", "\uf1e5", "\uf1e6", "\uf1e2"]   // S SW W NW
         return pts[Math.round((deg % 360) / 45) % 8]
     }
     // Set true by cityProc when a typed city can't be geocoded, so Settings can
@@ -213,8 +226,11 @@ Singleton {
             + "&current=temperature_2m,weather_code,is_day,apparent_temperature"
             + ",relative_humidity_2m,wind_speed_10m,wind_direction_10m"
             + "&hourly=temperature_2m,precipitation_probability,weather_code,is_day"
+            + ",relative_humidity_2m"
             + "&daily=weather_code,temperature_2m_max,temperature_2m_min"
             + ",sunrise,sunset,precipitation_probability_max,uv_index_max"
+            + ",apparent_temperature_max"
+            + ",wind_speed_10m_max,wind_direction_10m_dominant"
             + "&timezone=auto&forecast_days=5"
         fcProc.command = ["sh", "-c", "curl -s --max-time 10 '" + url + "'"]
         fcProc.running = true
@@ -302,44 +318,64 @@ Singleton {
                     root.windKph = Math.round(cur.wind_speed_10m)
                     root.windDir = Math.round(cur.wind_direction_10m)
 
+                    // Every hour first: the days are summarised from it (the
+                    // daily block has no humidity of its own).
+                    let hr = d.hourly
+                    let cursor = String(cur.time).slice(0, 13)
+                    let at = hr.time.findIndex(t => String(t).slice(0, 13) === cursor)
+                    if (at < 0) at = 0
+                    let all = []
+                    for (let i = 0; i < hr.time.length; i++) {
+                        all.push({
+                            date: String(hr.time[i]).slice(0, 10),
+                            label: root.clockOf(hr.time[i]),
+                            tempC: Math.round(hr.temperature_2m[i]),
+                            rain: Math.round(hr.precipitation_probability[i] || 0),
+                            humidity: Math.round(hr.relative_humidity_2m[i] || 0),
+                            icon: root.codeToIcon(hr.weather_code[i], hr.is_day[i] === 1),
+                            now: i === at
+                        })
+                    }
+                    root.allHours = all
+                    // The next 24 hours starting at the city's current hour.
+                    // `timezone=auto` means these stamps are local to the city,
+                    // so our own clock must not be used to find "now" — the
+                    // API's `current.time` is the only honest cursor.
+                    root.hourly = all.slice(at, at + 24)
+
                     let days = []
                     let dy = d.daily
                     for (let i = 0; i < dy.time.length; i++) {
+                        let date = String(dy.time[i])
+                        // Mean humidity over that day's own hours.
+                        let hs = all.filter(h => h.date === date)
+                        let hum = 0
+                        for (const h of hs) hum += h.humidity
                         days.push({
-                            label: root.dayLabel(dy.time[i], i),
+                            date: date,
+                            label: root.dayLabel(date, i),
                             maxC: Math.round(dy.temperature_2m_max[i]),
                             minC: Math.round(dy.temperature_2m_min[i]),
                             rain: Math.round(dy.precipitation_probability_max[i] || 0),
+                            code: dy.weather_code[i],
+                            condition: root.codeToText(dy.weather_code[i]),
+                            uv: Math.round(dy.uv_index_max[i] || 0),
+                            feelsC: Math.round(dy.apparent_temperature_max[i]),
+                            windKph: Math.round(dy.wind_speed_10m_max[i] || 0),
+                            windDir: Math.round(dy.wind_direction_10m_dominant[i] || 0),
+                            humidity: hs.length > 0 ? Math.round(hum / hs.length) : 0,
+                            sunrise: root.clockOf(dy.sunrise[i]),
+                            sunset: root.clockOf(dy.sunset[i]),
                             // Daylight icon: a row of five day summaries reading
                             // as night would be nonsense
                             icon: root.codeToIcon(dy.weather_code[i], true)
                         })
                     }
                     root.forecast = days
-                    root.rainProb = Math.round(dy.precipitation_probability_max[0] || 0)
-                    root.uvMax = Math.round(dy.uv_index_max[0] || 0)
-                    root.sunrise = root.clockOf(dy.sunrise[0])
-                    root.sunset = root.clockOf(dy.sunset[0])
-
-                    // The next 24 hours starting at the city's current hour.
-                    // `timezone=auto` means these stamps are local to the city,
-                    // so our own clock must not be used to find "now" — the
-                    // API's `current.time` is the only honest cursor.
-                    let hr = d.hourly
-                    let cursor = String(cur.time).slice(0, 13)
-                    let at = hr.time.findIndex(t => String(t).slice(0, 13) === cursor)
-                    if (at < 0) at = 0
-                    let hours = []
-                    for (let i = at; i < Math.min(at + 24, hr.time.length); i++) {
-                        hours.push({
-                            label: root.clockOf(hr.time[i]),
-                            tempC: Math.round(hr.temperature_2m[i]),
-                            rain: Math.round(hr.precipitation_probability[i] || 0),
-                            icon: root.codeToIcon(hr.weather_code[i], hr.is_day[i] === 1),
-                            now: i === at
-                        })
-                    }
-                    root.hourly = hours
+                    root.rainProb = days[0].rain
+                    root.uvMax = days[0].uv
+                    root.sunrise = days[0].sunrise
+                    root.sunset = days[0].sunset
                 } catch (e) { console.warn("[Weather] forecast error:", e) }
             }
         }

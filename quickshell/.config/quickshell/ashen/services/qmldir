@@ -25,3 +25,17 @@ singleton Countdown 1.0 Countdown.qml
 singleton Displays 1.0 Displays.qml
 singleton MediaArt 1.0 MediaArt.qml
 singleton Media 1.0 Media.qml
+singleton BtLink 1.0 BtLink.qml
+singleton Time 1.0 Time.qml
+singleton Theme 1.0 Theme.qml
+singleton Desktop 1.0 Desktop.qml
+singleton Looks 1.0 Looks.qml
+singleton Lyrics 1.0 Lyrics.qml
+singleton Machine 1.0 Machine.qml
+singleton Updates 1.0 Updates.qml
+singleton Disks 1.0 Disks.qml
+singleton Voice 1.0 Voice.qml
+singleton Release 1.0 Release.qml
+singleton Apps 1.0 Apps.qml
+singleton Picker 1.0 Picker.qml
+singleton Shortcuts 1.0 Shortcuts.qml

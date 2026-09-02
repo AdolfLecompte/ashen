@@ -20,6 +20,20 @@ Singleton {
         return screens[0]
     }
 
+    // The one screen things that exist once belong on -- the desktop widgets,
+    // for now. The built-in panel if there is one, because on a laptop that is
+    // the screen you always have; otherwise the first one that gets a bar.
+    // Deliberately NOT the focused monitor: widgets are furniture, they do not
+    // follow you around.
+    readonly property var primary: {
+        const screens = root.barScreens
+        if (!screens || screens.length === 0) return null
+        for (const s of screens) {
+            if (/^(eDP|LVDS)/i.test(s.name)) return s
+        }
+        return screens[0]
+    }
+
     // The screens that deserve a bar. A mirrored output still shows up in
     // Quickshell.screens, but Hyprland renders the source monitor's framebuffer
     // onto it -- a bar built there is drawn, exclusion-zoned and never seen.

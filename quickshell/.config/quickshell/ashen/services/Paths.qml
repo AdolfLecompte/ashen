@@ -33,6 +33,20 @@ Singleton {
         }
     }
 
+    // The release notes, as shipped. From a checkout they are the repo's own
+    // CHANGELOG; installed, the package leaves a copy in /usr/share/doc. Same
+    // probe as scriptDir above, for the same reason.
+    property string changelog: home + "/ashen/CHANGELOG.md"
+    Process {
+        running: true
+        command: ["sh", "-c", '[ -f "$1" ] && echo repo || echo pkg',
+                  "sh", root.home + "/ashen/CHANGELOG.md"]
+        stdout: StdioCollector {
+            onStreamFinished: if (text.trim() === "pkg")
+                root.changelog = "/usr/share/doc/ashen/CHANGELOG.md"
+        }
+    }
+
     readonly property string config: home + "/.config/ashen"
     readonly property string cache: home + "/.cache"
     readonly property string state: home + "/.local/state/ashen"
@@ -43,4 +57,8 @@ Singleton {
     readonly property string recordings: home + "/Videos"
     // Default wallpaper folder; Settings > Appearance may point elsewhere
     readonly property string wallpapers: home + "/Pictures/Wallpapers"
+    // Where the screenshot keybind drops its files (grimblast's
+    // DEFAULT_TARGET_DIR in hypr/conf/keybinds.lua). The shell reads it to find
+    // the shot it was just told about: grimblast does not report the path.
+    readonly property string screenshots: home + "/Pictures/Screenshots"
 }

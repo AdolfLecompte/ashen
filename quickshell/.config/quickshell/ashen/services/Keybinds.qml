@@ -71,9 +71,16 @@ Singleton {
             "settings": "Settings", "notifications": "Notifications", "wallpaper": "Wallpaper picker",
             "clipboard": "Clipboard",
             "process": "Process monitor", "launcher": "Launcher", "lockscreen": "Lock screen",
-            "power": "Power menu", "osd": "On-screen display", "media": "Media"
+            "power": "Power menu", "osd": "On-screen display", "media": "Media",
+            "switcher": "Window switcher"
         }
         const label = names[target] !== undefined ? names[target] : target
+        if (target === "switcher") {
+            // One call both opens it and steps: naming it after the step is
+            // what the bind actually does from the keyboard's side.
+            if (fn === "next") return "Window switcher"
+            if (fn === "prev") return "Window switcher (backwards)"
+        }
         if (target === "media") {
             if (fn === "next") return "Next track"
             if (fn === "prev") return "Previous track"
@@ -152,9 +159,21 @@ Singleton {
             const args = root.splitArgs(inner)
             if (args.length < 2) continue
 
+            // A rebindable one is written K("id", <shipped keys>): the id is
+            // what Settings writes an override under, and the second half is
+            // still the default to show and to fall back to.
+            let expr = args[0], id = ""
+            const k = expr.match(/^K\(\s*"([A-Za-z]+)"\s*,([\s\S]*)\)$/)
+            if (k) { id = k[1]; expr = k[2].trim() }
+
+            const fallback = root.keysOf(expr, mod)
             out.push({
                 section: section,
-                keys: root.keysOf(args[0], mod),
+                id: id,
+                // What the file ships with, and what is in force right now --
+                // which are the same until someone changes it in Settings.
+                fallback: fallback,
+                keys: id !== "" && Shortcuts.changed(id) ? Shortcuts.keyOf(id) : fallback,
                 action: root.actionOf(args[1])
             })
         }

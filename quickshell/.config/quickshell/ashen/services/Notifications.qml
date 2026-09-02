@@ -35,7 +35,11 @@ Singleton {
     function popupHold(entry) {
         // Critical never ages out on its own; it has to be acknowledged.
         if (entry.urgency === 2) return 0
-        if (entry.source === "system") return 1800
+        // 1.8 s is enough to READ a system toast, but not to look at a picture
+        // or reach for it: one carrying a shot gets a full notice's time.
+        if (entry.source === "system")
+            return (entry.image || (entry.actions && entry.actions.length > 0))
+                ? Math.max(1, Prefs.toastSeconds) * 1000 : 1800
         return Math.max(1, Prefs.toastSeconds) * 1000
     }
 
@@ -241,6 +245,15 @@ Singleton {
     }
 
     function invokeAction(id, actionId) {
+        // A system toast is the shell talking to itself: there is no live
+        // Notification to invoke, only a shell line the toast was built with.
+        const sys = root.activePopups.find(p => p.id === id && p.source === "system")
+        if (sys) {
+            const act = (sys.actions || []).find(a => a.id === actionId)
+            if (act && act.run) Quickshell.execDetached(["sh", "-c", act.run])
+            root.beginLeave(id, true)
+            return
+        }
         let n = root.liveNotifs[id]
         if (!n) return
         let acts = n.actions || []
@@ -276,6 +289,14 @@ Singleton {
     }
 
     function activateDefault(id) {
+        // A system toast's default is a shell line, not a D-Bus action.
+        const sys = root.activePopups.find(p => p.id === id && p.source === "system")
+        if (sys) {
+            const act = (sys.actions || []).find(a => a.id === "default")
+            if (act && act.run) Quickshell.execDetached(["sh", "-c", act.run])
+            root.beginLeave(id, true)
+            return
+        }
         let n = root.liveNotifs[id]
         if (n) {
             const acts = n.actions || []
@@ -331,27 +352,36 @@ Singleton {
     // icon and no dbus field to tell them apart; in this setup a Brave
     // notification is WhatsApp. Returns a ready-to-use Image source.
     readonly property string whatsappIconId: "brave-hnpfjngllnobngcgfapefoaidbinmjnm-Default"
+    // The chain is built into the URL, not walked here. `iconPath(name, true)`
+    // is documented to hand back "" for an icon that does not exist, and in
+    // Quickshell 0.3.0 it does NOT -- probed: a bogus name still comes back as
+    // "image://icon/<name>". Every `if (p !== "")` below it therefore matched
+    // on the first try and the rest of this function was dead code.
+    // `iconPath(name, fallback)` returns "image://icon/<name>?fallback=<fb>"
+    // and the image provider does the falling back at load time, which is the
+    // only place that can actually tell whether an icon resolved.
     function resolveIcon(appName, appIcon) {
-        if (appName === "Brave") {
-            let p = Quickshell.iconPath(root.whatsappIconId, true)
-            if (p && p !== "") return p
-        }
+        if (appName === "Brave")
+            return Quickshell.iconPath(root.whatsappIconId, "brave-browser")
         // Discord ships no appIcon over dbus, so the toast fell back to a
         // generic Material glyph. Resolve its theme icon by name instead.
-        if ((appName || "").toLowerCase().indexOf("discord") !== -1) {
-            let d = Quickshell.iconPath("discord", true)
-            if (d && d !== "") return d
-        }
-        let ic = appIcon || ""
+        if ((appName || "").toLowerCase().indexOf("discord") !== -1)
+            return Quickshell.iconPath("discord", "discord-canary")
+
+        const ic = appIcon || ""
         if (ic.startsWith("image://") || ic.startsWith("file://") || ic.startsWith("http")) return ic
         if (ic.startsWith("/")) return "file://" + ic
-        if (ic !== "") {
-            // Bare icon-theme name (e.g. "discord", "steam")
-            let p = Quickshell.iconPath(ic, true)
-            if (p && p !== "") return p
-        }
-        // Last resort: try the app's own name as a theme icon name.
-        if (appName && appName !== "") return Quickshell.iconPath(appName.toLowerCase(), true)
+
+        // One fallback slot, so it goes to the one name that always resolves.
+        // Without it an app nobody has an icon for drew Qt's checkerboard --
+        // there is no way to ask "did that icon exist?" from QML, so the only
+        // defence is to end the chain somewhere real.
+        const generic = "application-x-executable"
+        const byName = (appName || "").toLowerCase()
+        // Bare icon-theme name (e.g. "discord", "steam").
+        if (ic !== "") return Quickshell.iconPath(ic, generic)
+        if (byName !== "") return Quickshell.iconPath(byName, generic)
+        // Nothing to go on: the card draws its Material glyph instead.
         return ""
     }
 
@@ -523,7 +553,10 @@ Singleton {
         return Qt.formatDateTime(new Date(ts), "MMM d")
     }
 
-    function addSystemToast(message, glyph, isLetter, typeKey) {
+    // `opts` is optional: { title: "BATTERY LOW: 20%", image: "/path.png",
+    // actions: [{ id, text, run }] }. `run` is a shell
+    // line -- a system toast has no D-Bus notification behind it to invoke.
+    function addSystemToast(message, glyph, isLetter, typeKey, opts) {
         // System ones are only shown as a toast, never stored in the history.
         // Replaces any other active one of the same "type" (typeKey) instead of
         // stacking. Through dropPopups, never by filtering the list here: the
@@ -534,18 +567,53 @@ Singleton {
         if (stale.length > 0) root.dropPopups(stale)
         let entry = {
             appName: "System",
-            summary: "SYSTEM ALERT",
+            // The label, when the caller has one. Without it the toast keeps
+            // saying SYSTEM ALERT and the message carries everything.
+            summary: (opts && opts.title) || "SYSTEM ALERT",
             body: message,
             glyph: glyph || "",
             glyphIsLetter: isLetter || false,
             typeKey: typeKey || message,
             icon: "",
+            image: (opts && opts.image) || "",
+            actions: (opts && opts.actions) || [],
             urgency: 0,
             source: "system",
             id: Date.now() + "-" + Math.floor(Math.random() * 100000),
             timestamp: Date.now()
         }
         root.pushPopup(entry)
+    }
+
+    // The screenshot keybind saves the file and then calls the shell, but it
+    // never says WHERE, so the newest file in the shots folder is the shot.
+    Process {
+        id: shotProc
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const path = text.trim()
+                if (path === "") {
+                    root.addSystemToast(Services.Voice.pick("shot.saved"), "\uf727", false,
+                                        "screenshot", { title: "SCREENSHOT SAVED" })
+                    return
+                }
+                // No buttons: grimblast already put it on the clipboard, and
+                // the one thing left to want is to SEE it -- so that is what
+                // the card itself does when clicked.
+                root.addSystemToast(Services.Voice.pick("shot.saved"), "\uf727", false, "screenshot", {
+                    title: "SCREENSHOT SAVED",
+                    image: "file://" + path,
+                    actions: [{ id: "default", run: "xdg-open '" + path + "'" }]
+                })
+            }
+        }
+    }
+    function screenshotToast() {
+        shotProc.command = ["sh", "-c",
+                            'ls -t "$1"/*.png "$1"/*.jpg 2>/dev/null | head -1',
+                            "sh", Paths.screenshots]
+        shotProc.running = true
     }
 
     // By id, not by row: grouping means a row's position is no longer its
@@ -712,7 +780,9 @@ Singleton {
                 if (val === "") return
                 let charging = val === "1"
                 if (root.initialized && charging !== root.lastCharging) {
-                    root.addSystemToast(charging ? "CHARGER CONNECTED" : "CHARGER DISCONNECTED", charging ? "" : "", false, "charger")
+                    root.addSystemToast(Services.Voice.pick(charging ? "charger.in" : "charger.out"),
+                                        charging ? "" : "", false, "charger",
+                                        { title: charging ? "CHARGER CONNECTED" : "CHARGER DISCONNECTED" })
                 }
                 root.lastCharging = charging
             }
@@ -757,13 +827,16 @@ Singleton {
             let lvl = Services.Battery.level
             if (lvl <= 5 && !root.warned5) {
                 root.warned5 = true
-                root.addSystemToast("BATTERY CRITICAL: 5%", "", false, "battery5")
+                root.addSystemToast(Services.Voice.pick("battery.critical"), "", false,
+                                    "battery5", { title: "BATTERY CRITICAL: 5%" })
             } else if (lvl <= 10 && !root.warned10) {
                 root.warned10 = true
-                root.addSystemToast("BATTERY LOW: 10%", "", false, "battery10")
+                root.addSystemToast(Services.Voice.pick("battery.critical"), "", false,
+                                    "battery10", { title: "BATTERY LOW: 10%" })
             } else if (lvl <= 20 && !root.warned20) {
                 root.warned20 = true
-                root.addSystemToast("BATTERY LOW: 20%", "", false, "battery20")
+                root.addSystemToast(Services.Voice.pick("battery.low"), "", false,
+                                    "battery20", { title: "BATTERY LOW: 20%" })
             }
         }
         function onChargingChanged() {
@@ -780,26 +853,29 @@ Singleton {
         target: Services.AppState
         function onDoNotDisturbChanged() {
             root.addSystemToast(
-                Services.AppState.doNotDisturb ? "DO NOT DISTURB ON" : "DO NOT DISTURB OFF",
+                Services.Voice.pick(Services.AppState.doNotDisturb ? "dnd.on" : "dnd.off"),
                 "",
                 false,
-                "dnd"
+                "dnd",
+                { title: Services.AppState.doNotDisturb ? "DO NOT DISTURB ON" : "DO NOT DISTURB OFF" }
             )
         }
         function onKeepAwakeChanged() {
             root.addSystemToast(
-                Services.AppState.keepAwake ? "KEEP AWAKE ON" : "KEEP AWAKE OFF",
+                Services.Voice.pick(Services.AppState.keepAwake ? "awake.on" : "awake.off"),
                 "",
                 false,
-                "keepawake"
+                "keepawake",
+                { title: Services.AppState.keepAwake ? "KEEP AWAKE ON" : "KEEP AWAKE OFF" }
             )
         }
         function onRecordingChanged() {
             root.addSystemToast(
-                Services.AppState.recording ? "SCREEN RECORDING STARTED" : "SCREEN RECORDING STOPPED",
+                Services.Voice.pick(Services.AppState.recording ? "record.start" : "record.stop"),
                 "",
                 false,
-                "recording"
+                "recording",
+                { title: Services.AppState.recording ? "SCREEN RECORDING STARTED" : "SCREEN RECORDING STOPPED" }
             )
         }
     }

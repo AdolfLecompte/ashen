@@ -38,6 +38,18 @@ Singleton {
     }
 
     readonly property string display: format(elapsed)
+
+    // Bar readout: no tenths. A digit turning ten times a second on the bar is
+    // noise, and the pill only has to say roughly where the run is.
+    function formatShort(ms) {
+        let t = Math.max(0, Math.floor(ms / 1000))
+        let s = t % 60
+        let m = Math.floor(t / 60) % 60
+        let h = Math.floor(t / 3600)
+        let two = n => (n < 10 ? "0" : "") + n
+        return h > 0 ? h + ":" + two(m) + ":" + two(s) : two(m) + ":" + two(s)
+    }
+    readonly property string displayShort: formatShort(elapsed)
     readonly property bool idle: !running && elapsed === 0
 
     function start() {

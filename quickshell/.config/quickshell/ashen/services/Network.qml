@@ -16,8 +16,22 @@ Singleton {
     property string ethConnection: ""
     property string ethDevice: ""
     readonly property bool online: wifiSsid !== "" || ethConnection !== ""
-    property string btDevice: ""
+    // Straight off BlueZ. It used to be `bluetoothctl devices Connected` on a
+    // 10 s timer, so a headset took up to ten seconds to show its name -- and
+    // the same fact was already sitting in the adapter, live.
+    readonly property string btDevice: {
+        const a = Bluetooth.defaultAdapter
+        if (!a) return ""
+        const d = a.devices.values.find(x => x.connected)
+        // Same name the panel and the rows use, so the chip's label and the
+        // hub's match exactly -- a morph only flies on an exact match.
+        return d ? BtLink.displayName(d) : ""
+    }
     property bool btEnabled: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.enabled : false
+
+    // NetworkManager said something. Anything that mirrors nmcli state hangs
+    // off this rather than off a poll of its own.
+    signal changed()
 
     // Force an immediate re-poll instead of waiting for the 10s Timer -- callers
     // that just changed radio state (the Wi-Fi toggle) use this so the pill/panel
@@ -106,26 +120,38 @@ Singleton {
         }
     }
 
+    // NetworkManager PUSHES. Polling was the whole reason connecting to a
+    // network took up to ten seconds to show anywhere: the state was already
+    // known, nobody had asked yet.
+    Process {
+        id: nmMonitor
+        command: ["nmcli", "monitor"]
+        running: true
+        // One line per event, and a single change fires several of them --
+        // hence the debounce rather than a poll per line.
+        stdout: SplitParser { onRead: nmDebounce.restart() }
+        // nmcli monitor dies with NetworkManager. Come back, but never in a
+        // tight loop: a respawn storm against a dead daemon is worse than lag.
+        onExited: monitorRevive.restart()
+    }
+    Timer { id: monitorRevive; interval: 3000; onTriggered: nmMonitor.running = true }
+
+    Timer {
+        id: nmDebounce
+        interval: 250
+        onTriggered: {
+            wifiProc.running = true
+            radioProc.running = true
+            root.changed()
+        }
+    }
+
+    // Fallback only, now that events do the work: something NM does not report
+    // (a driver dropping the link) still gets picked up eventually.
     Timer {
         interval: 10000
         running: true
         repeat: true
         onTriggered: { wifiProc.running = true; radioProc.running = true }
-    }
-
-    Process {
-        id: btProc
-        command: ["sh", "-c", "bluetoothctl devices Connected | head -1 | cut -d' ' -f3-"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: root.btDevice = text.trim()
-        }
-    }
-
-    Timer {
-        interval: 10000
-        running: true
-        repeat: true
-        onTriggered: btProc.running = true
     }
 }

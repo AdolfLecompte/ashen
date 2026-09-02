@@ -25,7 +25,9 @@ Singleton {
     function setEnabled(b) {
         if (Services.Prefs.nightLightEnabled === b) return
         Services.Prefs.nightLightEnabled = b
-        Services.Notifications.addSystemToast(b ? "NIGHT LIGHT ON" : "NIGHT LIGHT OFF", "\ue51c", false, "nightlight")
+        Services.Notifications.addSystemToast(Services.Voice.pick(b ? "night.on" : "night.off"),
+                                              "\ue51c", false, "nightlight",
+                                              { title: b ? "NIGHT LIGHT ON" : "NIGHT LIGHT OFF" })
     }
     function toggle() { setEnabled(!Services.Prefs.nightLightEnabled) }
     function setScheduled(b) { Services.Prefs.nightLightScheduled = b }

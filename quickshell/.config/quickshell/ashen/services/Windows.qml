@@ -25,7 +25,7 @@ Singleton {
     readonly property string glyphTerminal: ""     // terminal
     readonly property string glyphChat: ""         // chat
     readonly property string glyphMusic: ""        // music_note
-    readonly property string glyphVideo: ""        // movie
+    readonly property string glyphVideo: ""        // movie
     readonly property string glyphFiles: ""        // folder
 
     // Matched as substrings of the lowercased class, first hit wins. Ordered:

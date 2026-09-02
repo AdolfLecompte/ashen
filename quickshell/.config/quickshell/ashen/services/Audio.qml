@@ -1,41 +1,81 @@
+// Ashen — Audio service, straight off the PipeWire graph.  by Adolf — github.com/AdolfLecompte
 pragma Singleton
 import Quickshell
-import Quickshell.Io
+import Quickshell.Services.Pipewire
 import QtQuick
 
+// This used to be four `pactl`/`wpctl` processes a second, forever, plus five
+// more every three seconds -- the heaviest thing the shell did, and still a
+// second behind whatever you had just pressed. Quickshell speaks to PipeWire
+// directly: the numbers below are the graph's own, and they change when it
+// does. Only the two things the node graph cannot express -- WHICH device is
+// the default, and moving streams onto it -- still shell out.
 Singleton {
     id: root
-    property int volume: 0
-    property bool muted: false
-    property bool headphones: false
+
+    // Nothing on a node is populated until something tracks it. Twelve nodes on
+    // a laptop, so tracking the lot is cheaper than working out a subset.
+    PwObjectTracker { objects: Pipewire.nodes.values }
+
+    readonly property var sinkNode: Pipewire.defaultAudioSink
+    readonly property var sourceNode: Pipewire.defaultAudioSource
+
+    // ── Output ─────────────────────────────────────────────────────────────
+    readonly property int volume: root.sinkNode && root.sinkNode.audio
+        ? Math.round(root.sinkNode.audio.volume * 100) : 0
+    readonly property bool muted: root.sinkNode && root.sinkNode.audio
+        ? root.sinkNode.audio.muted : false
+    readonly property string defaultSink: root.sinkNode ? root.sinkNode.name : ""
+    readonly property bool headphones: /headphone|headset|bluez/i.test(root.defaultSink)
+
     function toggleMute() {
-        Quickshell.execDetached(["sh", "-c", "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"])
+        if (root.sinkNode && root.sinkNode.audio)
+            root.sinkNode.audio.muted = !root.sinkNode.audio.muted
+    }
+    // Capped at 100%: the old `wpctl set-volume -l 1.0` did the same, and a
+    // slider that can push past unity is a speaker-shaped trap.
+    function setVolume(pct) {
+        if (!root.sinkNode || !root.sinkNode.audio) return
+        root.sinkNode.audio.muted = false
+        root.sinkNode.audio.volume = Math.max(0, Math.min(100, pct)) / 100
     }
 
     // shared by the pill, the OSD and the volume panel
     function icon(vol, isMuted, isHeadphones) {
         if (isMuted || vol === 0)
-            return "\ue04f"
+            return ""
         if (isHeadphones)
-            return "\uf01f"
-        return vol < 66 ? "\ue04d" : "\ue050"
+            return ""
+        return vol < 66 ? "" : ""
     }
 
-    property int micVolume: 0
-    property bool micMuted: false
+    // ── Input ──────────────────────────────────────────────────────────────
+    readonly property int micVolume: root.sourceNode && root.sourceNode.audio
+        ? Math.round(root.sourceNode.audio.volume * 100) : 0
+    readonly property bool micMuted: root.sourceNode && root.sourceNode.audio
+        ? root.sourceNode.audio.muted : false
+    readonly property string defaultSource: root.sourceNode ? root.sourceNode.name : ""
+
     function toggleMicMute() {
-        Quickshell.execDetached(["sh", "-c", "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"])
+        if (root.sourceNode && root.sourceNode.audio)
+            root.sourceNode.audio.muted = !root.sourceNode.audio.muted
     }
     function setMicVolume(pct) {
-        Quickshell.execDetached(["sh", "-c", "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ " + pct + "%"])
+        if (!root.sourceNode || !root.sourceNode.audio) return
+        root.sourceNode.audio.volume = Math.max(0, Math.min(100, pct)) / 100
     }
 
-    // ── Output/input device switching (like Noctalia) ──────────────────────
-    // Each entry: { name: <pactl node name>, desc: <human label> }.
-    property var sinks: []
-    property var sources: []
-    property string defaultSink: ""
-    property string defaultSource: ""
+    // ── The devices you can pick between ───────────────────────────────────
+    // A stream is an application; a device is not. Monitors never show up here
+    // the way they did through `pactl list sources`: in the graph a monitor is
+    // a PORT of its sink, not a source of its own, so there is nothing to
+    // filter out any more.
+    readonly property var sinks: Pipewire.nodes.values
+        .filter(n => n.isSink && !n.isStream && n.audio)
+        .map(n => ({ name: n.name, desc: root.shortName(n.description) }))
+    readonly property var sources: Pipewire.nodes.values
+        .filter(n => !n.isSink && !n.isStream && n.audio)
+        .map(n => ({ name: n.name, desc: root.shortName(n.description) }))
 
     // Strip the long controller prefix so the picker shows just the port name.
     function shortName(desc) {
@@ -43,22 +83,21 @@ Singleton {
                            .replace(/^Monitor of /, "Monitor: ")
     }
 
-    // Set the default and move every already-running stream over, so the switch
-    // is immediate instead of only affecting apps opened afterwards.
+    // Which device is the default is WirePlumber policy, not a property of the
+    // graph, so these two stay on pactl. Moving the already-running streams is
+    // what makes the switch immediate instead of only affecting apps opened
+    // afterwards.
     function setSink(name) {
         Quickshell.execDetached(["sh", "-c",
             "pactl set-default-sink '" + name + "'; " +
             "for i in $(pactl list short sink-inputs | cut -f1); do pactl move-sink-input $i '" + name + "'; done"])
-        root.defaultSink = name
-        refreshDevices()
     }
     function setSource(name) {
         Quickshell.execDetached(["sh", "-c",
             "pactl set-default-source '" + name + "'; " +
             "for i in $(pactl list short source-outputs | cut -f1); do pactl move-source-output $i '" + name + "'; done"])
-        root.defaultSource = name
-        refreshDevices()
     }
+
     // What kind of thing the sound is coming out of, read off the node name
     // PipeWire gives it: how it is connected is what you actually want to know
     // ("the Bluetooth ones" or "the jack"), not the model of the chip.
@@ -71,11 +110,11 @@ Singleton {
         return "speakers"
     }
     function kindGlyph(kind) {
-        if (kind === "bluetooth") return "\ue60f"
-        if (kind === "hdmi") return "\ue333"
-        if (kind === "usb") return "\ue1e0"
-        if (kind === "headphones") return "\ue310"
-        return "\ue050"
+        if (kind === "bluetooth") return ""
+        if (kind === "hdmi") return ""
+        if (kind === "usb") return ""
+        if (kind === "headphones") return ""
+        return ""
     }
     function kindLabel(kind) {
         if (kind === "bluetooth") return "Bluetooth"
@@ -92,141 +131,26 @@ Singleton {
     readonly property string activeSinkName: root.descOf(root.sinks, root.defaultSink)
     readonly property string activeSourceName: root.descOf(root.sources, root.defaultSource)
 
-    // Per-app streams: what each open program is playing, and how loud.
-    // [{ id, app, name, volume, muted }]
-    property var streams: []
-    function refreshStreams() { streamProc.running = true }
-    function setStreamVolume(id, pct) {
-        Quickshell.execDetached(["sh", "-c",
-            "pactl set-sink-input-volume " + id + " " + Math.round(pct) + "%"])
-    }
-    function toggleStreamMute(id) {
-        Quickshell.execDetached(["sh", "-c", "pactl set-sink-input-mute " + id + " toggle"])
-        streamSettle.restart()
-    }
-    Timer { id: streamSettle; interval: 120; onTriggered: root.refreshStreams() }
+    // ── Per-app streams ────────────────────────────────────────────────────
+    // A playback stream is a stream that is ALSO a sink: audio goes into it on
+    // its way out. `isStream && !isSink` is a recorder (cava listening to the
+    // monitor), which does not belong in a list of things making noise.
+    // The nodes themselves, NOT copies of their numbers: a plain object rebuilt
+    // on every volume change hands the Repeater a new model, which throws away
+    // the delegate -- and with it the slider you were still dragging.
+    readonly property var streams: Pipewire.nodes.values
+        .filter(n => n.isStream && n.isSink && n.audio)
 
-    Process {
-        id: streamProc
-        command: ["sh", "-c", "pactl -f json list sink-inputs"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const list = JSON.parse(text).map(s => {
-                        const props = s.properties || {}
-                        // The volume map is per channel; they move together
-                        // here, so the first channel is the whole story.
-                        const vols = s.volume ? Object.keys(s.volume) : []
-                        const pct = vols.length
-                            ? parseInt(String(s.volume[vols[0]].value_percent).replace("%", "")) : 0
-                        return {
-                            id: s.index,
-                            app: props["application.name"] || props["media.name"] || "Audio",
-                            name: props["media.name"] || "",
-                            volume: isNaN(pct) ? 0 : pct,
-                            muted: s.mute === true
-                        }
-                    })
-                    root.streams = list
-                } catch (e) { root.streams = [] }
-            }
-        }
+    function streamLabel(n) {
+        if (!n) return "Audio"
+        return n.properties["application.name"] || n.properties["media.name"] || "Audio"
     }
 
-    function refreshDevices() {
-        sinkListProc.running = true
-        srcListProc.running = true
-        srcDefaultProc.running = true
+    // Take the node, not an id: the caller already holds it.
+    function setStreamVolume(n, pct) {
+        if (n && n.audio) n.audio.volume = Math.max(0, Math.min(100, pct)) / 100
     }
-
-
-    Process {
-        id: volProc
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SINK@"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.muted = text.indexOf("MUTED") !== -1
-                let match = text.match(/([0-9]*\.?[0-9]+)/)
-                root.volume = match ? Math.round(parseFloat(match[1]) * 100) : 0
-            }
-        }
-    }
-    Process {
-        id: micProc
-        command: ["sh", "-c", "wpctl get-volume @DEFAULT_AUDIO_SOURCE@"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.micMuted = text.indexOf("MUTED") !== -1
-                let match = text.match(/([0-9]*\.?[0-9]+)/)
-                root.micVolume = match ? Math.round(parseFloat(match[1]) * 100) : 0
-            }
-        }
-    }
-
-
-    Process {
-        id: sinkProc
-        command: ["sh", "-c", "pactl get-default-sink"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.defaultSink = text.trim()
-                root.headphones = /headphone|headset|bluez/i.test(text)
-            }
-        }
-    }
-    Process {
-        id: srcDefaultProc
-        command: ["sh", "-c", "pactl get-default-source"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: { root.defaultSource = text.trim() }
-        }
-    }
-
-    Process {
-        id: sinkListProc
-        command: ["sh", "-c", "pactl -f json list sinks"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    let arr = JSON.parse(text)
-                    root.sinks = arr.map(s => ({ name: s.name, desc: root.shortName(s.description) }))
-                } catch (e) { root.sinks = [] }
-            }
-        }
-    }
-    Process {
-        id: srcListProc
-        command: ["sh", "-c", "pactl -f json list sources"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    // Drop the monitor sources (loopbacks of every sink) — only
-                    // real capture devices (microphones) belong in the picker.
-                    let arr = JSON.parse(text).filter(s => !s.name.endsWith(".monitor"))
-                    root.sources = arr.map(s => ({ name: s.name, desc: root.shortName(s.description) }))
-                } catch (e) { root.sources = [] }
-            }
-        }
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: { volProc.running = true; micProc.running = true; sinkProc.running = true }
-    }
-    // Device lists change rarely (plug/unplug); poll them slower.
-    Timer {
-        interval: 3000
-        running: true
-        repeat: true
-        onTriggered: { root.refreshDevices(); root.refreshStreams() }
+    function toggleStreamMute(n) {
+        if (n && n.audio) n.audio.muted = !n.audio.muted
     }
 }

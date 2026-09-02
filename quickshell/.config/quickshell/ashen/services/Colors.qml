@@ -26,15 +26,21 @@ Singleton {
     // The roles two dozen loose ghostAlpha() values were approximating. Bound,
     // so a recolour carries through. NOTHING outside this block writes a fill
     // alpha -- that is how one hover ended up with five strengths.
+    readonly property color fillDisabled: Qt.rgba(ghost.r, ghost.g, ghost.b, 0.08) // there, not usable
     readonly property color fillInset:  Qt.rgba(ghost.r, ghost.g, ghost.b, 0.06)  // card sunk into a panel
     readonly property color fillLine:   Qt.rgba(ghost.r, ghost.g, ghost.b, 0.12)  // dividers, meter tracks
     readonly property color fillRest:   Qt.rgba(ghost.r, ghost.g, ghost.b, 0.20)  // a control at rest
-    readonly property color fillHover:  Qt.rgba(ghost.r, ghost.g, ghost.b, 0.30)  // under the pointer
+    readonly property color fillStrong: Qt.rgba(ghost.r, ghost.g, ghost.b, 0.30)  // on, or asking to be read
     readonly property color fillSunken: Qt.rgba(ghost.r, ghost.g, ghost.b, 0.45)  // held, or on without the accent
 
     // Two backgrounds, not nine: a panel, and something sitting on the bar.
     readonly property color surfacePanel: Qt.rgba(surface.r, surface.g, surface.b, 0.95)
     readonly property color surfacePill:  Qt.rgba(surface.r, surface.g, surface.b, 0.82)
+    // The bar's own plate. Denser than a capsule: it runs a whole screen edge.
+    readonly property color surfaceBar:   Qt.rgba(surface.r, surface.g, surface.b, 0.92)
+    // What a BAR capsule paints itself with; nothing on a solid bar, which is
+    // already the surface. Only the bar asks: lock screen and panels keep theirs.
+    readonly property color pillPlate: Sizes.barSolid ? "transparent" : root.surfacePill
     // There is no hover fill: things grow and their contents lift to snow.
 
     // Anything asking "am I on a light background" asks this, never a colour.

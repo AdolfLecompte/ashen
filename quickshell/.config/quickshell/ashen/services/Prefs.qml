@@ -42,6 +42,20 @@ Singleton {
     // stacked layout (see Sizes.barVertical).
     property string barPosition: "top"
 
+    // "pills" | "solid" | "framed"
+    property string barStyle: "pills"
+
+    // Bar hides itself and comes back on hover; while hidden it reserves no room.
+    property bool barAutohide: false
+
+    // Audio visualiser. Off stops cava itself, not just the drawing.
+    property bool visualizer: true
+
+    // The lyric column of the media panel. Kept because it is a thing you turn
+    // off for a while (someone is reading over your shoulder, the words are
+    // wrong) and want to find still off next time.
+    property bool mediaLyrics: true
+
     // Light or dark. Applies to the seven fixed schemes and to what matugen is
     // asked for when the palette comes from the wallpaper.
     property string themeMode: "dark"
@@ -61,44 +75,34 @@ Singleton {
     property bool doNotDisturb: false
     property bool keepAwake: false
 
-    // Bar pills the user switched off, comma separated. ONE field rather than a
-    // bool per pill: JsonAdapter drops intermediate values when several
-    // properties are written in the same tick (see weatherLocs above).
+    // LEGACY, read once at load to seed the first arrangement and never written
+    // again: being somewhere on the bar IS being visible now.
     property string hiddenPills: ""
 
-    // Runtime truth, and what every binding reads. Reading `hiddenPills` back in
-    // the same tick it was written returns the OLD value (the adapter batches
-    // writes), so two toggles in one frame used to lose one of them.
+    // The legacy field, parsed. Only syncBarLayout reads it.
     property var hiddenPillList: []
     function syncHiddenPills() {
         root.hiddenPillList = root.hiddenPills.split(",").filter(x => x !== "")
     }
+
+    // A pill exists exactly when the layout gives it a place.
     function pillVisible(id) {
-        return root.hiddenPillList.indexOf(id) === -1
-    }
-    function setPillVisible(id, on) {
-        let list = root.hiddenPillList.filter(x => x !== id)
-        if (!on) list.push(id)
-        root.hiddenPillList = list
-        // Coalesced to the end of the tick: writing the string twice in one
-        // frame makes the adapter keep only the first one.
-        pillWriteTimer.restart()
-    }
-    Timer {
-        id: pillWriteTimer
-        interval: 0
-        onTriggered: root.hiddenPills = root.hiddenPillList.join(",")
+        return root.barSectionOf(id) !== ""
     }
 
     // ── Bar layout ──────────────────────────────────────────────────────
-    // Which pills live in which section, and in what order. ONE packed string
-    // ("left;centre;right", ids comma separated), never sibling fields: the
-    // adapter drops writes made in the same tick.
+    // "v2|left;centre;right;parked", ids comma separated. ONE packed string:
+    // the adapter drops writes made in the same tick. The 4th part (dragged off
+    // the bar) tells a pill nobody has seen from one that was thrown away.
+    // Only trust it behind the "v2|" mark: older layouts had a 4th part too,
+    // holding the utility pill's tools.
     property string barLayout: ""
 
     // Runtime truth. Same reason as hiddenPillList: reading the string back in
     // the tick it was written returns the old value.
     property var barSections: ({ left: [], centre: [], right: [] })
+    // Pills the user took off the bar. Not "hidden": off the bar IS off.
+    property var barParked: []
 
     // ── Monitor layout ──────────────────────────────────────────────────
     // Settings > Display, keyed by monitor DESCRIPTION so it survives a port
@@ -107,6 +111,29 @@ Singleton {
     // Services.Displays, never parsed by hand. Empty = never arranged, so
     // whatever Hyprland worked out on its own stands.
     property string displayLayout: ""
+
+    // ── The four programs the keybinds open ─────────────────────────────
+    // Empty means "whatever this machine already prefers": the browser is the
+    // system default, the rest are the first of their kind that is installed.
+    // Naming one here is an override, not a requirement. Read and written
+    // through Services.Apps, which is what hands them to `ashen-app`.
+    property string appTerminal: ""
+    property string appBrowser: ""
+    property string appFiles: ""
+    property string appEditor: ""
+
+    // And which keys open them. Empty means the shipped combo; anything else is
+    // written back out as a Hyprland bind, because a keybind cannot be changed
+    // from inside the shell any other way.
+    // Which keys do what, for the ones that have been changed: JSON in one
+    // string, same reason as the widget layout. Read through Services.Shortcuts.
+    property string keyOverrides: ""
+
+    // ── Desktop widgets ─────────────────────────────────────────────────
+    // Which widgets sit on the wallpaper and where. JSON in one string, same
+    // reason as displayLayout: the adapter drops sibling writes made in one
+    // tick, and a widget is four fields. Read through Services.Desktop.
+    property string desktopLayout: ""
 
     // The arrangement the bar shipped with, used until the user moves anything.
     readonly property var defaultSections: ({
@@ -119,20 +146,39 @@ Singleton {
         const raw = root.barLayout || ""
         if (raw === "") {
             // First run, or an upgrade from when only visibility existed: start
-            // from the shipped order minus whatever was switched off back then.
-            const keep = list => list.filter(id => root.pillVisible(id))
+            // from the shipped order minus whatever was switched off back then,
+            // and remember those as parked so they stay off.
+            const hidden = root.hiddenPillList
+            const keep = list => list.filter(id => hidden.indexOf(id) === -1)
             root.barSections = {
                 left: keep(root.defaultSections.left),
                 centre: keep(root.defaultSections.centre),
                 right: keep(root.defaultSections.right)
             }
+            root.barParked = hidden.slice()
             return
         }
-        const parts = raw.split(";")
+        const v2 = raw.indexOf("v2|") === 0
+        const parts = (v2 ? raw.slice(3) : raw).split(";")
         const cut = i => (parts[i] || "").split(",").filter(x => x !== "")
-        // A fourth part is a layout saved while the utility pill was
-        // arrangeable; those ids belong to the pill now and are dropped.
-        root.barSections = { left: cut(0), centre: cut(1), right: cut(2) }
+        let next = { left: cut(0), centre: cut(1), right: cut(2) }
+        // Before v2 there was nowhere to record a pill dragged off the bar, so
+        // the old visibility field stands in for it.
+        let parked = v2 ? cut(3) : root.hiddenPillList.slice()
+
+        // A pill shipped after this string was written is in neither list, so
+        // it takes its factory seat instead of hiding in Available for ever.
+        const known = id => root.sectionIds.some(s => next[s].indexOf(id) !== -1)
+        for (const s of root.sectionIds) {
+            const shipped = root.defaultSections[s]
+            for (let i = 0; i < shipped.length; i++) {
+                const id = shipped[i]
+                if (known(id) || parked.indexOf(id) !== -1) continue
+                next[s].splice(Math.min(i, next[s].length), 0, id)
+            }
+        }
+        root.barSections = next
+        root.barParked = parked
     }
 
     readonly property var sectionIds: ["left", "centre", "right"]
@@ -146,18 +192,22 @@ Singleton {
 
     // Drop `id` into `section` at `index`; section "" parks it as available.
     function moveBarPill(id, section, index) {
+        const from = root.barSectionOf(id)
         let next = {}
         for (const s of root.sectionIds)
             next[s] = root.barSections[s].filter(x => x !== id)
         const placed = root.sectionIds.indexOf(section) !== -1
         if (placed) {
-            const at = (index === undefined || index < 0) ? next[section].length
-                     : Math.min(index, next[section].length)
+            let at = (index === undefined || index < 0) ? next[section].length : index
+            // The index was read with the chip still in the row, so inside its
+            // own section every slot past it is counted one too high.
+            if (from === section && root.barSections[section].indexOf(id) < at) at--
+            at = Math.max(0, Math.min(at, next[section].length))
             next[section].splice(at, 0, id)
         }
         root.barSections = next
-        // Every pill checks pillVisible() itself, so the two have to agree.
-        root.setPillVisible(id, placed)
+        root.barParked = placed ? root.barParked.filter(x => x !== id)
+                                : root.barParked.filter(x => x !== id).concat([id])
         barWriteTimer.restart()
     }
 
@@ -168,21 +218,24 @@ Singleton {
             next[s] = root.defaultSections[s].slice()
             shipped = shipped.concat(next[s])
         }
+        // Known pills the shipped arrangement has no seat for stay off the bar
+        // (`window`); the rest lose their parked mark or the next load would
+        // throw them out again.
+        let known = root.barParked.slice()
+        for (const s of root.sectionIds)
+            known = known.concat(root.barSections[s])
         root.barSections = next
-        // Visibility comes back with them: dragging a pill out to "available"
-        // hides it, and reset used to restore only the arrangement -- so a
-        // parked pill returned to a slot the bar dutifully spaced for while the
-        // pill itself was still switched off. That was the empty gap.
-        root.hiddenPillList = root.hiddenPillList.filter(id => shipped.indexOf(id) === -1)
-        pillWriteTimer.restart()
+        root.barParked = known.filter((id, i) => shipped.indexOf(id) === -1
+                                                 && known.indexOf(id) === i)
         barWriteTimer.restart()
     }
 
     Timer {
         id: barWriteTimer
         interval: 0
-        onTriggered: root.barLayout =
-            root.sectionIds.map(s => root.barSections[s].join(",")).join(";")
+        onTriggered: root.barLayout = "v2|"
+            + root.sectionIds.map(s => root.barSections[s].join(",")).join(";")
+            + ";" + root.barParked.join(",")
     }
 
     // Screen recording. An empty dir means "wherever Paths.recordings points".
@@ -203,8 +256,17 @@ Singleton {
     property int idleScreenOffSecs: 600
     property int idleSuspendSecs: 900
 
-    // Lock screen: the media card is the only thing on it worth turning off.
+    // Lock screen: the clock and the login are the screen itself; every card
+    // around them is a reading you may not want a stranger to have, so each
+    // one is its own switch.
     property bool lockShowMedia: true
+    property bool lockShowWeather: true
+    property bool lockShowMachine: true
+    property bool lockShowSystem: true
+    // The lock's notification list. Off by default is the wrong default here:
+    // the whole point of a lock screen is reading what happened while you were
+    // gone, and anything private is already the notification's own business.
+    property bool lockShowNotifications: true
 
     // Toasts: how long a normal one stays on screen (seconds) and how many may
     // stack before the rest collapse into the "+N" row. System toasts keep their
@@ -241,7 +303,9 @@ Singleton {
         // reload()-ing our own writeAdapter() re-reads it mid-flight and reverts
         // whatever was set a moment earlier.
         // Any write to the adapter lands on disk immediately
-        onAdapterUpdated: writeAdapter()
+        // Never before the read: the adapter starts on the code defaults, and a
+        // reload landing mid-read wrote those over the saved ones.
+        onAdapterUpdated: if (root.loaded) writeAdapter()
         // File on disk is now the source of truth: let consumers act on it.
         onLoaded: { root.syncHiddenPills(); root.syncBarLayout(); root.loaded = true }
         // First run: no file yet, so seed it with the defaults above. Still
@@ -270,15 +334,29 @@ Singleton {
             property alias hiddenPills: root.hiddenPills
             property alias barLayout: root.barLayout
             property alias displayLayout: root.displayLayout
+            property alias desktopLayout: root.desktopLayout
+            property alias appTerminal: root.appTerminal
+            property alias appBrowser: root.appBrowser
+            property alias appFiles: root.appFiles
+            property alias appEditor: root.appEditor
+            property alias keyOverrides: root.keyOverrides
             property alias recordAudio: root.recordAudio
             property alias recordDir: root.recordDir
             property alias wallpaperDir: root.wallpaperDir
             property alias lockShowMedia: root.lockShowMedia
+            property alias lockShowWeather: root.lockShowWeather
+            property alias lockShowMachine: root.lockShowMachine
+            property alias lockShowSystem: root.lockShowSystem
+            property alias lockShowNotifications: root.lockShowNotifications
             property alias workspaceIcons: root.workspaceIcons
             property alias idleLockSecs: root.idleLockSecs
             property alias idleScreenOffSecs: root.idleScreenOffSecs
             property alias idleSuspendSecs: root.idleSuspendSecs
             property alias barPosition: root.barPosition
+            property alias barStyle: root.barStyle
+            property alias barAutohide: root.barAutohide
+            property alias visualizer: root.visualizer
+            property alias mediaLyrics: root.mediaLyrics
             property alias nightLightEnabled: root.nightLightEnabled
             property alias nightLightScheduled: root.nightLightScheduled
             property alias nightLightTemp: root.nightLightTemp

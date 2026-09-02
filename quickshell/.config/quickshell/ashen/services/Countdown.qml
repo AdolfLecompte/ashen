@@ -98,7 +98,8 @@ Singleton {
         running = false
         leftover = 0
         rang = true
-        Services.Notifications.addSystemToast("TIMER DONE", "\ue425", false, "countdown")
+        Services.Notifications.addSystemToast(Services.Voice.pick("timer.done"), "\ue425", false,
+                                              "countdown", { title: "TIMER DONE" })
     }
 
     Timer {

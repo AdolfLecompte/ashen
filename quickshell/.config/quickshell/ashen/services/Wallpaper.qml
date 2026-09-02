@@ -25,10 +25,22 @@ Singleton {
     readonly property string stillUrl: root.stillPath === ""
         ? "" : "file://" + root.stillPath + "?v=" + root.version
 
+    // Two switches close together write this file twice, and the reload can
+    // answer with the first write while the second never raises another
+    // change -- the shell then believes in a wallpaper that is not on screen.
+    // Reading once more after the dust settles costs one file read and makes
+    // the last writer win.
+    Timer {
+        id: settle
+        interval: 400
+        onTriggered: wallFile.reload()
+    }
+
     FileView {
+        id: wallFile
         path: root.home + "/.cache/ashen_wallpaper.txt"
         watchChanges: true
-        onFileChanged: reload()
+        onFileChanged: { reload(); settle.restart() }
         onLoaded: {
             root.path = text().trim()
             root.version = Date.now()

@@ -10,7 +10,17 @@ import QtQuick
 Singleton {
     id: root
 
-    property bool active: false
+    // Who is reading the numbers right now. Two surfaces want them (the Process
+    // panel and the desktop widget) and a plain flag meant the one that closed
+    // switched sampling off under the one still on screen.
+    property var claims: ({})
+    readonly property bool active: Object.keys(root.claims).length > 0
+    function claim(who, on) {
+        const next = Object.assign({}, root.claims)
+        if (on) next[who] = true
+        else delete next[who]
+        root.claims = next
+    }
 
     property real cpuPercent: 0
     property string cpuModel: "..."

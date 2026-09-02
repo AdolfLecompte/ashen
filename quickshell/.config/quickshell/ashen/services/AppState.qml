@@ -13,6 +13,10 @@ Singleton {
     Component.onCompleted: {
         recordingCheckProc.running = true
         root.restoreQuickToggles()
+        // Idle is a lazy singleton and nothing on screen reads it: without this
+        // touch it is never built, and hypridle never starts. seed() is
+        // idempotent and waits for Prefs on its own.
+        Idle.seed()
     }
 
     Process {
@@ -76,6 +80,31 @@ Singleton {
         "networkVisible", "bluetoothVisible", "usbVisible", "processVisible",
         "clipboardVisible", "launcherVisible", "wallpaperVisible", "utilitiesVisible",
         "trayMenuVisible", "switcherVisible"]
+    // Which screens have their auto-hiding bar out right now. The frame reads it
+    // to hand that side over to the bar, so framed looks the same either way.
+    property var barRevealed: ({})
+    function setBarRevealed(name, on) {
+        let m = Object.assign({}, root.barRevealed)
+        m[name] = on
+        root.barRevealed = m
+    }
+    function barRevealedOn(name) { return root.barRevealed[name] === true }
+
+    // Whether something hanging off a BAR capsule is up: an auto-hiding bar
+    // stays out for those, or the panel is left dangling off a bar that walked
+    // away. The utility pill's tools are not the bar's business, and neither is
+    // a pill the user has taken off it.
+    readonly property bool barPanelOpen: {
+        for (let id of Pills.arrangeable) {
+            const f = Pills.opens(id)
+            if (f !== "" && root[f] === true && Prefs.barSectionOf(id) !== "") return true
+        }
+        for (let key in Pills.chipHost) {
+            if (root[key + "Visible"] === true
+                && Prefs.barSectionOf(Pills.chipHost[key]) !== "") return true
+        }
+        return root.trayMenuVisible === true && Prefs.barSectionOf("tray") !== ""
+    }
     function closeOthers(name) {
         for (let n of root.panelFlags) if (n !== name && root[n] === true) root[n] = false
     }
@@ -86,6 +115,22 @@ Singleton {
         root.closeOthers(name)
         root[name] = !wasOpen
     }
+    // Which tool the clock panel opens on: 0 clock, 1 stopwatch, 2 timer. Out
+    // here so the bar's readout can aim it, and so the panel comes back to the
+    // tab you left it on instead of always to the clock.
+    // Is the timer box out under the bar? Asked by TimerDrops, which draws it,
+    // and by the clock pill, which has to square the corners it meets so the
+    // two read as one taller capsule instead of two surfaces with a seam.
+    // ONE place, because the day the rule changes it must change for both.
+    readonly property bool timerBoxOut:
+        (!Services.Stopwatch.idle || Services.Countdown.active) && !root.calendarVisible
+
+    property int clockTab: 0
+    function openClockAt(tab) {
+        root.clockTab = tab
+        root.togglePanel("calendarVisible")
+    }
+
     // Kept as the name the overlays were written against; the reach is wider now.
     function toggleOverlay(name) { root.togglePanel(name) }
     function closeBigOverlays() {
@@ -150,11 +195,11 @@ Singleton {
     property bool prefsRestored: false
     function restoreQuickToggles() {
         if (root.prefsRestored || !Prefs.loaded) return
-        // Set first: the change handlers below key on it to tell a restore from
-        // a user flip.
-        root.prefsRestored = true
         root.doNotDisturb = Prefs.doNotDisturb
         root.keepAwake = Prefs.keepAwake
+        // Set last: the change handlers below key on it to tell a restore from
+        // a user flip, and a restore must not write back over what it just read.
+        root.prefsRestored = true
     }
     Connections {
         target: Prefs
@@ -162,15 +207,11 @@ Singleton {
     }
     onDoNotDisturbChanged: if (root.prefsRestored) Prefs.doNotDisturb = root.doNotDisturb
     // hypridle is what actually blanks the screen, so the toggle has to reach it
-    // no matter where it was flipped (settings, launcher, IPC) — and again when
-    // a restart restores it. Only fires once the seed is in: at startup hypridle
-    // is already running, and re-launching it would leave two instances.
-    onKeepAwakeChanged: {
-        if (!root.prefsRestored) return
-        Prefs.keepAwake = root.keepAwake
-        if (root.keepAwake) Quickshell.execDetached(["sh", "-c", "pkill -9 hypridle"])
-        else Idle.start()   // restarts it against the generated config
-    }
+    // no matter where it was flipped (settings, launcher, IPC). Storing it is
+    // enough: Idle watches Prefs.keepAwake and rewrites its config from there.
+    // The daemon is never killed — it also locks the session before a suspend,
+    // and that must survive Keep Awake.
+    onKeepAwakeChanged: if (root.prefsRestored) Prefs.keepAwake = root.keepAwake
 
     property bool settingsVisible: false
     property string settingsTab: "system"
@@ -232,6 +273,16 @@ Singleton {
         root.wsPreviewH = h
         root.wsPreviewId = id
     }
+    // The first-run screen, and the same surface showing what changed after an
+    // update. Not in `panelFlags`: it is not one of the bar's panels and must
+    // not be swept away by opening one.
+    property bool introVisible: false
+    // "welcome" or "notes"
+    property string introMode: "welcome"
+    // Which face of the welcome card: "home" or "about". Here rather than in
+    // the panel because it can be asked for before the panel is built.
+    property string introPage: "home"
+
     property bool powerMenuVisible: false
     // The window switcher. It has no pill of its own: the keybind opens it and
     // the same keybind steps through it, so the index lives here too.
