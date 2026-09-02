@@ -23,20 +23,32 @@ Item {
     readonly property real contentW: 630
     readonly property real chipLg: 40
     readonly property real playLg: 48
-    // The words' own column, when this copy of the card is offering them, and
-    // the gap it keeps from the cava beside it -- half the card's, because the
-    // two of them are ONE block: what is being sung and what it sounds like.
-    readonly property real lyricsW: 260
-    readonly property real wordGap: 8
+    // The words, when this copy of the card is offering them and the track has
+    // any. ONE line -- the one being sung. A column beside the card made the
+    // panel 938 px wide, a face of it made the words fight the player for the
+    // same room, and a band under it pushed the panel 106 px further down the
+    // screen. The line you are on needs none of that.
     readonly property bool lyricsShown: root.offerLyrics && Services.Lyrics.has
                                         && Services.Prefs.mediaLyrics
 
-    // The card is as wide as it has things to say: the lyric column pushes the
-    // right edge out and takes it back when the next track has no words. Read
-    // off the column's live width, not off the flag, so the panel's box grows
-    // WITH it instead of stepping once and letting the words catch up.
-    implicitWidth: contentW + lyricsCol.Layout.preferredWidth
-    implicitHeight: artSize
+    // The line gets its own air rather than being squeezed between the name and
+    // the wave: the card grows a little when there are words, and gives it back
+    // when there are none. Animated in ONE place so the card, the panel's box
+    // and the plate all grow together instead of each easing its own way there.
+    // Two rows' worth: a long line wraps rather than being cut, which is what
+    // the card grows for. Widening it instead would have paid for the longest
+    // line the song ever has on every line it does not.
+    readonly property real verseH: 58
+    property real verseRoom: root.lyricsShown ? root.verseH : 0
+    Behavior on verseRoom {
+        NumberAnimation {
+            duration: Services.Sizes.msPanel
+            easing.type: Services.Sizes.easeBox
+        }
+    }
+
+    implicitWidth: contentW
+    implicitHeight: artSize + root.verseRoom
     width: implicitWidth
     height: implicitHeight
 
@@ -347,7 +359,11 @@ Item {
         Item {
             id: col
             Layout.fillWidth: true
-            Layout.preferredHeight: root.artSize
+            // The card's height, NOT the cover's: the sung line is added to the
+            // bottom stack, so a column still measured at the cover's 160 grows
+            // upwards into the title instead of into the room the card just
+            // opened. The cover keeps its own square.
+            Layout.preferredHeight: root.artSize + root.verseRoom
             Layout.alignment: Qt.AlignVCenter
 
             Column {
@@ -397,6 +413,68 @@ Item {
                 anchors.bottom: parent.bottom
                 width: parent.width
                 spacing: 8
+
+                // ── The line being sung ─────────────────────────────────
+                // Above the wave, under the name: the card reads top to bottom
+                // as what the track IS, what it is SAYING, and what it is
+                // DOING. Invisible takes no room -- a column skips a child that
+                // is not there, so a track without words is the old card.
+                Item {
+                    id: verse
+                    width: parent.width
+                    // The room the card grew for it, so the line opens and
+                    // closes WITH the box rather than appearing once it has
+                    // finished growing.
+                    height: root.verseRoom
+                    visible: height > 0.5
+                    opacity: root.beat(3)
+                    // The line arrives from below and leaves upwards; without
+                    // this the one on its way out is drawn over the title.
+                    clip: true
+
+                    // The line follows the song; the text reads the COMMITTED
+                    // index so the arriving line does not both leave and
+                    // arrive.
+                    SlideSwap {
+                        id: verseSlide
+                        index: Services.Lyrics.indexAt(root.position)
+                        axis: "vertical"
+                        travel: 14
+                    }
+
+                    // What that slide has committed. Before it has committed
+                    // anything -- the case the moment a card is built -- the
+                    // live index stands in, or the line would sit empty until
+                    // the song reached its next one.
+                    property int at: -1
+                    readonly property int shown: verse.at >= 0 ? verse.at : verseSlide.index
+                    Component.onCompleted: verse.at = verseSlide.index
+                    Connections {
+                        target: verseSlide
+                        function onCommit() { verse.at = verseSlide.index }
+                    }
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        text: (verse.shown >= 0 && verse.shown < Services.Lyrics.lines.length)
+                            ? Services.Lyrics.lines[verse.shown].text : ""
+                        color: Services.Colors.snow
+                        font.pixelSize: Services.Sizes.fsBody
+                        font.family: "JetBrainsMono NF"
+                        // Centred: it is the only thing on the card that is not
+                        // a fact about the track, and the one line of it has no
+                        // column of facts to line up with.
+                        horizontalAlignment: Text.AlignHCenter
+                        // Up to the two rows the card grew for, and cut only
+                        // past them: a third would push the wave off the bottom.
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                        opacity: verseSlide.fade
+                        transform: Translate { y: verseSlide.offY }
+                    }
+                }
 
                 Item {
                     id: wave
@@ -639,9 +717,9 @@ Item {
                         available: root.activePlayer !== null && root.activePlayer.canGoNext
                         onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(1); root.activePlayer.next() }
                     }
-                    // The words, on or off. The column is the default and this
+                    // The words, on or off. The band is the default and this
                     // only takes it away -- so the chip shows up only where
-                    // there is a column to hide, and remembers the answer.
+                    // there is a band to close, and remembers the answer.
                     CtlChip {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: root.offerLyrics && Services.Lyrics.has
@@ -677,177 +755,80 @@ Item {
             }
         }
 
-        // ── What is being sung, and what it sounds like ─────────────────
-        // One block, not two columns that happen to be next to each other: the
-        // words and the wave are the same thing said twice, so they keep half
-        // the card's gap between them and the whole of it from the controls.
-        RowLayout {
-            id: rightBlock
-            // Zero, and the words carry their own gap in their width: a
-            // layout charges its spacing for a child of no width too, so a
-            // closed column would leave a hole where it used to be.
-            spacing: 0
+        // ── Spectrum column ─────────────────────────────────────────────
+        // Cava used to wash the whole card as a backdrop. It has its own room
+        // now: bars laid on their side and mirrored about the centre line, so
+        // the column reads as a swell rather than a row of teeth.
+        Item {
+            id: cavaCol
+            // Switched off it takes no room either.
+            visible: root.showSpectrum && Services.Cava.enabled
+            Layout.preferredWidth: cavaCol.visible ? root.cavaW : 0
             Layout.preferredHeight: root.artSize
             Layout.alignment: Qt.AlignVCenter
+            // Solid, and no fade when the room goes quiet: silence is said by
+            // the bars collapsing onto their axis, not by the column going
+            // translucent. A washed cava reads as a screenshot of one.
+            opacity: root.beat(4)
+            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPanel } }
 
-            // ── The words ───────────────────────────────────────────────────
-            // A column of its own, not a drawer under the card: lyrics are the
-            // second thing the card is about, and a drawer made them a thing you
-            // had to ask for twice. No words for this track and the column takes
-            // its width back, so the panel is exactly as wide as it has to be.
-            Item {
-                id: lyricsCol
-                Layout.preferredWidth: root.lyricsShown ? root.lyricsW + root.wordGap : 0
-                Layout.preferredHeight: root.artSize
-                Layout.alignment: Qt.AlignVCenter
-                clip: true
-                opacity: root.beat(3)
-
-                Behavior on Layout.preferredWidth {
-                    NumberAnimation {
-                        duration: Services.Sizes.msPanel
-                        easing.type: Services.Sizes.easeBox
-                    }
-                }
-
-                // The line follows the song; the body reads the COMMITTED index so
-                // the arriving line does not both leave and arrive.
-                SlideSwap {
-                    id: verseSlide
-                    index: Services.Lyrics.indexAt(root.position)
-                    axis: "vertical"
-                    travel: 16
-                }
-
-                // What the slide has committed. Before it has committed anything --
-                // the case the moment a card is built -- the live index stands in,
-                // or the column would sit empty until the song reached its next
-                // line.
-                property int at: -1
-                readonly property int shown: lyricsCol.at >= 0 ? lyricsCol.at : verseSlide.index
-                Component.onCompleted: lyricsCol.at = verseSlide.index
-                Connections {
-                    target: verseSlide
-                    function onCommit() { lyricsCol.at = verseSlide.index }
-                }
-
-                function lineAt(i) {
-                    return (i >= 0 && i < Services.Lyrics.lines.length)
-                        ? Services.Lyrics.lines[i].text : ""
-                }
-
-                // Five slots, the sung one in the middle: two behind you and two
-                // ahead is enough to follow without reading a page.
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.rightMargin: root.wordGap
-                    spacing: 7
-                    opacity: verseSlide.fade
-                    transform: Translate { y: verseSlide.offY }
-
-                    component Line: Text {
-                        property int off: 0
-                        width: parent.width
-                        text: lyricsCol.lineAt(lyricsCol.shown + off)
-                        // The sung line is the only one at full weight; the others
-                        // fall back a step each, so the eye lands on it without a
-                        // marker in the margin.
-                        color: off === 0 ? Services.Colors.snow
-                             : Math.abs(off) === 1 ? Services.Colors.mist
-                                                   : Services.Colors.ash
-                        font.pixelSize: off === 0 ? Services.Sizes.fsInput : Services.Sizes.fsMeta
-                        font.bold: off === 0
-                        font.family: "JetBrainsMono NF"
-                        wrapMode: Text.WordWrap
-                        maximumLineCount: off === 0 ? 2 : 1
-                        elide: Text.ElideRight
-                    }
-
-                    Line { off: -2 }
-                    Line { off: -1 }
-                    Line { off: 0 }
-                    Line { off: 1 }
-                    Line { off: 2 }
-                }
+            // Axis the bars grow out of. Silence collapses every bar to its cap,
+            // and without something to sit on those caps read as a column of
+            // stray dots rather than a level meter.
+            Rectangle {
+                anchors.centerIn: parent
+                width: 2
+                height: parent.height
+                radius: 1
+                color: Services.Colors.fillLine
             }
 
-            // ── Spectrum column ─────────────────────────────────────────────
-            // Cava used to wash the whole card as a backdrop. It has its own room
-            // now: bars laid on their side and mirrored about the centre line, so
-            // the column reads as a swell rather than a row of teeth.
-            Item {
-                id: cavaCol
-                // Switched off it takes no room either.
-                visible: root.showSpectrum && Services.Cava.enabled
-                Layout.preferredWidth: cavaCol.visible ? root.cavaW : 0
-                Layout.preferredHeight: root.artSize
-                Layout.alignment: Qt.AlignVCenter
-                // Solid, and no fade when the room goes quiet: silence is said by
-                // the bars collapsing onto their axis, not by the column going
-                // translucent. A washed cava reads as a screenshot of one.
-                opacity: root.beat(4)
-                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPanel } }
+            Canvas {
+                id: cavaCanvas
+                anchors.fill: parent
 
-                // Axis the bars grow out of. Silence collapses every bar to its cap,
-                // and without something to sit on those caps read as a column of
-                // stray dots rather than a level meter.
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 2
-                    height: parent.height
-                    radius: 1
-                    color: Services.Colors.fillLine
+                // 96 raw bars in 160 px would be slivers; folded down to two
+                // dozen they have room to be read as waves.
+                readonly property int rows: 24
+                readonly property real barH: 4
+
+                Connections {
+                    target: Services.Cava
+                    function onBarValuesChanged() { cavaCanvas.requestPaint() }
                 }
 
-                Canvas {
-                    id: cavaCanvas
-                    anchors.fill: parent
+                onPaint: {
+                    const ctx = getContext("2d")
+                    ctx.reset()
+                    const src = Services.Cava.barValues
+                    if (!src || src.length === 0) return
 
-                    // 96 raw bars in 160 px would be slivers; folded down to two
-                    // dozen they have room to be read as waves.
-                    readonly property int rows: 24
-                    readonly property real barH: 4
-
-                    Connections {
-                        target: Services.Cava
-                        function onBarValuesChanged() { cavaCanvas.requestPaint() }
+                    const n = rows
+                    const group = Math.max(1, Math.floor(src.length / n))
+                    let vals = []
+                    for (let i = 0; i < n; i++) {
+                        let sum = 0
+                        for (let k = 0; k < group; k++) sum += src[i * group + k] || 0
+                        vals.push(Math.max(0, Math.min(100, sum / group)) / 100)
                     }
+                    // One pass of neighbour averaging: without it the column is
+                    // noise, with it the peaks roll.
+                    const sm = vals.map((v, i) => (vals[Math.max(0, i - 1)] + v
+                                                 + vals[Math.min(n - 1, i + 1)]) / 3)
 
-                    onPaint: {
-                        const ctx = getContext("2d")
-                        ctx.reset()
-                        const src = Services.Cava.barValues
-                        if (!src || src.length === 0) return
+                    const gap = (height - n * barH) / (n - 1)
+                    const cx = width / 2
+                    const maxLen = width / 2
 
-                        const n = rows
-                        const group = Math.max(1, Math.floor(src.length / n))
-                        let vals = []
-                        for (let i = 0; i < n; i++) {
-                            let sum = 0
-                            for (let k = 0; k < group; k++) sum += src[i * group + k] || 0
-                            vals.push(Math.max(0, Math.min(100, sum / group)) / 100)
-                        }
-                        // One pass of neighbour averaging: without it the column is
-                        // noise, with it the peaks roll.
-                        const sm = vals.map((v, i) => (vals[Math.max(0, i - 1)] + v
-                                                     + vals[Math.min(n - 1, i + 1)]) / 3)
-
-                        const gap = (height - n * barH) / (n - 1)
-                        const cx = width / 2
-                        const maxLen = width / 2
-
-                        // The accent itself, not a mix with the plate: the bars are
-                        // the one thing on the card that IS the sound.
-                        ctx.fillStyle = Services.Colors.ghost
-                        for (let i = 0; i < n; i++) {
-                            const half = Math.max(barH / 2, sm[i] * maxLen)
-                            const y = i * (barH + gap)
-                            ctx.beginPath()
-                            ctx.roundedRect(cx - half, y, half * 2, barH, barH / 2, barH / 2)
-                            ctx.fill()
-                        }
+                    // The accent itself, not a mix with the plate: the bars are
+                    // the one thing on the card that IS the sound.
+                    ctx.fillStyle = Services.Colors.ghost
+                    for (let i = 0; i < n; i++) {
+                        const half = Math.max(barH / 2, sm[i] * maxLen)
+                        const y = i * (barH + gap)
+                        ctx.beginPath()
+                        ctx.roundedRect(cx - half, y, half * 2, barH, barH / 2, barH / 2)
+                        ctx.fill()
                     }
                 }
             }

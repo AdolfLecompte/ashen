@@ -51,7 +51,7 @@ Singleton {
     // Audio visualiser. Off stops cava itself, not just the drawing.
     property bool visualizer: true
 
-    // The lyric column of the media panel. Kept because it is a thing you turn
+    // The sung line on the media card. Kept because it is a thing you turn
     // off for a while (someone is reading over your shoulder, the words are
     // wrong) and want to find still off next time.
     property bool mediaLyrics: true

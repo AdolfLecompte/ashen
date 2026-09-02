@@ -31,8 +31,8 @@ Section {
             }
         }
 
-        // The media panel's second column. The chip on the card turns it off
-        // too; this is where you find it again after forgetting you did.
+        // The sung line on the media card. The chip on the card closes it too;
+        // this is where you find it again after forgetting you did.
         RowLayout {
             Layout.fillWidth: true
             spacing: 12

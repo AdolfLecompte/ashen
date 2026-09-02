@@ -29,12 +29,12 @@ PanelWindow {
         value: card.wearingFace
     }
 
-    // Measured off the card itself, never off a constant: the card grows a
-    // column when the track has words, and the box has to grow WITH it -- the
-    // column animates its own width, so this changes continuously instead of
-    // stepping once.
+    // Measured off the card itself, never off a constant -- though neither
+    // number moves any more: the words are one line inside the room the
+    // details column already had, so the box is the same whatever the track is
+    // doing.
     readonly property real openW: panelRef.implicitWidth + panelRef.pad * 2
-    readonly property real openH: panelRef.artSize + panelRef.pad * 2
+    readonly property real openH: panelRef.implicitHeight + panelRef.pad * 2
 
     // `hasPlayer` is derived from the copy we hold, not fetched separately:
     // two bindings onto the same ref update in whatever order QML likes, so
