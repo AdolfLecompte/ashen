@@ -8,6 +8,7 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
+import "root:/modules/desktop/widgets" as DeskWidgets
 
 Scope {
     id: root
@@ -37,25 +38,22 @@ Scope {
             readonly property string glyphLock: "\uE899"
             readonly property string glyphLockOpen: "\uE898"
 
-            property string currentTime: Qt.formatDateTime(new Date(), Services.Prefs.timeFormat)
-            property string currentSecs: Qt.formatDateTime(new Date(), "ss")
-            property string currentDate: Qt.formatDateTime(new Date(), "MMMM d, yyyy")
-            property string currentDay: Qt.locale().dayName(new Date().getDay())
+            // Off the shell's single SystemClock, not a Timer of this
+            // surface's own -- with one surface per output that was a clock
+            // per screen, none of them in step.
+            readonly property string currentTime: Services.Time.fmt(Services.Prefs.timeFormat)
+            readonly property string currentSecs: Services.Time.fmt("ss")
+            readonly property string currentDate: Services.Time.fmt("MMMM d, yyyy")
+            readonly property string currentDay: Qt.locale().dayName(Services.Time.now.getDay())
             property string password: ""
             property string errorMsg: ""
+            // The label split in two, so the name can be read louder than the
+            // machine it is on. AppState keeps them joined for everywhere else.
+            readonly property string userOnly: Services.AppState.userName
+            readonly property string hostOnly: Services.AppState.hostName !== ""
+                ? "@" + Services.AppState.hostName : ""
             property bool checking: false
             property bool showPower: false
-            // The two readings at the foot of the screen, each of which opens
-            // into its own card. Only one at a time: two morphs on top of each
-            // other is a mess, and the second one covers the first.
-            property bool lockBatteryOpen: false
-            property bool lockWeatherOpen: false
-            function openLockCard(which) {
-                surface.lockBatteryOpen = which === "battery" && !surface.lockBatteryOpen
-                surface.lockWeatherOpen = which === "weather" && !surface.lockWeatherOpen
-            }
-            property int battery: 0
-            property bool charging: false
             property string wallpaper: ""
             property bool revealed: false
             property bool unlocking: false
@@ -75,10 +73,11 @@ Scope {
                 return surface.screen.name === a.name
             }
 
-            // Two states, one driver. At rest the screen only tells you things:
-            // the time, the weather, the battery, what is playing. Touch it and
-            // it becomes something to answer -- the clock steps aside, and the
-            // face and the field take the middle.
+            // Two states, one driver. At rest the screen only tells you
+            // things: the time, the weather, the machine, what is playing.
+            // Touch it and it becomes something to answer -- the clock steps
+            // aside, the columns dim, and the face and the field take the
+            // middle.
             property bool authing: false
             property real auth: 0
             Behavior on auth {
@@ -93,59 +92,65 @@ Scope {
                 if (!surface.authing && surface.loginFace) surface.authing = true
             }
 
+            // What the screen is saying under the field. One line for all of
+            // it -- the password being checked, the greeting once it is right,
+            // the remark when it is not -- so two of them can never overlap.
+            // The typing itself lives in widgets/SaidLine.
+            property string saying: ""
+            property bool sayingIsError: false
+            function say(line, isError) {
+                surface.saying = line
+                surface.sayingIsError = isError === true
+            }
+            function hush() {
+                surface.saying = ""
+                surface.sayingIsError = false
+            }
+
+            // The password was right. Unlocking on the instant read as the
+            // screen being yanked away, so it takes a breath first: it says it
+            // is checking, then it says something back, and only then goes.
+            property bool greeting: false
+            // Two wrong in a row is worth noticing out loud; the first is a typo.
+            property int misses: 0
+            SequentialAnimation {
+                id: greetAnim
+                // No line of its own to start: the one tryUnlock already put
+                // up is still being read. Saying "checking" twice, in two
+                // different words, reads as two different questions.
+                PauseAnimation { duration: 1200 }
+                ScriptAction { script: surface.say(Services.Voice.pick("lock.welcome")) }
+                PauseAnimation { duration: 1400 }
+                ScriptAction {
+                    script: {
+                        surface.unlocking = true
+                        unlockTimer.start()
+                    }
+                }
+            }
+
             // Intro: the padlock snaps shut before the lock screen itself fades in
             property bool introDone: false
             property bool lockShut: false
 
-            property var availableProfiles: []
-            property string activeProfile: ""
-            function refreshProfiles() { profProc.running = true }
-            function setProfile(name) {
-                if (!surface.availableProfiles.includes(name)) return
-                Quickshell.execDetached(["sh", "-c", "powerprofilesctl set " + name])
-                surface.activeProfile = name
-            }
-
             color: Services.Colors.abyss
 
-            Component.onCompleted: {
-                surface.refreshProfiles()
-                introAnim.start()
-            }
+            Component.onCompleted: introAnim.start()
 
-            Timer {
-                interval: 1000
-                running: true
-                repeat: true
-                onTriggered: {
-                    let now = new Date()
-                    surface.currentTime = Qt.formatDateTime(now, Services.Prefs.timeFormat)
-                    surface.currentSecs = Qt.formatDateTime(now, "ss")
-                    surface.currentDate = Qt.formatDateTime(now, "MMMM d, yyyy")
-                    surface.currentDay = Qt.locale().dayName(now.getDay())
-                    // After resume the field can lose keyboard focus (mouse still
-                    // works). Re-grab it so the password is always typeable without
-                    // needing a click. No-op when it already has focus.
-                    // Only from the login screen: with a surface per output, every
-                    // one of them grabbing once a second is a tug of war.
+            // The focus re-grab used to ride on this surface's clock Timer. It
+            // still wants a once-a-second beat, so it rides the shared clock
+            // instead: after resume the field can lose keyboard focus (mouse
+            // still works), and it has to be typeable without a click.
+            // Only from the login screen: with a surface per output, every one
+            // of them grabbing once a second is a tug of war.
+            Connections {
+                target: Services.Time
+                function onSecondsChanged() {
                     if (surface.loginFace && !surface.unlocking && !passInput.activeFocus)
                         passInput.forceActiveFocus()
                 }
             }
 
-            Process {
-                id: batProc
-                command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity"]
-                running: true
-                stdout: StdioCollector { onStreamFinished: surface.battery = parseInt(text.trim()) || 0 }
-            }
-            Process {
-                id: chargeProc
-                // Adapter name varies (AC0/ADP1/…); read whichever exposes `online`.
-                command: ["sh", "-c", "cat /sys/class/power_supply/A*/online 2>/dev/null | grep -q 1 && echo 1 || echo 0"]
-                running: true
-                stdout: StdioCollector { onStreamFinished: surface.charging = text.trim() === "1" }
-            }
             Process {
                 id: wallpaperProc
                 // The live wallpaper may be a video (mpvpaper), which QML can't
@@ -161,33 +166,6 @@ Scope {
                 running: true
                 stdout: StdioCollector { onStreamFinished: surface.wallpaper = text.trim() }
             }
-            Timer {
-                interval: 30000; running: true; repeat: true
-                onTriggered: { batProc.running = true; chargeProc.running = true }
-            }
-
-            Process {
-                id: profProc
-                command: ["sh", "-c", "powerprofilesctl list"]
-                running: false
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        let lines = text.split("\n")
-                        let profiles = []
-                        let active = ""
-                        for (let line of lines) {
-                            let m = line.match(/^\s*(\*?)\s*([\w-]+):$/)
-                            if (m) {
-                                profiles.push(m[2])
-                                if (m[1] === "*") active = m[2]
-                            }
-                        }
-                        surface.availableProfiles = profiles
-                        surface.activeProfile = active
-                    }
-                }
-            }
-
             PamContext {
                 id: pam
 
@@ -202,10 +180,17 @@ Scope {
                     surface.checking = false
 
                     if (result === PamResult.Success) {
-                        surface.unlocking = true
-                        unlockTimer.start()
+                        surface.misses = 0
+                        surface.greeting = true
+                        greetAnim.start()
                     } else {
-                        surface.errorMsg = result === PamResult.Error ? "Auth error" : "Incorrect password"
+                        surface.misses++
+                        // A real PAM fault is not a remark: it is the one thing
+                        // here that has to be read literally.
+                        const line = result === PamResult.Error ? "auth error"
+                            : Services.Voice.pick(surface.misses > 1 ? "lock.wrongAgain" : "lock.wrong")
+                        surface.errorMsg = line
+                        surface.say(line, true)
                         surface.password = ""
                         passInput.text = ""
                         errorTimer.restart()
@@ -223,12 +208,17 @@ Scope {
             Timer {
                 id: errorTimer
                 interval: 2500
-                onTriggered: surface.errorMsg = ""
+                onTriggered: {
+                    surface.errorMsg = ""
+                    if (surface.sayingIsError) surface.hush()
+                }
             }
 
             function tryUnlock() {
+                if (surface.greeting) return
                 if (surface.password.length === 0) {
                     surface.errorMsg = "Please enter your password"
+                    surface.say("nothing to check yet", true)
                     errorTimer.restart()
                     shakeAnim.restart()
                     return
@@ -238,6 +228,7 @@ Scope {
 
                 surface.checking = true
                 surface.errorMsg = ""
+                surface.say(Services.Voice.pick("lock.checking"))
                 pam.start()
             }
 
@@ -361,8 +352,8 @@ Scope {
                                             }
                                         }
                                     }
-                                    // Only the date: the weather glyph and the battery have capsules of
-                                    // their own at the foot of the screen now.
+                                    // Only the date: the weather, the charge and
+                                    // the music are cards in the columns now.
                                     Text {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         topPadding: 6
@@ -375,46 +366,103 @@ Scope {
                                     }
                                 }
 
-                                // ── What is playing, under the clock ──
-                                // The very same item the bar's media panel morphs into, so
-                                // the two never drift apart: this screen just puts a plate
-                                // behind it and lets it be.
-                                Rectangle {
-                                    id: musicCard
-                                    anchors.top: clockCol.bottom
-                                    anchors.topMargin: 28
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    width: lockMedia.contentW + lockMedia.pad * 2
-                                    height: lockMedia.artSize + lockMedia.pad * 2
-                                    radius: 20
-                                    clip: true
-                                    color: Services.Colors.surfacePill
+                    }
 
-                                    // Arriving with the player is its own fade; going away because the screen
-                                    // is asking for a password rides the driver. One Behavior over both
-                                    // smoothed an already animated value twice.
-                                    property real playerFade: lockMedia.hasPlayer ? 1.0 : 0.0
-                                    Behavior on playerFade { NumberAnimation { duration: Services.Sizes.msPronounced } }
-                                    // Gone by halfway, because the login lands
-                                    // in the space it is leaving: the two must
-                                    // never be on screen together.
-                                    // On the login screen only: its transport is
-                                    // something you press, and three copies of
-                                    // one song is noise, not information.
-                                    opacity: surface.loginFace
-                                        ? playerFade * (1 - Math.min(1, surface.auth * 2)) : 0
-                                    // Settings > System > Lock Screen can drop the card
-                                    visible: Services.Prefs.lockShowMedia && opacity > 0.01
-                                    transform: Translate {
-                                        y: lockMedia.hasPlayer ? 0 : -16
-                                        Behavior on y { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
-                                    }
+                    // ── Either side of the login: what the machine has to
+                    //    say, once you have asked it something ──
+                    // These are the very widgets the wallpaper wears, wearing
+                    // shapes the lock picks: one plate each, no card inside a
+                    // card, and a reading that can never drift from the one on
+                    // the desktop because there is only one of it.
+                    //
+                    // At rest the screen is the clock and nothing else. The
+                    // columns arrive with the face and the field, on the second
+                    // half of the move, and close in around them -- held off
+                    // the middle by a fixed distance rather than off the edges
+                    // of the screen, so they read as one block and not as three
+                    // things sharing a wall.
+                    Column {
+                        id: leftCol
+                        readonly property real colW: 360
+                        readonly property real enter: surface.loginFace
+                            ? Math.max(0, surface.auth * 2 - 1) : 0
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.horizontalCenterOffset: -(leftCol.gapFromMiddle + colW / 2)
+                        readonly property real gapFromMiddle: 250
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 16
+                        opacity: leftCol.enter
+                        visible: leftCol.enter > 0.001
+                        transform: Translate { x: -(1 - leftCol.enter) * 24 }
 
-                                    Widgets.MediaCard {
-                                        id: lockMedia
-                                        anchors.centerIn: parent
-                                    }
-                                }
+                        DeskWidgets.WeatherWidget {
+                            managed: false
+                            live: true
+                            styleOverride: "full"
+                            width: leftCol.colW
+                            visible: Services.Prefs.lockShowWeather
+                        }
+                        DeskWidgets.MachineWidget {
+                            managed: false
+                            live: true
+                            styleOverride: "session"
+                            width: leftCol.colW
+                            visible: Services.Prefs.lockShowMachine
+                        }
+                        // Compact, not the wall shape: cava is not running
+                        // behind a locked screen, so its bars would draw as a
+                        // dotted rule and read as something broken.
+                        DeskWidgets.MediaWidget {
+                            managed: false
+                            live: true
+                            styleOverride: "compact"
+                            width: leftCol.colW
+                            // Kept even with nothing playing: a column that
+                            // loses a card between one unlock and the next
+                            // reads as something missing, and the shape already
+                            // has a voice for silence.
+                            visible: Services.Prefs.lockShowMedia
+                        }
+                    }
+
+                    Column {
+                        id: rightCol
+                        // The widest content out here is the notification line
+                        // (340) plus its plate's padding: a column narrower
+                        // than that cuts the card off at both ends.
+                        readonly property real colW: 380
+                        readonly property real enter: leftCol.enter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.horizontalCenterOffset: leftCol.gapFromMiddle + colW / 2
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 16
+                        opacity: rightCol.enter
+                        visible: rightCol.enter > 0.001
+                        transform: Translate { x: (1 - rightCol.enter) * 24 }
+
+                        // The board's own vocabulary -- a past as a curve, a
+                        // level as water. No rings: the shell stopped saying a
+                        // level with a dial everywhere but brightness.
+                        DeskWidgets.SysWidget {
+                            managed: false
+                            live: true
+                            styleOverride: "medium"
+                            width: rightCol.colW
+                            visible: Services.Prefs.lockShowSystem
+                        }
+                        // What asked for you while you were away. Read only:
+                        // same list, same ages, same shapes as the one on the
+                        // wallpaper, and dismissing a notice anywhere takes it
+                        // off all three.
+                        DeskWidgets.NotifyWidget {
+                            managed: false
+                            live: true
+                            styleOverride: "list"
+                            width: rightCol.colW
+                            // Same rule as the media card: an empty history is
+                            // news too, and the list shape says so itself.
+                            visible: Services.Prefs.lockShowNotifications
+                        }
                     }
 
                     // ── Once asked: the face and the field ──
@@ -426,22 +474,46 @@ Scope {
                         height: authRow.height
                         // The second half of the move, once the music has gone.
                         readonly property real enter: Math.max(0, surface.auth * 2 - 1)
-                        opacity: surface.loginFace ? authGroup.enter : 0
-                        visible: opacity > 0.01
-                        transform: Translate { y: (1 - authGroup.enter) * 26 }
+                        opacity: surface.loginFace ? 1 : 0
+                        visible: authGroup.enter > 0.001 && surface.loginFace
+
+                        // The three pieces arrive one after the other instead of
+                        // as one slab: face, name, field. Same staggering the
+                        // music already uses on its way out, so the two halves
+                        // of the move are the one movement.
+                        function stage(i) {
+                            const start = i * 0.22
+                            return Math.max(0, Math.min(1, (authGroup.enter - start) / (1 - start)))
+                        }
 
                     // The face and the field, once you have asked to log in.
-                    Row {
+                    // A stack, not a row: side by side, the name sat at the top
+                    // of the face and the field at its foot with nothing in
+                    // between -- an L with a hole in it. Down the middle there
+                    // is one column and one centre.
+                    Column {
                         id: authRow
-                        spacing: 24
+                        spacing: 16
 
                         Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 180; height: 180
-                            radius: 34
+                            id: faceRing
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            opacity: authGroup.stage(0)
+                            transform: Translate { y: (1 - authGroup.stage(0)) * 16 }
+                            width: 128; height: 128
+                            // A face is round here: the one picture of a person
+                            // in the shell, and the only circle among the
+                            // rounded rectangles.
+                            radius: width / 2
                             clip: true
-                            color: Services.Colors.ghostAlpha(0.15)
-                            border.color: surface.checking ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.35)
+                            color: Services.Colors.fillLine
+                            // The ring is what says how it is going: at rest a
+                            // plain edge, accent while it checks, error when it
+                            // said no. The field's own border used to carry that
+                            // alone, 130 px below where you are looking.
+                            border.color: surface.errorMsg !== "" ? Services.Colors.error_
+                                : (surface.checking || surface.greeting) ? Services.Colors.ghost
+                                : Services.Colors.fillRest
                             border.width: 2
                             Behavior on border.color { ColorAnimation { duration: Services.Sizes.msStandard } }
                             Image {
@@ -456,7 +528,7 @@ Scope {
                             Rectangle {
                                 id: faceMask
                                 anchors.fill: faceImg
-                                radius: 32
+                                radius: width / 2
                                 visible: false
                             }
                             OpacityMask {
@@ -469,29 +541,43 @@ Scope {
                                 anchors.centerIn: parent
                                 text: "\uF0D3"
                                 color: Services.Colors.ghost
-                                font.pixelSize: 88
+                                font.pixelSize: 62
                                 font.family: "Material Symbols Rounded"
                                 visible: faceImg.status !== Image.Ready
                             }
                         }
 
-                        // Right block spans the avatar height: name pinned to the top,
-                        // password field pinned to the bottom (no card, just aligned edges).
-                        Item {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 340
-                            height: 180
+                        // Name, field and whatever the screen has to say, one
+                        // under the other.
+                        Column {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            spacing: 10
 
-                            Text {
-                                anchors.bottom: passField.top
-                                anchors.bottomMargin: 12
-                                anchors.left: passField.left
-                                text: Services.AppState.userLabel
-                                color: Services.Colors.snow
-                                font.pixelSize: 30
-                                font.family: "JetBrainsMono NF"
-                                font.weight: Font.Bold
-                                font.letterSpacing: 1
+                            // Two facts, not one string: who you are, and the
+                            // machine you are on. The shell splits value from
+                            // note everywhere else; there is no reason the login
+                            // should shout the hostname as loudly as the name.
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 0
+                                opacity: authGroup.stage(1)
+                                transform: Translate { y: (1 - authGroup.stage(1)) * 16 }
+                                Text {
+                                    text: surface.userOnly
+                                    color: Services.Colors.snow
+                                    font.pixelSize: 24
+                                    font.family: "JetBrainsMono NF"
+                                    font.weight: Font.Bold
+                                    font.letterSpacing: 1
+                                }
+                                Text {
+                                    text: surface.hostOnly
+                                    visible: text !== ""
+                                    color: Services.Colors.mist
+                                    font.pixelSize: 24
+                                    font.family: "JetBrainsMono NF"
+                                    font.letterSpacing: 1
+                                }
                             }
 
                             SequentialAnimation {
@@ -507,15 +593,17 @@ Scope {
                             // on a wrong password (the transform lives on the field now).
                             Rectangle {
                                 id: passField
-                                anchors.bottom: parent.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                width: 340; height: 56
-                                transform: Translate { id: shakeT; x: 0 }
+                                width: 320; height: 52
+                                opacity: authGroup.stage(2)
+                                transform: Translate { id: shakeT; x: 0; y: (1 - authGroup.stage(2)) * 16 }
                                 radius: Services.Sizes.cardR
-                                color: Services.Colors.surfacePill
+                                // Sunk, the way every other control in the shell
+                                // that you type into or drag is sunk.
+                                color: Services.Colors.fillInset
                                 border.color: surface.errorMsg !== "" ? Services.Colors.error_
                                     : passInput.activeFocus ? Services.Colors.ghost
-                                    : Services.Colors.ghostAlpha(0.25)
+                                    : Services.Colors.fillRest
                                 border.width: 1
                                 Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
@@ -576,14 +664,19 @@ Scope {
                                         // there. Fixed slots, each one told whether it
                                         // is filled, and only the one that changed
                                         // animates.
+                                        //
+                                        // An empty slot is nothing at all -- a row of
+                                        // dashes waiting to be filled read as a form,
+                                        // not as a password. The dash survives only as
+                                        // the first frame of the dot being typed: the
+                                        // slot opens, a line appears in it and closes
+                                        // into a circle.
                                         Repeater {
                                             model: 16
                                             delegate: Item {
                                                 required property int index
                                                 readonly property bool on: index < dotRow.filled
 
-                                                // Width is the reflow: the row recentres
-                                                // itself as its slots open.
                                                 width: on ? 17 : 0
                                                 height: 11
                                                 anchors.verticalCenter: parent.verticalCenter
@@ -592,22 +685,28 @@ Scope {
                                                 }
 
                                                 Rectangle {
-                                                    width: 11; height: 11; radius: 5.5
-                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    anchors.centerIn: parent
+                                                    // Dash to dot: one shape, two numbers.
+                                                    // No scale-in -- the closing IS the
+                                                    // keystroke.
+                                                    width: parent.on ? 11 : 9
+                                                    height: parent.on ? 11 : 2
+                                                    radius: height / 2
                                                     color: Services.Colors.ghost
-                                                    gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
-                                                    // Grows into place. A fade on its own
-                                                    // was a dot that had always been
-                                                    // there; the scale is what makes it
-                                                    // read as one more letter typed. No
-                                                    // OutBack -- the bounce felt springy.
+                                                    gradient: Services.Prefs.useGradients
+                                                        ? Services.Colors.accentGradient : null
+                                                    // Gone when the slot is: the dash is a
+                                                    // stage of writing, never a placeholder
+                                                    // sitting there waiting.
                                                     opacity: parent.on ? 1 : 0
-                                                    scale: parent.on ? 1 : 0.2
+                                                    Behavior on width {
+                                                        NumberAnimation { duration: 220; easing.type: Services.Sizes.easeOut }
+                                                    }
+                                                    Behavior on height {
+                                                        NumberAnimation { duration: 220; easing.type: Services.Sizes.easeOut }
+                                                    }
                                                     Behavior on opacity {
                                                         NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut }
-                                                    }
-                                                    Behavior on scale {
-                                                        NumberAnimation { duration: 220; easing.type: Services.Sizes.easeOut }
                                                     }
                                                 }
                                             }
@@ -682,90 +781,29 @@ Scope {
                                     }
                                 }
                             }
+                            // One line for everything the screen has to tell
+                            // you here. Caps Lock is the one that earns its
+                            // place: the shell already knows, and this is
+                            // exactly where a password fails without saying why.
                             Item {
-                                anchors.top: passField.bottom
-                                anchors.topMargin: 6
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                width: 340
+                                width: 320
                                 height: 16
-                                Text {
+                                Widgets.SaidLine {
                                     anchors.centerIn: parent
-                                    text: surface.errorMsg
-                                    color: Services.Colors.error_
+                                    // Only ever one line: what the screen is
+                                    // saying wins, and Caps Lock speaks into a
+                                    // silence or not at all.
+                                    line: surface.saying !== "" ? surface.saying
+                                        : (Services.Keyboard.capsLock ? "caps lock is on" : "")
+                                    isError: surface.sayingIsError
                                     font.pixelSize: 12
-                                    font.family: "JetBrainsMono NF"
-                                    opacity: surface.errorMsg !== "" ? 1.0 : 0.0
+                                    opacity: text !== "" ? 1.0 : 0.0
                                     Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
                                 }
                             }
                         }
                     }
-                    }
-
-                    // ── At the foot: the two readings that used to be strung
-                    //    through the clock's date line ──
-                    // Each capsule BECOMES its card, the way the media pill becomes the media
-                    // panel. Readable at rest, gone the moment the screen asks a question.
-                    Row {
-                        id: capsRow
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 44
-                        spacing: 12
-                        // The capsules open cards you have to be able to reach,
-                        // so they live on the screen the pointer is on. They
-                        // stay through the login: typing a password is no reason
-                        // to stop being able to read the battery or change a
-                        // power profile.
-                        opacity: surface.loginFace ? 1 : 0
-                        visible: opacity > 0.01
-
-                        LockCapsule {
-                            id: batCap
-                            glyph: surface.charging ? "\ue1a3"
-                                 : surface.battery >= 90 ? "\ue1a5"
-                                 : surface.battery >= 50 ? "\uf0a1"
-                                 : surface.battery >= 20 ? "\uf09f" : "\ue19c"
-                            label: surface.battery + "%"
-                            tone: surface.charging ? Services.Colors.ghost
-                                : surface.battery < 20 ? Services.Colors.error_
-                                : Services.Colors.mist
-                            onPicked: surface.openLockCard("battery")
-                        }
-
-                        LockCapsule {
-                            id: wxCap
-                            glyph: Services.Weather.icon
-                            label: Services.Weather.temp
-                            onPicked: surface.openLockCard("weather")
-                        }
-                    }
-
-                    LockBatteryPanel {
-                        id: batPanel
-                        anchors.fill: parent
-                        shown: surface.lockBatteryOpen
-                        pillCX: capsRow.x + batCap.x + batCap.width / 2
-                        pillCY: capsRow.y + batCap.height / 2
-                        pillW: batCap.width
-                        pillH: batCap.height
-                        battery: surface.battery
-                        charging: surface.charging
-                        profiles: surface.availableProfiles
-                        activeProfile: surface.activeProfile
-                        onProfilePicked: id => surface.setProfile(id)
-                        onDismissed: surface.lockBatteryOpen = false
-                    }
-
-                    LockWeatherPanel {
-                        id: wxPanel
-                        anchors.fill: parent
-                        shown: surface.lockWeatherOpen
-                        pillCX: capsRow.x + wxCap.x + wxCap.width / 2
-                        pillCY: capsRow.y + wxCap.height / 2
-                        pillW: wxCap.width
-                        pillH: wxCap.height
-                        onDismissed: surface.lockWeatherOpen = false
                     }
 
                     // ── Bottom right corner: power, and nothing else ──
@@ -892,61 +930,6 @@ Scope {
                         }
 
                     }
-                }
-            }
-
-            // ── Shared pieces ──────────────────────────────────────────
-            // A reading at the foot of the lock screen. Hover grows it and
-            // brightens what it says; the plate never changes colour.
-            component LockCapsule: Rectangle {
-                id: cap
-                property string glyph: ""
-                property string label: ""
-                property color tone: Services.Colors.mist
-                // Its card has taken over its face.
-                property bool standAside: false
-
-                signal picked()
-
-                width: capRow.width + 28
-                height: 44
-                radius: Services.Sizes.pillR
-                color: Services.Colors.surfacePill
-                opacity: standAside ? 0 : 1
-                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
-
-                scale: Services.Sizes.hoverScale(capHover.containsMouse, capHover.pressed)
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-
-                Row {
-                    id: capRow
-                    anchors.centerIn: parent
-                    spacing: 8
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: cap.glyph
-                        color: capHover.containsMouse ? Services.Colors.snow : cap.tone
-                        font.pixelSize: 18
-                        font.family: "Material Symbols Rounded"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: cap.label
-                        color: capHover.containsMouse ? Services.Colors.snow : cap.tone
-                        font.pixelSize: 14
-                        font.bold: true
-                        font.family: "JetBrainsMono NF"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
-                    }
-                }
-
-                MouseArea {
-                    id: capHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: cap.picked()
                 }
             }
 
