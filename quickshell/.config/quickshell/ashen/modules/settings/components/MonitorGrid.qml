@@ -26,12 +26,17 @@ Item {
     implicitHeight: board.height + tray.height + (tray.visible ? 16 : 0)
 
     // Everything Hyprland currently reports, split by where it belongs.
+    // A cell holds one screen. If two ever claim the same one the second goes to
+    // the tray rather than on top of the first: the board is a mapping from cell
+    // to screen, so a silent overwrite made a monitor disappear from the panel
+    // altogether -- not on the board, not in the tray, impossible to pick.
     readonly property var placed: {
         const out = {}
         for (const m of Services.Displays.monitors) {
             const k = Services.Displays.keyOf(m)
             const e = Services.Displays.entry(k)
-            if (e.mirror === "" && e.cell >= 0 && e.cell <= 8) out[e.cell] = k
+            if (e.mirror === "" && e.cell >= 0 && e.cell <= 8 && out[e.cell] === undefined)
+                out[e.cell] = k
         }
         return out
     }
@@ -40,7 +45,9 @@ Item {
         for (const m of Services.Displays.monitors) {
             const k = Services.Displays.keyOf(m)
             const e = Services.Displays.entry(k)
-            if (e.mirror !== "" || e.cell < 0 || e.cell > 8) out.push(k)
+            const onBoard = e.mirror === "" && e.cell >= 0 && e.cell <= 8
+                && grid.placed[e.cell] === k
+            if (!onBoard) out.push(k)
         }
         return out
     }

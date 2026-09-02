@@ -6,6 +6,7 @@ import QtQuick.Controls
 import "root:/services" as Services
 import "root:/modules/settings/components"
 import "root:/modules/net" as Net
+import "root:/modules/widgets" as Widgets
 
 Item {
     id: tab
@@ -134,23 +135,9 @@ Item {
                 font.family: "JetBrainsMono NF"
                 Layout.fillWidth: true
             }
-            Rectangle {
-                width: 28; height: 28; radius: Services.Sizes.innerR
-                color: refreshHover.containsMouse ? Services.Colors.fillLine : "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text: ""
-                    color: Services.Colors.ghost
-                    font.pixelSize: 16
-                    font.family: "Material Symbols Rounded"
-                }
-                MouseArea {
-                    id: refreshHover
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
-                    onClicked: tab.refreshNetworks()
-                }
+            Widgets.IconButton {
+                glyph: ""
+                onActivated: tab.refreshNetworks()
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -192,25 +179,12 @@ Item {
                     Text { text: "Connected"; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                 }
                 // Forget the current network
-                Rectangle {
-                    Layout.preferredWidth: 34
-                    Layout.preferredHeight: 34
-                    radius: Services.Sizes.innerR
-                    color: forgetHover.containsMouse ? Services.Colors.fillRest : "transparent"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "\ue5cd"
-                        color: Services.Colors.ash
-                        font.pixelSize: 18
-                        font.family: "Material Symbols Rounded"
-                    }
-                    MouseArea {
-                        id: forgetHover
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: tab.forgetSsid(Services.Network.wifiSsid)
-                    }
+                Widgets.IconButton {
+                    size: 32
+                    glyph: "\ue5cd"
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    onActivated: tab.forgetSsid(Services.Network.wifiSsid)
                 }
                 Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
             }
@@ -305,17 +279,10 @@ Item {
                     Text { text: "Connect to Network"; color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                     Text { text: tab.connectingTo; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
                 }
-                Rectangle {
-                    width: 28; height: 28; radius: Services.Sizes.innerR
-                    color: dismissHover.containsMouse ? Services.Colors.fillLine : "transparent"
-                    Text { anchors.centerIn: parent; text: "\u2715"; color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsCardTitle }
-                    MouseArea {
-                        id: dismissHover
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: tab.showConnectDialog = false
-                    }
+                Widgets.IconButton {
+                    size: 28
+                    glyph: "\u2715"
+                    onActivated: tab.showConnectDialog = false
                 }
             }
 
@@ -324,7 +291,7 @@ Item {
                 height: 48
                 radius: Services.Sizes.innerR
                 color: Services.Colors.fillLine
-                border.color: passInput.activeFocus ? Services.Colors.ghost : Services.Colors.fillHover
+                border.color: passInput.activeFocus ? Services.Colors.ghost : Services.Colors.fillStrong
                 border.width: 1
                 Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
                 RowLayout {
@@ -357,23 +324,10 @@ Item {
                             Keys.onReturnPressed: connectBtn.connect()
                         }
                     }
-                    Rectangle {
-                        width: 32; height: 32; radius: Services.Sizes.innerR
-                        color: eyeHover.containsMouse ? Services.Colors.fillLine : "transparent"
-                        Text {
-                            anchors.centerIn: parent
-                            text: tab.showPassword ? "" : ""
-                            color: Services.Colors.mist
-                            font.pixelSize: 18
-                            font.family: "Material Symbols Rounded"
-                        }
-                        MouseArea {
-                            id: eyeHover
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onClicked: tab.showPassword = !tab.showPassword
-                        }
+                    Widgets.IconButton {
+                        size: 32
+                        glyph: tab.showPassword ? "" : ""
+                        onActivated: tab.showPassword = !tab.showPassword
                     }
                 }
             }
@@ -381,51 +335,28 @@ Item {
             RowLayout {
                 width: parent.width
                 spacing: 8
-                Rectangle {
+                ActionBtn {
                     Layout.fillWidth: true
-                    height: 40; radius: Services.Sizes.innerR
-                    color: cancelHover.containsMouse ? Services.Colors.fillRest
-                                                     : Services.Colors.fillLine
-                    Text { anchors.centerIn: parent; text: "Cancel"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
-                    MouseArea {
-                        id: cancelHover
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: tab.showConnectDialog = false
-                    }
+                    Layout.preferredHeight: 40
+                    label: "Cancel"
+                    onGo: tab.showConnectDialog = false
                 }
-                Rectangle {
+                ActionBtn {
                     id: connectBtn
                     Layout.fillWidth: true
-                    height: 40; radius: Services.Sizes.innerR
-                    color: Services.Colors.ghost
-                    gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
+                    Layout.preferredHeight: 40
+                    accent: true
+                    label: "Connect"
+                    // argv, not a shell string: an SSID or password holding a
+                    // quote would otherwise close it and run the rest as shell.
                     function connect() {
-                        // argv, not a shell string: an SSID or password holding a
-                        // quote would otherwise close it and run the rest as shell.
                         let cmd = ["nmcli", "dev", "wifi", "connect", tab.connectingTo]
                         if (tab.password.length > 0)
                             cmd.push("password", tab.password)
                         Quickshell.execDetached(cmd)
                         tab.showConnectDialog = false
                     }
-                    // Hover keeps the accent and just lifts it with a white veil.
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Services.Colors.snowAlpha(0.16)
-                        opacity: connectMouse.containsMouse ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
-                    }
-                    Text { anchors.centerIn: parent; text: "Connect"; color: Services.Colors.accentText; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF"; font.bold: true }
-                    MouseArea {
-                        id: connectMouse
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: connectBtn.connect()
-                    }
+                    onGo: connectBtn.connect()
                 }
             }
         }

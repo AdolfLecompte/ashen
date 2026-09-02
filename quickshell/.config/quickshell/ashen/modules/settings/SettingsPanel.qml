@@ -15,7 +15,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: win.width; winH: win.height }
+    mask: Widgets.ShellMask { winW: win.width; winH: win.height; utilEdge: Services.AppState.settingsSourceEdge }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.settingsVisible
     visible: shown || closeDelay.running
@@ -30,43 +30,60 @@ PanelWindow {
     // way it moved.
     readonly property int tabIndex: {
         for (let i = 0; i < win.categories.length; i++)
-            if (win.categories[i].id === Services.AppState.settingsTab) return i
+            if (win.categories[i].id === win.activeId) return i
         return 0
     }
 
+    // Every section there is, on one rail under four headings. Seven rows with
+    // a second row of tabs inside three of them meant the thing you wanted was
+    // hidden behind a category you had to guess -- Wi-Fi lived inside
+    // "Devices", and nothing on screen said so. Flat, they are all one click
+    // Seven rows, and what belongs together is IN the row rather than behind
+    // a second set of tabs inside it. Desktop is the bar, its layout and the
+    // wallpaper's widgets; Panels is everything that talks to you; Network is
+    // the two radios side by side. Nothing here opens another rail.
     property var categories: [
-        { id: "system", icon: "\ue429", label: "System" },
-        { id: "bar", icon: "\ue98c", label: "Bar" },
-        { id: "display", icon: "\ueb97", label: "Display" },
-        { id: "sound", icon: "\ue050", label: "Sound" },
+        { id: "look",    icon: "\ue40a", label: "Look" },
+        { id: "desktop", icon: "\ue1bd", label: "Desktop" },
+        { id: "panels",  icon: "\ue7f5", label: "Panels" },
+        { id: "display", icon: "\ueb97", label: "Screen" },
+        { id: "devices", icon: "\ue32a", label: "Devices" },
+        { id: "input",   icon: "\ue312", label: "Input" },
         { id: "network", icon: "\ue1ba", label: "Network" },
-        { id: "input", icon: "\ue312", label: "Input" },
-        { id: "notifications", icon: "\ue7f5", label: "Notifications" },
-        { id: "theme", icon: "\ue40a", label: "Appearance" },
-        { id: "about", icon: "\ue88e", label: "About" },
+        { id: "system",  icon: "\ue429", label: "System" },
+        { id: "about",   icon: "\ue88e", label: "About" },
     ]
 
+
+    // Every id the shell has ever answered to still resolves: keybinds,
+    // launcher entries and `qs ipc call settings tab <name>` outlive a rail.
+    // The names on the left of each line are what the rail uses now; the rest
+    // are the ones that used to name a whole tab.
     function tabSource(id) {
-        // "wifi" and "bluetooth" still resolve: they were tab ids of their own
-        // before the Network merge, and old ipc calls or launcher entries may
-        // still ask for them.
-        if (id === "wifi" || id === "bluetooth" || id === "network") return "SettingsNetworkTab.qml"
-        if (id === "system") return "SettingsSystemTab.qml"
-        if (id === "bar") return "SettingsBarTab.qml"
+        if (id === "look" || id === "theme") return "SettingsLookTab.qml"
+        if (id === "desktop" || id === "bar" || id === "shape" || id === "layout"
+            || id === "widgets") return "DesktopPage.qml"
+        if (id === "panels" || id === "notifications" || id === "notify"
+            || id === "clock" || id === "media") return "PanelsPage.qml"
         if (id === "display") return "SettingsDisplayTab.qml"
-        if (id === "sound") return "SettingsSoundTab.qml"
-        if (id === "input") return "SettingsInputTab.qml"
-        if (id === "notifications") return "SettingsNotificationsTab.qml"
-        if (id === "theme") return "SettingsThemeTab.qml"
-        if (id === "about") return "SettingsAboutTab.qml"
-        return ""
+        if (id === "devices" || id === "sound") return "DevicesPage.qml"
+        if (id === "input" || id === "keyboard" || id === "apps") return "InputPage.qml"
+        if (id === "network" || id === "wifi" || id === "bluetooth") return "NetworkPage.qml"
+        if (id === "system") return "SystemPage.qml"
+        if (id === "about") return "AboutPage.qml"
+        return "SettingsLookTab.qml"
     }
 
-    // Wi-Fi and Bluetooth were tabs of their own before the Network merge and
-    // still arrive from old ipc calls, so they light the Network row.
+    // An old id lights the row that took it over.
     readonly property string activeId: {
         const t = Services.AppState.settingsTab
-        return (t === "wifi" || t === "bluetooth") ? "network" : t
+        if (t === "wifi" || t === "bluetooth" || t === "network") return "network"
+        if (t === "theme") return "look"
+        if (t === "sound") return "devices"
+        if (t === "keyboard" || t === "apps") return "input"
+        if (t === "bar" || t === "shape" || t === "layout" || t === "widgets") return "desktop"
+        if (t === "notifications" || t === "notify" || t === "clock" || t === "media") return "panels"
+        return t
     }
 
     MouseArea {
@@ -116,8 +133,17 @@ PanelWindow {
         // said nothing about where you were. Sized off the bar layout editor,
         // the widest thing in here -- under 1240 its three drop plates take
         // one chip per line and stop reading as a picture of the bar.
-        openW: Math.min(1240, win.width - 60)
-        openH: Math.min(800, win.height - 80)
+        // As big as the screen sensibly allows: a row of settings that does not
+        // fit is a row you have to go looking for. It keeps a margin so it still
+        // reads as a card and not as an application.
+        // One size for every section, deliberately. A card that resized itself
+        // to each page was tried and taken out: it is a delight once and a
+        // twitch by the tenth time, because you navigate settings far more than
+        // you look at them. Panels that resize because their CONTENTS changed
+        // still travel (PanelHost animates it); a window that resizes because
+        // you walked to another room does not.
+        openW: Math.min(1460, win.width - 80)
+        openH: Math.min(920, win.height - 90)
         cardRadius: Services.Sizes.panelR
 
         pillKey: "settings"
@@ -149,12 +175,7 @@ PanelWindow {
                             radius: Services.Sizes.innerR
                             color: Services.Colors.ghost
                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
-                            y: {
-                                for (let i = 0; i < win.categories.length; i++)
-                                    if (win.activeId === win.categories[i].id)
-                                        return i * (parent.rowH + parent.gap)
-                                return 0
-                            }
+                            y: win.tabIndex * (parent.rowH + parent.gap)
                             Behavior on y { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
                         }
 
@@ -168,7 +189,7 @@ PanelWindow {
                                 delegate: Item {
                                     id: railItem
                                     required property var modelData
-                                    readonly property bool active: win.activeId === modelData.id
+                                    readonly property bool active: win.activeId === railItem.modelData.id
                                     width: parent.width
                                     height: 36
 

@@ -156,13 +156,14 @@ RowLayout {
     Rectangle {
         width: 84; height: 32
         radius: Services.Sizes.innerR
-        color: btnHover.containsMouse ? Services.Colors.fillHover
-                                      : Services.Colors.fillLine
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+        color: Services.Colors.fillRest
+        scale: Services.Sizes.hoverScale(btnHover.containsMouse, btnHover.pressed)
+        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
         Text {
             anchors.centerIn: parent
             text: root.editing ? "Save" : "Change"
-            color: Services.Colors.snow
+            color: btnHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
+            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
             font.pixelSize: Services.Sizes.fsBody
             font.family: "JetBrainsMono NF"
         }

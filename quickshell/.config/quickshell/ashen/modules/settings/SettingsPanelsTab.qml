@@ -2,14 +2,14 @@ import QtQuick
 import "root:/services" as Services
 import "root:/modules/settings/components"
 
-// Wi-Fi and Bluetooth are one question — "what is this machine talking to?" —
-// so they share a tab and a switch instead of two rail slots. Each list is
-// still its own file; this only decides which one is on screen.
+// The three surfaces that talk to you: the clock chip, the music card and the
+// notifications. Sections rather than one long scroll -- with everything on one
+// page you were paging past the weather to reach a toast timeout.
 Item {
     id: tab
     anchors.fill: parent
 
-    property string section: "wifi"
+    property string section: "clock"
 
     Segmented {
         id: picker
@@ -21,8 +21,9 @@ Item {
         anchors.rightMargin: 28
         cellHeight: 38
         options: [
-            { id: "wifi", icon: "", label: "Wi-Fi" },
-            { id: "bluetooth", icon: "", label: "Bluetooth" }
+            { id: "clock", icon: "\uefd6", label: "Clock & Weather" },
+            { id: "media", icon: "\ue405", label: "Media" },
+            { id: "notify", icon: "\ue7f5", label: "Notifications" }
         ]
         current: tab.section
         onPicked: id => tab.section = id
@@ -33,9 +34,11 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        // The loaded tab brings its own 28px margins, so it only needs the gap
+        // The loaded page brings its own 28px margins, so it only needs the gap
         // under the switch.
         anchors.topMargin: 4
-        source: tab.section === "wifi" ? "SettingsWifiTab.qml" : "SettingsBluetoothTab.qml"
+        source: tab.section === "clock" ? "PanelsClockPage.qml"
+              : tab.section === "media" ? "PanelsMediaPage.qml"
+              : "PanelsNotifyPage.qml"
     }
 }

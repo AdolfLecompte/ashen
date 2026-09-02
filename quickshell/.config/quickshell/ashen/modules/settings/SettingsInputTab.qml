@@ -7,8 +7,10 @@ import "root:/services" as Services
 import "root:/modules/settings/components"
 
 // Keyboard layouts today; mouse and touchpad belong here when they land.
-TabPage {
+Section {
     id: tab
+
+    property string missLine: Services.Voice.pick("search.noMatch")
 
     // Layout picker state
     property bool pickerOpen: false
@@ -20,6 +22,24 @@ TabPage {
         if (q === "") return all
         return all.filter(l => l.code.indexOf(q) !== -1
             || l.name.toLowerCase().indexOf(q) !== -1)
+    }
+
+    // What the four app keybinds open. Named here rather than in keybinds.lua,
+    // where "brave" meant SUPER+W did nothing on a machine without it.
+    Card {
+        title: "Apps"
+
+        Repeater {
+            model: Services.Apps.kinds
+
+            AppRow {
+                required property var modelData
+                kind: modelData.id
+                glyph: modelData.glyph
+                title: modelData.label
+                fallback: modelData.hint
+            }
+        }
     }
 
     Card {
@@ -83,15 +103,16 @@ TabPage {
                         anchors.margins: 4
                         width: 18; height: 18
                         radius: Services.Sizes.innerR
-                        color: rmArea.containsMouse ? Services.Colors.ghost : Services.Colors.fillSunken
-                        gradient: Services.Prefs.useGradients && (rmArea.containsMouse) ? Services.Colors.accentGradient : null
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        color: Services.Colors.fillSunken
+                        scale: Services.Sizes.hoverScale(rmArea.containsMouse, rmArea.pressed)
+                        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                         Text {
                             anchors.centerIn: parent
                             text: "\ue5cd"
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 11
-                            color: Services.Colors.accentText
+                            color: rmArea.containsMouse ? Services.Colors.snow : Services.Colors.ash
+                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                         }
                         MouseArea {
                             id: rmArea
@@ -110,12 +131,13 @@ TabPage {
                 id: addCard
                 width: 100; height: 64
                 radius: Services.Sizes.cardR
-                color: addArea.containsMouse && Services.Keyboard.canAdd
-                    ? Services.Colors.fillRest : Services.Colors.fillInset
-                border.color: Services.Colors.fillHover
+                color: Services.Colors.fillInset
+                border.color: Services.Colors.fillLine
                 border.width: 1
                 opacity: Services.Keyboard.canAdd ? 1.0 : 0.4
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                scale: Services.Keyboard.canAdd
+                    ? Services.Sizes.hoverScale(addArea.containsMouse, addArea.pressed) : 1.0
+                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                 ColumnLayout {
                     anchors.centerIn: parent
                     spacing: 4
@@ -130,7 +152,9 @@ TabPage {
                         text: "Add"
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
-                        color: Services.Colors.mist
+                        color: (addArea.containsMouse && Services.Keyboard.canAdd)
+                            ? Services.Colors.snow : Services.Colors.mist
+                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                         Layout.alignment: Qt.AlignHCenter
                     }
                 }
@@ -153,7 +177,7 @@ TabPage {
 
         Text {
             visible: !Services.Keyboard.canAdd
-            text: "XKB allows 4 layouts at most -- remove one to add another"
+            text: "XKB allows 4 layouts at most"
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -215,7 +239,7 @@ TabPage {
 
                 Text {
                     visible: tab.filteredLayouts.length === 0
-                    text: "No layout matches \"" + tab.layoutQuery + "\""
+                    text: tab.missLine
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsBody
                     font.family: "JetBrainsMono NF"
@@ -237,8 +261,8 @@ TabPage {
                         width: ListView.view.width
                         height: 30
                         radius: Services.Sizes.innerR
-                        color: rowArea.containsMouse && !already
-                            ? Services.Colors.fillRest : "transparent"
+                        // A full-width row does not grow; hover lifts its name.
+                        color: "transparent"
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: 8
@@ -254,7 +278,10 @@ TabPage {
                             }
                             Text {
                                 text: modelData.name
-                                color: parent.parent.already ? Services.Colors.ash : Services.Colors.snow
+                                color: parent.parent.already ? Services.Colors.ash
+                                     : rowArea.containsMouse ? Services.Colors.snow
+                                     : Services.Colors.mist
+                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                                 font.pixelSize: Services.Sizes.fsBody
                                 font.family: "JetBrainsMono NF"
                                 elide: Text.ElideRight
@@ -297,7 +324,7 @@ TabPage {
         title: "Shortcuts"
 
         Text {
-            text: "Read straight from hypr/conf/keybinds.lua — edit that file and this list follows."
+            text: "Press to rebind · right-click for the shipped one"
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -326,26 +353,12 @@ TabPage {
                         Layout.fillWidth: true
                         spacing: 14
 
-                        // Keys first: the list is scanned by "what do I press?"
-                        Rectangle {
+                        // Keys first: the list is scanned by "what do I
+                        // press?", and pressing the chip is how you change it.
+                        KeyChip {
                             Layout.preferredWidth: 240
-                            Layout.maximumWidth: 240
-                            Layout.preferredHeight: 34
-                            radius: Services.Sizes.innerR
-                            color: Services.Colors.fillLine
-                            Text {
-                                anchors.left: parent.left
-                                anchors.leftMargin: 12
-                                anchors.right: parent.right
-                                anchors.rightMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.keys
-                                color: Services.Colors.snow
-                                font.pixelSize: Services.Sizes.fsBody
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                                elide: Text.ElideRight
-                            }
+                            wid: modelData.id
+                            plain: modelData.keys
                         }
                         Text {
                             Layout.fillWidth: true
@@ -354,6 +367,15 @@ TabPage {
                             font.pixelSize: Services.Sizes.fsInput
                             font.family: "JetBrainsMono NF"
                             elide: Text.ElideRight
+                        }
+                        // Only where it is no longer what the file shipped.
+                        Text {
+                            visible: modelData.id !== ""
+                                     && Services.Shortcuts.changed(modelData.id)
+                            text: "changed"
+                            color: Services.Colors.ghost
+                            font.pixelSize: Services.Sizes.fsMeta
+                            font.family: "JetBrainsMono NF"
                         }
                     }
                 }

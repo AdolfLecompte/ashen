@@ -3,6 +3,7 @@ import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"
 import "root:/modules/net" as Net
 
@@ -11,6 +12,17 @@ Item {
     anchors.fill: parent
 
     property var adapter: Bluetooth.defaultAdapter
+
+    // Split the way Wi-Fi splits. BlueZ hands back one list with the mouse you
+    // have owned for a year next to a stranger's headphones walking past, and
+    // the thing you came here for is the one you already own. Same test the
+    // row itself uses for its forget button: BlueZ remembers a device as
+    // paired, bonded or trusted, and controllers are often trusted-only.
+    readonly property var allDevices: tab.adapter ? tab.adapter.devices.values : []
+    readonly property var knownDevices:
+        tab.allDevices.filter(d => d.paired || d.bonded || d.trusted)
+    readonly property var newDevices:
+        tab.allDevices.filter(d => !(d.paired || d.bonded || d.trusted))
 
     function startScan() {
         if (adapter && adapter.enabled && !adapter.discovering) {
@@ -57,25 +69,10 @@ Item {
                 font.family: "JetBrainsMono NF"
                 Layout.fillWidth: true
             }
-            Rectangle {
-                width: 28; height: 28; radius: Services.Sizes.innerR
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text: ""
-                    color: tab.adapter && tab.adapter.discovering ? Services.Colors.ghost : Services.Colors.mist
-                    font.pixelSize: 16
-                    font.family: "Material Symbols Rounded"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
-                    onEntered: parent.color = Services.Colors.fillLine
-                    onExited: parent.color = "transparent"
-                    onClicked: tab.startScan()
-                }
+            Widgets.IconButton {
+                glyph: ""
+                active: tab.adapter && tab.adapter.discovering
+                onActivated: tab.startScan()
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -111,18 +108,39 @@ Item {
 
         ColumnLayout {
             Layout.fillWidth: true
-            Layout.fillHeight: true
             spacing: 4
-            visible: tab.adapter && tab.adapter.devices.values.length > 0
+            visible: tab.knownDevices.length > 0
             Text {
-                text: tab.adapter && tab.adapter.discovering ? "Scanning..." : "Devices"
+                text: "Known Devices"
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
                 leftPadding: 4
             }
             Repeater {
-                model: tab.adapter ? tab.adapter.devices.values : []
+                model: tab.knownDevices
+                delegate: Net.BtDeviceRow {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    device: modelData
+                }
+            }
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 4
+            visible: tab.newDevices.length > 0
+            Text {
+                text: tab.adapter && tab.adapter.discovering ? "Scanning..." : "Available"
+                color: Services.Colors.mist
+                font.pixelSize: Services.Sizes.fsMeta
+                font.family: "JetBrainsMono NF"
+                leftPadding: 4
+            }
+            Repeater {
+                model: tab.newDevices
                 delegate: Net.BtDeviceRow {
                     required property var modelData
                     Layout.fillWidth: true
@@ -136,7 +154,7 @@ Item {
             height: 60
             radius: Services.Sizes.innerR
             color: Services.Colors.fillInset
-            visible: !tab.adapter || tab.adapter.devices.values.length === 0
+            visible: !tab.adapter || tab.allDevices.length === 0
             RowLayout {
                 anchors.fill: parent
                 anchors.margins: 12

@@ -13,6 +13,10 @@ Rectangle {
     property string title: ""
     property string subtitle: ""
     property string action: ""
+    // While the card is waiting on something of its own -- a file dialog that
+    // is still open -- it stops taking clicks and says so by standing down a
+    // little. Two dialogs from two clicks is the thing being prevented.
+    property bool busy: false
     // Square + crop suits a face; a wallpaper needs a wide tile and a fit,
     // since they run from near-square to 2.76 ultrawide and cropping would
     // hide most of the picture.
@@ -23,8 +27,11 @@ Rectangle {
     Layout.fillWidth: true
     height: 110
     radius: Services.Sizes.cardR
-    color: cardHover.containsMouse ? Services.Colors.fillRest : Services.Colors.fillLine
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+    color: Services.Colors.fillLine
+    // Capped in PIXELS, not in percent: 6% of a card this wide is thirty px of
+    // growth, which pushed the picture and both corners past the tab's clip.
+    scale: Services.Sizes.hoverScaleFor(card.width, cardHover.containsMouse, cardHover.pressed)
+    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
     RowLayout {
         anchors.fill: parent
@@ -99,6 +106,8 @@ Rectangle {
             radius: Services.Sizes.innerR
             color: Services.Colors.ghost
             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
+            opacity: card.busy ? 0.55 : 1
+            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
             Text {
                 anchors.centerIn: parent
                 text: card.action
@@ -112,8 +121,9 @@ Rectangle {
     MouseArea {
         id: cardHover
         anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
+        cursorShape: card.busy ? Qt.BusyCursor : Qt.PointingHandCursor
         hoverEnabled: true
+        enabled: !card.busy
         onClicked: card.triggered()
     }
 }

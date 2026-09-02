@@ -7,12 +7,12 @@ import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"
 
 // Playback and capture levels, plus the device pickers behind them.
-TabPage {
+Section {
     id: tab
 
     Card {
         title: "Audio"
-        SliderRow {
+        Widgets.SliderRow {
             glyph: Services.Audio.muted ? "" : ""
             label: "Volume"
             value: Services.Audio.volume
@@ -22,9 +22,8 @@ TabPage {
             onGlyphClicked: Services.Audio.toggleMute()
             glyphInteractive: true
             // Unmutes on drag: nudging a muted slider and hearing nothing
-            // reads as broken. -l 1.0 keeps it from going past 100%.
-            onMoved: pct => Quickshell.execDetached(["sh", "-c",
-                "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ " + pct + "%"])
+            // reads as broken. The service caps at 100% and does the unmuting.
+            onMoved: pct => Services.Audio.setVolume(pct)
         }
 
         // Output device selector (speakers / headphones / HDMI)
@@ -36,7 +35,7 @@ TabPage {
             onPicked: name => Services.Audio.setSink(name)
         }
 
-        SliderRow {
+        Widgets.SliderRow {
             glyph: Services.Audio.micMuted ? "" : ""
             label: "Microphone"
             value: Services.Audio.micVolume
@@ -78,12 +77,6 @@ TabPage {
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    text: "Records whatever the default output is playing"
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsMeta
                     font.family: "JetBrainsMono NF"
                 }
             }

@@ -3,101 +3,40 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"
 
 // TabPage, like every other tab: on its own this was a bare ColumnLayout with
 // no Flickable, so it was the one section in Settings that could not be
 // scrolled and anything past the fold was simply unreachable.
-TabPage {
+Section {
     id: tab
 
-    property string osName: "..."
-    property string kernel: "..."
-    property string hostname: "..."
-    property string uptime: "..."
-    property string product: "..."
-    property string board: "..."
-    property string cpuInfo: "..."
-    property string gpuInfo: "..."
-    property string memInfo: "..."
-    property string diskInfo: "..."
-    property string pkgInfo: "..."
-    property string monitorInfo: "..."
+    // The specs live in services/Machine.qml now: the desktop's Machine widget
+    // asks the same questions, and two copies of eight processes is two copies
+    // of the same answer.
+    readonly property string osName: Services.Machine.osName
+    readonly property string kernel: Services.Machine.kernel
+    readonly property string hostname: Services.Machine.hostname
+    readonly property string uptime: Services.Machine.uptime
+    readonly property string product: Services.Machine.product
+    readonly property string board: Services.Machine.board
+    readonly property string cpuInfo: Services.Machine.cpuInfo
+    readonly property string gpuInfo: Services.Machine.gpuInfo
+    readonly property string memInfo: Services.Machine.memInfo
+    readonly property string diskInfo: Services.Machine.diskInfo
+    readonly property string pkgInfo: Services.Machine.pkgInfo
+    readonly property string monitorInfo: Services.Machine.monitorInfo
     property bool copied: false
+    // What the profile-picture card is doing right now: "" (idle), "picking"
+    // while the file dialog is up, "done" / "failed" for a moment after. The
+    // Copy Info button below works the same way -- a word in the button is the
+    // only confirmation a card like this can give.
+    property string faceState: ""
 
-    Component.onCompleted: {
-        basicProc.running = true
-        hwProc.running = true
-        cpuProc.running = true
-        gpuProc.running = true
-        memProc.running = true
-        diskProc.running = true
-        pkgProc.running = true
-        monProc.running = true
-    }
-
-    Process {
-        id: basicProc
-        command: ["sh", "-c", ". /etc/os-release; echo \"$PRETTY_NAME|$(uname -r)|$(hostnamectl hostname 2>/dev/null || hostname)|$(uptime -p)\""]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let p = text.trim().split("|")
-                tab.osName = p[0] || ""
-                tab.kernel = p[1] || ""
-                tab.hostname = p[2] || ""
-                tab.uptime = p[3] || ""
-            }
-        }
-    }
-    Process {
-        id: hwProc
-        command: ["sh", "-c", "echo \"$(cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null)|$(cat /sys/devices/virtual/dmi/id/board_name 2>/dev/null)\""]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let p = text.trim().split("|")
-                tab.product = p[0] || ""
-                tab.board = p[1] || ""
-            }
-        }
-    }
-    Process {
-        id: cpuProc
-        command: ["sh", "-c", "echo \"$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2 | sed 's/^ *//') ($(nproc) threads)\""]
-        running: false
-        stdout: StdioCollector { onStreamFinished: tab.cpuInfo = text.trim() }
-    }
-    Process {
-        id: gpuProc
-        command: ["sh", "-c", "lspci | grep -E 'VGA|3D controller' | sed 's/^[^:]*: //' | paste -sd '/'"]
-        running: false
-        stdout: StdioCollector { onStreamFinished: tab.gpuInfo = text.trim() }
-    }
-    Process {
-        id: memProc
-        command: ["sh", "-c", "free -h | awk '/^Mem:/{print $3\"/\"$2}'"]
-        running: false
-        stdout: StdioCollector { onStreamFinished: tab.memInfo = text.trim() }
-    }
-    Process {
-        id: diskProc
-        command: ["sh", "-c", "df -h --output=used,size / | tail -1 | awk '{print $1\"/\"$2}'"]
-        running: false
-        stdout: StdioCollector { onStreamFinished: tab.diskInfo = text.trim() }
-    }
-    Process {
-        id: pkgProc
-        command: ["sh", "-c", "echo \"$(pacman -Qq 2>/dev/null | wc -l) packages\""]
-        running: false
-        stdout: StdioCollector { onStreamFinished: tab.pkgInfo = text.trim() }
-    }
-    Process {
-        id: monProc
-        command: ["sh", "-c", "hyprctl monitors | grep -E 'Monitor|resolution' | tr '\\n' ' ' | sed 's/  */ /g'"]
-        running: false
-        stdout: StdioCollector { onStreamFinished: tab.monitorInfo = text.trim() }
-    }
+    // Uptime moves; the rest are settled by the time the tab is open.
+    Component.onCompleted: Services.Machine.watch(true)
+    Component.onDestruction: Services.Machine.watch(false)
 
     Process { id: copyProc; running: false }
     function copyInfo() {
@@ -164,35 +103,71 @@ TabPage {
     }
 
 
-    // The face the lock screen and the launcher show. It belongs with who
-    // the machine is, not with how it is painted.
+    // The face the lock screen shows. It belongs with who the machine is, not
+    // with how it is painted.
     PreviewCard {
         source: Services.AppState.facePath
         fallbackGlyph: "\uf0d3"
         title: "Profile Picture"
         subtitle: Services.AppState.userLabel
-        action: "Change"
-        onTriggered: facePickProc.running = true
+        // The button IS the progress report: there is nowhere else on this card
+        // to say that a dialog is open or that the copy landed.
+        action: tab.faceState === "picking" ? "Choosing…"
+              : tab.faceState === "done" ? "Updated"
+              : tab.faceState === "failed" ? "Failed" : "Change"
+        busy: tab.faceState === "picking"
+        onTriggered: {
+            tab.faceState = "picking"
+            Services.Picker.open("profile", "")
+        }
+    }
+    // Puts the word back to "Change" once it has been read.
+    Timer {
+        id: faceStateTimer
+        interval: 1500
+        onTriggered: tab.faceState = ""
+    }
+
+    // The shell's own picker, not zenity: same dialog as the widget pictures,
+    // and it looks like the rest of the desktop.
+    Connections {
+        target: Services.Picker
+        function onPicked(purpose, path) {
+            if (purpose !== "profile") return
+            if (path === "" || Services.AppState.homeDir === "") { tab.faceState = ""; return }
+            faceCopyProc.command = ["cp", path, Services.AppState.homeDir + "/.face"]
+            faceCopyProc.running = true
+        }
+        // Closed without choosing: not a failure, and not a change.
+        function onVisibleChanged() {
+            if (!Services.Picker.visible && tab.faceState === "picking") tab.faceState = ""
+        }
     }
 
     Process {
-        id: facePickProc
-        command: ["sh", "-c", "zenity --file-selection --title='Choose profile picture' --file-filter='Images | *.png *.jpg *.jpeg' 2>/dev/null"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let path = text.trim()
-                if (path.length > 0 && Services.AppState.homeDir !== "") {
-                    faceCopyProc.command = ["cp", path, Services.AppState.homeDir + "/.face"]
-                    faceCopyProc.running = true
-                }
-            }
-        }
-    }
-    Process {
         id: faceCopyProc
         running: false
-        onExited: Services.AppState.faceVersion = Date.now()
+        // The version bump is what every copy of the face repaints off, so it
+        // is only earned when the copy actually succeeded -- it used to fire
+        // even when nothing had been written.
+        onExited: (code) => {
+            if (code !== 0) {
+                tab.faceState = "failed"
+                faceStateTimer.restart()
+                Services.Notifications.addSystemToast(
+                    "COULD NOT SET PROFILE PICTURE", "\uf008", false, "face")
+                return
+            }
+            Services.AppState.faceVersion = Date.now()
+            tab.faceState = "done"
+            faceStateTimer.restart()
+            // Same shape as the screenshot toast: the picture you just chose,
+            // shown back to you. One `typeKey`, so a second change replaces the
+            // first instead of stacking.
+            Services.Notifications.addSystemToast(
+                "PROFILE PICTURE UPDATED", "\uf008", false, "face",
+                { image: Services.AppState.facePath })
+        }
     }
 
     // A box, not a rule: the panel says where one thing ends by
@@ -242,7 +217,7 @@ TabPage {
         }
     }
 
-    Divider { Layout.topMargin: 10; Layout.bottomMargin: 4 }
+    Widgets.Divider { Layout.topMargin: 10; Layout.bottomMargin: 4 }
 
     ColumnLayout {
         spacing: 4
@@ -274,7 +249,9 @@ TabPage {
         width: repoRow.implicitWidth + 24
         height: 40
         radius: Services.Sizes.pillR
-        color: Services.Colors.fillLine
+        color: Services.Colors.fillRest
+        scale: Services.Sizes.hoverScale(linkHover.containsMouse, linkHover.pressed)
+        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
         RowLayout {
             id: repoRow
             anchors.centerIn: parent
@@ -299,12 +276,11 @@ TabPage {
             }
         }
         MouseArea {
+            id: linkHover
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             hoverEnabled: true
-            onEntered: parent.color = Services.Colors.fillRest
-            onExited: parent.color = Services.Colors.fillLine
-            onClicked: Quickshell.execDetached(["sh", "-c", "xdg-open https://github.com/AdolfoLecompteDev/ashen"])
+            onClicked: Quickshell.execDetached(["sh", "-c", "xdg-open https://github.com/AdolfLecompte/ashen"])
         }
     }
 }

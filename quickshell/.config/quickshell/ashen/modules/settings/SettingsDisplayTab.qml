@@ -29,6 +29,17 @@ TabPage {
 
     function patch(o) { if (tab.sel !== "") Services.Displays.setEntry(tab.sel, o) }
 
+    // Closing the panel is walking away from the edit. Nothing here is live
+    // until Apply, so an abandoned draft must not be sitting there the next
+    // time Settings opens -- and, before the draft existed, it was worse: it
+    // went to Prefs and the next login applied it.
+    Connections {
+        target: Services.AppState
+        function onSettingsVisibleChanged() {
+            if (!Services.AppState.settingsVisible) Services.Displays.discard()
+        }
+    }
+
 
     readonly property string primaryKey: Services.Displays.primaryKey
     readonly property string primaryName: {
@@ -210,6 +221,17 @@ TabPage {
                                     font.pixelSize: Services.Sizes.fsBody
                                     font.bold: true
                                     font.family: "JetBrainsMono NF"
+                                    // The chassis keeps one size, so the scale shows
+                                    // where it actually shows on a real screen: the
+                                    // text inside grows. Damped and capped -- the raw
+                                    // factor at ×3 would not fit in the bezel.
+                                    scale: {
+                                        const s = tab.selEnt && tab.selEnt.scale > 0 ? tab.selEnt.scale : 1
+                                        return Math.min(1.8, 1 + (s - 1) * 0.5)
+                                    }
+                                    // Transform only: a font.pixelSize that animates
+                                    // relayouts the column every frame.
+                                    Behavior on scale { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
                                 }
                                 Text {
                                     Layout.fillWidth: true
@@ -408,16 +430,28 @@ TabPage {
 
             Text {
                 Layout.fillWidth: true
-                text: "Changes are not live until you apply them"
+                // Only when it is worth saying: with nothing pending, the
+                // grid on screen already IS the answer.
+                visible: Services.Displays.dirty
+                text: "Not live until you apply"
                 color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
             }
 
+            // Walking away from an edit is an answer, and the way back has to be
+            // in reach: without it the only exit from a half-made arrangement
+            // was to undo every control by hand.
+            ActionBtn {
+                visible: Services.Displays.dirty
+                label: "Discard"
+                onGo: Services.Displays.discard()
+            }
+
             ActionBtn {
                 accent: true
                 label: "Apply"
-                onGo: Services.Displays.applyAll()
+                onGo: Services.Displays.commit()
             }
         }
     }
@@ -430,9 +464,9 @@ TabPage {
 
         Text {
             Layout.fillWidth: true
-            text: tab.selEnt && tab.selEnt.ws.length > 0
-                ? (tab.selMon ? tab.selMon.name + " opens on " + tab.selEnt.defaultWs : "")
-                : "Unassigned ones go wherever they are opened"
+            visible: text !== ""
+            text: tab.selEnt && tab.selEnt.ws.length > 0 && tab.selMon
+                ? tab.selMon.name + " opens on " + tab.selEnt.defaultWs : ""
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -555,51 +589,14 @@ TabPage {
     // A button with a word in it. `IconButton` is a glyph in a box and cannot
     // hold one, and Apply has to say what it does -- but the gesture is the
     // shell's: it grows under the pointer and its label brightens.
-    component ActionBtn: Rectangle {
-        id: btn
-        property string label: ""
-        property bool accent: false
-        signal go()
-        readonly property bool warm: hov.containsMouse
-
-        // Wide enough to read as the end of the card rather than a chip stuck
-        // to the corner: this is the one control here that does anything.
-        implicitWidth: Math.max(112, btnText.implicitWidth + 40)
-        implicitHeight: 34
-        radius: Services.Sizes.innerR
-        color: btn.accent ? Services.Colors.ghost : Services.Colors.fillRest
-        gradient: Services.Prefs.useGradients && btn.accent ? Services.Colors.accentGradient : null
-        scale: Services.Sizes.hoverScale(btn.warm, hov.pressed)
-        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
-
-        Text {
-            id: btnText
-            anchors.centerIn: parent
-            text: btn.label
-            color: btn.accent ? Services.Colors.accentText
-                 : btn.warm ? Services.Colors.snow : Services.Colors.surfaceText
-            font.pixelSize: Services.Sizes.fsBody
-            font.bold: true
-            font.family: "JetBrainsMono NF"
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
-        }
-        MouseArea {
-            id: hov
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: btn.go()
-        }
-    }
 
     Card {
         title: "Display"
-        SliderRow {
+        Widgets.SliderRow {
             glyph: ""
             label: "Brightness"
             value: Services.Brightness.level
-            onMoved: pct => Quickshell.execDetached(["sh", "-c", "brightnessctl set " + pct + "%"])
+            onMoved: pct => Services.Brightness.setLevel(pct)
         }
 
         ColumnLayout {
@@ -618,7 +615,6 @@ TabPage {
                     Layout.fillWidth: true
                     spacing: 2
                     Text { text: "Night Light"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
-                    Text { text: "Warms screen colors to ease eye strain"; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
                 }
                 Item { Layout.fillWidth: true }
                 Toggle {

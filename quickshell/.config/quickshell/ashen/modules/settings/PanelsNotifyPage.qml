@@ -1,13 +1,14 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"
 
 // What the shell is allowed to interrupt you with, and how long it may stay.
-TabPage {
+Section {
     id: tab
-
     Card {
         title: "Do Not Disturb"
 
@@ -23,12 +24,6 @@ TabPage {
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    text: "Toasts stay hidden; urgent ones still come through"
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsMeta
                     font.family: "JetBrainsMono NF"
                 }
             }
@@ -67,13 +62,6 @@ TabPage {
                 current: String(Services.Prefs.maxToasts)
                 onPicked: id => Services.Prefs.maxToasts = parseInt(id)
             }
-            Text {
-                Layout.fillWidth: true
-                text: "The rest collapse into a +N row"
-                color: Services.Colors.ash
-                font.pixelSize: Services.Sizes.fsMeta
-                font.family: "JetBrainsMono NF"
-            }
         }
     }
 
@@ -95,12 +83,6 @@ TabPage {
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    text: "Nothing here touches what your apps play"
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsMeta
                     font.family: "JetBrainsMono NF"
                 }
             }
@@ -128,12 +110,6 @@ TabPage {
                         font.bold: true
                         font.family: "JetBrainsMono NF"
                     }
-                    Text {
-                        text: "The rest arrive quietly"
-                        color: Services.Colors.ash
-                        font.pixelSize: Services.Sizes.fsMeta
-                        font.family: "JetBrainsMono NF"
-                    }
                 }
                 Item { Layout.fillWidth: true }
                 Toggle {
@@ -143,7 +119,7 @@ TabPage {
             }
 
             // The slider speaks in whole percent, the preference in 0..1.
-            SliderRow {
+            Widgets.SliderRow {
                 glyph: ""
                 label: "Volume"
                 value: Math.round(Services.Prefs.soundVolume * 100)
@@ -155,23 +131,34 @@ TabPage {
             // The freedesktop set every distribution ships, plus whatever the
             // user points at. Picking one plays it: choosing a sound you cannot
             // hear is choosing blind.
+            // Two columns of equal chips, not a row of their own widths: the
+            // names are all different lengths and the last line ended wherever
+            // it happened to end.
             Flow {
+                id: soundFlow
                 Layout.fillWidth: true
                 spacing: 6
 
                 Repeater {
+                    id: soundRep
                     model: Services.Notifications.soundChoices
 
                     delegate: Item {
                         id: chip
                         required property var modelData
+                        required property int index
                         readonly property bool active:
                             Services.Notifications.soundFile === chip.modelData.path
                         readonly property bool warm: soundHover.containsMouse
+                        // An odd count leaves the last one alone: it takes the
+                        // whole row instead of half of it.
+                        readonly property bool alone: chip.index === soundRep.count - 1
+                                                      && soundRep.count % 2 === 1
 
-                        implicitWidth: soundName.implicitWidth + 22
+                        implicitWidth: chip.alone ? soundFlow.width
+                                                  : (soundFlow.width - soundFlow.spacing) / 2
                         implicitHeight: Services.Sizes.innerH
-                        scale: Services.Sizes.hoverScale(chip.warm, soundHover.pressed)
+                        scale: Services.Sizes.hoverScaleFor(width, chip.warm, soundHover.pressed)
                         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                         Rectangle {
@@ -186,6 +173,9 @@ TabPage {
                         Text {
                             id: soundName
                             anchors.centerIn: parent
+                            width: parent.width - 16
+                            elide: Text.ElideRight
+                            horizontalAlignment: Text.AlignHCenter
                             // The shell's own are marked: they travel with the
                             // rice, the rest are whatever this machine has.
                             text: (chip.modelData.mine ? "✦ " : "") + chip.modelData.name

@@ -7,7 +7,7 @@ import "root:/modules/settings/components"
 
 // Power profile, battery estimate and the toggles that decide whether the
 // machine is allowed to go to sleep.
-TabPage {
+Section {
     id: tab
 
     // Idle steps in minutes; 0 means the listener is left out of hypridle.conf.
@@ -118,7 +118,6 @@ TabPage {
                 Layout.fillWidth: true
                 spacing: 2
                 Text { text: "Keep Awake"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
-                Text { text: "Prevents auto-lock and screen dimming"; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -133,31 +132,51 @@ TabPage {
     Card {
         title: "Lock Screen"
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-            RowGlyph { glyph: "\ue899" }
-            ColumnLayout {
+        // One switch per card out there. The clock and the login are the
+        // screen itself, so they are not on the list.
+        Repeater {
+            model: [
+                { key: "weather", glyph: "\uf172", label: "Weather" },
+                { key: "machine", glyph: "\ue30a", label: "Session and battery" },
+                { key: "media", glyph: "\ue405", label: "What is playing" },
+                { key: "system", glyph: "\ueaa2", label: "System" },
+                { key: "notify", glyph: "\ue7f4", label: "Notifications" },
+            ]
+            delegate: RowLayout {
+                id: lockRow
+                required property var modelData
                 Layout.fillWidth: true
-                spacing: 2
+                spacing: 12
+
+                readonly property bool on_: modelData.key === "weather" ? Services.Prefs.lockShowWeather
+                    : modelData.key === "machine" ? Services.Prefs.lockShowMachine
+                    : modelData.key === "media" ? Services.Prefs.lockShowMedia
+                    : modelData.key === "system" ? Services.Prefs.lockShowSystem
+                    : Services.Prefs.lockShowNotifications
+
+                function flip() {
+                    switch (lockRow.modelData.key) {
+                    case "weather": Services.Prefs.lockShowWeather = !Services.Prefs.lockShowWeather; break
+                    case "machine": Services.Prefs.lockShowMachine = !Services.Prefs.lockShowMachine; break
+                    case "media": Services.Prefs.lockShowMedia = !Services.Prefs.lockShowMedia; break
+                    case "system": Services.Prefs.lockShowSystem = !Services.Prefs.lockShowSystem; break
+                    default: Services.Prefs.lockShowNotifications = !Services.Prefs.lockShowNotifications
+                    }
+                }
+
+                RowGlyph { glyph: lockRow.modelData.glyph }
                 Text {
-                    text: "Show what is playing"
+                    text: lockRow.modelData.label
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
-                Text {
-                    text: "Track, cover art and controls on the lock screen"
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsMeta
-                    font.family: "JetBrainsMono NF"
+                Item { Layout.fillWidth: true }
+                Toggle {
+                    checked: lockRow.on_
+                    onToggled: lockRow.flip()
                 }
-            }
-            Item { Layout.fillWidth: true }
-            Toggle {
-                checked: Services.Prefs.lockShowMedia
-                onToggled: Services.Prefs.lockShowMedia = !Services.Prefs.lockShowMedia
             }
         }
     }
@@ -165,14 +184,6 @@ TabPage {
     Card {
         title: "Idle & Suspend"
 
-        Text {
-            text: "Countdowns start from the last input. Keep Awake pauses all three."
-            color: Services.Colors.ash
-            font.pixelSize: Services.Sizes.fsMeta
-            font.family: "JetBrainsMono NF"
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
 
         Repeater {
             model: [
