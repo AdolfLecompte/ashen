@@ -52,12 +52,17 @@ Item {
             if (root.barValues.length === 0) return
 
             var n = root.barValues.length
-            // Slot: the strip each bar owns across the bar's long axis.
             // Depth: how far a bar may reach into the bar's short axis.
             var along = root.vertical ? height : width
             var depth = root.vertical ? width : height
-            var slot = along / n
             var boost = 2.0
+
+            // A slot is a fixed WIDTH and however many fit, fit; dividing the
+            // edge by the 96 readings made the wave thinner on a shorter edge.
+            // The remainder is split at both ends to keep the row centred.
+            var slot = Services.Sizes.cavaSlot
+            var slots = Math.max(1, Math.floor(along / slot))
+            var pad = (along - slots * slot) / 2
 
             ctx.fillStyle = Services.Colors.ghostAlpha(0.30)
 
@@ -72,10 +77,17 @@ Item {
                 ctx.translate(width, 0); ctx.rotate(Math.PI / 2)
             }
 
-            for (var i = 0; i < n; i++) {
-                var v = Math.max(0, Math.min(100, root.barValues[i])) / 100.0
+            // Each slot takes the LOUDEST reading it covers: averaging flattened
+            // the peaks, picking one dropped them at random.
+            for (var i = 0; i < slots; i++) {
+                var from = Math.floor(i * n / slots)
+                var to = Math.max(from + 1, Math.floor((i + 1) * n / slots))
+                var v = 0
+                for (var k = from; k < to && k < n; k++)
+                    v = Math.max(v, root.barValues[k])
+                v = Math.max(0, Math.min(100, v)) / 100.0
                 var h = Math.min(depth, v * depth * boost)
-                canvas.drawBar(ctx, i * slot, 0, Math.max(1, slot - 1), h, Math.min(3, slot / 2))
+                canvas.drawBar(ctx, pad + i * slot, 0, Math.max(1, slot - 1), h, Math.min(3, slot / 2))
             }
             ctx.restore()
         }

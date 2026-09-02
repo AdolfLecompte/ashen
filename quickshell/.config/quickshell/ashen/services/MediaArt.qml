@@ -75,6 +75,91 @@ Singleton {
         }
     }
 
+    // ── Asking outside ──────────────────────────────────────────────────
+    // When the player hands over nothing, or hands over its own logo, the
+    // cover still exists somewhere. iTunes answers by artist and title without
+    // a key, in one call, and its 100 px thumbnail has a 600 px twin behind the
+    // same name -- big enough for the panel's 160 px cover.
+    //
+    // Only then: a player that gives real artwork is telling the truth, and a
+    // well-tagged local file must not be overruled by a stranger's guess.
+    property var web: ({})
+    property var asked: ({})
+    signal webReady(string key)
+
+    function webKey(artist, title) {
+        return root.keyOf("web|" + String(artist).toLowerCase() + "|" + String(title).toLowerCase())
+    }
+
+    // The one door for a surface: what should be drawn for this track, and a
+    // lookup started if the answer is "nothing yet".
+    function coverFor(url, artist, title) {
+        const usable = url !== "" && !root.isDecoy(url)
+        if (usable) {
+            const have = root.local(url)
+            if (have !== "") return have
+            root.request(url)
+            return ""
+        }
+        if (!artist || !title) return ""
+        const k = root.webKey(artist, title)
+        if (root.web[k] !== undefined) return root.web[k]
+        root.lookUp(artist, title, k)
+        return ""
+    }
+
+    function lookUp(artist, title, k) {
+        // Once per track per session, whether or not it found anything: a miss
+        // is the common case and asking again on every tick would be a loop.
+        if (root.asked[k]) return
+        let a = root.asked; a[k] = true; root.asked = a
+        root.webQueue.push({ artist: artist, title: title, key: k })
+        root.webPump()
+    }
+
+    property var webQueue: []
+    property string webCurrent: ""
+    function webPump() {
+        if (root.webCurrent !== "" || root.webQueue.length === 0) return
+        const job = root.webQueue.shift()
+        root.webCurrent = job.key
+        webProc.command = ["sh", "-c",
+            'set -e; mkdir -p "$1"; out="$1/$2"; ' +
+            // Cached from an earlier session: no call at all.
+            'if [ ! -s "$out" ]; then ' +
+            '  u=$(curl -sfG --max-time 8 --data-urlencode "term=$3 $4" ' +
+            '        --data-urlencode "entity=song" --data-urlencode "limit=1" ' +
+            '        https://itunes.apple.com/search ' +
+            '      | sed -n \'s/.*"artworkUrl100":"\\([^"]*\\)".*/\\1/p\' ' +
+            // The JSON escapes its slashes; curl would choke on them.
+            '      | sed \'s|\\\\/|/|g\' ' +
+            '      | sed \'s/100x100bb/600x600bb/\'); ' +
+            '  [ -n "$u" ] || exit 0; ' +
+            '  curl -sfL --max-time 15 "$u" -o "$out.part"; mv -f "$out.part" "$out"; ' +
+            'fi; printf %s "$out"',
+            "sh", root.dir, job.key, job.artist, job.title]
+        webProc.running = true
+    }
+
+    Process {
+        id: webProc
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const k = root.webCurrent
+                const path = text.trim()
+                root.webCurrent = ""
+                // Nothing found is the normal answer for half a library; the
+                // surface keeps whatever it was showing.
+                if (k !== "" && path !== "") {
+                    let m = root.web; m[k] = "file://" + path; root.web = m
+                    root.webReady(k)
+                }
+                root.webPump()
+            }
+        }
+    }
+
     // djb2, base 36. Only has to be stable and short, not cryptographic.
     function keyOf(s) {
         let h = 5381
