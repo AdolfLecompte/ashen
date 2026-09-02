@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# The desktop widgets, from a terminal. Everything here is one IPC call into the
+# running shell -- the same calls the keybind and the edit bar make -- wrapped
+# so they can be typed by hand without remembering `qs -c ashen ipc call`.
+set -euo pipefail
+
+shell_call() {
+    qs -c ashen ipc call widgets "$@"
+}
+
+usage() {
+    cat <<'EOF'
+ashen-widgets — arrange the widgets on the wallpaper
+
+  ashen-widgets                 toggle the widget editor (same as SUPER+SHIFT+D)
+  ashen-widgets edit            the same, spelled out
+  ashen-widgets tray            open the tray of widgets (enters the editor)
+  ashen-widgets list            what is out there: position, shape, on/off
+  ashen-widgets on   <name>     put a widget on the wallpaper / take it off
+  ashen-widgets style <name> <shape>
+  ashen-widgets skin  <name> <which>
+  ashen-widgets snap  <free|grid|edges>
+  ashen-widgets add   <type>    another copy of one you can have several of
+  ashen-widgets drop  <name>    take that copy away
+  ashen-widgets src   <name> <path>
+
+Names are the ones `list` prints: clock, weather, media, system, battery,
+calendar, sun, timer, notify, updates, disks, machine, visualizer, image:1…
+EOF
+}
+
+cmd="${1:-edit}"
+case "$cmd" in
+    -h|--help|help) usage ;;
+    edit)  shell_call edit ;;
+    tray)  shell_call tray ;;
+    list)  shell_call list ;;
+    on)    shell_call toggle "${2:?which widget?}" ;;
+    style) shell_call style "${2:?which widget?}" "${3:?which shape?}" ;;
+    skin)  shell_call skin  "${2:?which widget?}" "${3:?which skin?}" ;;
+    snap)  shell_call snap  "${2:?free, grid or edges?}" ;;
+    add)   shell_call add   "${2:?which type?}" ;;
+    drop)  shell_call drop  "${2:?which copy?}" ;;
+    src)   shell_call src   "${2:?which widget?}" "${3:?which file?}" ;;
+    *)
+        echo "ashen-widgets: no such command: $cmd" >&2
+        usage >&2
+        exit 1
+        ;;
+esac
