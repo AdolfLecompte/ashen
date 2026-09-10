@@ -135,7 +135,7 @@ PanelWindow {
                             font.family: "Material Symbols Rounded"
                         }
                         Text {
-                            text: "Bluetooth"
+                            text: Services.I18n.t("settings.tab.bluetooth")
                             color: Services.Colors.snow
                             font.pixelSize: 14
                             font.family: "JetBrainsMono NF"
@@ -214,18 +214,18 @@ PanelWindow {
                         hubLabel: graph.linked
                                 ? (Services.Network.btDevice !== "" ? Services.Network.btDevice
                                                                     : Services.BtLink.displayName(graph.linked))
-                                : (Services.Network.btEnabled ? "Scanning" : "Disabled")
+                                : (Services.Network.btEnabled ? Services.I18n.t("net.scanning") : Services.I18n.t("net.disabled"))
                         hubSub: graph.linked
                             ? (graph.linked.batteryAvailable
-                                ? Math.round(graph.linked.battery * 100) + "%" : "Connected")
+                                ? Math.round(graph.linked.battery * 100) + "%" : Services.I18n.t("settings.net.connected"))
                             : ""
                         // Nothing in the ring is not the same as nothing at all:
                         // with the one device you own connected, it IS the hub,
                         // and the card was still saying "No paired devices yet".
-                        emptyHint: !(root.adapter && root.adapter.enabled) ? "Bluetooth is off"
-                            : graph.scanMode ? "Nothing in range"
+                        emptyHint: !(root.adapter && root.adapter.enabled) ? Services.I18n.t("bt.off")
+                            : graph.scanMode ? Services.I18n.t("bt.nothingRange")
                             : graph.linked ? ""
-                            : "No paired devices yet \u2014 press Scan"
+                            : Services.I18n.t("bt.noPaired")
 
                         // Same scan chip as Wi-Fi, in the same slot: press it and the
                         // ring fills with everything the radio can see, six at a time.
@@ -233,11 +233,11 @@ PanelWindow {
                         waitLine: root.waitLine
                         scanEnabled: true
                         scanGlyph: "\ue8b6"
-                        scanLabel: "Scan"
+                        scanLabel: Services.I18n.t("bt.scan")
                         scanSub: graph.scanMode
                             ? (root.adapter && root.adapter.discovering
-                                ? "Scanning\u2026" : graph.strangers.length + " nearby")
-                            : "Nearby"
+                                ? Services.I18n.t("net.scanningDots") : Services.I18n.t("bt.nearbyCount", { n: graph.strangers.length }))
+                            : Services.I18n.t("bt.nearby")
                         // The exact complement of `known`: the two lists used to
                         // disagree about `trusted`, so a device that had been
                         // marked trusted and then failed to pair was in neither
@@ -270,7 +270,7 @@ PanelWindow {
                             id: d.address,
                             glyph: "\ue1a8",
                             label: Services.BtLink.displayName(d),
-                            sub: Services.BtLink.busyText(d) || (d.paired || d.bonded ? "Paired" : ""),
+                            sub: Services.BtLink.busyText(d) || (d.paired || d.bonded ? Services.I18n.t("bt.paired") : ""),
                             active: false
                         }))
 

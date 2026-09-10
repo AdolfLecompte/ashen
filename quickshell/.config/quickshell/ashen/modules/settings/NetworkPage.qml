@@ -34,8 +34,8 @@ Item {
         anchors.rightMargin: 28
         cellHeight: 38
         options: [
-            { id: "wifi", icon: "\ue1ba", label: "Wi-Fi" },
-            { id: "bluetooth", icon: "\ue1a7", label: "Bluetooth" }
+            { id: "wifi", icon: "\ue1ba", label: Services.I18n.t("settings.tab.wifi") },
+            { id: "bluetooth", icon: "\ue1a7", label: Services.I18n.t("settings.tab.bluetooth") }
         ]
         current: page.section
         onPicked: id => page.section = id

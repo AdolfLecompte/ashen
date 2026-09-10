@@ -51,7 +51,7 @@ Item {
     // fills the ring with strangers, drawn without wires.
     property bool scanEnabled: false
     property string scanGlyph: ""
-    property string scanLabel: "Scan"
+    property string scanLabel: Services.I18n.t("bt.scan")
     property string scanSub: ""
     property var scanNodes: []
     property bool scanMode: false
@@ -60,6 +60,14 @@ Item {
     property string armedId: ""
 
     signal nodeActivated(string id)
+    // A saved node asked to be dropped. Right-click ARMS it and a second one
+    // confirms -- deleting a saved network on a single stray click is not a
+    // thing to be sorry about afterwards, and this is the only destructive
+    // gesture on the ring.
+    signal nodeForgotten(string id)
+    // Which node is standing there asking. "" is none, and anything else that
+    // happens on the ring clears it.
+    property string forgetArmed: ""
     signal hubActivated()
     signal scanActivated()
     signal scanNodeActivated(string id)
@@ -91,7 +99,11 @@ Item {
     // The list shrank under the page you were on: back to the first, or the
     // ring would be a page of holes.
     onPageSourceChanged: if (root.page >= root.pageCount) root.page = 0
-    onScanModeChanged: root.page = 0
+    // The ring changing under a standing question answers nothing: entering
+    // scan, turning the page or folding away all take it back.
+    onScanModeChanged: { root.page = 0; root.forgetArmed = "" }
+    onPageChanged: root.forgetArmed = ""
+    onLiveChanged: root.forgetArmed = ""
 
     // Turning a page pulls the ring in and throws it back out, the same motion
     // the radio switching off already had -- so paging and powering down are
@@ -154,7 +166,7 @@ Item {
         interval: 500
         onTriggered: root.pendingId = ""
     }
-    function disarm() { armedId = "" }
+    function disarm() { armedId = ""; forgetArmed = "" }
     Timer {
         id: scanCommit
         // Lands just after the chip finishes climbing into the middle.
@@ -229,7 +241,7 @@ Item {
             out.push(from + i < src.length ? src[from + i] : null)
         if (root.overflowing)
             out.push({ id: moreId, glyph: "\ue5d3", label: "+" + root.restCount,
-                       sub: "page " + (root.page + 1) + " of " + root.pageCount,
+                       sub: Services.I18n.t("graph.page", { n: root.page + 1, m: root.pageCount }),
                        active: false, kind: "more" })
         if (scanEnabled && !scanMode)
             out.push({ id: scanId, glyph: scanGlyph, label: scanLabel,
@@ -286,6 +298,22 @@ Item {
         swapAmt = 1
         swapGuard.restart()
     }
+    // A stranger you have just agreed to join. It climbs into the middle from
+    // its scan slot -- the same travel a saved node makes -- and the ring only
+    // goes back to the saved networks once it has ARRIVED. Leaving scan first
+    // (which is what this used to do) sent the scan chip riding out at the same
+    // moment, so two pieces crossed and the one you had actually picked was the
+    // one that never moved: it simply appeared in the middle a second later.
+    property bool leaveScanAfterSwap: false
+    function joinFromScan(id) {
+        armedId = ""
+        beginSwap(id)
+        // No slot for it means nothing is travelling, so there is nothing to
+        // wait for either.
+        root.leaveScanAfterSwap = pendingId !== ""
+        if (!root.leaveScanAfterSwap) exitScan()
+    }
+
     // Snapped back, never animated: by now the bindings draw exactly what the
     // swap was holding, so animating the reset would play the move twice.
     function endSwap() {
@@ -295,6 +323,15 @@ Item {
         swapAmt = 0
         pendingId = ""
         animateSwap = true
+        // The traveller has landed: now the ring may become the saved networks
+        // again. `publishRing` refuses while a swap is pending, which is why
+        // this comes after the line above and not before it.
+        if (root.leaveScanAfterSwap) {
+            root.leaveScanAfterSwap = false
+            root.scanMode = false
+            root.publishRing()
+            root.scanClosed()
+        }
     }
     // Only the device we asked for ends it. A switch passes through "not
     // connected" on the way, and reacting to that dropped the animation
@@ -698,6 +735,12 @@ Item {
             readonly property bool isMore: !empty && modelData.kind === "more"
             readonly property bool armed: !empty && root.armedId === modelData.id
             readonly property bool dark: (!empty && modelData.active) || promoting || armed
+            // A saved node standing there asking whether you meant it. Only
+            // ordinary nodes can be: the scan chip and the "more" slot are not
+            // networks, and a stranger is not saved yet.
+            readonly property bool canForget: !empty && !isScan && !isMore && !root.scanMode
+            readonly property bool armedToForget: node.canForget
+                                                  && root.forgetArmed === modelData.id
 
             // The one being promoted: it climbs to the middle and swells into
             // the hub it is replacing.
@@ -782,8 +825,17 @@ Item {
                     Text {
                         id: subT
                         visible: text !== ""
-                        text: node.empty ? "" : (node.modelData.sub || "")
-                        color: node.dark ? Services.Colors.accentText : Services.Colors.ash
+                        // Armed, the node stops saying how strong it is and
+                        // asks the question instead: the reading is not what
+                        // you are about to answer.
+                        text: node.empty ? ""
+                            : node.armedToForget ? Services.I18n.t("net.forgetAsk")
+                            : (node.modelData.sub || "")
+                        // The accent, never `error_`: forgetting is not an
+                        // error, and this shell says destructive in its own
+                        // colours (see docs/DESIGN.md).
+                        color: node.armedToForget ? Services.Colors.ghost
+                             : node.dark ? Services.Colors.accentText : Services.Colors.ash
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
                     }
@@ -839,7 +891,22 @@ Item {
                 // One swap at a time, and the ring is not clickable while it is
                 // folded away.
                 enabled: !node.empty && root.pendingId === "" && root.ringOut > 0.99
-                onClicked: {
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: function(mouse) {
+                    if (mouse.button === Qt.RightButton) {
+                        // First right-click asks, the second answers. Anything
+                        // else clears it, including right-clicking a different
+                        // node -- only one question stands at a time.
+                        if (!node.canForget) { root.forgetArmed = ""; return }
+                        if (node.armedToForget) {
+                            root.forgetArmed = ""
+                            root.nodeForgotten(node.modelData.id)
+                        } else {
+                            root.forgetArmed = node.modelData.id
+                        }
+                        return
+                    }
+                    root.forgetArmed = ""
                     if (node.isMore) {
                         root.turnPage()
                     } else if (node.isScan) {

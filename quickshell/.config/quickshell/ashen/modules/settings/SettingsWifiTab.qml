@@ -119,7 +119,7 @@ Item {
 
         Text {
             visible: false   // the drawer header carries the section name
-            text: "Wi-Fi"
+            text: Services.I18n.t("settings.tab.wifi")
             color: Services.Colors.snow
             font.pixelSize: Services.Sizes.fsPanelTitle
             font.bold: true
@@ -129,7 +129,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Text {
-                text: "Wireless"
+                text: Services.I18n.t("settings.wifi.radio")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsBody
                 font.family: "JetBrainsMono NF"
@@ -176,7 +176,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 2
                     Text { text: Services.Network.wifiSsid; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
-                    Text { text: "Connected"; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
+                    Text { text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                 }
                 // Forget the current network
                 Widgets.IconButton {
@@ -194,7 +194,7 @@ Item {
             Layout.fillWidth: true
             spacing: 4
             visible: tab.knownRows.length > 0
-            Text { text: "Known Networks"; color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
+            Text { text: Services.I18n.t("settings.wifi.known"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(knownList.contentHeight, 3 * 54)
@@ -223,7 +223,7 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 4
-            Text { text: "Available Networks"; color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
+            Text { text: Services.I18n.t("settings.wifi.available"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -276,7 +276,7 @@ Item {
                 Column {
                     Layout.fillWidth: true
                     spacing: 2
-                    Text { text: "Connect to Network"; color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
+                    Text { text: Services.I18n.t("settings.wifi.connectTo"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                     Text { text: tab.connectingTo; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
                 }
                 Widgets.IconButton {
@@ -305,7 +305,7 @@ Item {
                         height: 30
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "Password"
+                            text: Services.I18n.t("settings.wifi.password")
                             color: Services.Colors.ash
                             font.pixelSize: Services.Sizes.fsCardTitle
                             font.family: "JetBrainsMono NF"
@@ -338,7 +338,7 @@ Item {
                 ActionBtn {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
-                    label: "Cancel"
+                    label: Services.I18n.t("common.cancel")
                     onGo: tab.showConnectDialog = false
                 }
                 ActionBtn {
@@ -346,7 +346,7 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
                     accent: true
-                    label: "Connect"
+                    label: Services.I18n.t("common.connect")
                     // argv, not a shell string: an SSID or password holding a
                     // quote would otherwise close it and run the rest as shell.
                     function connect() {

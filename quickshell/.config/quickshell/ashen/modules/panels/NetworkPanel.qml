@@ -199,7 +199,7 @@ PanelWindow {
                     const state = f[2]
                     out.push({
                         dev: f[1],
-                        state: state === "unavailable" ? "No cable" : state,
+                        state: state === "unavailable" ? Services.I18n.t("net.noCable") : state,
                         conn: f.slice(3).join(":").trim() || f[1],
                         up: state.startsWith("connected")
                     })
@@ -358,8 +358,8 @@ PanelWindow {
 
                             Repeater {
                                 model: [
-                                    { id: "wifi",     label: "Wi-Fi",    icon: "\ue1ba" },
-                                    { id: "ethernet", label: "Ethernet", icon: "\ue8be" },
+                                    { id: "wifi",     label: Services.I18n.t("settings.tab.wifi"),    icon: "\ue1ba" },
+                                    { id: "ethernet", label: Services.I18n.t("net.ethernet"), icon: "\ue8be" },
                                 ]
                                 delegate: Item {
                                     required property var modelData
@@ -428,7 +428,7 @@ PanelWindow {
                             RowLayout {
                                 width: parent.width
                                 Text {
-                                    text: "Wireless"
+                                    text: Services.I18n.t("settings.wifi.radio")
                                     color: Services.Colors.mist
                                     font.pixelSize: 11
                                     font.family: "JetBrainsMono NF"
@@ -489,21 +489,21 @@ PanelWindow {
                                     : (Services.Network.wifiEnabled ? "\ueb31" : "\ue1da")
                                 hubLabel: Services.Network.wifiSsid !== ""
                                     ? Services.Network.wifiSsid
-                                    : (Services.Network.wifiEnabled ? "Searching" : "Disabled")
+                                    : (Services.Network.wifiEnabled ? Services.I18n.t("net.searching") : Services.I18n.t("net.disabled"))
                                 hubSub: Services.Network.wifiSsid !== ""
                                     ? Services.Network.wifiSignal + "%" : ""
-                                emptyHint: !root.wifiEnabled ? "Wi-Fi is off"
-                                    : graph.scanMode ? "Nothing in range"
-                                    : "No saved network in range"
+                                emptyHint: !root.wifiEnabled ? Services.I18n.t("net.wifiOff")
+                                    : graph.scanMode ? Services.I18n.t("bt.nothingRange")
+                                    : Services.I18n.t("net.noSaved")
 
                                 // The scan chip keeps the last slot for good. Pressing it
                                 // takes the middle and the ring fills with strangers.
                                 waitLine: root.scanLine
                                 scanEnabled: true
                                 scanGlyph: "\ue8b6"
-                                scanLabel: "Scan"
+                                scanLabel: Services.I18n.t("bt.scan")
                                 scanSub: graph.scanMode
-                                    ? (root.strangersAll.length + " nearby") : "Nearby"
+                                    ? Services.I18n.t("bt.nearbyCount", { n: root.strangersAll.length }) : Services.I18n.t("bt.nearby")
                                 // Slots owned across scans -- see root.scanSlots. Picking the
                                 // six strongest every sweep meant the ring swapped members
                                 // while you were looking at it.
@@ -541,8 +541,18 @@ PanelWindow {
                                         "sh", id])
                                     settleTimer.start()
                                 }
-                                // Clicking what you are connected to drops it. Forgetting a
-                                // network lives in Settings, which keeps the plain lists.
+                                // Right-click a saved network to drop it for good. The
+                                // profile name is NOT the SSID -- on duplicates NM makes
+                                // "SSID 1", so `connection delete id <ssid>` fails in
+                                // silence -- so resolve SSID->profile and delete every
+                                // match, the same walk Settings does.
+                                onNodeForgotten: function(id) {
+                                    Quickshell.execDetached(["sh", "-c",
+                                        'nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; s=$(nmcli -g 802-11-wireless.ssid connection show "$n"); [ "$s" = "$1" ] && nmcli connection delete "$n"; done',
+                                        "sh", id])
+                                    settleTimer.start()
+                                }
+                                // Clicking what you are connected to drops it.
                                 onHubActivated: {
                                     if (Services.Network.wifiSsid !== "")
                                         Quickshell.execDetached(["sh", "-c",
@@ -584,9 +594,10 @@ PanelWindow {
                                         cmd.push("password", root.password)
                                     Quickshell.execDetached(cmd)
                                     root.showConnectDialog = false
-                                    // Back to the connection view: what you just joined
-                                    // belongs in the middle, and the card stays up for it.
-                                    graph.exitScan()
+                                    // What you just joined belongs in the middle, so it
+                                    // FLIES there from the slot you picked it in, and the
+                                    // ring goes back to the saved networks behind it.
+                                    graph.joinFromScan(root.connectingTo)
                                     settleTimer.start()
                                 }
                                 function cancel() {
@@ -600,7 +611,7 @@ PanelWindow {
                                     spacing: 8
 
                                     Text {
-                                        text: "Password for " + root.connectingTo
+                                        text: Services.I18n.t("net.passwordFor", { n: root.connectingTo })
                                         color: Services.Colors.mist
                                         font.pixelSize: 11
                                         font.family: "JetBrainsMono NF"
@@ -631,7 +642,7 @@ PanelWindow {
                                                     height: 26
                                                     Text {
                                                         anchors.verticalCenter: parent.verticalCenter
-                                                        text: "Password"
+                                                        text: Services.I18n.t("settings.wifi.password")
                                                         color: Services.Colors.ash
                                                         font.pixelSize: 13
                                                         font.family: "JetBrainsMono NF"
@@ -677,7 +688,7 @@ PanelWindow {
                                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: "Cancel"
+                                                text: Services.I18n.t("common.cancel")
                                                 color: cancelMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
                                                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                                                 font.pixelSize: 12
@@ -701,7 +712,7 @@ PanelWindow {
                                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: "Join"
+                                                text: Services.I18n.t("net.join")
                                                 color: Services.Colors.accentText
                                                 font.pixelSize: 12
                                                 font.bold: true
@@ -739,7 +750,7 @@ PanelWindow {
                                 width: parent.width
                                 height: 28
                                 Text {
-                                    text: "Wired"
+                                    text: Services.I18n.t("net.wired")
                                     color: Services.Colors.mist
                                     font.pixelSize: 11
                                     font.family: "JetBrainsMono NF"
@@ -747,8 +758,8 @@ PanelWindow {
                                 }
                                 Text {
                                     text: root.ethPorts.length === 0
-                                        ? "No port"
-                                        : root.ethPorts.length + (root.ethPorts.length === 1 ? " port" : " ports")
+                                        ? Services.I18n.t("net.noPort")
+                                        : Services.I18n.t(root.ethPorts.length === 1 ? "net.port" : "net.ports", { n: root.ethPorts.length })
                                     color: Services.Colors.ash
                                     font.pixelSize: 11
                                     font.family: "JetBrainsMono NF"
@@ -770,10 +781,10 @@ PanelWindow {
                                 // you, so the hub wears them too and the flown piece has somewhere to
                                 // land. The profile name moves to the sub-line.
                                 hubGlyph: "\ueb2f"
-                                hubLabel: ethGraph.linked ? ethGraph.linked.dev : "No cable"
+                                hubLabel: ethGraph.linked ? ethGraph.linked.dev : Services.I18n.t("net.noCable")
                                 hubSub: ethGraph.linked ? ethGraph.linked.conn : ""
                                 emptyHint: ethGraph.ports.length === 0
-                                    ? "No wired port on this machine" : "Nothing else plugged in"
+                                    ? Services.I18n.t("net.noWiredPort") : Services.I18n.t("net.nothingPlugged")
 
                                 // The live one is already the middle, so it does not take a
                                 // slot as well; the rest are the sockets you could use.

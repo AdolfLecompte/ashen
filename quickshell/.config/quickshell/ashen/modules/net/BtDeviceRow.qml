@@ -73,10 +73,10 @@ Rectangle {
                 // A link in flight says so: the row used to read "Paired" for
                 // the whole of a connect that takes seconds.
                 text: Services.BtLink.busyText(row.device) !== "" ? Services.BtLink.busyText(row.device)
-                    : row.device.connected ? "Connected"
-                    : (row.device.paired || row.device.bonded) ? "Paired"
-                    : row.device.trusted ? "Saved"
-                    : "Available"
+                    : row.device.connected ? Services.I18n.t("settings.net.connected")
+                    : (row.device.paired || row.device.bonded) ? Services.I18n.t("bt.paired")
+                    : row.device.trusted ? Services.I18n.t("bt.saved")
+                    : Services.I18n.t("settings.bt.available")
                 color: row.device.connected ? Services.Colors.ghost : Services.Colors.ash
                 font.pixelSize: 10
                 font.family: "JetBrainsMono NF"
