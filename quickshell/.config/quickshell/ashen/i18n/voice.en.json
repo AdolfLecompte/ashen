@@ -1,0 +1,252 @@
+{
+  "lock.checking": [
+    "checking…",
+    "reading your face…",
+    "asking the machine…",
+    "looking you up…"
+  ],
+  "lock.welcome": [
+    "you're not an impostor, right?",
+    "the machine remembers you",
+    "close enough",
+    "go on then",
+    "welcome back"
+  ],
+  "lock.wrong": [
+    "that's not it",
+    "nope",
+    "try that again",
+    "the keys are all still there",
+    "not quite"
+  ],
+  "lock.wrongAgain": [
+    "still not it",
+    "take your time",
+    "caps lock, maybe?",
+    "we can do this all night"
+  ],
+  "notify.empty": [
+    "nothing over here",
+    "all quiet",
+    "lost something?",
+    "not a peep",
+    "you're all caught up",
+    "clean slate"
+  ],
+  "lyrics.none": [
+    "no lyrics — just listen",
+    "nobody wrote this one down",
+    "words not included",
+    "not in the book",
+    "hum along"
+  ],
+  "lyrics.looking": [
+    "looking for the words…",
+    "asking who wrote this…",
+    "reading ahead…"
+  ],
+  "media.quiet": [
+    "nothing playing",
+    "silence, then",
+    "the room is yours",
+    "nothing on"
+  ],
+  "launcher.idle": [
+    "search applications…",
+    "type a name…",
+    "what are we opening?",
+    "name it and it opens"
+  ],
+  "launcher.noHits": [
+    "nothing by that name",
+    "not installed, apparently",
+    "no such thing here",
+    "try fewer letters"
+  ],
+  "updates.none": [
+    "up to date",
+    "nothing to install",
+    "as new as it gets",
+    "already current"
+  ],
+  "battery.low": [
+    "might want a cable",
+    "running on fumes soon",
+    "the wall is right there"
+  ],
+  "battery.critical": [
+    "plug it in, seriously",
+    "this is the last warning",
+    "about to lose you"
+  ],
+  "shot.saved": [
+    "got it",
+    "that one's yours",
+    "saved and copied",
+    "framed"
+  ],
+  "usb.empty": [
+    "nothing plugged in",
+    "all ports free",
+    "no passengers"
+  ],
+  "audio.noApps": [
+    "nothing is playing",
+    "silence, then",
+    "no app is making a sound"
+  ],
+  "battery.noHistory": [
+    "no history yet",
+    "give it a while",
+    "nothing to plot yet"
+  ],
+  "switcher.empty": [
+    "no windows",
+    "nothing open",
+    "clean desk"
+  ],
+  "workspace.empty": [
+    "empty",
+    "nothing here",
+    "free"
+  ],
+  "tray.noMenu": [
+    "no menu",
+    "this one is silent",
+    "nothing to offer"
+  ],
+  "clipboard.empty": [
+    "nothing copied yet",
+    "the clipboard is empty",
+    "copy something first"
+  ],
+  "clipboard.noShots": [
+    "no captures kept yet",
+    "nothing shot yet"
+  ],
+  "search.noMatch": [
+    "nothing by that name",
+    "no match",
+    "try fewer letters"
+  ],
+  "dnd.on": [
+    "holding your calls",
+    "nobody gets through",
+    "the room is quiet now"
+  ],
+  "dnd.off": [
+    "listening again",
+    "back on the air"
+  ],
+  "awake.on": [
+    "no naps",
+    "eyes open",
+    "it will wait up for you"
+  ],
+  "awake.off": [
+    "it can sleep again",
+    "back to normal hours"
+  ],
+  "record.start": [
+    "rolling",
+    "everything you do now is evidence",
+    "the screen is watching back"
+  ],
+  "record.stop": [
+    "that's a wrap",
+    "cut",
+    "saved"
+  ],
+  "night.on": [
+    "warming the screen",
+    "easier on the eyes now"
+  ],
+  "night.off": [
+    "back to daylight",
+    "colours as they were"
+  ],
+  "timer.done": [
+    "time's up",
+    "that's the time you asked for",
+    "done"
+  ],
+  "charger.in": [
+    "drinking",
+    "topping up",
+    "the wall is feeding it"
+  ],
+  "charger.out": [
+    "on its own now",
+    "unplugged"
+  ],
+  "wifi.scanning": [
+    "listening for networks…",
+    "sweeping the air…",
+    "asking what's out there…"
+  ],
+  "bt.scanning": [
+    "listening for radios…",
+    "seeing who's around…",
+    "sweeping…"
+  ],
+  "bt.pairing": [
+    "shaking hands…",
+    "introducing you two…",
+    "agreeing on a secret…"
+  ],
+  "updates.checking": [
+    "asking the mirrors…",
+    "counting what's new…",
+    "checking…"
+  ],
+  "wallpaper.applied": [
+    "new wall, new colours",
+    "the shell took the hint",
+    "repainted"
+  ],
+  "power.hold": [
+    "still time to let go",
+    "sure about this?",
+    "keep holding"
+  ],
+  "about.idle": [
+    "ask and I'll look",
+    "nothing checked yet"
+  ],
+  "about.checking": [
+    "asking the repository…",
+    "looking for a newer one…"
+  ],
+  "about.current": [
+    "this is the newest one",
+    "nothing to install"
+  ],
+  "about.ahead": [
+    "you are ahead of the last tag",
+    "this build is newer than the release"
+  ],
+  "about.failed": [
+    "the network said nothing",
+    "could not reach the repository"
+  ],
+  "about.available": [
+    "there is a newer one",
+    "something to install"
+  ],
+  "about.notes": [
+    "what changed in this one",
+    "the notes for this build"
+  ],
+  "dock.pinned": [
+    "pinned",
+    "it stays"
+  ],
+  "dock.unpinned": [
+    "unpinned",
+    "off the dock"
+  ],
+  "dock.empty": [
+    "nothing pinned yet",
+    "the dock is empty"
+  ]
+}
