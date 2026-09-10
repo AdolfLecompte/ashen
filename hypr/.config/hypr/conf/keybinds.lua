@@ -84,7 +84,12 @@ hl.bind(K("switcherNext", "ALT + Tab"),         hl.dsp.exec_cmd("qs ipc -c ashen
 hl.bind(K("switcherPrev", "ALT + SHIFT + Tab"), hl.dsp.exec_cmd("qs ipc -c ashen call switcher prev"), { repeating = true })
 
 -- System
-hl.bind(K("screenshot", mod .. " + SHIFT + S"), hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=\"$HOME/Pictures/Screenshots\" SLURP_ARGS=\"-w 0 -b 00000000\" grimblast copysave area && qs ipc -c ashen call notifications screenshot'"))
+-- slurp draws the selection, and it was drawing NOTHING: `-w 0` is a border of
+-- zero and `-b 00000000` a transparent screen, so you were dragging an
+-- invisible rectangle. Now: the screen dims (-b), the selection stays clear so
+-- you see what you are taking (-s), its edge is the shell's own accent (-c -w)
+-- and -d prints the size while you drag.
+hl.bind(K("screenshot", mod .. " + SHIFT + S"), hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=\"$HOME/Pictures/Screenshots\" SLURP_ARGS=\"-b 12121a99 -s 00000000 -c 6e6e7aff -w 2 -d\" grimblast copysave area && qs ipc -c ashen call notifications screenshot'"))
 hl.bind(K("lock", mod .. " + L"),         hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lock"))
 hl.bind(K("power", mod .. " + Escape"),    hl.dsp.exec_cmd("qs ipc -c ashen call power toggle"))
 -- Closing the lid locks right away; logind still owns the suspend itself.
@@ -102,3 +107,13 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("sh -c 'brightnessctl set 5%- &
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call media next || playerctl next'"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call media prev || playerctl previous'"), { locked = true })
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call media playPause || playerctl play-pause'"), { locked = true })
+
+-- ── Capturing a shortcut in Settings ─────────────────────────────────────
+-- Hyprland runs its own binds BEFORE handing the key to the client, so a chip
+-- waiting for SUPER+T never saw it: the compositor opened a terminal instead.
+-- While Settings is listening, the session moves into this submap, where
+-- nothing is bound and every key falls through to Quickshell. Escape is the
+-- one way out that does not depend on the shell being alive to send it.
+hl.define_submap("ashen-capture", function()
+    hl.bind("escape", hl.dsp.submap("reset"))
+end)

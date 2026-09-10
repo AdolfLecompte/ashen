@@ -27,3 +27,11 @@ hl.window_rule({ match = { class = "^(nemo|thunar|org.gnome.Nautilus|xdg-desktop
 -- Bar blur
 hl.layer_rule({ match = { namespace = "quickshell:.*" }, blur = true })
 hl.layer_rule({ match = { namespace = "quickshell:.*" }, ignore_alpha = 0.05 })
+
+-- The screenshot selection must not animate OUT. grimblast asks for exactly
+-- this itself -- `hyprctl keyword layerrule "match:selection, no_anim on"` --
+-- but on a Lua config `hyprctl keyword` answers "can't work with non-legacy
+-- parsers" and dies, so the rule never landed and grim caught the selection
+-- mid-fade: that is the border that keeps appearing along the edge of a shot.
+-- Set here, where it holds for good.
+hl.layer_rule({ match = { namespace = "selection" }, no_anim = true })

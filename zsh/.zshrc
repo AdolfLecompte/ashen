@@ -1,11 +1,9 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
+# Powerlevel10k instant prompt. Stays close to the top: anything that may need
+# console input (a password, a [y/n]) has to go ABOVE it, everything else below.
 #
-# quiet: on a fresh install the oh-my-zsh plugin load can print to the console
-# (custom plugins not present yet), and the default 'verbose' mode would dump a
-# "console output during initialization detected" warning above Ashen's prompt.
-# quiet keeps the instant prompt clean. MUST be set before the source below.
+# quiet: on a first login the plugin sourcing below can print to the console, and
+# the default 'verbose' mode would dump a "console output during initialization
+# detected" warning above Ashen's prompt. MUST be set before the block.
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -14,7 +12,9 @@ fi
 # Ashen — punto de entrada
 source ~/.config/zsh/.zshrc
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+# The prompt's own configuration. Shipped to ~/.p10k.zsh because that is where
+# `p10k configure` writes it and where CachyOS's config looks for it, so one file
+# serves both. Run `p10k configure` to change it.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # The prompt's colours, written by matugen from the wallpaper. AFTER ~/.p10k.zsh

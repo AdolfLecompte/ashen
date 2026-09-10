@@ -6,8 +6,8 @@ hl.config({
         rounding = 10,
         -- Frosted glass: fairly transparent, but the strong blur below
         -- turns it milky instead of showing a sharp background.
-        active_opacity = 0.70,
-        inactive_opacity = 0.60,
+        active_opacity = 0.60,
+        inactive_opacity = 0.50,
         shadow = {
             enabled = true,
             range = 20,
