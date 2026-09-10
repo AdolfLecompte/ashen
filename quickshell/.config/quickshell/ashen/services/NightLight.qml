@@ -58,7 +58,25 @@ Singleton {
     function arm() { if (root.shouldRun) root.apply() }
     Component.onCompleted: root.arm()
 
-    Timer { id: applyTimer; interval: 120; onTriggered: proc.running = root.shouldRun }
+    // Ours goes first, then anything that outlived a shell that was killed
+    // rather than asked to quit -- wlsunset keeps the gamma ramp it was given,
+    // so a stray one holds the screen tinted with nothing left on screen able
+    // to take it back. Only then does the new one start.
+    Timer {
+        id: applyTimer
+        interval: 120
+        onTriggered: {
+            proc.running = false
+            sweep.running = true
+        }
+    }
+
+    Process {
+        id: sweep
+        command: ["pkill", "-x", "wlsunset"]
+        running: false
+        onExited: if (root.shouldRun) proc.running = true
+    }
 
     Process {
         id: proc
