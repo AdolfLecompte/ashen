@@ -51,7 +51,12 @@ Singleton {
     function apply() { proc.running = false; applyTimer.restart() }
     onArgsChanged: apply()
     onShouldRunChanged: apply()
-    Component.onCompleted: if (shouldRun) apply()
+    // Building this singleton is the whole job -- the filter comes back on its
+    // own from here. It exists so ServiceLoader has something to CALL: a bare
+    // read of the singleton is an expression with no effect, and the engine is
+    // entitled to drop it, which is exactly what it did.
+    function arm() { if (root.shouldRun) root.apply() }
+    Component.onCompleted: root.arm()
 
     Timer { id: applyTimer; interval: 120; onTriggered: proc.running = root.shouldRun }
 

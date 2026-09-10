@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
+import "root:/modules"
 import "root:/modules/bar"
 import "root:/modules/dock"
 // The panels that hang off it. They used to live in modules/bar/ alongside
@@ -435,18 +436,8 @@ ShellRoot {
     NotificationToast {}
     LockScreen {}
 
-    // A singleton is built the first time something asks for it, and nothing
-    // asks for this one until Settings > Display is opened -- by which time the
-    // monitors have been sitting in Hyprland's own arrangement all session.
-    // Touching it here is what makes the saved layout come back at login.
-    // Same for the desktop widgets and the theme: both have to know their
-    // saved state whether or not their Settings tab was ever opened.
-    Component.onCompleted: {
-        Services.Displays.refresh()
-        Services.Desktop.arm()
-        Services.Theme.arm()
-        Services.Looks.arm()
-    }
+    // Everything that has to be awake at login, in one named place.
+    ServiceLoader {}
 
     // ── Built on demand ───────────────────────────────────────────────────
     Widgets.LazyPanel { preloadMs: 1320; shown: Services.AppState.volumeVisible;        panel: Component { VolumePanel {} } }

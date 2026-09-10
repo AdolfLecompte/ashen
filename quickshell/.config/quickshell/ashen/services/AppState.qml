@@ -13,10 +13,6 @@ Singleton {
     Component.onCompleted: {
         recordingCheckProc.running = true
         root.restoreQuickToggles()
-        // Idle is a lazy singleton and nothing on screen reads it: without this
-        // touch it is never built, and hypridle never starts. seed() is
-        // idempotent and waits for Prefs on its own.
-        Idle.seed()
     }
 
     Process {
