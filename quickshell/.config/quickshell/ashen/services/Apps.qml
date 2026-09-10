@@ -54,7 +54,7 @@ Singleton {
         // Steam's shortcuts have spaces; deduped by desktop id, earlier dirs
         // winning.
         command: ["sh", "-c",
-            "seen=''; for d in \"${XDG_DATA_HOME:-$HOME/.local/share}\" $(echo \"${XDG_DATA_DIRS:-/usr/local/share:/usr/share}\" | tr ':' ' '); do [ -d \"$d/applications\" ] || continue; find \"$d/applications\" -name '*.desktop' 2>/dev/null; done | while IFS= read -r f; do id=${f##*/}; case \" $seen \" in *\" $id \"*) continue ;; esac; seen=\"$seen $id\"; echo '---'; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
+            "seen=''; for d in \"${XDG_DATA_HOME:-$HOME/.local/share}\" $(echo \"${XDG_DATA_DIRS:-/usr/local/share:/usr/share}\" | tr ':' ' '); do [ -d \"$d/applications\" ] || continue; find \"$d/applications\" -name '*.desktop' 2>/dev/null; done | while IFS= read -r f; do id=${f##*/}; case \" $seen \" in *\" $id \"*) continue ;; esac; seen=\"$seen $id\"; echo '---'; echo \"Id=${id%.desktop}\"; grep -E '^(Name|Comment|Exec|Icon|Categories|NoDisplay)=' \"$f\" 2>/dev/null; done"
         ]
         running: false
         stdout: StdioCollector {
@@ -62,10 +62,11 @@ Singleton {
                 let apps = []
                 const blocks = text.split("---").filter(b => b.trim().length > 0)
                 for (const block of blocks) {
-                    let app = { name: "", comment: "", exec: "", icon: "",
+                    let app = { id: "", name: "", comment: "", exec: "", icon: "",
                                 category: "Other", cats: [], noDisplay: false }
                     for (const line of block.trim().split("\n")) {
-                        if (line.startsWith("Name=") && app.name === "") app.name = line.substring(5).trim()
+                        if (line.startsWith("Id=") && app.id === "") app.id = line.substring(3).trim()
+                        else if (line.startsWith("Name=") && app.name === "") app.name = line.substring(5).trim()
                         else if (line.startsWith("Comment=") && app.comment === "") app.comment = line.substring(8).trim()
                         // @@u/@@ are flatpak's file-forwarding markers; with no
                         // file args left after the field codes go, they are
@@ -94,6 +95,30 @@ Singleton {
                 root.all = apps
             }
         }
+    }
+
+    // An application by its .desktop id. The dock pins by this and nothing else:
+    // a display name is a translated string and will not survive a locale change.
+    function byId(id) {
+        for (const a of root.all) if (a.id === id) return a
+        return null
+    }
+
+    // An application by the class its WINDOW reports. Hyprland says `kitty`,
+    // `Brave-browser`, `org.kde.dolphin`; a .desktop is `kitty`, `brave-browser`,
+    // `org.kde.dolphin`. Neither form is canonical, so they are compared the way
+    // Windows.sameApp compares them -- last dotted segment, lower-cased.
+    function byClass(cls) {
+        const norm = x => String(x).toLowerCase().split(".").pop()
+        const want = norm(cls)
+        for (const a of root.all) if (norm(a.id) === want) return a
+        // Second pass on the executable: a .desktop id and a window class can
+        // disagree entirely while the binary they name does not.
+        for (const a of root.all) {
+            const bin = String(a.exec).trim().split(/\s+/)[0].split("/").pop()
+            if (norm(bin) === want) return a
+        }
+        return null
     }
 
     function commandOf(id) {

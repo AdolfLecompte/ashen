@@ -123,21 +123,22 @@ Singleton {
         if (root.webCurrent !== "" || root.webQueue.length === 0) return
         const job = root.webQueue.shift()
         root.webCurrent = job.key
+        // Ten results, and the one that IS this track wins -- see
+        // scripts/ashen-cover-pick.py. Asking for one and believing it is how
+        // "The Dreamer Piano - in the sea" came back as Frank Ocean's `blond`,
+        // and how one song ended up with two different covers on two surfaces.
         webProc.command = ["sh", "-c",
             'set -e; mkdir -p "$1"; out="$1/$2"; ' +
-            // Cached from an earlier session: no call at all.
             'if [ ! -s "$out" ]; then ' +
             '  u=$(curl -sfG --max-time 8 --data-urlencode "term=$3 $4" ' +
-            '        --data-urlencode "entity=song" --data-urlencode "limit=1" ' +
+            '        --data-urlencode "entity=song" --data-urlencode "limit=10" ' +
             '        https://itunes.apple.com/search ' +
-            '      | sed -n \'s/.*"artworkUrl100":"\\([^"]*\\)".*/\\1/p\' ' +
-            // The JSON escapes its slashes; curl would choke on them.
-            '      | sed \'s|\\\\/|/|g\' ' +
-            '      | sed \'s/100x100bb/600x600bb/\'); ' +
+            '      | python3 "$5" "$3" "$4"); ' +
             '  [ -n "$u" ] || exit 0; ' +
             '  curl -sfL --max-time 15 "$u" -o "$out.part"; mv -f "$out.part" "$out"; ' +
             'fi; printf %s "$out"',
-            "sh", root.dir, job.key, job.artist, job.title]
+            "sh", root.dir, job.key, job.artist, job.title,
+            Paths.script("ashen-cover-pick.py")]
         webProc.running = true
     }
 

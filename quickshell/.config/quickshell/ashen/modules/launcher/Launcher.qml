@@ -178,6 +178,8 @@ Scope {
             height: arrive.boxH(fullH)
             radius: Services.Sizes.panelR
             color: Services.Colors.surfacePanel
+            border.width: Services.Colors.panelEdgeW
+            border.color: Services.Colors.fillOutline
             clip: true
             opacity: arrive.fade
             transform: Translate { y: arrive.offY }

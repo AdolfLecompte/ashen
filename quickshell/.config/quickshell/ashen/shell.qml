@@ -7,6 +7,7 @@ import Quickshell.Io
 import QtQuick
 
 import "root:/modules/bar"
+import "root:/modules/dock"
 // The panels that hang off it. They used to live in modules/bar/ alongside
 // Bar.qml itself, so "the bar" meant both the strip and the fifteen windows
 // that grow out of it.
@@ -18,7 +19,6 @@ import "root:/modules/wallpaper"
 import "root:/modules/settings"
 import "root:/modules/clipboard"
 import "root:/modules/intro"
-import "root:/modules/utilities"
 import "root:/modules/desktop"
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
@@ -97,7 +97,6 @@ ShellRoot {
     IpcHandler {
         target: "settings"
         function toggle() {
-            Services.AppState.settingsSourceEdge = Services.Sizes.utilEdge
             Services.AppState.toggleOverlay("settingsVisible")
         }
         // Jump straight to a section:
@@ -109,12 +108,30 @@ ShellRoot {
             // "bluetooth" to "network" here is what made that deep link land on
             // Wi-Fi.
             Services.AppState.settingsTab = name
-            Services.AppState.settingsSourceEdge = Services.Sizes.utilEdge
             Services.AppState.settingsVisible = true
         }
     }
     // The desktop widgets. `edit` is the only way to move one: the layer takes
     // no clicks otherwise.
+    // The dock. Pinning is a right-click on the icon, but a keybind wants the
+    // same verbs, and so does anyone scripting their own layout.
+    IpcHandler {
+        target: "dock"
+        function toggle() { Services.Prefs.dockEnabled = !Services.Prefs.dockEnabled }
+        function edge(side: string) {
+            if (["top", "bottom", "left", "right"].indexOf(side) === -1) return
+            Services.Prefs.dockEdge = side
+        }
+        function pin(id: string) { Services.Prefs.dockPin(id) }
+        function unpin(id: string) { Services.Prefs.dockUnpin(id) }
+        // What is pinned, in order, so a script can put it back.
+        function list(): string {
+            return "enabled=" + Services.Prefs.dockEnabled
+                 + " edge=" + Services.Prefs.dockEdge
+                 + " pins=" + Services.Prefs.dockPinList.join(",")
+        }
+    }
+
     IpcHandler {
         target: "widgets"
         function edit() { Services.Desktop.editMode = !Services.Desktop.editMode }
@@ -196,30 +213,12 @@ ShellRoot {
     IpcHandler {
         target: "clipboard"
         function toggle() {
-            // Nothing was clicked, so nobody named an edge: use the pill a
-            // keybind is meant to come from. Without this the panel kept the
-            // edge of whatever was clicked last and left from the wrong side.
-            Services.AppState.clipboardSourceEdge = Services.Sizes.utilEdge
             Services.AppState.toggleOverlay("clipboardVisible")
-        }
-    }
-    IpcHandler {
-        target: "utilities"
-        function toggle() {
-            // Nothing was clicked, so nobody named an edge: use the pill a
-            // keybind is meant to come from. Without this the panel kept the
-            // edge of whatever was clicked last and left from the wrong side.
-            Services.AppState.utilitiesSourceEdge = Services.Sizes.utilEdge
-            Services.AppState.toggleOverlay("utilitiesVisible")
         }
     }
     IpcHandler {
         target: "process"
         function toggle() {
-            // Nothing was clicked, so nobody named an edge: use the pill a
-            // keybind is meant to come from. Without this the panel kept the
-            // edge of whatever was clicked last and left from the wrong side.
-            Services.AppState.processSourceEdge = Services.Sizes.utilEdge
             Services.AppState.toggleOverlay("processVisible")
         }
     }
@@ -323,6 +322,15 @@ ShellRoot {
         target: "calendar"
         function toggle() { Services.AppState.togglePanel("calendarVisible") }
     }
+    // The interface language, from a keybind or a script.
+    IpcHandler {
+        target: "language"
+        function set(id: string) { Services.I18n.setLang(id) }
+        function get(): string { return Services.I18n.lang }
+        function list(): string {
+            return Services.I18n.languages.map(l => l.id + " " + l.label).join("\n")
+        }
+    }
     // The two clocks, from a keybind or a script. They also make the drops that
     // hang under the bar testable without a pointer: everything else on screen
     // can be brought up by IPC, and these were the last thing that could not.
@@ -379,6 +387,27 @@ ShellRoot {
             const i = order.indexOf(Services.Prefs.barPosition)
             Services.Prefs.barPosition = order[(i + 1) % order.length]
         }
+        // The look, from a keybind. Same four the Bar tab offers.
+        // How much of the edge it takes, 50-100 %.
+        function length(pct: int) {
+            Services.Prefs.barLength = Math.max(50, Math.min(100, pct))
+        }
+        // The outline is one switch for the whole bar, so it is one verb.
+        function outline() { Services.Prefs.barOutline = !Services.Prefs.barOutline }
+        // The panels have their own, and it is a different switch on purpose.
+        function panelOutline() { Services.Prefs.panelOutline = !Services.Prefs.panelOutline }
+        // …and the widgets on the wallpaper.
+        function widgetOutline() { Services.Prefs.widgetOutline = !Services.Prefs.widgetOutline }
+        // What a single capsule shows: full | compact | icon. The Bar tab offers
+        // the same three, and only to the pills that have something to trim.
+        function content(pill: string, mode: string) {
+            if (["full", "compact", "icon"].indexOf(mode) === -1) return
+            Services.Prefs.setContent(pill, mode)
+        }
+        function style(name: string) {
+            if (["pills", "solid", "framed", "island"].indexOf(name) === -1) return
+            Services.Prefs.barStyle = name
+        }
     }
     IpcHandler {
         target: "wallpaper"
@@ -399,11 +428,11 @@ ShellRoot {
     // The bar is the shell; the rest of this list has to answer a key press or
     // a system event instantly, so none of it can be built on demand.
     Bar {}
+    Dock {}
     BarFrame {}
     DesktopLayer {}
     OsdPanel {}
     NotificationToast {}
-    Widgets.UtilityTriggers {}
     LockScreen {}
 
     // A singleton is built the first time something asks for it, and nothing
@@ -440,5 +469,4 @@ ShellRoot {
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.launcherVisible;      panel: Component { Launcher {} } }
     Widgets.LazyPanel { preloadMs: 3000; shown: Services.AppState.wallpaperVisible;     panel: Component { WallpaperPicker {} } }
     Widgets.LazyPanel { preloadMs: 3360; shown: Services.AppState.clipboardVisible;     panel: Component { Clipboard {} } }
-    Widgets.LazyPanel { preloadMs: 3480; shown: Services.AppState.utilitiesVisible;     panel: Component { UtilitiesPanel {} } }
 }

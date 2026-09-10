@@ -82,15 +82,25 @@ Singleton {
     // A plain function would not re-run when a window moves; bindings only
     // track properties, so the answer is stored in one.
     property var iconByWorkspace: ({})
+    // Which applications have a window right now, keyed by the lower-cased
+    // window class. Stored for the same reason iconByWorkspace is: a function
+    // does not re-run when a window opens.
+    property var runningIds: ({})
 
     function recompute() {
         let m = ({})
+        let live = ({})
         for (const t of Hyprland.toplevels.values) {
+            const o = t.lastIpcObject
+            const cls = (o && o.class ? String(o.class) : "").toLowerCase()
+            // The value is the class as Hyprland spells it: a dispatch needs
+            // that spelling, and the key is lower-cased for matching.
+            if (cls !== "") live[cls] = (o && o.class) ? String(o.class) : cls
             const ws = t.workspace ? t.workspace.id : 0
             if (ws === 0) continue
-            const o = t.lastIpcObject
             m[ws] = root.iconForClass(o ? o.class : "")   // later windows win
         }
+        root.runningIds = live
         // ...except the focused one, so a workspace reads as whatever you were
         // last doing on it rather than whatever opened first.
         const a = Hyprland.activeToplevel
@@ -99,6 +109,32 @@ Singleton {
             m[a.workspace.id] = root.iconForClass(o ? o.class : "")
         }
         root.iconByWorkspace = m
+    }
+
+    // A .desktop id and a window class name the same application often enough
+    // to match on, but never exactly: `org.kde.dolphin` against `dolphin`,
+    // `brave-browser` against `Brave-browser`. Compared on the last dotted
+    // segment, lower-cased, which is what those two forms have in common.
+    function sameApp(a, b) {
+        const norm = x => String(x).toLowerCase().split(".").pop()
+        return norm(a) === norm(b)
+    }
+    function isRunning(id) {
+        for (const cls in root.runningIds) if (root.sameApp(id, cls)) return true
+        return false
+    }
+    // The class Hyprland actually reports for this application, which is what a
+    // dispatch has to be given -- the .desktop id it is pinned under will not do.
+    function classOf(id) {
+        for (const cls in root.runningIds) if (root.sameApp(id, cls)) return root.runningIds[cls]
+        return ""
+    }
+    // Is the window in front one of this application's?
+    function isFocused(id) {
+        const a = Hyprland.activeToplevel
+        if (!a) return false
+        const o = a.lastIpcObject
+        return o && o.class ? root.sameApp(id, String(o.class)) : false
     }
 
     function workspaceIcon(wsId) {

@@ -99,10 +99,6 @@ Singleton {
             const f = Pills.opens(id)
             if (f !== "" && root[f] === true && Prefs.barSectionOf(id) !== "") return true
         }
-        for (let key in Pills.chipHost) {
-            if (root[key + "Visible"] === true
-                && Prefs.barSectionOf(Pills.chipHost[key]) !== "") return true
-        }
         return root.trayMenuVisible === true && Prefs.barSectionOf("tray") !== ""
     }
     function closeOthers(name) {
@@ -160,6 +156,13 @@ Singleton {
         }
     }
     property bool keepAwake: false
+
+    // The pointer is on the dock's edge, or on the dock itself. Two surfaces
+    // report into one flag: the sliver cannot see the dock's own hover and the
+    // dock is not on screen to be hovered while it is hidden.
+    property bool dockPeeked: false
+    property bool dockHovered: false
+    readonly property bool dockWanted: root.dockPeeked || root.dockHovered
     property real faceVersion: 0
 
     // Identity, resolved once at startup: nothing here may be hardcoded, the
@@ -352,35 +355,9 @@ Singleton {
         else if (key === "clipboard")  { root.clipboardPillW = w;  root.clipboardPillH = h }
     }
 
-    // A chip on the utility pill publishes itself the same way a bar pill
-    // does, so a panel reads one set of numbers whichever place its chip is
-    // living in today.
-    function setChipRect(key, cx, cy, w, h, edge) {
-        if (key === "process")        { root.processPillCX = cx;   root.processPillCY = cy
-                                        root.processPillW = w;     root.processPillH = h
-                                        root.processSourceEdge = edge }
-        else if (key === "settings")  { root.settingsPillCX = cx;  root.settingsPillCY = cy
-                                        root.settingsPillW = w;    root.settingsPillH = h
-                                        root.settingsSourceEdge = edge }
-        else if (key === "clipboard") { root.clipboardPillCX = cx; root.clipboardPillCY = cy
-                                        root.clipboardPillW = w;   root.clipboardPillH = h
-                                        root.clipboardSourceEdge = edge }
-        else { root.setPillCenter(key, cx, cy); root.setPillSize(key, w, h) }
-    }
 
     // Where a tool's chip is: an edge name while it lives on the utility pill,
     // "" once it has been moved onto the bar.
-    function setChipEdge(key, edge) {
-        if (key === "process") root.processSourceEdge = edge
-        else if (key === "settings") root.settingsSourceEdge = edge
-        else if (key === "clipboard") root.clipboardSourceEdge = edge
-    }
-    function chipEdgeOf(key) {
-        if (key === "process") return root.processSourceEdge
-        if (key === "settings") return root.settingsSourceEdge
-        if (key === "clipboard") return root.clipboardSourceEdge
-        return ""
-    }
 
     function setPillCenter(key, x, y) {
         if (key === "volume")            { root.volumePillCenterX = x;        root.volumePillCenterY = y }
@@ -392,9 +369,6 @@ Singleton {
         else if (key === "clock")        { root.clockPillCenterX = x;         root.clockPillCenterY = y }
         else if (key === "notification") { root.notificationPillCenterX = x;  root.notificationPillCenterY = y }
         else if (key === "power")        { root.powerPillCenterX = x;         root.powerPillCenterY = y }
-        else if (key === "process")      { root.processPillCX = x;            root.processPillCY = y }
-        else if (key === "settings")     { root.settingsPillCX = x;           root.settingsPillCY = y }
-        else if (key === "clipboard")    { root.clipboardPillCX = x;          root.clipboardPillCY = y }
     }
 
     property real trayMenuCenterX: 900
@@ -420,77 +394,26 @@ Singleton {
     // grow out of it. Published by UtilityTriggers at click time -- the chip
     // only reacts while its pill is fully revealed, so the geometry read there
     // is always settled, never mid-animation.
-    property real processPillCX: 0
-    property real processPillCY: 0
-    property real processPillW: 124
-    property real processPillH: 44
     // Which screen edge that chip was on: the pill can turn up on any of the
     // three the bar is not currently sitting on.
-    property string processSourceEdge: "bottom"
 
     // Same four numbers for the clipboard chip on the same pill. A set each
     // rather than one shared set: both panels can be mid-animation at once
     // (one closing while the other opens) and they would fight over it.
-    property real clipboardPillCX: 0
-    property real clipboardPillCY: 0
-    property real clipboardPillW: 44
-    property real clipboardPillH: 44
-    property string clipboardSourceEdge: "bottom"
 
 
     // Settings joins the other two on the utility pill.
-    property real settingsPillCX: 0
-    property real settingsPillCY: 0
-    property real settingsPillW: 44
-    property real settingsPillH: 44
-    property string settingsSourceEdge: "bottom"
 
     // The utility drawer: where every utility chip sits, keyed "edge|id",
     // published continuously by the pill rather than written on click -- a
     // panel opened by a keybind was never told where to grow from and used
     // whatever the last click left, or (0, 0).
-    property var utilChip: ({})
-    function setUtilChip(edge, id, cx, cy, w, h) {
-        const k = edge + "|" + id
-        const o = utilChip[k]
-        if (o && o.cx === cx && o.cy === cy && o.w === w && o.h === h) return
-        const next = Object.assign({}, utilChip)
-        next[k] = { cx: cx, cy: cy, w: w, h: h }
-        root.utilChip = next
-    }
     // Falls back to the middle of the edge, so a panel whose chip has not been
     // laid out yet still leaves from the right side of the screen.
-    function utilChipOf(edge, id) {
-        return utilChip[edge + "|" + id] || null
-    }
 
-    // Where a panel should grow from, wherever its chip happens to live: the
-    // utility pill on that edge, or the bar. Published continuously by both,
-    // so a panel opened by keybind knows its origin without anyone clicking.
-    function chipRectOf(key, edge) {
-        if (edge !== "") {
-            const c = root.utilChipOf(edge, key)
-            if (c) return c
-        }
-        if (key === "process")   return { cx: root.processPillCX,   cy: root.processPillCY,
-                                          w: root.processPillW,     h: root.processPillH }
-        if (key === "settings")  return { cx: root.settingsPillCX,  cy: root.settingsPillCY,
-                                          w: root.settingsPillW,    h: root.settingsPillH }
-        if (key === "clipboard") return { cx: root.clipboardPillCX, cy: root.clipboardPillCY,
-                                          w: root.clipboardPillW,   h: root.clipboardPillH }
-        return { cx: 0, cy: 0, w: 44, h: 44 }
-    }
 
-    // Which utility pill is pinned out, by edge ("" = none). One pill, not all
-    // three: pinning the bottom one should not drag the side ones out with it.
-    property string utilityPinnedEdge: ""
 
     property bool utilitiesVisible: false
-    property real utilitiesPillCX: 0
-    property real utilitiesPillCY: 0
-    property real utilitiesPillW: 32
-    property real utilitiesPillH: 32
-    property string utilitiesSourceEdge: "bottom"
     // The button stands down while the panel wears its face.
     property bool processTakenOver: false
     property bool wallpaperVisible: false

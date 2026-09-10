@@ -39,12 +39,14 @@ Singleton {
             // so the lock surface finishes grabbing input before the system
             // suspends. Without it the machine resumes frozen.
             + "    before_sleep_cmd = qs ipc -c ashen call lockscreen lock && sleep 1\n"
-            + "    after_sleep_cmd = hyprctl dispatch dpms on\n"
+            + "    after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({ state = \"on\" })'\n"
             + "}\n\n"
         if (root.inhibited) return conf
         return conf
             + root.listener(root.lockSecs, "qs ipc -c ashen call lockscreen lock", "")
-            + root.listener(root.screenOffSecs, "hyprctl dispatch dpms off", "hyprctl dispatch dpms on")
+            + root.listener(root.screenOffSecs,
+                          "hyprctl dispatch 'hl.dsp.dpms({ state = \"off\" })'",
+                          "hyprctl dispatch 'hl.dsp.dpms({ state = \"on\" })'")
             + root.listener(root.suspendSecs, "systemctl suspend", "")
     }
 

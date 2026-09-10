@@ -22,6 +22,9 @@ Singleton {
     property int rainProb: 0     // highest chance of rain today, percent
     property string sunrise: ""
     property string sunset: ""
+    // Minutes past midnight for the two above, for the arcs that do maths.
+    property int sunriseMin: -1
+    property int sunsetMin: -1
     // Next 24 h: { label, tempC, rain, icon, now }
     property var hourly: []
     // Every hour the request carried (five days), each tagged with its date, so
@@ -40,10 +43,20 @@ Singleton {
         let p = hm.split(":")
         let h = parseInt(p[0])
         if (Services.Prefs.clock24h) return p[0] + ":" + p[1]
-        let ap = h >= 12 ? "PM" : "AM"
+        let ap = h >= 12 ? I18n.locale.pmText : I18n.locale.amText
         let h12 = h % 12
         if (h12 === 0) h12 = 12
         return h12 + ":" + p[1] + " " + ap
+    }
+
+    // The same stamp as minutes past midnight. Whoever needs the NUMBER reads
+    // this: `clockOf` is a string for the eye and changes with the language.
+    function minutesOf(stamp) {
+        const hm = String(stamp).split("T")[1]
+        if (!hm) return -1
+        const p = hm.split(":")
+        const h = parseInt(p[0]), m = parseInt(p[1])
+        return (isNaN(h) || isNaN(m)) ? -1 : h * 60 + m
     }
 
     // Wind direction as a compass point. Only the clock card reads it; the lock
@@ -195,13 +208,13 @@ Singleton {
     }
 
     function dayLabel(dateStr, index) {
-        if (index === 0) return "Today"
+        if (index === 0) return I18n.t("time.today")
         // Built field by field, never `new Date("2026-08-11")`: a date-only
         // string is parsed as UTC midnight and then read back in local time,
         // so west of Greenwich every day named itself as the day before.
         const p = String(dateStr).split("-")
         const d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]))
-        return Qt.locale().dayName(d.getDay(), Locale.ShortFormat)
+        return Time.dayShort(d.getDay())
     }
 
     // Entry point: re-fetch the active city, or IP-geolocate once if none saved.
@@ -376,6 +389,8 @@ Singleton {
                     root.uvMax = days[0].uv
                     root.sunrise = days[0].sunrise
                     root.sunset = days[0].sunset
+                    root.sunriseMin = root.minutesOf(dy.sunrise[0])
+                    root.sunsetMin = root.minutesOf(dy.sunset[0])
                 } catch (e) { console.warn("[Weather] forecast error:", e) }
             }
         }

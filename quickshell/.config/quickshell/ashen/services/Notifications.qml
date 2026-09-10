@@ -546,11 +546,11 @@ Singleton {
     function relTime(ts, tick) {
         if (!ts) return ""
         const d = Date.now() - ts
-        if (d < 45000) return "now"
-        if (d < 3600000) return Math.max(1, Math.round(d / 60000)) + "m"
-        if (d < 86400000) return Math.round(d / 3600000) + "h"
-        if (d < 604800000) return Math.round(d / 86400000) + "d"
-        return Qt.formatDateTime(new Date(ts), "MMM d")
+        if (d < 45000) return I18n.t("time.now")
+        if (d < 3600000) return I18n.t("time.mins", { n: Math.max(1, Math.round(d / 60000)) })
+        if (d < 86400000) return I18n.t("time.hours", { n: Math.round(d / 3600000) })
+        if (d < 604800000) return I18n.t("time.days", { n: Math.round(d / 86400000) })
+        return Time.fmtOf(new Date(ts), "MMM d")
     }
 
     // `opts` is optional: { title: "BATTERY LOW: 20%", image: "/path.png",
@@ -601,7 +601,12 @@ Singleton {
                 // No buttons: grimblast already put it on the clipboard, and
                 // the one thing left to want is to SEE it -- so that is what
                 // the card itself does when clicked.
-                root.addSystemToast(Services.Voice.pick("shot.saved"), "\uf727", false, "screenshot", {
+                // The folder, not a remark: "where did it go" is the one thing
+                // a person asks after taking a screenshot, and a card that
+                // shows the shot without saying where it landed answers the
+                // easy half. The file name is the rest of the answer.
+                const name = path.substring(path.lastIndexOf("/") + 1)
+                root.addSystemToast("Pictures/Screenshots/" + name, "\uf727", false, "screenshot", {
                     title: "SCREENSHOT SAVED",
                     image: "file://" + path,
                     actions: [{ id: "default", run: "xdg-open '" + path + "'" }]
@@ -852,6 +857,12 @@ Singleton {
     Connections {
         target: Services.AppState
         function onDoNotDisturbChanged() {
+            // Reading the saved value back at startup is not something the user
+            // did, so it gets no notice. AppState sets `prefsRestored` last for
+            // exactly this reason -- and the toast fired during the restore came
+            // out wordless anyway, because Voice's bank is read from disk and
+            // had not landed yet.
+            if (!Services.AppState.prefsRestored) return
             root.addSystemToast(
                 Services.Voice.pick(Services.AppState.doNotDisturb ? "dnd.on" : "dnd.off"),
                 "",
@@ -861,6 +872,7 @@ Singleton {
             )
         }
         function onKeepAwakeChanged() {
+            if (!Services.AppState.prefsRestored) return
             root.addSystemToast(
                 Services.Voice.pick(Services.AppState.keepAwake ? "awake.on" : "awake.off"),
                 "",

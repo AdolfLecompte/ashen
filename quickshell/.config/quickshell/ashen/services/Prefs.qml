@@ -44,6 +44,10 @@ Singleton {
 
     // "pills" | "solid" | "framed"
     property string barStyle: "pills"
+    // How much of its edge the bar takes, as a percentage. 100 is the whole
+    // side; anything less pulls both ends in and leaves the corners to the
+    // windows. The framed style ignores it: its plate IS the screen border.
+    property int barLength: 100
 
     // Bar hides itself and comes back on hover; while hidden it reserves no room.
     property bool barAutohide: false
@@ -144,11 +148,107 @@ Singleton {
     readonly property var defaultSections: ({
         left: ["launcher", "notifications", "workspaces", "media"],
         centre: ["usb", "clock", "recording"],
-        right: ["tray", "system", "power"]
+        right: ["tray", "network", "bluetooth", "volume", "battery", "keyboard", "power"]
     })
 
+    // How many workspace chips the bar shows at once. A quantity, not a way of
+    // drawing itself, so it is not one of the pill's looks.
+    property int workspaceCount: 5
+
+    // WHAT a pill shows, and HOW it is drawn, are two questions: a pill can be
+    // compact and made of glass at the same time. Two packed strings, beside the
+    // order and for the same reason it is packed -- the adapter drops sibling
+    // writes made in the same tick.
+    //
+    // barContent  id:full|compact|icon   (only what differs from full)
+    property string barContent: ""
+
+    // Outline is ONE switch for the whole bar, not one per capsule. Fifteen of
+    // them was fifteen chances to end up with a bar that is half glass and half
+    // plate, which reads as a mistake rather than as a choice -- and nobody
+    // opened that panel wanting to outline the battery but not the clock.
+    property bool barOutline: false
+
+    // The same idea for the panels, and DELIBERATELY a second switch: the bar
+    // is a strip you look past all day and a panel is a room you opened on
+    // purpose. Wanting one drawn and the other filled is a real preference,
+    // and one flag for both would have made it unsayable.
+    property bool panelOutline: false
+
+    // And the widgets, which are the third surface: they sit ON the wallpaper
+    // rather than over it, so wanting them drawn while the bar stays filled is
+    // its own choice again.
+    property bool widgetOutline: false
+
+    readonly property var contentMap: {
+        let out = ({})
+        for (const pair of (root.barContent || "").split(",")) {
+            const kv = pair.split(":")
+            if (kv.length === 2 && kv[0] !== "") out[kv[0]] = kv[1]
+        }
+        return out
+    }
+
+    function contentOf(id) { return root.contentMap[id] || "full" }
+    function setContent(id, v) {
+        let next = ({})
+        for (const k in root.contentMap) next[k] = root.contentMap[k]
+        // "full" is the default and is not written down: an absent key IS full.
+        if (v === "full") delete next[id]
+        else next[id] = v
+        let out = []
+        for (const k in next) out.push(k + ":" + next[k])
+        root.barContent = out.join(",")
+    }
+
+    // The id is still taken so every caller reads the same way it always did;
+    // the answer just no longer depends on which capsule is asking.
+    function isOutlined(id) { return root.barOutline }
+
+    // Dock pins, in the user's order, by .desktop id. One packed string for the
+    // same reason barLayout is one: the adapter drops sibling writes made in the
+    // same tick.
+    property string dockPins: ""
+    readonly property var dockPinList: (root.dockPins || "").split(",").filter(x => x !== "")
+
+    function dockPin(id) {
+        if (root.dockPinList.indexOf(id) !== -1) return
+        root.dockPins = root.dockPinList.concat([id]).join(",")
+    }
+    function dockUnpin(id) {
+        root.dockPins = root.dockPinList.filter(x => x !== id).join(",")
+    }
+    function dockMovePin(id, index) {
+        let next = root.dockPinList.filter(x => x !== id)
+        const at = Math.max(0, Math.min(index === undefined ? next.length : index, next.length))
+        next.splice(at, 0, id)
+        root.dockPins = next.join(",")
+    }
+
+    // Which edge the dock takes, and whether it stays out of the way.
+    property string dockEdge: "bottom"
+    property bool dockAutohide: true
+    // Off entirely. Not the same as having no pins: a dock with nothing in it
+    // still shows the windows you have open, and that is a thing to be able to
+    // say no to.
+    property bool dockEnabled: true
+    // Frosted rather than a solid plate, the same choice the bar's pills have.
+    property bool dockGlass: false
+    // The icon box. Clamped where it is read, so a hand-edited file cannot
+    // produce a dock with no room for an icon.
+    property int dockIconSize: 44
+
+    // The five pills the system plate became, in the order they sat in it.
+    readonly property string sysSplit: "network,bluetooth,volume,battery,keyboard"
+
     function syncBarLayout() {
-        const raw = root.barLayout || ""
+        // The plate became five pills. A saved layout naming it is rewritten in
+        // place, so the five inherit its seat AND its parked mark -- without
+        // this, someone who had dragged the plate off the bar would get all five
+        // back, because the rule below hands a factory seat to any pill that is
+        // in neither list.
+        const raw = (root.barLayout || "").replace(
+            /(^|[|;,])system([;,]|$)/g, "$1" + root.sysSplit + "$2")
         if (raw === "") {
             // First run, or an upgrade from when only visibility existed: start
             // from the shipped order minus whatever was switched off back then,
@@ -253,6 +353,14 @@ Singleton {
 
     // Workspace chips show a glyph for whatever is open on them instead of the
     // number. Empty workspaces always keep their number.
+    // What a workspace chip shows: the app's icon, its number, or a dot. Was a
+    // bool (icons on/off); a third answer needed a third value, not a second
+    // switch beside the first.
+    //   "icons"   the running app's glyph, falling back to the number
+    //   "numbers" the number, always
+    //   "dots"    no reading at all -- a dot, and the one you are on is a bar
+    property string workspaceStyle: "icons"
+    // Kept so a saved `false` still means numbers on the first run after this.
     property bool workspaceIcons: true
 
     // Idle timeouts in seconds, 0 = never. The Idle service turns these into
@@ -339,6 +447,17 @@ Singleton {
             property alias maxToasts: root.maxToasts
             property alias hiddenPills: root.hiddenPills
             property alias barLayout: root.barLayout
+            property alias barContent: root.barContent
+            property alias barOutline: root.barOutline
+            property alias panelOutline: root.panelOutline
+            property alias widgetOutline: root.widgetOutline
+            property alias dockPins: root.dockPins
+            property alias dockEdge: root.dockEdge
+            property alias dockAutohide: root.dockAutohide
+            property alias dockEnabled: root.dockEnabled
+            property alias dockGlass: root.dockGlass
+            property alias dockIconSize: root.dockIconSize
+            property alias workspaceCount: root.workspaceCount
             property alias displayLayout: root.displayLayout
             property alias desktopLayout: root.desktopLayout
             property alias appTerminal: root.appTerminal
@@ -355,11 +474,13 @@ Singleton {
             property alias lockShowSystem: root.lockShowSystem
             property alias lockShowNotifications: root.lockShowNotifications
             property alias workspaceIcons: root.workspaceIcons
+            property alias workspaceStyle: root.workspaceStyle
             property alias idleLockSecs: root.idleLockSecs
             property alias idleScreenOffSecs: root.idleScreenOffSecs
             property alias idleSuspendSecs: root.idleSuspendSecs
             property alias barPosition: root.barPosition
             property alias barStyle: root.barStyle
+            property alias barLength: root.barLength
             property alias barAutohide: root.barAutohide
             property alias visualizer: root.visualizer
             property alias mediaLyrics: root.mediaLyrics

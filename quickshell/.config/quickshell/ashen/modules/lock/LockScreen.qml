@@ -44,7 +44,7 @@ Scope {
             readonly property string currentTime: Services.Time.fmt(Services.Prefs.timeFormat)
             readonly property string currentSecs: Services.Time.fmt("ss")
             readonly property string currentDate: Services.Time.fmt("MMMM d, yyyy")
-            readonly property string currentDay: Qt.locale().dayName(Services.Time.now.getDay())
+            readonly property string currentDay: Services.Time.dayName(Services.Time.now.getDay())
             property string password: ""
             property string errorMsg: ""
             // The label split in two, so the name can be read louder than the
@@ -187,7 +187,7 @@ Scope {
                         surface.misses++
                         // A real PAM fault is not a remark: it is the one thing
                         // here that has to be read literally.
-                        const line = result === PamResult.Error ? "auth error"
+                        const line = result === PamResult.Error ? Services.I18n.t("lock.authError")
                             : Services.Voice.pick(surface.misses > 1 ? "lock.wrongAgain" : "lock.wrong")
                         surface.errorMsg = line
                         surface.say(line, true)
@@ -217,8 +217,8 @@ Scope {
             function tryUnlock() {
                 if (surface.greeting) return
                 if (surface.password.length === 0) {
-                    surface.errorMsg = "Please enter your password"
-                    surface.say("nothing to check yet", true)
+                    surface.errorMsg = Services.I18n.t("lock.needPassword")
+                    surface.say(Services.I18n.t("lock.nothingToCheck"), true)
                     errorTimer.restart()
                     shakeAnim.restart()
                     return
@@ -658,7 +658,7 @@ Scope {
 
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "Enter password..."
+                                            text: Services.I18n.t("lock.enterPassword")
                                             color: Services.Colors.ash
                                             font.pixelSize: 14
                                             font.family: "JetBrainsMono NF"
@@ -803,7 +803,7 @@ Scope {
                                     // saying wins, and Caps Lock speaks into a
                                     // silence or not at all.
                                     line: surface.saying !== "" ? surface.saying
-                                        : (Services.Keyboard.capsLock ? "caps lock is on" : "")
+                                        : (Services.Keyboard.capsLock ? Services.I18n.t("lock.capsOn") : "")
                                     isError: surface.sayingIsError
                                     font.pixelSize: 12
                                     opacity: text !== "" ? 1.0 : 0.0
@@ -877,9 +877,9 @@ Scope {
                                 // that went wrong, and shutting the machine down
                                 // on purpose is not that.
                                 model: [
-                                    { icon: "\uF8C7", label: "Shut down", cmd: "systemctl poweroff" },
-                                    { icon: "\uF053", label: "Restart",   cmd: "systemctl reboot"   },
-                                    { icon: "\uF159", label: "Suspend",   cmd: "systemctl suspend"  },
+                                    { icon: "\uF8C7", label: Services.I18n.t("power.shutdown"), cmd: "systemctl poweroff" },
+                                    { icon: "\uF053", label: Services.I18n.t("power.restart"),   cmd: "systemctl reboot"   },
+                                    { icon: "\uF159", label: Services.I18n.t("power.suspend"),   cmd: "systemctl suspend"  },
                                 ]
                                 delegate: Rectangle {
                                     id: powerItem

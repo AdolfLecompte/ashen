@@ -26,7 +26,7 @@ Scope {
         color: "transparent"
         // Everything but the bar's strip: a click on a pill has to reach it,
         // or changing panels costs two. See widgets/ShellMask.qml.
-        mask: Widgets.ShellMask { winW: win.width; winH: win.height; utilEdge: Services.AppState.clipboardSourceEdge }
+        mask: Widgets.ShellMask { winW: win.width; winH: win.height }
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.clipboardVisible
         visible: shown || closeDelay.running
@@ -173,9 +173,12 @@ Scope {
         // Same drop as Process, out of the clipboard chip on the utility pill.
         // Read live from the pill, never written at click time: a keybind never
         // clicks, and the panel used to grow from wherever the last click left.
-        readonly property string srcEdge: Services.AppState.clipboardSourceEdge
+        readonly property string srcEdge: Services.Sizes.overlayEdge
     // Its chip: on the utility pill of that edge, or on the bar.
-    readonly property var chipRect: Services.AppState.chipRectOf("clipboard", win.srcEdge)
+    // No capsule since the utility pill went: this panel arrives from the
+    // screen edge. The rect is still read while that is decided, so it is a
+    // zero rect and not null -- reading .cx off null throws four times a frame.
+    readonly property var chipRect: ({ cx: 0, cy: 0, w: 44, h: 44 })
         readonly property real openXCalc: srcEdge === "" ? NaN
         : srcEdge === "left" ? Services.Sizes.panelTop
             : srcEdge === "right" ? win.width - card.openW - Services.Sizes.panelTop
@@ -208,6 +211,7 @@ Scope {
             component TabRow: Item {
                 id: tab
                 property string name: ""
+                property string label: ""
                 property string glyph: ""
                 property int count: 0
                 readonly property bool active: win.activeTab === tab.name
@@ -232,7 +236,7 @@ Scope {
                         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                     }
                     Text {
-                        text: tab.name
+                        text: tab.label
                         color: tab.fg
                         font.pixelSize: Services.Sizes.fsBody
                         font.bold: true
@@ -310,6 +314,7 @@ Scope {
                                         id: textTab
                                         anchors.verticalCenter: parent.verticalCenter
                                         name: "Text"
+                                        label: Services.I18n.t("clipboard.text")
                                         glyph: "\ue14d"
                                         count: win.textCount
                                     }
@@ -317,6 +322,7 @@ Scope {
                                         id: imagesTab
                                         anchors.verticalCenter: parent.verticalCenter
                                         name: "Images"
+                                        label: Services.I18n.t("clipboard.images")
                                         glyph: "\ue3f4"
                                         count: win.imageCount
                                     }
@@ -349,7 +355,7 @@ Scope {
                                         height: 26
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: win.onImages ? "Search captures..." : "Search clipboard..."
+                                            text: win.onImages ? Services.I18n.t("clipboard.searchImages") : Services.I18n.t("clipboard.searchText")
                                             color: Services.Colors.ash
                                             font.pixelSize: 13
                                             font.family: "JetBrainsMono NF"
@@ -375,7 +381,7 @@ Scope {
                                         }
                                     }
                                     Text {
-                                        text: win.filtered.length + (win.filtered.length === 1 ? " item" : " items")
+                                        text: Services.I18n.t(win.filtered.length === 1 ? "clipboard.item" : "clipboard.items", { n: win.filtered.length })
                                         color: Services.Colors.ash
                                         font.pixelSize: 10
                                         font.family: "JetBrainsMono NF"

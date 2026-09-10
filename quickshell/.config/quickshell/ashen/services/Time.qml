@@ -26,6 +26,15 @@ Singleton {
     readonly property int minutes: clock.minutes
     readonly property int seconds: clock.seconds
 
-    // Shorthand for the two formats every face repeats.
-    function fmt(spec) { return Qt.formatDateTime(root.now, spec) }
+    // Every face formats through here, and every one of these goes through
+    // I18n.locale -- never the system's. The shell speaks one language.
+    function fmt(spec) { return root.now.toLocaleString(I18n.locale, spec) }
+    function fmtOf(date, spec) { return date.toLocaleString(I18n.locale, spec) }
+
+    // Day and month names. Indexes are the JavaScript ones (0 = Sunday,
+    // 0 = January), which is what QML's Locale takes too.
+    function dayName(jsDay) { return I18n.locale.dayName(jsDay) }
+    function dayShort(jsDay) { return I18n.locale.dayName(jsDay, Locale.ShortFormat) }
+    function dayNarrow(jsDay) { return I18n.locale.standaloneDayName(jsDay, Locale.NarrowFormat) }
+    function monthName(jsMonth) { return I18n.locale.monthName(jsMonth) }
 }

@@ -230,7 +230,7 @@ Scope {
             // changes colour under you.
             Services.Notifications.addSystemToast(Services.Voice.pick("wallpaper.applied"),
                                                   "\ue40b", false, "wallpaper",
-                                                  { title: "WALLPAPER SET" })
+                                                  { title: Services.I18n.t("wall.set") })
             Services.AppState.wallpaperVisible = false
         }
 
@@ -409,8 +409,8 @@ Scope {
 
                         Repeater {
                             model: [
-                                { id: "static",   label: "Static",   icon: "\ue3f4" },
-                                { id: "animated", label: "Animated", icon: "\ue02c" }
+                                { id: "static",   label: Services.I18n.t("wall.static"),   icon: "\ue3f4" },
+                                { id: "animated", label: Services.I18n.t("wall.animated"), icon: "\ue02c" }
                             ]
 
                             delegate: Rectangle {
@@ -477,8 +477,8 @@ Scope {
                         readonly property string dir: Services.Prefs.wallpaperDir !== ""
                             ? Services.Prefs.wallpaperDir : Services.Paths.wallpapers
                         text: win.category === "animated"
-                            ? "No animated wallpapers (gif / mp4 / webm) in " + dir
-                            : "No wallpapers in " + dir
+                            ? Services.I18n.t("wall.noneAnimated", { d: dir })
+                            : Services.I18n.t("wall.none", { d: dir })
                         color: Services.Colors.mist
                         font.pixelSize: 12
                         font.family: "JetBrainsMono NF"
