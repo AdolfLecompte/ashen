@@ -13,11 +13,21 @@ Singleton {
     // Who is reading the numbers right now. Two surfaces want them (the Process
     // panel and the desktop widget) and a plain flag meant the one that closed
     // switched sampling off under the one still on screen.
+    // A claim comes in one of two weights. FULL wakes all five probes every
+    // 1.5 s -- two of them, `sensors` and `nvidia-smi`, are not cheap. LIGHT
+    // wants the two readings a glance needs, cpu and memory, and is happy with
+    // them every few seconds.
+    //
+    // The distinction is not tidiness. A bar pill on a full claim measured 2.81%
+    // of a core against a shell that otherwise idles at 0.18%: fifteen times the
+    // whole rest of it, to draw two numbers. What a surface asks for has to be
+    // what it shows.
     property var claims: ({})
     readonly property bool active: Object.keys(root.claims).length > 0
-    function claim(who, on) {
+    readonly property bool deep: Object.keys(root.claims).some(k => root.claims[k] === "full")
+    function claim(who, on, weight) {
         const next = Object.assign({}, root.claims)
-        if (on) next[who] = true
+        if (on) next[who] = weight === "light" ? "light" : "full"
         else delete next[who]
         root.claims = next
     }
@@ -55,7 +65,9 @@ Singleton {
     property real prevTxBytes: -1
 
 
-    onActiveChanged: if (active) {
+    onActiveChanged: if (active) sample()
+    // The one-off reads and the expensive ones wait for somebody who shows them.
+    onDeepChanged: if (deep) {
         // the static bits only need one read, ever
         if (cpuModel === "...") cpuModelProc.running = true
         if (gpuInfo === "...") gpuProc.running = true
@@ -66,23 +78,29 @@ Singleton {
         diskProc.running = true
     }
 
+    // cpu and memory are two reads of /proc and cost nothing worth counting.
+    // The other three are a temperature sensor, a GPU query and a rate that
+    // needs two samples to mean anything -- only a surface that shows them asks.
     function sample() {
         cpuProc.running = true
         ramProc.running = true
+        if (!root.deep) return
         netProc.running = true
         sensorsProc.running = true
         gpuStatProc.running = true
     }
 
     Timer {
-        interval: 1500
+        // A panel you are reading wants 1.5 s. A pill you glance at does not,
+        // and paying panel rates for a glance is what made it expensive.
+        interval: root.deep ? 1500 : 4000
         running: root.active
         repeat: true
         onTriggered: root.sample()
     }
     Timer {
         interval: 10000
-        running: root.active
+        running: root.deep
         repeat: true
         onTriggered: diskProc.running = true
     }

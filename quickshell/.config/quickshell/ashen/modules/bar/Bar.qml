@@ -330,6 +330,7 @@ Scope {
                 Component { id: cSound; SoundPill {} }
                 Component { id: cBattery; BatteryPill {} }
                 Component { id: cKeyboard; KeyboardPill {} }
+                Component { id: cSys;         SysPill {} }
                 Component { id: cPower;         PowerPill {} }
                 Component { id: cWindow;        WindowPill {} }
 
@@ -365,6 +366,7 @@ Scope {
                     case "volume":        return cSound
                     case "battery":       return cBattery
                     case "keyboard":      return cKeyboard
+                    case "sys":           return cSys
                     case "power":         return cPower
                     case "window":        return cWindow
                     }

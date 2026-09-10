@@ -32,6 +32,7 @@ Singleton {
         volume:        { label: "Sound",         glyph: "", opens: "volumeVisible" },
         battery:       { label: "Battery",       glyph: "", opens: "batteryVisible" },
         keyboard:      { label: "Keyboard",      glyph: "", opens: "" },
+        sys:           { label: "System",        glyph: "\ue322", opens: "processVisible" },
         window:        { label: "Active window", glyph: "\ue8f5", opens: "" },
         power:         { label: "Power",         glyph: "", opens: "powerMenuVisible" },
 
@@ -42,7 +43,7 @@ Singleton {
     readonly property var arrangeable: [
         "launcher", "notifications", "workspaces", "media", "clock",
         "usb", "recording", "tray", "network", "bluetooth", "volume",
-        "battery", "keyboard", "window", "power"
+        "battery", "keyboard", "sys", "window", "power"
     ]
 
     // Has this panel got a capsule on screen to come out of?
@@ -104,7 +105,7 @@ Singleton {
     // that this one is only true on some machines, so the option has to go away
     // on those and stay on the others rather than be deleted for everybody.
     readonly property var compactable: {
-        let out = ["network", "bluetooth", "clock", "media", "window"]
+        let out = ["network", "bluetooth", "clock", "media", "window", "sys"]
         if (Brightness.icon(Brightness.level) !== "") out.push("volume")
         return out
     }
@@ -117,7 +118,7 @@ Singleton {
     // else, so "icon" would draw exactly what "full" draws -- an option that
     // changes nothing is worse than no option, because it makes you test it.
     readonly property var iconable: ["media", "recording", "window",
-                                     "network", "bluetooth", "volume", "battery", "keyboard"]
+                                     "network", "bluetooth", "volume", "battery", "keyboard", "sys"]
     function contentsFor(id) {
         return root.contents.filter(v =>
             (v.id !== "compact" || root.compactable.indexOf(id) !== -1) &&
