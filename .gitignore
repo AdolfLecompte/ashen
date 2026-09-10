@@ -34,3 +34,11 @@ __pycache__/
 # into this checkout, so the generated file lands here; tracking it would make
 # the tree dirty and the installer skip its own self-update.
 hypr/.config/hypr/conf/userkeys.lua
+
+# ── Probe renders ─────────────────────────────────────────────────────────
+# run-mark-probe.sh DRAWS mark.png with qml6 and then measures it, so tracking
+# it is storing a probe's own output. The sddm shots are what a verification
+# session looked like on a screen, not fixtures -- nothing reads them back, and
+# they were two thirds of the repository.
+docs/probes/mark.png
+docs/probes/sddm/*.png

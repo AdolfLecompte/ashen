@@ -6,7 +6,7 @@ pkgrel=1
 pkgdesc="Ashen — a Hyprland + Quickshell desktop"
 arch=('any')
 url="https://github.com/AdolfLecompte/ashen"
-license=('MIT')
+license=('GPL-3.0-or-later')
 
 # Everything the shell, the scripts and the keybinds actually invoke. A missing
 # font here is not a fallback, it is tofu: the QML asks for these by family name.
@@ -18,7 +18,7 @@ depends=(
     brightnessctl lm_sensors pciutils
     wl-clipboard cliphist grim slurp wf-recorder
     hypridle mpvpaper ffmpeg wlsunset
-    zenity fastfetch cava xdg-utils libnotify
+    fastfetch cava xdg-utils libnotify
     # curl: cover art and lyrics. imagemagick: wallpaper thumbnails.
     # python: parses `hyprctl monitors -j` in ashen-wallpaper.sh.
     # gtk3: `gtk-launch`, how a notification action opens its app.
@@ -26,17 +26,22 @@ depends=(
     ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
     awww matugen
     xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
+    # The shell Ashen ships. Not optional any more: the package places a .zshrc
+    # that names these by path and sources the prompt from its own package, so an
+    # install without them came up with no autosuggestions, no highlighting, and
+    # on plain Arch no prompt at all.
+    zsh zsh-theme-powerlevel10k zsh-autosuggestions zsh-syntax-highlighting
+    # What the shipped aliases and keybindings reach for: ls->eza, cat->bat,
+    # cd->zoxide, plus fzf's bindings and the fd it searches with.
+    fzf zoxide eza bat fd
 )
 optdepends=(
     'kitty: the terminal the keybinds open, themed by matugen'
-    'zsh: the shipped prompt and shell config'
     'nemo: the file manager the keybinds open'
     'grimblast-git: screenshot keybinds'
-    'xdg-utils: lets SUPER+W open the browser this machine already defaults to'
     'papirus-icon-theme: app icons in the launcher and the tray'
     'adw-gtk-theme: GTK apps that match the palette'
     'bibata-cursor-theme: the shipped cursor'
-    'papirus-folders: tints the folder icons to the palette'
     'polkit-gnome: the agent that asks when something needs root'
     'btop: matugen writes it a theme'
     'pacman-contrib: checkupdates, for the pending-updates readout'
@@ -66,6 +71,10 @@ package() {
     for s in scripts/ashen-*.sh; do
         install -Dm755 "$s" "$pkgdir/usr/bin/$(basename "$s")"
     done
+    # Not a .sh: the cover picker is python, and the shell calls it as
+    # `python3 <path>` -- but it still has to be findable by bare name when
+    # there is no checkout.
+    install -Dm755 scripts/ashen-cover-pick.py "$pkgdir/usr/bin/ashen-cover-pick.py"
     install -Dm755 scripts/ashen-app "$pkgdir/usr/bin/ashen-app"
     install -Dm755 scripts/ashen-setup "$pkgdir/usr/bin/ashen-setup"
     install -Dm755 scripts/ashen-widgets "$pkgdir/usr/bin/ashen-widgets"

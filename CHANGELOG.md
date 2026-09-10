@@ -1,5 +1,237 @@
 # Changelog
 
+## 3.0.0
+
+### Added
+- **One line installs it.** `install/boot.sh` is the only thing that travels
+  over curl: it checks this is Arch, fetches the repo into `~/ashen` and hands
+  over to `install/run.sh`, which draws a TUI and installs **each package as its
+  own transaction** -- one bad target used to abort the whole thing, which is
+  why fresh machines came up with no Nerd Font and half the packages missing.
+  It reports what it installed, what was already there and what failed, and
+  `--dry-run` touches nothing at all. The directory is no longer yours to get
+  wrong: the installer picks it, so `~/Ashen` and `~/ashen` can no longer
+  disagree about where the scripts live.
+- **The installer draws itself.** Five steps on screen at once -- packages,
+  dotfiles, login screen, services, folders -- each rewritten in place as it
+  goes, with a bar and the package being installed. It used to print one line
+  per package: 64 of them, scrolling past faster than they could be read, with
+  no way to tell what was left. A failure is printed above the surface so it
+  survives the redraw. On a pipe or in a dry run it prints plain lines instead,
+  because cursor movement into a log is noise.
+- **A login screen that is the shell.** An SDDM theme drawn with Ashen's own
+  bar -- session, clock and the four ways out as real pills at the numbers
+  `services/Sizes.qml` uses -- the ASCII mark on its plate, and the workspace
+  dot strip counting your keystrokes instead of asterisks. Installed by the
+  installer, which also repoints `/etc/sddm.conf`: on SDDM the plain file
+  outranks a drop-in, so a theme installed only through `sddm.conf.d` never
+  appears.
+- **A dock.** Pinned and open applications along an edge you choose, revealing
+  the way the utility pill used to. A click launches, focuses, or hides to a
+  special workspace, in that order. It can be turned off, outlined, resized and
+  moved to any edge.
+- **The system plate came apart.** Network, bluetooth, sound, battery and
+  keyboard are five separate pills now, each one arrangeable anywhere on the
+  bar rather than riding together on one tray.
+- **Every pill says how much it says.** `full`, `compact` and `icon` per pill,
+  plus an outline style -- two axes, because a pill can be compact AND outlined.
+  A pill that has nothing to trim is not offered the choice.
+- **Workspace dots**, a third style beside icons and numbers, and a count: how
+  many workspaces the bar shows is yours to set.
+- **About knows what it is.** The version, a door to what changed in it, and an
+  update check against the repository's releases -- which understands that a
+  checkout can be AHEAD of the newest tag, and does not offer that as an update.
+- **A welcome worth reading.** One card, two faces: the mark, then the keys that
+  matter, in a grid.
+- **The shell speaks four languages.** English, Spanish, Russian and German,
+  picked in Settings > System and applied on the spot -- nothing restarts, and
+  no language is compiled in: each one is a JSON file next to the shell, so
+  adding a fifth is writing a file. Everything a person reads goes through it:
+  the seven Settings tabs, the welcome and what's-new screens, every panel, the
+  bar, the desktop widgets and the lock screen. A string a translation has not
+  answered falls back to English by KEY, not by file, so a half-finished
+  language is still usable.
+- **Its own voice, written four times over rather than translated.** The bank
+  of remarks -- what the lock screen says while it checks, what an empty panel
+  says instead of nothing, what About says about updates -- is written in each
+  language's own dry register: a line carried across word for word stops being
+  one.
+- **Dates and times follow the language too**, and never the system's: the
+  shell says one thing in one voice. Day and month names, the calendar's
+  weekday row, "Today" over the forecast, and the am/pm the weather prints.
+- **An island bar.** A fourth style beside pills, solid and framed: instead of
+  one plate from edge to edge, each section of the bar gets its own, and what
+  is between them is wallpaper you can click through to.
+- **The bar need not span its edge.** A slider in Settings > Bar takes it from
+  100 % of its side down to 50 %, pulling both ends in and keeping its middle,
+  so the corners go back to the windows -- the input region follows, so they
+  really do. The framed style ignores it: there the bar IS the border.
+- **The dock is edited from Settings too.** Desktop > Dock lists what is
+  pinned, in order, with a search that pins anything installed -- the half of
+  pinning that right-clicking the dock cannot do, because an application that is
+  not running is not there to click.
+- **From a keybind**: `ipc call language set|get|list`, `ipc call bar style`,
+  `ipc call bar length`, `ipc call dock toggle|edge|pin|unpin|list`.
+
+### Changed
+- **The system pills carry the wallpaper.** Their glyphs rest on the scheme's
+  tone the way the clock's weather icon always has, and "on" rests one step
+  below snow so that hover has somewhere to go.
+- **Hover in Settings moves the word, not the box.** A button that swells
+  inside a card full of rows shoves the rhythm of the rows around; the bar's
+  pills grow because they float on a wallpaper with nothing to disturb.
+- **Settings was audited and rebuilt around what you are looking at**: the panel
+  is a reading measure rather than 1460 px of dead space, each pill's controls
+  live in the pill's own card instead of at the far end of a row, and About
+  leads with the mark rather than the word.
+- **"Glass" is called "Outline"**, which is what it draws -- and it is now ONE
+  switch for the whole bar rather than one per capsule. Fifteen of them was
+  fifteen ways to end up with a bar that is half glass and half plate.
+- **The outline belongs to the plate of the style in use.** In `solid` the whole
+  bar becomes a frame, in `island` each island does, in `framed` the ring is
+  drawn instead of filled; only in `pills` does a capsule outline itself. A
+  drawn edge with a solid middle is not an outline, it is a button.
+- **A capsule only fills itself when it IS a capsule on a wallpaper.** On a
+  solid or island bar, or in outline, "on" is carried by the letters taking the
+  accent -- a filled block inside a filled plate is a block inside a block. The
+  reading rests brighter there too, or wifi and bluetooth read as switched off
+  beside a battery that did not.
+- **Settings was reorganised around what each word promises.** The bar moved out
+  of Desktop into its own tab -- it was carrying the bar, the dock AND the
+  wallpaper widgets under one name that answered for none of them -- Devices is
+  called Sound, which is all it held, and the default applications moved to
+  System, because which terminal opens is not something you type.
+- **The profile picture moved** out of About and next to the lock screen it
+  appears on.
+- **The utility pill is gone.** Its three tools keep their keybinds, and the
+  dock inherited the edge it used to peek from.
+- **A widget's name yields to its figure** rather than running under it, and a
+  weather cell's caption elides inside its quarter of the row. Both were drawn
+  around English words and translations are longer.
+- **A network you join from the scan flies into the middle.** Agreeing to a
+  stranger sent the SCAN CHIP riding back to its slot, so the one piece that
+  moved was the one you had not picked -- the network you chose simply appeared
+  in the centre a second later. It travels there from the slot you picked it in
+  now, the same journey a saved node makes, and the ring only goes back to the
+  saved networks once it has landed.
+- **A saved network can be forgotten from the graph.** Right-click the node and
+  it asks; right-click again and it goes. It used to be Settings or nowhere,
+  because the panel lost its "connected" card and the forget button with it. It
+  asks rather than acts, since a stray click on a saved network is not something
+  to be sorry about afterwards, and the question is drawn in the accent -- this
+  shell does not say destructive in red.
+- **The picture chooser says what it is choosing.** The same box answers two
+  different questions -- the lock screen's face and a wallpaper widget's picture
+  -- and it opened on a path and nothing else, so the only way to know which one
+  had asked was to remember asking. It dims the desktop behind it now instead of
+  floating over a lit window, its thumbnails fade in as they decode rather than
+  filling a field of empty plates at random, the tiles share out the row instead
+  of leaving a column of dead air at the right edge, a rule separates the places
+  from the grid, and a folder still being read says so -- an empty grid and a
+  folder with no pictures in it used to look exactly alike. Changing folder
+  sweeps the way you walked -- out towards where you came from, in from where
+  you went -- instead of nudging down and back on the same side, which says a
+  list reloaded rather than that you moved. And hovering a tile grows it INTO
+  its slot: it used to scale past it, overlapping its neighbours and being cut
+  off by the grid's own clipping on the rows at the top and bottom of the view.
+- **One package fewer.** `zenity` was still a hard dependency of a shell that
+  stopped using it: choosing a picture and choosing a folder are both the
+  shell's own dialogs now, and the only zenity left in the tree is a window rule
+  naming its class. `xdg-utils` was listed twice over, as a dependency and as an
+  optional one.
+
+### Fixed
+- **Two packages did not exist on Arch, and two were listed as if they did not.**
+  `mpvpaper` and `zsh-theme-powerlevel10k` were in the official list and are not
+  in the official repos -- this machine only had them because CachyOS ships them
+  in its own -- while `awww` and `matugen` were listed as AUR after landing in
+  `extra`. Found by installing into a clean Arch container, which is the only
+  place where "it works here" stops being an argument.
+- **Shortcuts could not be rebound at all.** Hyprland runs its own binds before
+  the key reaches the client, so a chip waiting for SUPER+T opened a terminal
+  and never heard the press. While Settings listens, the session now sits in an
+  empty submap where every key falls through.
+- **A toast could arrive with its title and nothing under it.** The phrase bank
+  is read asynchronously and Keep Awake fired while restoring preferences, when
+  the bank was still empty. The remark is a binding now: a binding re-runs when
+  the bank lands, a signal handler never does.
+- **Three Settings tabs could not be scrolled**, so anything past the fold was
+  simply unreachable.
+- **The dock did nothing at all when you clicked a running application.** It
+  spoke to Hyprland in the classic dispatch syntax (`focuswindow class:^(x)$`),
+  which a Lua config answers with a parse error and no window ever moved. The
+  same mistake was in the generated `hypridle.conf`, where it meant **the screen
+  never went dark on idle**, and in the shortcut editor.
+- **The screen selection was drawn invisible.** The screenshot keybind asked
+  slurp for a zero-width border on a transparent screen, so you dragged an
+  unlit rectangle over an undimmed desktop. It now dims the screen and draws its
+  edge in the shell's accent -- and the black line that used to appear along a
+  capture is gone with it: grimblast disables the selection's animation itself,
+  but it does so through `hyprctl keyword`, which a Lua config refuses, so the
+  rule now lives in `windowrules.lua` where it holds.
+- **The screenshot toast never said where the file went**, which is the one
+  thing anybody wants to know afterwards. It names the folder now.
+- **The recording timer disappeared while recording** on any bar style whose
+  capsules do not fill: it was painted in the colour meant to be read ON the
+  accent, with no accent behind it.
+- **Workspace icons could not be turned off** -- the preference existed and was
+  honoured, but nothing in Settings offered it.
+- **`conf/appkeys.lua` bound the four app keys to `undefined`.** Nothing ever
+  required the file; it only shipped and confused.
+- **Sunrise and sunset were read out of the printed time.** The clock panel and
+  the sun widget both parsed "6:12 PM" back into a number, which is fine until
+  the printed time changes with the language. Weather now publishes the two as
+  minutes past midnight, and nothing parses a string that is drawn on screen.
+- **Every system capsule sat lit in the accent all day** on a solid, framed or
+  outlined bar. Where a capsule cannot fill, "on" is carried by the letters --
+  and the wifi, the bluetooth and the sound reading are *on* whenever their
+  radio is, which is nearly always. Only an open panel accents them now; what
+  the radio is doing is the glyph's job, which is what the battery beside them
+  was already doing. The keyboard layout stops shouting too: it rested a step
+  brighter than everything else for no reason of its own.
+- **The media capsule came back empty** after the bar was moved to a side edge
+  and back: a plate of the right width with no cover, no title and no transport
+  inside it. Its row swapped four anchors at once to change axis, the four do
+  not re-evaluate in a fixed order, and for one frame two of them contradicted
+  each other -- Qt drops one of a conflicting pair, and what was left was the
+  position the other edge had used, which the plate then clipped away. It is
+  centred on both axes now and swaps nothing.
+- **A side bar had three different gaps in it.** Two buttons stood 4 px apart,
+  a button and a tall capsule 12, two tall capsules 20 -- because a tall one
+  bought air on each of its sides and two of them in a row paid for it twice.
+  One gap now, the same between any two neighbours: a 44 px button already
+  reads as a different thing from a 190 px column without the space saying so.
+- **The layout editor's plates could not grow past three rows.** They were
+  written when there were eleven capsules to arrange; the day the system plate
+  became five separate pills a section could hold more than fits, and the chips
+  wrapped out through the bottom of a plate that has no clipping on purpose.
+  Three rows is the floor now, and the three bar sections still draw as one
+  height so the row keeps reading as three equal places.
+- **The dock lost its plate whenever the bar was solid or framed**, leaving bare
+  icons floating over the wallpaper. It was painted with the token that means
+  "the bar is one plate, so its capsules do not paint a second one" -- a
+  sentence about the bar, borrowed by a surface on another edge entirely.
+- **The dock's position picker offered three sides and no explanation.** The
+  missing one is whichever edge the bar is on, so the answer moved with the bar
+  and looked like a feature that was not finished. All four are shown now, the
+  bar's own greyed out with a line saying why. The dock also steps to the
+  opposite edge by itself if the bar is later moved on top of it -- the picker
+  could refuse the choice, but nothing stopped you making it the other way
+  round.
+- **The three power profiles were an unlabelled leaf, balance and rocket.** The
+  battery panel's own comment says the word is what ends the guessing, and the
+  word had gone missing: the model rows carried an id and a glyph and no label
+  at all, so the shell printed "Unable to assign [undefined] to QString" three
+  times on every single start and drew three anonymous icons. They say Saver,
+  Balanced and Performance again, in whatever language you are running.
+- **Half the surfaces never drew the panel outline.** Everything that reads the
+  panel colour got thinner when the outline was switched on, but only three
+  places drew the line itself -- the notifications, the tray menu, the OSD, the
+  media and clock cards and the wallpaper's own editing surfaces went
+  see-through and stayed edgeless. The width is one token now, next to the fill
+  it belongs with, rather than a preference each surface had to remember to
+  spell out.
+
 ## 2.2.0
 
 ### Added
