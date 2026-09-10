@@ -19,6 +19,22 @@ grep -q 'zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' $files \
 # ...and not twice, where CachyOS already did it.
 grep -q '$+functions\[p10k\]' $files \
   && say ok "guarded against double load" || { say FAIL "unguarded p10k source"; fail=1; }
+# ...and not at all when the theme is not installed. It is an AUR package, the
+# installer skips the AUR list on a machine with no helper, and an unguarded
+# source printed "no such file or directory" on every shell that opened after.
+grep -q '\[\[ -r /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme \]\]' $files \
+  && say ok "guarded against a missing theme" \
+  || { say FAIL "sources p10k without checking it is there"; fail=1; }
+
+# compinit reads fpath as it RUNS, so a directory added after it is one it never
+# saw. And -i, or a group-writable completion dir makes it print a wall of text
+# and block on a [y/n] below the instant prompt -- where p10k says no question
+# may ever be.
+awk '/^fpath=/{f=NR} /compinit/{c=NR} END{exit !(f && c && f < c)}' zsh/.config/zsh/.zshrc \
+  && say ok "fpath set before compinit" || { say FAIL "compinit runs before fpath"; fail=1; }
+grep -q 'compinit -i' zsh/.config/zsh/.zshrc \
+  && say ok "compinit will not stop to ask" \
+  || { say FAIL "compinit can block on insecure dirs"; fail=1; }
 # The config ships at the path p10k configure writes AND cachyos looks in.
 [ -f zsh/.p10k.zsh ] && say ok "p10k ships to ~/.p10k.zsh" || { say FAIL "no zsh/.p10k.zsh"; fail=1; }
 [ -f zsh/.config/zsh/.p10k.zsh ] && { say FAIL "old p10k path still present"; fail=1; } \

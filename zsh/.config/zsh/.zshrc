@@ -17,11 +17,25 @@ fi
 # The prompt comes from the distro package, not from a cloned theme dir. The
 # block above already sourced it on CachyOS, so this is a no-op there -- and it
 # is the WHOLE prompt on plain Arch, where nothing else would have loaded it.
-(( $+functions[p10k] )) || source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+#
+# Checked for on disk, not just for being loaded: powerlevel10k lives in the AUR,
+# the installer skips the AUR list on a machine with no helper AND SAYS SO, and
+# an unguarded source then printed "no such file or directory" on every single
+# shell that opened afterwards. Missing the prompt is a choice that machine made;
+# an error on every prompt is not.
+[[ -r /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme ]] \
+    && (( ! $+functions[p10k] )) \
+    && source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # ── Completions ───────────────────────────────────────────
-autoload -Uz compinit && compinit
+# fpath FIRST: compinit reads it as it runs, so a directory added on the line
+# after is a directory it never saw -- everything in site-functions was going
+# uncompleted. -i rather than the bare call: on a fresh machine a group-writable
+# completion directory makes compinit print a wall of text and then BLOCK on a
+# [y/n], below the instant prompt, which is the one place p10k says a question
+# must never be. Insecure directories are skipped instead of asked about.
 fpath=(/usr/share/zsh/site-functions $fpath)
+autoload -Uz compinit && compinit -i
 
 # ── Plugins ───────────────────────────────────────────────
 # Straight from the packages. Oh My Zsh was carrying these through a custom dir
