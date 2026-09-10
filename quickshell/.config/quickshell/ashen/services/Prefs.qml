@@ -409,86 +409,93 @@ Singleton {
 
     readonly property string configDir: Paths.config
 
+    // ── Persistence ──────────────────────────────────────────────────────
+    // Every key that outlives a restart, named once. This list is what the 62
+    // `property alias` lines of a JsonAdapter used to be -- and with them goes
+    // the trap that made half of these prefs packed strings in the first place:
+    // the adapter wrote on EVERY change, so two settings moved in the same tick
+    // raced and one of them was quietly lost. Nothing writes per change now.
+    readonly property var keys: [
+        "clockSeconds", "clock24h", "tempUnit", "weatherLoc", "weatherLocs",
+        "keyboardLayout", "useGradients", "panelStyle", "themeMode",
+        "language", "doNotDisturb", "keepAwake", "notifySound",
+        "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
+        "toastSeconds", "maxToasts", "hiddenPills", "barLayout", "barContent",
+        "barOutline", "panelOutline", "widgetOutline", "dockPins", "dockEdge",
+        "dockAutohide", "dockEnabled", "dockGlass", "dockIconSize",
+        "workspaceCount", "displayLayout", "desktopLayout", "appTerminal",
+        "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
+        "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
+        "lockShowMachine", "lockShowSystem", "lockShowNotifications",
+        "workspaceIcons", "workspaceStyle", "idleLockSecs",
+        "idleScreenOffSecs", "idleSuspendSecs", "barPosition", "barStyle",
+        "barLength", "barAutohide", "visualizer", "mediaLyrics",
+        "nightLightEnabled", "nightLightScheduled", "nightLightTemp",
+        "nightLightFrom", "nightLightTo"
+    ]
+
+    // All of them read at once. A binding and not a function: it re-runs ONCE
+    // per tick however many of them moved, which is exactly the coalescing the
+    // adapter could not do. Same idiom as Looks.live.
+    readonly property var snapshot: {
+        let o = ({})
+        for (let i = 0; i < root.keys.length; i++) o[root.keys[i]] = root[root.keys[i]]
+        return o
+    }
+    onSnapshotChanged: if (root.loaded) saveTimer.restart()
+
+    Timer {
+        id: saveTimer
+        // Long enough to swallow a burst -- a Settings card whose three
+        // switches move together -- and short enough that a crash cannot eat a
+        // change you actually watched land.
+        interval: 250
+        onTriggered: root.save()
+    }
+
+    // The text travels as an argv entry, never through the shell's parser: a
+    // wallpaper path or an SSID can hold a quote and this file is full of both.
+    // Same write Idle uses for hypridle.conf, and for the same reason.
+    function save() {
+        Quickshell.execDetached(["sh", "-c",
+            'mkdir -p "$(dirname "$2")" && printf %s "$1" > "$2"',
+            "sh", JSON.stringify(root.snapshot, null, 4) + "\n", prefsFile.path])
+    }
+
+    // A key the file does not carry keeps the code default. Assigning
+    // `undefined` would blank a string, and the next save would write the blank
+    // down as if you had asked for it.
+    function restore(text) {
+        let obj
+        try { obj = JSON.parse(text) } catch (e) { return false }
+        if (!obj || typeof obj !== "object") return false
+        for (let i = 0; i < root.keys.length; i++) {
+            const k = root.keys[i]
+            if (obj[k] !== undefined) root[k] = obj[k]
+        }
+        return true
+    }
+
+    // Assign first, rebuild the two derived lists, and only then say loaded --
+    // syncBarLayout reads hiddenPills and barLayout, and `loaded` is the gate
+    // that opens the write path.
+    function settle() {
+        root.syncHiddenPills()
+        root.syncBarLayout()
+        root.loaded = true
+    }
+
     FileView {
         id: prefsFile
         path: root.configDir + "/prefs.json"
-        // Deliberately NOT watchChanges: this file has no writer but us, and
-        // reload()-ing our own writeAdapter() re-reads it mid-flight and reverts
-        // whatever was set a moment earlier.
-        // Any write to the adapter lands on disk immediately
-        // Never before the read: the adapter starts on the code defaults, and a
-        // reload landing mid-read wrote those over the saved ones.
-        onAdapterUpdated: if (root.loaded) writeAdapter()
-        // File on disk is now the source of truth: let consumers act on it.
-        onLoaded: { root.syncHiddenPills(); root.syncBarLayout(); root.loaded = true }
-        // First run: no file yet, so seed it with the defaults above. Still
-        // "loaded" -- the empty state IS the loaded state (Weather will geolocate).
-        onLoadFailed: function(error) { writeAdapter(); root.syncHiddenPills(); root.syncBarLayout(); root.loaded = true }
-
-        JsonAdapter {
-            id: adapter
-            property alias clockSeconds: root.clockSeconds
-            property alias clock24h: root.clock24h
-            property alias tempUnit: root.tempUnit
-            property alias weatherLoc: root.weatherLoc
-            property alias weatherLocs: root.weatherLocs
-            property alias keyboardLayout: root.keyboardLayout
-            property alias useGradients: root.useGradients
-            property alias panelStyle: root.panelStyle
-            property alias themeMode: root.themeMode
-            property alias language: root.language
-            property alias doNotDisturb: root.doNotDisturb
-            property alias keepAwake: root.keepAwake
-            property alias notifySound: root.notifySound
-            property alias notifySoundFile: root.notifySoundFile
-            property alias notifySoundCriticalOnly: root.notifySoundCriticalOnly
-            property alias soundVolume: root.soundVolume
-            property alias toastSeconds: root.toastSeconds
-            property alias maxToasts: root.maxToasts
-            property alias hiddenPills: root.hiddenPills
-            property alias barLayout: root.barLayout
-            property alias barContent: root.barContent
-            property alias barOutline: root.barOutline
-            property alias panelOutline: root.panelOutline
-            property alias widgetOutline: root.widgetOutline
-            property alias dockPins: root.dockPins
-            property alias dockEdge: root.dockEdge
-            property alias dockAutohide: root.dockAutohide
-            property alias dockEnabled: root.dockEnabled
-            property alias dockGlass: root.dockGlass
-            property alias dockIconSize: root.dockIconSize
-            property alias workspaceCount: root.workspaceCount
-            property alias displayLayout: root.displayLayout
-            property alias desktopLayout: root.desktopLayout
-            property alias appTerminal: root.appTerminal
-            property alias appBrowser: root.appBrowser
-            property alias appFiles: root.appFiles
-            property alias appEditor: root.appEditor
-            property alias keyOverrides: root.keyOverrides
-            property alias recordAudio: root.recordAudio
-            property alias recordDir: root.recordDir
-            property alias wallpaperDir: root.wallpaperDir
-            property alias lockShowMedia: root.lockShowMedia
-            property alias lockShowWeather: root.lockShowWeather
-            property alias lockShowMachine: root.lockShowMachine
-            property alias lockShowSystem: root.lockShowSystem
-            property alias lockShowNotifications: root.lockShowNotifications
-            property alias workspaceIcons: root.workspaceIcons
-            property alias workspaceStyle: root.workspaceStyle
-            property alias idleLockSecs: root.idleLockSecs
-            property alias idleScreenOffSecs: root.idleScreenOffSecs
-            property alias idleSuspendSecs: root.idleSuspendSecs
-            property alias barPosition: root.barPosition
-            property alias barStyle: root.barStyle
-            property alias barLength: root.barLength
-            property alias barAutohide: root.barAutohide
-            property alias visualizer: root.visualizer
-            property alias mediaLyrics: root.mediaLyrics
-            property alias nightLightEnabled: root.nightLightEnabled
-            property alias nightLightScheduled: root.nightLightScheduled
-            property alias nightLightTemp: root.nightLightTemp
-            property alias nightLightFrom: root.nightLightFrom
-            property alias nightLightTo: root.nightLightTo
-        }
+        // Deliberately NOT watchChanges: nothing writes this but us, and
+        // re-reading our own write lands the old values back on the new ones.
+        //
+        // A file that fails to PARSE is settled but deliberately NOT saved: the
+        // defaults stand for this session, and the unreadable file is left
+        // alone rather than overwritten by them. Only a real change writes.
+        onLoaded: { root.restore(prefsFile.text()); root.settle() }
+        // No file yet. Seed it, rather than leaving a failed read in every log.
+        onLoadFailed: { root.settle(); root.save() }
     }
 }
