@@ -92,11 +92,64 @@ Scope {
             // at the screen edge stays live -- the rest belongs to the windows.
             readonly property int maskThick: bar.revealed ? Services.Sizes.barH
                                                           : Services.Sizes.peekPx
+            // In the island style the band is not there to be clicked -- only
+            // the plates are, so the gaps between them belong to the wallpaper.
+            // While the bar is hidden the thread at the edge is the whole
+            // region in every style, which is what wakes it again.
+            readonly property bool islandMask: Services.Sizes.barIsland && bar.revealed
+            // A bar that does not reach the corners must not keep taking their
+            // clicks. The band is still the full thickness -- only its LENGTH
+            // follows the setting, which is what the setting is about.
+            readonly property bool shortMask: Services.Sizes.barLength < 100 && bar.revealed
+            readonly property int maskFrom: bar.shortMask
+                ? (bar.vertical ? content.y + strip.y : content.x + strip.x) - Services.Sizes.plateAlong : 0
+            readonly property int maskLen: bar.shortMask
+                ? (bar.vertical ? strip.height : strip.width) + Services.Sizes.plateAlong * 2 : 0
             mask: Region {
-                x: (bar.vertical && bar.edge === "right") ? bar.width - bar.maskThick : 0
-                y: (!bar.vertical && bar.edge === "bottom") ? bar.height - bar.maskThick : 0
-                width: bar.vertical ? bar.maskThick : bar.width
-                height: bar.vertical ? bar.height : bar.maskThick
+                x: (bar.vertical && bar.edge === "right") ? bar.width - bar.maskThick
+                   : (bar.vertical ? 0 : bar.maskFrom)
+                y: (!bar.vertical && bar.edge === "bottom") ? bar.height - bar.maskThick
+                   : (bar.vertical ? bar.maskFrom : 0)
+                width: bar.islandMask ? 0
+                       : (bar.vertical ? bar.maskThick
+                          : (bar.shortMask ? bar.maskLen : bar.width))
+                height: bar.islandMask ? 0
+                        : (bar.vertical ? (bar.shortMask ? bar.maskLen : bar.height)
+                           : bar.maskThick)
+
+                // A plate each. Numbers, never `item:`: a region bound to an
+                // item follows its SCENE position, and the strip carries the
+                // auto-hide Translate -- see the note above.
+                Region {
+                    intersection: Intersection.Combine
+                    x: bar.islandMask ? content.x + startPlate.x : 0
+                    y: bar.islandMask ? content.y + startPlate.y : 0
+                    width: bar.islandMask ? startPlate.width : 0
+                    height: bar.islandMask ? startPlate.height : 0
+                }
+                Region {
+                    intersection: Intersection.Combine
+                    x: bar.islandMask ? content.x + centrePlate.x : 0
+                    y: bar.islandMask ? content.y + centrePlate.y : 0
+                    width: bar.islandMask ? centrePlate.width : 0
+                    height: bar.islandMask ? centrePlate.height : 0
+                }
+                Region {
+                    intersection: Intersection.Combine
+                    x: bar.islandMask ? content.x + endPlate.x : 0
+                    y: bar.islandMask ? content.y + endPlate.y : 0
+                    width: bar.islandMask ? endPlate.width : 0
+                    height: bar.islandMask ? endPlate.height : 0
+                }
+                // The sliver at the screen edge stays live so a pointer sliding
+                // along the bar between two islands does not put it away.
+                Region {
+                    intersection: Intersection.Combine
+                    x: (bar.vertical && bar.edge === "right") ? bar.width - Services.Sizes.peekPx : 0
+                    y: (!bar.vertical && bar.edge === "bottom") ? bar.height - Services.Sizes.peekPx : 0
+                    width: !bar.islandMask ? 0 : (bar.vertical ? Services.Sizes.peekPx : bar.width)
+                    height: !bar.islandMask ? 0 : (bar.vertical ? bar.height : Services.Sizes.peekPx)
+                }
             }
 
             // A row on a horizontal bar, a column on a vertical one. Everything
@@ -119,6 +172,7 @@ Scope {
                 spacing: Services.Sizes.barGap
                 horizontalItemAlignment: Grid.AlignHCenter
                 verticalItemAlignment: Grid.AlignVCenter
+
             }
 
             // Is the pointer on the bar? Two sources, because neither can answer
@@ -147,6 +201,13 @@ Scope {
                 // side bar always (Sizes.barSpill). Everything on the bar is laid
                 // out against THIS, so the extra width changes nothing; a chip
                 // that paints past it simply is not clipped.
+                // Yes, this trades `fill` against the four sides it is made of,
+                // which is the pattern that emptied the media capsule
+                // (see MediaPill). Spelling it out as four always-answered
+                // anchors -- top/bottom fixed, left/right toggling with the
+                // edge -- was tried on 2026-09-09 and drew NOTHING on either
+                // side bar: the window landed at the right rect and the strip
+                // inside it never appeared. It works as written; leave it.
                 anchors.fill: bar.vertical ? undefined : parent
                 anchors.top: bar.vertical ? parent.top : undefined
                 anchors.bottom: bar.vertical ? parent.bottom : undefined
@@ -189,7 +250,17 @@ Scope {
                     // Room the frame needs on the outer side, and along both
                     // ends where its side bands run.
                     readonly property int frame: Services.Sizes.barFramed ? Services.Sizes.frameW : 0
-                    readonly property int along: Services.Sizes.plateAlong + strip.frame
+                    // What the length setting takes off each end. Half the
+                    // shortfall per side, so the bar keeps its middle.
+                    // Not readonly: it carries a Behavior, so the ends slide in
+                    // instead of jumping when the slider moves.
+                    property int shorten: Math.round(
+                        (bar.vertical ? bar.height : bar.width)
+                        * (100 - Services.Sizes.barLength) / 200)
+                    readonly property int along: Services.Sizes.plateAlong + strip.frame + strip.shorten
+                    Behavior on shorten {
+                        NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut }
+                    }
                     readonly property int cross: Services.Sizes.plateCross
 
                     anchors.fill: parent
@@ -222,7 +293,12 @@ Scope {
                     z: -2
                     visible: Services.Sizes.barPlate
                     radius: Services.Sizes.barR
-                    color: Services.Colors.surfaceBar
+                    // Outline is the plate's business in this style: the whole
+                    // bar becomes a frame, rather than fifteen little ones.
+                    color: Services.Prefs.barOutline ? Services.Colors.surfaceGlass
+                                                     : Services.Colors.surfaceBar
+                    border.width: Services.Prefs.barOutline ? Services.Sizes.outlineW : 0
+                    border.color: Services.Colors.fillOutline
                 }
 
                 // Full bar window, never the strip: the wave grows out of the
@@ -233,7 +309,9 @@ Scope {
                 // ring, another window entirely, so the wave is drawn there.
                 CavaBackground {
                     z: -3
-                    visible: !Services.Sizes.barFramed
+                    // Nothing to hide behind in the island style: the wave would
+                    // climb the screen edge in the gaps between the plates.
+                    visible: !Services.Sizes.barFramed && !Services.Sizes.barIsland
                 }
                 // ── Layout ──────────────────────────────────────────────
                 // Which pill goes where is Prefs.barLayout's business: each id maps to
@@ -246,7 +324,11 @@ Scope {
                 Component { id: cUsb;           USBPill {} }
                 Component { id: cRecording;     RecordingPill {} }
                 Component { id: cTray;          TrayPill {} }
-                Component { id: cSystem;        SystemPill {} }
+                Component { id: cNetwork; NetworkPill {} }
+                Component { id: cBluetooth; BluetoothPill {} }
+                Component { id: cSound; SoundPill {} }
+                Component { id: cBattery; BatteryPill {} }
+                Component { id: cKeyboard; KeyboardPill {} }
                 Component { id: cPower;         PowerPill {} }
                 Component { id: cWindow;        WindowPill {} }
 
@@ -277,7 +359,11 @@ Scope {
                     case "usb":           return cUsb
                     case "recording":     return cRecording
                     case "tray":          return cTray
-                    case "system":        return cSystem
+                    case "network":       return cNetwork
+                    case "bluetooth":     return cBluetooth
+                    case "volume":        return cSound
+                    case "battery":       return cBattery
+                    case "keyboard":      return cKeyboard
                     case "power":         return cPower
                     case "window":        return cWindow
                     }
@@ -321,14 +407,13 @@ Scope {
                     visible: holder.item
                         ? (holder.item.wanted === undefined || holder.item.wanted)
                         : false
-                    // A block breathes, a button does not -- see Sizes.barGap.
-                    // Read off the pill's own height so a column that grows or
-                    // shrinks keeps the rule without naming itself here.
-                    readonly property int air: (bar.vertical && holder.item
-                        && holder.item.height > Services.Sizes.barBlockAt)
-                        ? Services.Sizes.barBlockAir : 0
+                    // No padding of its own: the group's spacing is the whole
+                    // rule. A block used to buy air on BOTH its sides, and two
+                    // blocks in a row paid for it twice -- 4 px between two
+                    // buttons, 12 next to a block, 20 between two blocks, which
+                    // reads as three gaps chosen at random rather than one bar.
                     implicitWidth: holder.item ? holder.item.width : 0
-                    implicitHeight: holder.item ? holder.item.height + slot.air * 2 : 0
+                    implicitHeight: holder.item ? holder.item.height : 0
                     // A pill may name the point the bar should pivot on -- the
                     // clock centres its TIME, not its box, so the date beside
                     // it does not push the hour off the middle of the screen.
@@ -338,9 +423,9 @@ Scope {
 
                     Loader {
                         id: holder
-                        y: slot.air
                         sourceComponent: content.pillFor(parent.pillId)
                     }
+
 
                     // Only a pill that was not on the bar a moment ago makes an
                     // entrance; one rebuilt around a neighbour's move does not.
@@ -358,11 +443,50 @@ Scope {
                     Behavior on opacity { enabled: slot.entering; NumberAnimation { duration: Services.Sizes.msStandard } }
                 }
 
+
+                // ── Island plates ───────────────────────────────────────
+                // One plate per section, each hugging its own group with the
+                // same air the solid plate keeps at the ends. A section with
+                // nothing in it has no plate: an empty block is not a block.
+                component GroupPlate: Rectangle {
+                    property Item group: null
+                    readonly property int along: Services.Sizes.plateAlong
+                    visible: Services.Sizes.barIsland && width > 0 && group && group.visible
+                    z: -2
+                    radius: Services.Sizes.barR
+                    // Each island outlines as one island. Outlining the pills
+                    // inside a filled block reads as a mistake; the block is
+                    // the shape that is either filled or drawn.
+                    color: Services.Prefs.barOutline ? Services.Colors.surfaceGlass
+                                                     : Services.Colors.surfaceBar
+                    border.width: Services.Prefs.barOutline ? Services.Sizes.outlineW : 0
+                    border.color: Services.Colors.fillOutline
+                    x: group ? (bar.vertical ? group.x : group.x - along) : 0
+                    y: group ? (bar.vertical ? group.y - along : group.y) : 0
+                    width: !group || group.width <= 0 ? 0
+                         : (bar.vertical ? group.width : group.width + along * 2)
+                    height: !group || group.height <= 0 ? 0
+                          : (bar.vertical ? group.height + along * 2 : group.height)
+                }
+                GroupPlate { id: startPlate;  group: startGroup }
+                GroupPlate { id: centrePlate; group: centreGroup }
+                GroupPlate { id: endPlate;    group: endGroup }
+
                 // ── Left ────────────────────────────────────────────────
+                // In the island style each group stands on a plate that is
+                // `plateAlong` WIDER than the group on both sides (GroupPlate).
+                // Anchored flush to the strip, that plate hangs off the screen
+                // by exactly that much -- which is what the right-hand island
+                // was doing. The groups step in by the plate's own overhang.
+                readonly property int islandInset: Services.Sizes.barIsland
+                                                   ? Services.Sizes.plateAlong : 0
+
                 BarGroup {
                     id: startGroup
-                    x: bar.vertical ? strip.x + (strip.width - width) / 2 : strip.x
-                    y: bar.vertical ? strip.y : strip.y + (strip.height - height) / 2
+                    x: bar.vertical ? strip.x + (strip.width - width) / 2
+                                    : strip.x + content.islandInset
+                    y: bar.vertical ? strip.y + content.islandInset
+                                    : strip.y + (strip.height - height) / 2
                     move: Transition { NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
 
                     Repeater {
@@ -385,11 +509,45 @@ Scope {
                                         : anchorItem.x + anchorItem.pivot)
                         : (bar.vertical ? height / 2 : width / 2)
 
+                    // ── When the edge is not wide enough ─────────────────
+                    // The three groups are placed independently -- left at the
+                    // end, right at the other, centre pivoted on the clock --
+                    // and nothing stopped them meeting. On a 1280-wide screen
+                    // (or a 1600 one at scale 1.25, which is the same 1280) the
+                    // clock was drawn straight through the system pills.
+                    //
+                    // The centre is the one that yields: it slides out of the
+                    // way first, and stands down entirely when there is no gap
+                    // left to slide into. Off-centre is a compromise; two pills
+                    // sharing the same pixels is a fault.
+                    readonly property real freeFrom: bar.vertical
+                        ? startGroup.y + startGroup.height + Services.Sizes.barGap
+                        : startGroup.x + startGroup.width + Services.Sizes.barGap
+                    readonly property real freeTo: bar.vertical
+                        ? endGroup.y - Services.Sizes.barGap
+                        : endGroup.x - Services.Sizes.barGap
+                    readonly property real span: bar.vertical ? height : width
+                    readonly property bool fits: (freeTo - freeFrom) >= span
+
+                    // Faded out and switched off, NOT `visible: false`: hiding
+                    // it changes the width that `fits` is measured from, and QML
+                    // reported the binding loop that makes ("Binding loop
+                    // detected for property fits") -- with the right-hand group
+                    // disappearing off the bar as collateral.
+                    enabled: centreGroup.fits
+                    opacity: centreGroup.fits ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+
                     // The strip is inset by the same amount at both ends, so its
-                    // middle is still the middle of the screen.
+                    // middle is still the middle of the screen -- until one of
+                    // the sides reaches for it.
                     x: bar.vertical ? strip.x + (strip.width - width) / 2
-                                    : strip.x + strip.width / 2 - anchorMid
-                    y: bar.vertical ? strip.y + strip.height / 2 - anchorMid
+                                    : Math.max(centreGroup.freeFrom,
+                                        Math.min(centreGroup.freeTo - width,
+                                                 strip.x + strip.width / 2 - anchorMid))
+                    y: bar.vertical ? Math.max(centreGroup.freeFrom,
+                                        Math.min(centreGroup.freeTo - height,
+                                                 strip.y + strip.height / 2 - anchorMid))
                                     : strip.y + (strip.height - height) / 2
 
                     Repeater {
@@ -409,8 +567,8 @@ Scope {
                 BarGroup {
                     id: endGroup
                     x: bar.vertical ? strip.x + (strip.width - width) / 2
-                                    : strip.x + strip.width - width
-                    y: bar.vertical ? strip.y + strip.height - height
+                                    : strip.x + strip.width - width - content.islandInset
+                    y: bar.vertical ? strip.y + strip.height - height - content.islandInset
                                     : strip.y + (strip.height - height) / 2
                     move: Transition { NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
 

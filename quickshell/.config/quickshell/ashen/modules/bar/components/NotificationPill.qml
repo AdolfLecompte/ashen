@@ -5,6 +5,10 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("notifications")
+    readonly property bool outlined: Services.Pills.isOutlined("notifications")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -15,13 +19,13 @@ Rectangle {
 
     width: pillH; height: pillH
     radius: Services.Sizes.pillR
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
+    border.color: Services.Colors.fillOutline
     // Whole containment pill fills with the accent while the panel is open, the
     // same inversion every other active pill uses (see RecordingPill /
     // No inner box, and no hover tint on the plate.
-    color: open ? Services.Colors.ghost : Services.Colors.pillPlate
-    gradient: Services.Prefs.useGradients && open
-        ? Services.Colors.accentGradient : null
-    border.width: 0
+    color: root.outlined ? Services.Colors.surfaceGlass : ((open && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
+    gradient: Services.Prefs.useGradients && open ? Services.Colors.accentGradient : null
     Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
 
     PillCenter { key: "notification" }
@@ -33,7 +37,7 @@ Rectangle {
         text: root.dnd ? "\uE7F6" : "\uE7F4"
         // Dark only on the accent fill. The hover plate is a surface tone, so
         // the glyph lifts to snow on it the same way it does at rest.
-        color: root.open ? Services.Colors.accentText
+        color: root.open ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 24
         font.family: "Material Symbols Rounded"

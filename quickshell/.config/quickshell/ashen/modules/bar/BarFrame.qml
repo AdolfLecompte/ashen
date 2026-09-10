@@ -135,9 +135,14 @@ Scope {
                     }
 
                     // Two rectangles, odd-even: the screen minus a rounded hole.
+                    // Outlined, the ring stops being a filled border and
+                    // becomes a drawn one: glass through it, and its two edges
+                    // -- the screen's and the hole's -- carried by the stroke.
                     ShapePath {
-                        fillColor: Services.Colors.surfaceBar
-                        strokeWidth: 0
+                        fillColor: Services.Prefs.barOutline ? Services.Colors.surfaceGlass
+                                                             : Services.Colors.surfaceBar
+                        strokeColor: Services.Colors.fillOutline
+                        strokeWidth: Services.Prefs.barOutline ? Services.Sizes.outlineW : 0
                         fillRule: ShapePath.OddEvenFill
 
                         PathRectangle {

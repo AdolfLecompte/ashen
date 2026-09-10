@@ -13,32 +13,33 @@ Singleton {
     // room for it.
     readonly property int barH: 56
 
+    // The widest a column of settings rows may get. A row is a label with its
+    // control on the end; past this the two stop reading as a pair however the
+    // row is built. The panel itself stays wide -- the column is centred in it.
+    readonly property int readMeasure: 900
+
+    // Dock: the icon box, and the plate's padding around the row.
+    readonly property int dockIcon: Math.max(28, Math.min(72, Prefs.dockIconSize))
+    readonly property int dockPad: 8
+
     // Pill (top level bar item) size and corner radius
     readonly property int pillH: 44
     readonly property int pillR: 10
-    // Air between capsules in a group. One gap for everything read as a list:
-    // a 44 px square sat as far from its neighbour as a 230 px column did. So
-    // the gap is now the TIGHT one -- two buttons in a row belong together --
-    // and a pill tall enough to be a block buys its own air below.
-    readonly property int barGap: root.barVertical ? 4 : 6
-
-    // What a block adds on each side of itself, on a side bar. A pill taller
-    // than this many slots is a paragraph, not a bullet: workspaces, the clock,
-    // the system column, media with its transport. Derived from the height and
-    // not from a list of ids, so a column that grows or shrinks keeps the rule.
-    readonly property int barBlockAir: 8
+    // Air between capsules in a group -- ONE number, the same between any two
+    // neighbours. Tall pills used to buy extra air on each side, which meant a
+    // column of capsules had three different gaps in it depending on who stood
+    // next to whom. A 44 px button already reads as a different thing from a
+    // 190 px column without the gap having to say so.
+    readonly property int barGap: root.barVertical ? 10 : 6
 
     // A side bar is 56 px of INPUT but its window is wider, so a chip can paint
     // its reading out past the strip instead of growing taller. The mask stays
     // on the strip, so the extra width is only ever pixels: nothing there hears
     // the pointer and nothing under it stops hearing it.
     readonly property int barSpill: 220
-    readonly property real barBlockAt: root.pillH * 1.5
 
     // The utility pill that peeks out of the edges the bar is not on. Slimmer
     // than a bar pill, so it reads as a ledge. Here because panels grow from it.
-    readonly property int utilPillLen: 400
-    readonly property int utilPillThick: 36
 
     // ── Hover language ──────────────────────────────────────────────────
     // One place for how everything you can click on the bar reacts: grow
@@ -141,11 +142,24 @@ Singleton {
     // `solid` and `framed` share the plate; only `framed` lines the other three
     // edges. Read from `appliedStyle`, so the change rides the fade.
     readonly property bool barSolid: root.appliedStyle === "solid" || root.barFramed
+                                     || root.barIsland
     readonly property bool barFramed: root.appliedStyle === "framed"
+    // One plate per SECTION instead of one across the edge: the bar stops being
+    // a band and becomes two or three floating blocks. It still reserves the
+    // same strip, so nothing else on screen moves.
+    readonly property bool barIsland: root.appliedStyle === "island"
+    // The bar's share of its edge, 50-100 %. Framed keeps the whole side: the
+    // border is the bar there, and half a border is not a border.
+    readonly property int barLength: root.barFramed
+        ? 100 : Math.max(50, Math.min(100, Prefs.barLength))
     // Framed draws no plate of its own: the frame is it.
     readonly property bool barPlate: root.appliedStyle === "solid"
     // Border thickness, and the outer gap it stands in for while it is up.
     // `shippedGap` is what hypr/conf/general.lua sets.
+    // How thick the outline style draws its edge. Not 1: at one pixel over a
+    // wallpaper the border reads as an artefact of the blur rather than as a
+    // line somebody chose.
+    readonly property int outlineW: 2
     readonly property int frameW: 10
     readonly property int shippedGap: 8
     // Line of wallpaper between a window and the border.
@@ -172,6 +186,10 @@ Singleton {
     // the bar is animated: it fades out, swaps edge, and fades back in.
     readonly property string wanted: Prefs.barPosition
     property string applied: Prefs.barPosition
+    // Also the gate on every animated pill SIZE: while this is up the bar is
+    // invisible, so the pills swap their two axes in one frame instead of
+    // sliding from the old edge's number to the new one -- which is what left
+    // a 298 px media pill inside a 56 px column.
     property bool hidden: false
 
     // Both are still BINDINGS until something assigns them, so the first change
@@ -220,7 +238,9 @@ Singleton {
     readonly property string barPosition: applied
     // Where the utility pill a keybind should use lives: the bottom one, unless
     // the bar is sitting there.
-    readonly property string utilEdge: applied === "bottom" ? "left" : "bottom"
+    // Which edge a panel with no capsule on the bar arrives from. Named for what
+    // it does now rather than for the utility pill it used to belong to.
+    readonly property string overlayEdge: applied === "bottom" ? "left" : "bottom"
     readonly property bool barVertical: applied === "left" || applied === "right"
 
     // ── Auto-hide ────────────────────────────────────────────────────────

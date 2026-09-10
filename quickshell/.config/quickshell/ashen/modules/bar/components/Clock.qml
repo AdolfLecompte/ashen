@@ -6,6 +6,10 @@ import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("clock")
+    readonly property bool outlined: Services.Pills.isOutlined("clock")
     // These follow Services.Time -- the shell's single SystemClock. They used
     // to be assigned from a Timer of this pill's own, one of four.
     readonly property string currentTime: Services.Time.fmt(Services.Prefs.timeFormat)
@@ -35,6 +39,8 @@ Rectangle {
     height: root.vertical ? vertCol.implicitHeight + 16 : Services.Sizes.pillH
     width: root.vertical ? Services.Sizes.pillH : clockRow.implicitWidth + 40
     radius: Services.Sizes.pillR
+    border.color: Services.Colors.fillOutline
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
     // While the timer box is hanging off it, the two corners facing it go
     // square. That join is the whole point: a rounded pill sitting on a squared
     // box leaves a notch either side of the seam, and the pair reads as two
@@ -54,11 +60,8 @@ Rectangle {
     // The weather text still changes width under it (a degree gained, an icon
     // swapped), so the settle stays. What used to widen it -- a live stopwatch --
     // hangs under the bar now, in TimerDrops.
-    Behavior on width { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
-    color: Services.Colors.pillPlate
-    border.color: Services.Colors.fillRest
-    border.width: 0
-
+    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
+    color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
     // The bar pivots the centre group on this point, so the HOUR sits dead
     // centre on screen and the date and weather fall either side of it.
     // Plain arithmetic, never mapToItem: a mapping is read once and never
@@ -208,6 +211,9 @@ Rectangle {
         // Date, hour, weather: the hour holds the middle and the other two
         // fall either side of it, which is what the bar pivots on.
         Text {
+            // Compact is the hour and nothing else: the date and the weather are
+            // exactly what a clock asked to be small is giving up.
+            visible: root.content === "full"
             Layout.alignment: Qt.AlignVCenter
             text: root.currentDate
             color: Services.Colors.mist
@@ -227,6 +233,7 @@ Rectangle {
         }
 
         Row {
+            visible: root.content === "full"
             spacing: 4
             Layout.alignment: Qt.AlignVCenter
             Text {

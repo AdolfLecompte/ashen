@@ -24,9 +24,27 @@ Rectangle {
     // Its panel is open — on a vertical bar that holds the chip expanded.
     property bool open: false
     property bool interactive: true
-    // Overrides the label/glyph colour when the chip is neither on nor hovered
+    // Standing alone as a pill of its own rather than inside a plate: the pill
+    // draws the fill and answers the pointer, so the chip draws neither. Two
+    // plates stacked read as a chip sitting on a tray, which is what the system
+    // pill used to be and is exactly what was taken apart.
+    property bool bare: false
+    // Overrides the LABEL colour when the chip is neither on nor hovered
     // (the battery goes red below 20 %).
     property color idleColor: Services.Colors.ash
+    // What the reading rests at when the pill CANNOT fill -- a solid or island
+    // bar, or outline. `ash` is chosen for a capsule floating on a wallpaper,
+    // where the pill's own plate gives it its contrast; dropped onto the bar's
+    // own plate it sinks into it, which is why the battery (which rests at
+    // mist) looked lit while wifi and bluetooth beside it looked switched off.
+    // A caller with something louder to say overrides it, as the battery does
+    // below 20 %.
+    property color idleSolid: Services.Colors.mist
+    // The glyph's own resting colour, and the one thing on these pills that
+    // carries the wallpaper: `neutral` comes from the scheme, the way the
+    // clock tints its weather icon. A caller overrides it when the glyph has
+    // to say something louder than the wallpaper -- the battery going red.
+    property color glyphTint: Services.Colors.neutral
     // Optional width band for the label, off by default. Only the chips whose
     // text is a name — the network and the bluetooth device — need it; a
     // percentage is always the same handful of characters and clamping it just
@@ -78,14 +96,52 @@ Rectangle {
     // utility pill, glued to whichever edge it landed on) overrides it.
     property bool vertical: Services.Sizes.barVertical
     readonly property bool hovered: hover.containsMouse
+    readonly property bool pressed: hover.pressed
     readonly property bool expanded: vertical && (hovered || open)
     // Lit, the text is whichever of black and white can be read on the accent --
     // matugen hands the shell whatever the wallpaper had, so "the accent is
     // light" is not something to assume. The hover tint never takes dark text:
     // it is a wash, not a fill, and dark letters on it came out as a smudge.
-    readonly property color contentColor: active
-        ? Services.Colors.accentText
-        : (hovered ? Services.Colors.snow : idleColor)
+    // On a plate of its own, the accent is under the letters and they go dark to
+    // be read on it. Standing alone as a pill, the plate only fills while the
+    // panel is OPEN -- every other pill on the bar says "open" that way and
+    // nothing else -- so "on" is carried by the letters taking the accent
+    // colour instead, which is the same language hover speaks.
+    // Nothing fills underneath, so the reading itself takes the accent. Not
+    // accentText: that colour exists to be read ON the accent, and there is no
+    // accent behind these letters to read them on.
+    readonly property color contentColor: !Services.Pills.fills
+        // OPEN only, never `active`: a radio that is switched on is the normal
+        // state of a radio, and painting it accent left the wifi, the bluetooth
+        // and the sound reading in the accent colour all day -- four capsules
+        // shouting next to a battery that rests. What the radio is DOING is the
+        // glyph's job. Same rule the bare branch below already follows.
+        ? (open ? Services.Colors.ghost
+                : hovered ? Services.Colors.snow : idleSolid)
+        : chip.bare
+        // Standing alone as a pill, only an OPEN panel fills the plate, so only
+        // then do the letters go dark to be read on the accent. "On" is not
+        // worth tinting them: it was tried in accent blue and read as a warning.
+        //
+        // On rests at MIST, not snow: with the letters already at their
+        // brightest there was nothing left for hover to do, and hover lifting
+        // the reading is the one language every other pill on this bar speaks.
+        ? (open ? Services.Colors.accentText
+                : hovered ? Services.Colors.snow
+                : active ? Services.Colors.mist : idleColor)
+        : (active ? Services.Colors.accentText
+                  : (hovered ? Services.Colors.snow : idleColor))
+
+    // The glyph walks the same ladder, but rests on the wallpaper's tone
+    // instead of the text colour.
+    readonly property color glyphColor: !Services.Pills.fills
+        ? (open ? Services.Colors.ghost
+                : hovered ? Services.Colors.snow : chip.glyphTint)
+        : chip.bare
+        ? (open ? Services.Colors.accentText
+                : hovered ? Services.Colors.snow : chip.glyphTint)
+        : (active ? Services.Colors.accentText
+                  : (hovered ? Services.Colors.snow : chip.glyphTint))
 
     radius: Services.Sizes.innerR
     width: vertical ? Services.Sizes.innerH : inner.width + 16
@@ -95,16 +151,21 @@ Rectangle {
     height: vertical
         ? (chip.dual ? inner.height + 12 : Services.Sizes.innerH)
         : Services.Sizes.innerH
-    Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+    Behavior on height { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
 
     // The plate does not react. Hover is the chip growing and its contents
     // lifting to snow -- nothing lights up underneath them.
-    color: active ? Services.Colors.ghost : Services.Colors.fillRest
-    gradient: Services.Prefs.useGradients && active ? Services.Colors.accentGradient : null
+    // On a solid bar, or in outline, the chip does NOT fill: see Pills.fills.
+    // A filled block inside a filled plate is a block inside a block, and a
+    // filled block inside a drawn outline is what undoes the outline.
+    color: (chip.bare || !Services.Pills.fills) ? "transparent"
+         : active ? Services.Colors.ghost : Services.Colors.fillRest
+    gradient: (!chip.bare && Services.Pills.fills && Services.Prefs.useGradients && Services.Pills.fills && active)
+              ? Services.Colors.accentGradient : null
     Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
 
     // The bar's one hover language, from Sizes.
-    scale: Services.Sizes.hoverScale(hovered, hover.pressed)
+    scale: chip.bare ? 1 : Services.Sizes.hoverScale(hovered, hover.pressed)
     Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
     // A chip nothing opens is inert: no cursor, no hover growth, no lift to
@@ -130,7 +191,7 @@ Rectangle {
         anchors.centerIn: parent
         spacing: chip.vertical ? 0 : 5
 
-        Face { text: chip.glyph; col: chip.contentColor }
+        Face { text: chip.glyph; col: chip.glyphColor }
         Reading {
             text: chip.label
             col: chip.contentColor
@@ -150,7 +211,7 @@ Rectangle {
             height: chip.vertical ? 4 : 1
         }
 
-        Face { text: chip.altGlyph; col: chip.contentColor; visible: chip.dual }
+        Face { text: chip.altGlyph; col: chip.glyphColor; visible: chip.dual }
         Reading {
             text: chip.altLabel
             col: chip.contentColor
@@ -181,7 +242,7 @@ Rectangle {
         radius: Services.Sizes.innerR
         color: Services.Colors.surfacePill
         opacity: chip.expanded ? 1 : 0
-        Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+        Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
         Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
 
         Column {

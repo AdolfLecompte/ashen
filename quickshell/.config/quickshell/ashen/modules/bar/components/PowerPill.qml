@@ -2,9 +2,14 @@ import Quickshell
 import QtQuick
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("power")
+    readonly property bool outlined: Services.Pills.isOutlined("power")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -15,13 +20,14 @@ Rectangle {
 
     width: Services.Sizes.pillH; height: Services.Sizes.pillH
     radius: Services.Sizes.pillR
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
+    border.color: Services.Colors.fillOutline
     // Declarative fill (no imperative color assignment, which would clobber the
     // binding). Fills accent while the power menu is open; the plate does not
     // react to hover -- a top-level pill answers by growing, not by lighting.
-    color: active ? Services.Colors.ghost
-                  : Services.Colors.pillPlate
+    color: root.outlined ? Services.Colors.surfaceGlass
+         : ((active && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
     gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
-    border.width: 0
     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
     Text {
@@ -29,7 +35,7 @@ Rectangle {
         text: ""
         // Dark only on the accent fill. The hover plate is a surface tone, so
         // the glyph lifts to snow on it the same way it does at rest.
-        color: root.active ? Services.Colors.accentText
+        color: root.active ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"

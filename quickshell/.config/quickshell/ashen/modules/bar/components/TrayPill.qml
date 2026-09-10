@@ -4,15 +4,20 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("tray")
+    readonly property bool outlined: Services.Pills.isOutlined("tray")
     readonly property bool vertical: Services.Sizes.barVertical
     height: root.vertical ? trayRow.height + 16 : Services.Sizes.pillH
     radius: Services.Sizes.pillR
-    color: Services.Colors.pillPlate
-    border.color: Services.Colors.fillRest
-    border.width: 0
+    border.color: Services.Colors.fillOutline
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
+    color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
     width: root.vertical ? Services.Sizes.pillH : trayRow.width + 16
     // An empty tray still measures its 16 px of padding, and a slot kept for
     // that is a hole in the row. `wanted` and not `visible`: read back, an
@@ -68,7 +73,13 @@ Rectangle {
                     hoverEnabled: true
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onClicked: (mouse) => {
+                        // In the LAYOUT, not in the window: on a monitor at
+                        // x=1920 this comes back 1920 too far and the menu was
+                        // pinned to that screen's right edge. Same correction
+                        // as PillCenter.
                         let g = parent.mapToGlobal(parent.width / 2, 0)
+                        let sc = QsWindow.window ? QsWindow.window.screen : null
+                        g = { x: g.x - (sc ? sc.x : 0), y: g.y - (sc ? sc.y : 0) }
                         // onlyMenu items have no primary action, so a left click
                         // has to open the menu too or they do nothing at all
                         let wantsMenu = mouse.button === Qt.RightButton || modelData.onlyMenu

@@ -3,6 +3,7 @@ import Quickshell.Hyprland
 import QtQuick
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // What you are actually looking at: the bar could tell you the time, the
 // weather and the state of four radios, but not the name of the window in
@@ -10,6 +11,10 @@ import "root:/services" as Services
 // and takes no clicks, so the strip stays clickable through it.
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("window")
+    readonly property bool outlined: Services.Pills.isOutlined("window")
     // Nothing focused, no readout, no slot.
     readonly property bool wanted: root.opacity > 0
     visible: root.wanted
@@ -44,13 +49,14 @@ Rectangle {
     width: root.vertical ? Services.Sizes.pillH
                          : (root.present ? Math.min(240, inner.implicitWidth + 24) : 0)
     radius: Services.Sizes.pillR
-    color: Services.Colors.pillPlate
-    border.width: 0
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
+    border.color: Services.Colors.fillOutline
+    color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
     clip: true
     opacity: root.present ? 1.0 : 0.0
 
-    Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-    Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+    Behavior on height { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
     Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
 
     Row {
@@ -67,11 +73,14 @@ Rectangle {
         }
         Text {
             // On a side bar there is no room for a name, and the glyph already
-            // says which program it is.
-            visible: !root.vertical
+            // says which program it is. `icon` says the same thing on purpose.
+            visible: !root.vertical && root.content !== "icon"
             width: visible ? Math.min(implicitWidth, 180) : 0
             anchors.verticalCenter: parent.verticalCenter
-            text: root.appName
+            // full = what this window is, compact = what program it belongs to.
+            // The difference is the whole point of the two: a document title
+            // changes every time you switch tabs, a program name does not.
+            text: root.content === "compact" ? root.appClass : root.appName
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsBody
             font.bold: true

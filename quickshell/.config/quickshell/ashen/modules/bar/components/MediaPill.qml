@@ -8,6 +8,10 @@ import "root:/modules/widgets" as Widgets
 
 Item {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("media")
+    readonly property bool outlined: Services.Pills.isOutlined("media")
     readonly property int pillH: Services.Sizes.pillH
     readonly property bool vertical: Services.Sizes.barVertical
 
@@ -62,19 +66,47 @@ Item {
         if (p.canSeek) p.position = Math.min(p.length, p.position + 10)
     }
     property string stableArtUrl: ""
+    // Artist and album are held the same way the URL is, and for the same
+    // reason: MPRIS empties every field for a few frames between tracks, and
+    // the cover is asked for during exactly that gap. Read live -- which is
+    // what this pill did -- `coverFor` was handed an empty artist and title,
+    // so the web fallback could not be keyed and the pill kept whatever cover
+    // was up. That is the wrong-cover-and-no-cover the panel never had: the
+    // card has always kept these sticky (MediaCard.updateTrackInfo).
+    property string stableArtist: ""
+    property string stableAlbum: ""
+    property string stableTitle: ""
     readonly property string liveTitle: root.hasPlayer ? (root.activePlayer.trackTitle || "") : ""
     function updateArt() {
-        if (!root.hasPlayer) {
+        // The PLAYER, not the flag: `hasPlayer` is a binding and lags a tick,
+        // and MPRIS drops the object to null between tracks -- which is how
+        // both of these threw "Cannot read property 'trackArtUrl' of null" on
+        // every single track change.
+        if (!root.activePlayer) {
             root.stableArtUrl = ""
-        } else if (root.activePlayer.trackArtUrl !== "") {
-            root.stableArtUrl = root.activePlayer.trackArtUrl
+            root.stableArtist = ""
+            root.stableAlbum = ""
+            root.stableTitle = ""
+            return
         }
+        if (root.activePlayer.trackArtUrl !== "") root.stableArtUrl = root.activePlayer.trackArtUrl
+        if (root.activePlayer.trackArtist !== "") root.stableArtist = root.activePlayer.trackArtist
+        if (root.activePlayer.trackAlbum !== "")  root.stableAlbum  = root.activePlayer.trackAlbum
+        if (root.activePlayer.trackTitle !== "")  root.stableTitle  = root.activePlayer.trackTitle
     }
-    onActivePlayerChanged: updateArt()
+    // A new player is a new track: what was sticky belonged to the old one.
+    onActivePlayerChanged: {
+        root.stableArtist = ""
+        root.stableAlbum = ""
+        root.stableTitle = ""
+        updateArt()
+    }
     Connections {
         target: root.activePlayer
         ignoreUnknownSignals: true
         function onTrackArtUrlChanged() { root.updateArt() }
+        function onTrackArtistChanged() { root.updateArt() }
+        function onTrackAlbumChanged() { root.updateArt() }
         // The cover often lands before the title it belongs to, and a cover
         // without a title is refused, so look again once the title is in.
         function onTrackTitleChanged() { root.updateArt() }
@@ -152,18 +184,15 @@ Item {
                 root.shownArtUrl = root.coverOrNothing()
         }
     }
-    readonly property string artTag: root.hasPlayer
-        ? (root.activePlayer.trackAlbum || root.activePlayer.trackArtist || "") : ""
+    readonly property string artTag: root.stableAlbum || root.stableArtist || ""
     // One door: the player's own file while it is real, and the web's answer
     // when the player gives nothing or gives its own logo. The service owns
     // that decision -- this surface only draws it.
     function coverOrNothing() {
         return Services.MediaArt.coverFor(root.settledArt, root.artArtist, root.artTitle)
     }
-    readonly property string artArtist: root.hasPlayer
-        ? (root.activePlayer.trackArtist || "") : ""
-    readonly property string artTitle: root.hasPlayer
-        ? (root.activePlayer.trackTitle || "") : ""
+    readonly property string artArtist: root.stableArtist
+    readonly property string artTitle: root.stableTitle
 
     Widgets.SlideSwap {
         id: trackSwap
@@ -172,7 +201,7 @@ Item {
         keyDir: Services.AppState.mediaDir
         onCommit: {
             root.shownTitle = root.settledKey !== "" ? root.settledKey
-                            : (root.hasPlayer ? "Untitled" : "")
+                            : (root.hasPlayer ? Services.I18n.t("media.untitled") : "")
             if (root.cachedArt !== "" && artProbe.status === Image.Ready) {
                 root.artWaiting = false
                 root.shownArtUrl = root.coverOrNothing()
@@ -207,7 +236,12 @@ Item {
     // No player, no pill, and no slot either.
     readonly property bool wanted: root.opacity > 0
     visible: root.wanted
-    Behavior on height { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
+    // The bar is hidden while it swaps edge, and the two sizes trade places on
+    // that beat: animated, the pill kept the old axis's number -- 298 px of
+    // width inside a 56 px column -- and was clipped away or drawn crooked
+    // until something else nudged it. Hidden, nobody can see it jump.
+    readonly property bool swapping: Services.Sizes.hidden
+    Behavior on height { enabled: !root.swapping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
     // The panel is a morphed copy of this pill, so while it is open the pill
     // itself steps aside: the card standing on its rect *is* the pill now.
     // Coming back it waits for the card to finish shrinking before reappearing,
@@ -234,7 +268,7 @@ Item {
     // Only the body fades out on takeover, never this Item: it has to keep
     // holding its slot in the bar or the row would close the gap and shift.
     opacity: hasPlayer ? 1.0 : 0.0
-    Behavior on width { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
+    Behavior on width { enabled: !root.swapping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
     Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
 
     // The pointer being on the pill is what lets a long title walk, and a
@@ -258,9 +292,10 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         // answer for themselves, and lighting the whole thing said "click me"
         // over three chips that do different things. It also animates its own
         // width, and a plate changing under a resizing box reads as a glitch.
-        color: Services.Colors.pillPlate
-        border.color: Services.Colors.fillRest
-        border.width: 0
+        color: root.outlined ? Services.Colors.surfaceGlass
+                                          : Services.Colors.pillPlate
+        border.width: root.outlined ? Services.Sizes.outlineW : 0
+        border.color: Services.Colors.fillOutline
         clip: true
         // Constant duration on purpose: a `takenOverByPanel ? a : b` here would
         // be read with the flag's old value, so each direction would get the
@@ -280,15 +315,28 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
             // more columns than items still charges one `spacing` for the
             // empty one, and that phantom lands on the right -- the pill sat
             // 14 px wider past the last chip than before the cover.
-            columns: root.vertical ? 1 : 3
+            // EXACTLY the cells that are visible: the cover always, the title
+            // only when full, the transport unless icon. A Grid given a column
+            // it does not fill still charges one `spacing` for it.
+            readonly property int cells: 1
+                + (root.content === "full" ? 1 : 0)
+                + (root.content !== "icon" ? 1 : 0)
+            columns: root.vertical ? 1 : expandedRow.cells
             horizontalItemAlignment: Grid.AlignHCenter
             verticalItemAlignment: Grid.AlignVCenter
-            anchors.verticalCenter: root.vertical ? undefined : parent.verticalCenter
-            anchors.top: root.vertical ? parent.top : undefined
-            anchors.topMargin: 10
-            anchors.left: root.vertical ? undefined : parent.left
-            anchors.horizontalCenter: root.vertical ? parent.horizontalCenter : undefined
-            anchors.leftMargin: 10
+            // CENTRED, on both axes, in every edge. This used to swap four
+            // anchors at once -- top/left in a column, verticalCenter/left in a
+            // row, the other two set to `undefined` -- and the four bindings do
+            // not re-evaluate in a fixed order, so on the way back from a side
+            // bar `top` and `verticalCenter` were both set for an instant. Qt
+            // drops one of a conflicting pair, the row kept the column's
+            // position, and the plate (clip: true) swallowed the whole thing:
+            // a media pill of the right width with nothing inside it.
+            //
+            // Centring needs no swap and lands in the same place: the pill
+            // measures itself as its contents PLUS 20, so half the slack on
+            // each side IS the 10 px margin these anchors were spelling out.
+            anchors.centerIn: parent
             spacing: 8
 
             Rectangle {
@@ -337,7 +385,10 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
 }
 
             Column {
-                visible: !root.vertical
+                // The title column is what `compact` gives up: the cover says
+                // WHICH song and the transport is what you reach for, so the
+                // words are the part a small media pill can do without.
+                visible: !root.vertical && root.content === "full"
                 spacing: 3
                 width: root.vertical ? 0 : 120
                 opacity: trackSwap.fade
@@ -367,6 +418,8 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
             // "this is the one". Playing lights the play chip the same way the
             // workspace you are standing on is lit.
             Grid {
+                // `icon` is the cover alone -- no words, no transport.
+                visible: root.content !== "icon"
                 // Three chips, three columns: see the note above.
                 columns: root.vertical ? 1 : 3
                 horizontalItemAlignment: Grid.AlignHCenter

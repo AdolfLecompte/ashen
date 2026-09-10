@@ -3,9 +3,14 @@ import QtQuick
 import QtQuick.Layouts
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("usb")
+    readonly property bool outlined: Services.Pills.isOutlined("usb")
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -48,10 +53,11 @@ Rectangle {
     // a vertical one, where the pill is icon-only anyway.
     height: root.vertical ? (root.present ? Services.Sizes.pillH : 0) : Services.Sizes.pillH
     radius: Services.Sizes.pillR
-    color: root.anyMounted ? Services.Colors.ghost
-                           : Services.Colors.pillPlate
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
+    border.color: Services.Colors.fillOutline
+    color: root.outlined ? Services.Colors.surfaceGlass
+         : (root.anyMounted ? Services.Colors.ghost : Services.Colors.pillPlate)
     gradient: Services.Prefs.useGradients && (root.anyMounted) ? Services.Colors.accentGradient : null
-    border.width: 0
     width: root.vertical ? Services.Sizes.pillH : (root.present ? icon.implicitWidth + 24 : 0)
     opacity: (root.takenOver && Services.Pills.wearsFace) ? 0.0 : (root.present ? 1.0 : 0.0)
     // Keyed on the device, not opacity: handed over to its panel the pill is
@@ -60,8 +66,8 @@ Rectangle {
     visible: root.wanted
     clip: true
     Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
-    Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-    Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+    Behavior on height { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
     Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
 
     Text {
@@ -72,7 +78,7 @@ Rectangle {
         // wash you can see the wallpaper through, and a dark glyph on it came
         // out as a smudge -- the same fault Launcher, Power and Notification
         // were fixed for; this one was missed.
-        color: root.anyMounted ? Services.Colors.accentText
+        color: root.anyMounted ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow
                                    : Services.Colors.mist
         font.pixelSize: 22

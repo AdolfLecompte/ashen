@@ -20,6 +20,13 @@ Section {
     readonly property var availablePills:
         tab.allPills.filter(id => Services.Prefs.barSectionOf(id) === "")
 
+    // The three bar sections all draw at the height of whichever of them needs
+    // the most room: the row is a picture of the bar, and three plates of
+    // different heights stop reading as three equal places. Safe as a binding —
+    // a zone's `needH` comes off its chips and its WIDTH, never off the height
+    // it is handed back.
+    readonly property int barPlateH: Math.max(zLeft.needH, zCentre.needH, zRight.needH)
+
     // Which pill is in the air, so its own zone can be lifted above the others
     property string draggingId: ""
     // …and how wide it is, so the gap a plate offers is the size of the pill
@@ -148,11 +155,19 @@ Section {
         property string section: ""
         property string caption: ""
         property var ids: []
-        // Every plate is the same size, always. One that grew with its
-        // contents made the three bar sections different heights depending on
-        // what happened to be in them, and the row stopped reading as three
-        // equal places you may put a pill.
-        readonly property int plateH: 3 * 28 + 2 * 6 + 20
+        // Three rows is the FLOOR, not the ceiling. It used to be both, and the
+        // plate held exactly the eleven capsules there were when it was written;
+        // the day the system plate became five separate pills the right-hand
+        // section had six of them and its chips wrapped straight out through the
+        // bottom of a plate that has no `clip` on purpose.
+        readonly property int minPlateH: 3 * 28 + 2 * 6 + 20
+        // What its own chips actually need.
+        readonly property int needH: Math.max(zone.minPlateH, chipFlow.implicitHeight + 20)
+        // What it DRAWS. On its own that is what it needs; the three bar
+        // sections are handed the tallest of the three instead (tab.barPlateH),
+        // because a row of three different heights stops reading as three equal
+        // places you may put a pill.
+        property int plateH: zone.needH
         // Slot the chip in the air would drop into; -1 when nothing is over
         // this plate.
         property int dropIndex: -1
@@ -277,7 +292,7 @@ Section {
             Text {
                 anchors.centerIn: parent
                 visible: zone.ids.length === 0
-                text: "drop here"
+                text: Services.I18n.t("settings.layout.drop")
                 color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
@@ -355,29 +370,145 @@ Section {
     }
 
     Card {
-        title: "Layout"
+        title: Services.I18n.t("settings.tab.layout")
 
         // On the bar, in bar order.
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
-            Zone { section: "left";   caption: "LEFT";   ids: Services.Prefs.barPills("left") }
-            Zone { section: "centre"; caption: "CENTRE"; ids: Services.Prefs.barPills("centre") }
-            Zone { section: "right";  caption: "RIGHT";  ids: Services.Prefs.barPills("right") }
+            Zone { id: zLeft;   section: "left";   caption: Services.I18n.t("settings.layout.left");   ids: Services.Prefs.barPills("left");   plateH: tab.barPlateH }
+            Zone { id: zCentre; section: "centre"; caption: Services.I18n.t("settings.layout.centre"); ids: Services.Prefs.barPills("centre"); plateH: tab.barPlateH }
+            Zone { id: zRight;  section: "right";  caption: Services.I18n.t("settings.layout.right");  ids: Services.Prefs.barPills("right");  plateH: tab.barPlateH }
         }
 
         // Off the bar. Full width, under everything, because it belongs nowhere.
         Zone {
             section: ""
-            caption: "AVAILABLE"
+            caption: Services.I18n.t("settings.layout.available")
             ids: tab.availablePills
             Layout.topMargin: 4
         }
 
+        Item { Layout.preferredHeight: 14 }
+
+        // ── How each capsule draws itself ────────────────────────────────
+        // One card per pill, two to a row. Everything about a pill lives inside
+        // its own box: name, what it shows, and whether it is glass. The first
+        // pass put the name at one edge of the panel and its controls at the
+        // other, which on a 15-row list meant tracking a line across 600 px to
+        // find out which control belonged to which pill.
+        SectionLabel { text: Services.I18n.t("settings.layout.look") }
+
+        GridLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            columns: 2
+            columnSpacing: 10
+            rowSpacing: 10
+
+            Repeater {
+                // Only the capsules with something to decide. With the outline
+                // switch gone global, a pill that has no second reading had an
+                // empty box with its name in it -- a card that asks nothing.
+                model: Services.Pills.arrangeable.filter(
+                    id => Services.Prefs.barSectionOf(id) !== ""
+                          && (Services.Pills.hasContentChoice(id) || id === "workspaces"))
+                delegate: Rectangle {
+                    id: lookCard
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: cardCol.implicitHeight + 20
+                    radius: Services.Sizes.innerR
+                    color: Services.Colors.fillInset
+
+                    ColumnLayout {
+                        id: cardCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 8
+
+                        // The pill, named once, with the glyph the drag chip
+                        // above carries so the two lists read as one thing.
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+                            Text {
+                                text: Services.Pills.glyph(lookCard.modelData)
+                                color: Services.Colors.ghost
+                                font.pixelSize: 15
+                                font.family: "Material Symbols Rounded"
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: Services.Pills.label(lookCard.modelData)
+                                color: Services.Colors.snow
+                                elide: Text.ElideRight
+                                font.pixelSize: Services.Sizes.fsMeta
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                        }
+
+                        // WHAT it shows. Full width of the card, directly under
+                        // the name it belongs to.
+                        Segmented {
+                            visible: Services.Pills.hasContentChoice(lookCard.modelData)
+                            Layout.fillWidth: true
+                            cellHeight: 28
+                            options: Services.Pills.contentsFor(lookCard.modelData).map(v => ({
+                                id: v.id, icon: "", label: Services.I18n.t("settings.layout." + v.id)
+                            }))
+                            current: Services.Prefs.contentOf(lookCard.modelData)
+                            onPicked: id => Services.Prefs.setContent(lookCard.modelData, id)
+                        }
+
+                        // Workspaces alone carries a QUANTITY as well as a look.
+                        // Inside its own card, where it plainly belongs to it.
+                        RowLayout {
+                            Layout.fillWidth: true
+                            visible: lookCard.modelData === "workspaces"
+                            spacing: 8
+                            Text {
+                                Layout.fillWidth: true
+                                text: Services.I18n.t("settings.layout.wsCount")
+                                color: Services.Colors.ash
+                                font.pixelSize: Services.Sizes.fsMeta
+                                font.family: "JetBrainsMono NF"
+                            }
+                            StepBtn {
+                                glyph: "\ue15b"      // remove
+                                onClicked: Services.Prefs.workspaceCount =
+                                    Math.max(2, Services.Prefs.workspaceCount - 1)
+                            }
+                            Text {
+                                Layout.preferredWidth: 22
+                                horizontalAlignment: Text.AlignHCenter
+                                text: Services.Prefs.workspaceCount
+                                color: Services.Colors.ghost
+                                font.pixelSize: Services.Sizes.fsInput
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                            StepBtn {
+                                glyph: "\ue145"      // add
+                                onClicked: Services.Prefs.workspaceCount =
+                                    Math.min(10, Services.Prefs.workspaceCount + 1)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Item { Layout.preferredHeight: 4 }
+
         Item { Layout.preferredHeight: 2 }
 
         Text {
-            text: "Reset to the shipped arrangement"
+            text: Services.I18n.t("settings.layout.reset")
             color: resetHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"

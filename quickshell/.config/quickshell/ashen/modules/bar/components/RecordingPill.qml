@@ -1,9 +1,14 @@
 import Quickshell
 import QtQuick
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+
+    // How this pill draws itself, chosen in Settings > Bar > Layout.
+    readonly property string content: Services.Pills.contentOf("recording")
+    readonly property bool outlined: Services.Pills.isOutlined("recording")
     // Off the bar it is not built; while recording, Bar.pillsIn() puts it back.
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
@@ -19,19 +24,20 @@ Rectangle {
 
     // On a side bar there is no room for the elapsed time, so it stays a square
     // icon pill and only the glyph reports that a recording is running.
-    width: (active && !vertical) ? row.width + 20 : Services.Sizes.pillH
+    width: (active && !vertical && root.content !== "icon") ? row.width + 20
+                                                            : Services.Sizes.pillH
     height: Services.Sizes.pillH
     radius: Services.Sizes.pillR
+    border.color: active ? Services.Colors.ghost : Services.Colors.fillOutline
+    border.width: root.outlined ? Services.Sizes.outlineW : 0
     clip: true
-    color: active ? Services.Colors.ghost
-                  : Services.Colors.pillPlate
-    gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
-    border.color: active ? Services.Colors.ghost : Services.Colors.fillRest
-    border.width: 0
-
+    color: root.outlined ? Services.Colors.surfaceGlass
+         : ((active && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
+    gradient: (Services.Prefs.useGradients && Services.Pills.fills && active)
+              ? Services.Colors.accentGradient : null
     // Opening out to fit the clock is the pill telling you it started, so it
     // gets the same settle as the panels rather than a flat 150 ms slide.
-    Behavior on width { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
+    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
     // Counted in AppState, so the floating indicator shows the same number.
@@ -45,7 +51,7 @@ Rectangle {
             id: dot
             text: "\uf679"
             // Dark only on the solid accent fill; over the hover tint it lifts.
-            color: root.active ? Services.Colors.accentText
+            color: root.active ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
                  : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
             font.pixelSize: (root.active && !root.vertical) ? 16 : 22
             font.family: "Material Symbols Rounded"
@@ -83,9 +89,14 @@ Rectangle {
             // No room for a timer on a side bar. `visible` alone collapses it
             // in the Row; binding width to implicitWidth is a loop, because a
             // Text recomputes implicitWidth from the width it was given.
-            visible: root.active && !root.vertical
+            visible: root.active && !root.vertical && root.content !== "icon"
             text: root.elapsed
-            color: Services.Colors.accentText
+            // Dark letters are for reading ON the accent. Where the pill cannot
+            // fill -- a solid or island bar, or outline -- there is no accent
+            // under them and the timer went invisible while recording, which is
+            // the one moment the pill has something to say.
+            color: Services.Pills.fills ? Services.Colors.accentText
+                                        : Services.Colors.ghost
             font.pixelSize: 12
             font.bold: true
             font.family: "JetBrainsMono NF"
