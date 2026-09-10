@@ -364,12 +364,15 @@ PanelWindow {
 
                         Repeater {
                             model: [
-                            // A leaf, a balance and a rocket are a guess until
-                            // someone tells you which is which. The word costs
-                            // one line of 9 px and ends the guessing.
-                                { id: "power-saver", icon: "", label: Services.I18n.t("settings.system.saver") },
-                                { id: "balanced", icon: "", label: Services.I18n.t("settings.system.balanced") },
-                                { id: "performance", icon: "", label: Services.I18n.t("settings.system.performance") },
+                            // Three faces and no words. Naming the power
+                            // profile on the chip was tried on 2026-08-11 and
+                            // rejected with the rest of the extra readings the
+                            // bar and its panels used to carry: the shell does
+                            // not caption its own icons. The names live in
+                            // Settings, which is where you go to be told.
+                                { id: "power-saver", icon: "" },
+                                { id: "balanced", icon: "" },
+                                { id: "performance", icon: "" },
                             ]
                             delegate: Rectangle {
                                 required property var modelData
@@ -399,16 +402,6 @@ PanelWindow {
                                             text: modelData.icon
                                             font.family: "Material Symbols Rounded"
                                             font.pixelSize: 24
-                                            color: parent.tone
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
-                                        }
-                                        Text {
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            text: modelData.label
-                                            font.family: "JetBrainsMono NF"
-                                            font.pixelSize: 9
-                                            font.bold: true
-                                            font.letterSpacing: 1
                                             color: parent.tone
                                             Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                                         }
