@@ -1,0 +1,20 @@
+[SddmGreeterTheme]
+Name=Ashen
+Description=The login screen for the Ashen desktop
+Author=Adolf
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/AdolfLecompte/ashen
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=
+Email=
+License=MIT
+# WITHOUT THIS SDDM STARTS THE Qt5 GREETER and there is no login screen at all:
+# /usr/bin/sddm-greeter is linked against Qt5, a Qt6 system has none of those
+# libraries, and it dies with 127 before drawing anything. The journal says
+# "Auth: sddm-helper exited with 127" and the machine sits at the boot console.
+QtVersion=6
+Theme-API=2.0
+Theme-Id=ashen
