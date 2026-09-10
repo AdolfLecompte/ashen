@@ -65,6 +65,8 @@ PanelWindow {
         // cut off with no way to reach the rest.
         height: Math.min(menuCol.implicitHeight + 16, root.height - 80)
         color: Services.Colors.surfacePanel
+        border.width: Services.Colors.panelEdgeW
+        border.color: Services.Colors.fillOutline
         clip: true
 
         // Origin-anchored open: grows out of its tray icon + fades, smooth settle.

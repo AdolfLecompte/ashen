@@ -150,7 +150,7 @@ DesktopWidget {
         WidgetHead {
             implicitWidth: 340
             glyph: "\ue7f4"
-            name: "NOTIFICATIONS"
+            name: Services.I18n.t("widget.notifications")
             note: root.log.length
         }
         Repeater {
@@ -171,7 +171,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
-            text: root.log.length === 1 ? "NOTIFICATION" : "NOTIFICATIONS"
+            text: Services.I18n.t(root.log.length === 1 ? "widget.notification" : "widget.notifications")
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsCaption
             font.letterSpacing: 1.6

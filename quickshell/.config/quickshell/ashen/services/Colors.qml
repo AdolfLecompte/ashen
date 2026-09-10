@@ -32,10 +32,38 @@ Singleton {
     readonly property color fillRest:   Qt.rgba(ghost.r, ghost.g, ghost.b, 0.20)  // a control at rest
     readonly property color fillStrong: Qt.rgba(ghost.r, ghost.g, ghost.b, 0.30)  // on, or asking to be read
     readonly property color fillSunken: Qt.rgba(ghost.r, ghost.g, ghost.b, 0.45)  // held, or on without the accent
+    // The one edge that is DRAWN rather than filled: the outline style, where
+    // the capsule or the plate is glass and the border is all there is to see.
+    //
+    // Off MIST, not ghost -- the only rung that is. Every other fill sits on a
+    // surface the shell painted, so the accent reads on it; this one has a
+    // WALLPAPER behind it, and ghost at 0.38 vanished into a bright one. Two
+    // outlined capsules side by side then merged into one grey slab, which is
+    // exactly what an outline is supposed to prevent.
+    readonly property color fillOutline: Qt.rgba(mist.r, mist.g, mist.b, 0.70) // a border with a photograph behind it
 
     // Two backgrounds, not nine: a panel, and something sitting on the bar.
-    readonly property color surfacePanel: Qt.rgba(surface.r, surface.g, surface.b, 0.95)
+    // Everything that draws a panel reads this one colour, so the outline is
+    // one line here rather than a flag threaded through six components.
+    //
+    // NOT surfaceGlass: a capsule is a word wide and can afford 0.55, a panel
+    // is a page. At 0.55 the Settings panel over a detailed wallpaper was a
+    // sheet of text with a train showing through it. Outlined, a panel is
+    // thinner than filled and still a surface you can read on.
+    readonly property color surfacePanel: Prefs.panelOutline
+        ? Qt.rgba(surface.r, surface.g, surface.b, 0.88)
+        : Qt.rgba(surface.r, surface.g, surface.b, 0.95)
+    // The line that goes with it. Here for the same reason the fill is: a
+    // surface that reads `surfacePanel` needs the edge too, and having each one
+    // spell out the preference is how half of them came to be thinner without
+    // ever being outlined. `border.color` is always `fillOutline`; only the
+    // width is a decision.
+    readonly property int panelEdgeW: Prefs.panelOutline ? Sizes.outlineW : 0
     readonly property color surfacePill:  Qt.rgba(surface.r, surface.g, surface.b, 0.82)
+    // Frosted: thin enough to read as glass, with the blur Hyprland already puts
+    // on the quickshell layer (windowrules.lua:28) doing the actual frosting.
+    // Fully transparent would be a hole, not glass.
+    readonly property color surfaceGlass: Qt.rgba(surface.r, surface.g, surface.b, 0.55)
     // The bar's own plate. Denser than a capsule: it runs a whole screen edge.
     readonly property color surfaceBar:   Qt.rgba(surface.r, surface.g, surface.b, 0.92)
     // What a BAR capsule paints itself with; nothing on a solid bar, which is

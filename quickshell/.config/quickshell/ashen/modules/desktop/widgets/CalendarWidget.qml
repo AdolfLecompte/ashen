@@ -26,12 +26,12 @@ DesktopWidget {
         property real cell: 30
         spacing: 3
         Repeater {
-            model: ["S", "M", "T", "W", "T", "F", "S"]
+            model: 7
             delegate: Text {
-                required property var modelData
+                required property int index
                 width: parent.cell
                 horizontalAlignment: Text.AlignHCenter
-                text: modelData
+                text: Services.Time.dayNarrow(index).toUpperCase()
                 color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsCaption
                 font.family: "JetBrainsMono NF"
@@ -82,7 +82,7 @@ DesktopWidget {
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: Qt.formatDateTime(day.date, "ddd").toUpperCase()
+                            text: Services.Time.fmtOf(day.date, "ddd").toUpperCase()
                             color: Services.Colors.ash
                             font.pixelSize: Services.Sizes.fsCaption
                             font.family: "JetBrainsMono NF"

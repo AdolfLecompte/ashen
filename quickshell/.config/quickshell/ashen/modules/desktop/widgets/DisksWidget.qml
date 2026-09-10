@@ -73,7 +73,7 @@ DesktopWidget {
         WidgetHead {
             implicitWidth: 300
             glyph: "\ue1db"
-            name: "DISKS"
+            name: Services.I18n.t("widget.disks")
         }
         Repeater {
             model: root.mounts.length

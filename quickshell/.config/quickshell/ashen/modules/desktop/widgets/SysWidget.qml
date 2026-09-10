@@ -268,7 +268,7 @@ DesktopWidget {
                 WidgetHead {
                     width: main.width
                     glyph: "\ue322"
-                    name: "CPU"
+                    name: Services.I18n.t("widget.cpu")
                     note: ""
                 }
                 Text {
@@ -299,7 +299,7 @@ DesktopWidget {
                     width: side.width
                     visible: Services.SysMon.gpuPercent > 0
                     glyph: "\ue30a"
-                    name: "GPU"
+                    name: Services.I18n.t("widget.gpu")
                     note: Math.round(Services.SysMon.gpuPercent) + "%"
                 }
                 Chart {
@@ -316,12 +316,12 @@ DesktopWidget {
                     width: side.width
                     visible: root.skin !== "chart"
                     glyph: "\ue30d"
-                    name: "MEMORY"
+                    name: Services.I18n.t("widget.memory")
                     note: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
                 }
                 Level {
                     width: side.width
-                    caption: "MEMORY"
+                    caption: Services.I18n.t("widget.memory")
                     reading: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G / "
                              + (Services.SysMon.ramTotalMB / 1024).toFixed(0) + "G"
                     value: root.ramFrac
@@ -332,12 +332,12 @@ DesktopWidget {
                     width: side.width
                     visible: root.skin !== "chart"
                     glyph: "\ue1db"
-                    name: "STORAGE"
+                    name: Services.I18n.t("widget.storage")
                     note: Services.SysMon.diskPercent + "%"
                 }
                 Level {
                     width: side.width
-                    caption: "STORAGE"
+                    caption: Services.I18n.t("widget.storage")
                     reading: Math.round(Services.SysMon.diskUsedGB) + " / "
                              + Math.round(Services.SysMon.diskTotalGB) + " GB"
                     value: Services.SysMon.diskPercent / 100
@@ -357,7 +357,7 @@ DesktopWidget {
             WidgetHead {
                 width: mid.width
                 glyph: "\ue322"
-                name: "CPU"
+                name: Services.I18n.t("widget.cpu")
                 note: Math.round(Services.SysMon.cpuPercent) + "%"
             }
             Chart {
@@ -372,12 +372,12 @@ DesktopWidget {
                 width: mid.width
                 visible: root.skin !== "chart"
                 glyph: "\ue30d"
-                name: "MEMORY"
+                name: Services.I18n.t("widget.memory")
                 note: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
             }
             Level {
                 width: mid.width
-                caption: "MEMORY"
+                caption: Services.I18n.t("widget.memory")
                 reading: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
                 value: root.ramFrac
                 history: root.ramHistory
@@ -387,12 +387,12 @@ DesktopWidget {
                 width: mid.width
                 visible: root.skin !== "chart"
                 glyph: "\ue1db"
-                name: "STORAGE"
+                name: Services.I18n.t("widget.storage")
                 note: Services.SysMon.diskPercent + "%"
             }
             Level {
                 width: mid.width
-                caption: "STORAGE"
+                caption: Services.I18n.t("widget.storage")
                 reading: Math.round(Services.SysMon.diskUsedGB) + " GB"
                 value: Services.SysMon.diskPercent / 100
                 tone: Services.Colors.neutral
@@ -410,25 +410,25 @@ DesktopWidget {
             WidgetHead {
                 width: small.width
                 glyph: "\ueaa2"
-                name: "SYSTEM"
+                name: Services.I18n.t("widget.system")
                 note: Services.SysMon.cpuTemp > 0
                     ? Math.round(Services.SysMon.cpuTemp) + "\u00b0" : ""
             }
             Level {
                 width: small.width
-                caption: "CPU"
+                caption: Services.I18n.t("widget.cpu")
                 reading: Math.round(Services.SysMon.cpuPercent) + "%"
                 value: Services.SysMon.cpuPercent / 100
             }
             Level {
                 width: small.width
-                caption: "RAM"
+                caption: Services.I18n.t("widget.ram")
                 reading: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
                 value: root.ramFrac
             }
             Level {
                 width: small.width
-                caption: "DISK"
+                caption: Services.I18n.t("widget.disk")
                 reading: Services.SysMon.diskPercent + "%"
                 value: Services.SysMon.diskPercent / 100
                 tone: Services.Colors.neutral

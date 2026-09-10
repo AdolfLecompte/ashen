@@ -166,7 +166,7 @@ PanelWindow {
                             }
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: win.muted ? "Muted"
+                                text: win.muted ? Services.I18n.t("common.muted")
                                      : Services.Audio.kindLabel(win.deviceKind)
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsMeta
@@ -246,9 +246,9 @@ PanelWindow {
 
                             Repeater {
                                 model: [
-                                    { id: "output", label: "Output", glyph: "\ue050" },
-                                    { id: "input",  label: "Input",  glyph: "\ue31d" },
-                                    { id: "apps",   label: "Apps",   glyph: "\ue5c3" },
+                                    { id: "output", label: Services.I18n.t("volume.output"), glyph: "\ue050" },
+                                    { id: "input",  label: Services.I18n.t("volume.input"),  glyph: "\ue31d" },
+                                    { id: "apps",   label: Services.I18n.t("volume.apps"),   glyph: "\ue5c3" },
                                 ]
                                 delegate: Item {
                                     id: tab

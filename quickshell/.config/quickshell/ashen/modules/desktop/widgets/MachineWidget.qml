@@ -80,11 +80,11 @@ DesktopWidget {
             bottomPadding: 8
         }
 
-        Line { caption: "KERNEL"; value: Services.Machine.kernel }
-        Line { caption: "CPU";    value: Services.Machine.shortCpu }
-        Line { caption: "MEMORY"; value: Services.Machine.memInfo }
-        Line { caption: "UPTIME"; value: Services.Machine.shortUptime }
-        Line { caption: "PACKAGES"; value: Services.Machine.pkgInfo }
+        Line { caption: Services.I18n.t("widget.kernel"); value: Services.Machine.kernel }
+        Line { caption: Services.I18n.t("widget.cpu");    value: Services.Machine.shortCpu }
+        Line { caption: Services.I18n.t("widget.memory"); value: Services.Machine.memInfo }
+        Line { caption: Services.I18n.t("widget.uptime"); value: Services.Machine.shortUptime }
+        Line { caption: Services.I18n.t("widget.packages"); value: Services.Machine.pkgInfo }
     }
 
     component Compact: Column {
@@ -125,9 +125,9 @@ DesktopWidget {
             bottomPadding: 8
         }
 
-        Line { caption: "WM";     value: "Hyprland"; lineWidth: 300 }
-        Line { caption: "KERNEL"; value: Services.Machine.kernel; lineWidth: 300 }
-        Line { caption: "UPTIME"; value: Services.Machine.shortUptime; lineWidth: 300 }
+        Line { caption: Services.I18n.t("widget.wm");     value: "Hyprland"; lineWidth: 300 }
+        Line { caption: Services.I18n.t("widget.kernel"); value: Services.Machine.kernel; lineWidth: 300 }
+        Line { caption: Services.I18n.t("widget.uptime"); value: Services.Machine.shortUptime; lineWidth: 300 }
 
         Row {
             spacing: 10
@@ -152,8 +152,8 @@ DesktopWidget {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Battery.timeRemaining !== "--"
-                    ? (Services.Battery.charging ? "Full in " + Services.Battery.timeRemaining
-                                                 : Services.Battery.timeRemaining + " left")
+                    ? Services.I18n.t(Services.Battery.charging ? "battery.fullIn" : "battery.left",
+                                      { t: Services.Battery.timeRemaining })
                     : ""
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta

@@ -309,6 +309,8 @@ Item {
         opacity: plate.plain ? plate.plainFade : 1
         radius: Services.Sizes.pillR + (20 - Services.Sizes.pillR) * Math.min(1, spread)
         color: root.plateColor
+        border.width: Services.Colors.panelEdgeW
+        border.color: Services.Colors.fillOutline
         clip: true
 
         MouseArea { anchors.fill: parent; onClicked: {} }

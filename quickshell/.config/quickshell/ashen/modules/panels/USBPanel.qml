@@ -93,7 +93,7 @@ PanelWindow {
                             font.family: "Material Symbols Rounded"
                         }
                         Text {
-                            text: "USB Devices"
+                            text: Services.I18n.t("usb.title")
                             color: Services.Colors.snow
                             font.pixelSize: 14
                             font.bold: true
@@ -171,7 +171,7 @@ PanelWindow {
                                     Text {
                                         id: mountLabel
                                         anchors.centerIn: parent
-                                        text: modelData.mountpoint ? "Unmount" : "Mount"
+                                        text: modelData.mountpoint ? Services.I18n.t("usb.unmount") : Services.I18n.t("usb.mount")
                                         color: modelData.mountpoint ? Services.Colors.snow : Services.Colors.abyss
                                         font.pixelSize: 11
                                         font.family: "JetBrainsMono NF"

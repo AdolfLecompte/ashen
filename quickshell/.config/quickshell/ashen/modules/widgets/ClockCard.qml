@@ -118,9 +118,9 @@ Item {
     // Same shape every day. The city moved up to the title, so this line is
     // only what the air feels like. A forecast day has no apparent temperature
     // of "now", so it uses its high, which is the number the headline pairs with.
-    readonly property string wxSub: "feels "
-        + (live || !day ? Services.Weather.feels
-                        : Services.Weather.tempString(day.feelsC))
+    readonly property string wxSub: Services.I18n.t("weather.feels",
+        { t: live || !day ? Services.Weather.feels
+                          : Services.Weather.tempString(day.feelsC) })
     readonly property int wxHumidity: live || !day ? Services.Weather.humidity : day.humidity
     readonly property int wxWindKph: live || !day ? Services.Weather.windKph : day.windKph
     readonly property int wxWindDir: live || !day ? Services.Weather.windDir : day.windDir
@@ -134,12 +134,12 @@ Item {
     // of Greenwich reads back as the day before.
     readonly property string wxDayTitle: {
         if (!day) return ""
-        if (shownDay === 0) return "TODAY"
+        if (shownDay === 0) return Services.I18n.t("time.today").toUpperCase()
         const p = String(day.date).split("-")
         if (p.length < 3) return day.label.toUpperCase()
         const d = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]))
         return day.label.toUpperCase() + " " + parseInt(p[2]) + " "
-             + Qt.formatDate(d, "MMM").toUpperCase()
+             + Services.Time.fmtOf(d, "MMM").toUpperCase()
     }
 
     // Pick a day back to today whenever the reading underneath it changes:
@@ -223,31 +223,18 @@ Item {
         return b
     }
 
-    // "HH:MM" as a fraction of the day, or -1 for anything that is not one.
-    // The sun times arrive with the forecast and are empty until it lands.
-    // The sun times come from Weather.clockOf, which formats for READING -- so
-    // in 12-hour mode this gets "6:12 PM", and taking the 6 at face value put
-    // sunset before lunch and the ring into the wrong half of its day.
-    function hhmmFrac(s) {
-        if (!s || s.length < 4) return -1
-        const t = String(s).trim()
-        const p = t.split(":")
-        let h = parseInt(p[0])
-        const m = parseInt(p[1])
-        if (isNaN(h) || isNaN(m)) return -1
-        if (t.indexOf("PM") >= 0 && h < 12) h += 12
-        if (t.indexOf("AM") >= 0 && h === 12) h = 0
-        return (h * 3600 + m * 60) / 86400
-    }
-
     // What the middle of the day ring says: how much light is left, or how long
     // until it comes back. A number nobody else on the card is already giving.
-    readonly property real sunUpFrac: hhmmFrac(Services.Weather.sunrise)
-    readonly property real sunDownFrac: hhmmFrac(Services.Weather.sunset)
+    readonly property real sunUpFrac: Services.Weather.sunriseMin < 0
+        ? -1 : Services.Weather.sunriseMin / 1440
+    readonly property real sunDownFrac: Services.Weather.sunsetMin < 0
+        ? -1 : Services.Weather.sunsetMin / 1440
     function spanText(frac) {
         const mins = Math.max(0, Math.round(frac * 1440))
         const h = Math.floor(mins / 60), m = mins % 60
-        return h > 0 ? h + "h " + m + "m" : m + "m"
+        return h > 0 ? Services.I18n.t("time.hours", { n: h }) + " "
+                     + Services.I18n.t("time.mins", { n: m })
+                     : Services.I18n.t("time.mins", { n: m })
     }
     readonly property string daylightLeft: {
         if (sunUpFrac < 0 || sunDownFrac < 0) return "—"
@@ -257,9 +244,9 @@ Item {
     }
     readonly property string daylightCaption: {
         if (sunUpFrac < 0 || sunDownFrac < 0) return ""
-        if (dayFrac < sunUpFrac) return "UNTIL SUNRISE"
-        if (dayFrac < sunDownFrac) return "OF LIGHT LEFT"
-        return "UNTIL SUNRISE"
+        if (dayFrac < sunUpFrac) return Services.I18n.t("clock.untilSunrise")
+        if (dayFrac < sunDownFrac) return Services.I18n.t("clock.lightLeft")
+        return Services.I18n.t("clock.untilSunrise")
     }
 
     // The whole strip, today included: today's card is the way back from a day
@@ -518,9 +505,9 @@ Item {
 
                         Repeater {
                             model: [
-                                { id: 0, label: "Clock",     icon: "" },
-                                { id: 1, label: "Stopwatch", icon: "" },
-                                { id: 2, label: "Timer",     icon: "" }
+                                { id: 0, label: Services.I18n.t("clock.tab.clock"),     icon: "" },
+                                { id: 1, label: Services.I18n.t("clock.tab.stopwatch"), icon: "" },
+                                { id: 2, label: Services.I18n.t("clock.tab.timer"),     icon: "" }
                             ]
 
                             delegate: Rectangle {
@@ -662,7 +649,7 @@ Item {
                                 width: parent.width / 4
                                 glyph: "\ue1c6"
                                 value: Services.Weather.sunrise || "\u2014"
-                                caption: "SUNRISE"
+                                caption: Services.I18n.t("weather.sunrise")
                             }
                             WxCell {
                                 width: parent.width / 4
@@ -676,7 +663,7 @@ Item {
                                             - 3 + ((jan4.getDay() + 6) % 7)) / 7)
                                     return String(n)
                                 }
-                                caption: "WEEK"
+                                caption: Services.I18n.t("clock.week")
                             }
                             WxCell {
                                 width: parent.width / 4
@@ -685,13 +672,13 @@ Item {
                                     let start = new Date(root.now.getFullYear(), 0, 0)
                                     return String(Math.floor((root.now - start) / 86400000))
                                 }
-                                caption: root.isLeap ? "DAY / 366" : "DAY / 365"
+                                caption: Services.I18n.t("clock.dayOf", { n: root.isLeap ? 366 : 365 })
                             }
                             WxCell {
                                 width: parent.width / 4
                                 glyph: "\ue1f9"
                                 value: Services.Weather.sunset || "\u2014"
-                                caption: "SUNSET"
+                                caption: Services.I18n.t("weather.sunset")
                             }
                         }
                     }
@@ -911,7 +898,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         // Caps, like every other title on this card -- the
                         // city, TODAY, the four figures under the arc.
-                        text: (Qt.locale().monthName(grid.curMonth) + " " + grid.curYear).toUpperCase()
+                        text: (Services.Time.monthName(grid.curMonth) + " " + grid.curYear).toUpperCase()
                         color: Services.Colors.snow
                         font.pixelSize: 14
                         font.family: "JetBrainsMono NF"
@@ -966,11 +953,13 @@ Item {
                 Row {
                     width: parent.width
                     Repeater {
-                        model: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"]
+                        model: 7
                         Text {
+                            required property int index
                             width: calStack.width / 7
                             horizontalAlignment: Text.AlignHCenter
-                            text: modelData
+                            // Sunday first, the order the grid below counts in.
+                            text: Services.Time.dayShort(index).replace(".", "").toUpperCase()
                             color: Services.Colors.ash
                             font.pixelSize: 11
                             font.family: "JetBrainsMono NF"
@@ -1247,7 +1236,7 @@ Item {
                     width: wxGrid.width / 4
                     glyph: "\ue798"
                     value: root.wxHumidity + "%"
-                    caption: "HUMIDITY"
+                    caption: Services.I18n.t("weather.humidity")
                 }
                 // The bearing as an arrow instead of two letters to decode: the
                 // glyph points where the wind comes FROM, which is what the
@@ -1256,19 +1245,19 @@ Item {
                     width: wxGrid.width / 4
                     glyph: Services.Weather.windGlyph(root.wxWindDir)
                     value: root.wxWindKph + " km/h"
-                    caption: "WIND"
+                    caption: Services.I18n.t("weather.wind")
                 }
                 WxCell {
                     width: wxGrid.width / 4
                     glyph: "\uf157"
-                    value: "UV " + root.wxUv
-                    caption: "UV INDEX"
+                    value: Services.I18n.t("weather.uv", { n: root.wxUv })
+                    caption: Services.I18n.t("weather.uvIndex")
                 }
                 WxCell {
                     width: wxGrid.width / 4
                     glyph: "\uf176"
                     value: root.wxRain + "%"
-                    caption: "RAIN"
+                    caption: Services.I18n.t("weather.rain")
                 }
             }
         }

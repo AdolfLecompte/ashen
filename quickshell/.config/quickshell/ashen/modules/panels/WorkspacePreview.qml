@@ -246,7 +246,7 @@ PanelWindow {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: card.contentAmt
-                        text: root.wins.length + (root.wins.length === 1 ? " window" : " windows")
+                        text: Services.I18n.t(root.wins.length === 1 ? "ws.window" : "ws.windows", { n: root.wins.length })
                         color: Services.Colors.ash
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"

@@ -149,6 +149,8 @@ Item {
         height: grid.height + 24
         radius: Services.Sizes.panelR
         color: Services.Colors.surfacePanel
+        border.width: Services.Colors.panelEdgeW
+        border.color: Services.Colors.fillOutline
 
         // One grid for everything -- the widgets, the pictures you have, and
         // the way to add another. Two grids left the last widget alone on a row
@@ -167,8 +169,8 @@ Item {
                     for (const w of Services.Desktop.trayOrder)
                         out.push({ kind: "widget", id: w.id, glyph: w.glyph, label: w.label })
                     for (const id of Services.Desktop.idsOf("image"))
-                        out.push({ kind: "picture", id: id, glyph: "\ue3f4", label: "Picture" })
-                    out.push({ kind: "add", id: "", glyph: "\ue145", label: "Picture" })
+                        out.push({ kind: "picture", id: id, glyph: "\ue3f4", label: Services.I18n.t("widget.picture") })
+                    out.push({ kind: "add", id: "", glyph: "\ue145", label: Services.I18n.t("widget.picture") })
                     return out
                 }
 

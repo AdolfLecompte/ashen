@@ -30,10 +30,19 @@ Rectangle {
     height: size
     radius: size / 4
     // Hover does not touch the plate: the chip grows and its glyph lifts.
-    color: !available ? Services.Colors.fillDisabled
+    // Where a capsule cannot fill -- an outlined or solid bar -- these buttons
+    // do not either: three filled squares inside a drawn capsule is exactly the
+    // blob the outline was drawn to avoid. They become edges, and "on" is the
+    // glyph taking the accent, like every other reading on the bar.
+    color: Services.Pills.rings ? "transparent"
+         : !available ? Services.Colors.fillDisabled
          : lit ? Services.Colors.ghost
          : Services.Colors.fillRest
-    gradient: Services.Prefs.useGradients && lit ? Services.Colors.accentGradient : null
+    border.width: Services.Pills.rings ? Services.Sizes.outlineW : 0
+    border.color: !available ? Services.Colors.fillDisabled
+                : lit ? Services.Colors.ghost : Services.Colors.fillOutline
+    gradient: (Services.Prefs.useGradients && !Services.Pills.rings && lit)
+              ? Services.Colors.accentGradient : null
     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
     scale: available && !inert
@@ -45,8 +54,12 @@ Rectangle {
         text: chip.glyph
         // On the accent fill, whichever of black and white can be read on it;
         // otherwise the ordinary rest/hover pair.
-        color: chip.lit ? Services.Colors.accentText
-             : (chip.warm ? Services.Colors.snow : Services.Colors.ash)
+        color: chip.lit
+                 ? (!Services.Pills.rings ? Services.Colors.accentText
+                                          : Services.Colors.ghost)
+             : (chip.warm ? Services.Colors.snow
+                          : (!Services.Pills.rings ? Services.Colors.ash
+                                                   : Services.Colors.mist))
         font.family: "Material Symbols Rounded"
         font.pixelSize: chip.glyphSize
         Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }

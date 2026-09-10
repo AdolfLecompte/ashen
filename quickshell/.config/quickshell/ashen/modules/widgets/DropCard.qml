@@ -169,6 +169,9 @@ Item {
 
     Rectangle {
         id: card
+        // The panel's own outline, separate from the bar's (Prefs.panelOutline).
+        border.width: Services.Colors.panelEdgeW
+        border.color: Services.Colors.fillOutline
 
         // How far it has fallen, how far it has stretched away from the bar,
         // how far it has spread sideways, and how much of the content is in.
@@ -341,6 +344,7 @@ Item {
 
         radius: Services.Sizes.pillR + (root.cardRadius - Services.Sizes.pillR)
                 * Math.min(1, Math.max(spread, stretch))
+
         // The alpha rides on the COLOUR, never on the item: `opacity` here would
         // take the tiles standing on the plate down with it.
         color: Qt.rgba(root.cardColor.r, root.cardColor.g, root.cardColor.b,

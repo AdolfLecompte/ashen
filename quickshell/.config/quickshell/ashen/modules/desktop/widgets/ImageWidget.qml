@@ -111,8 +111,8 @@ DesktopWidget {
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: img.status === Image.Error ? "That file is gone"
-                    : root.editing ? "Click to choose" : "No picture yet"
+                text: img.status === Image.Error ? Services.I18n.t("widget.pictureGone")
+                    : root.editing ? Services.I18n.t("widget.pickPicture") : Services.I18n.t("widget.noPicture")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"

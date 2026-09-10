@@ -26,6 +26,8 @@ Item {
         height: 44
         radius: Services.Sizes.pillR
         color: Services.Colors.surfacePanel
+        border.width: Services.Colors.panelEdgeW
+        border.color: Services.Colors.fillOutline
 
         // Behind the chosen mode, travelling between them. A child of the plate
         // and of no Row at all: a Row lays out everything it holds, so a marker
@@ -55,9 +57,9 @@ Item {
                 property Item activeItem: null
 
                 Repeater {
-                    model: [{ id: "free", label: "Free" },
-                            { id: "grid", label: "Grid" },
-                            { id: "magnet", label: "Magnet" }]
+                    model: [{ id: "free", label: Services.I18n.t("widget.free") },
+                            { id: "grid", label: Services.I18n.t("widget.grid") },
+                            { id: "magnet", label: Services.I18n.t("widget.magnet") }]
 
                     Item {
                         id: mode
@@ -136,7 +138,7 @@ Item {
                         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
                     }
                     Text {
-                        text: "Widgets"
+                        text: Services.I18n.t("widget.widgets")
                         color: tray.open ? Services.Colors.accentText
                              : trayHover.containsMouse ? Services.Colors.snow
                              : Services.Colors.mist
@@ -161,7 +163,7 @@ Item {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Escape when done"
+                text: Services.I18n.t("widget.escapeDone")
                 color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
@@ -181,7 +183,7 @@ Item {
                 Text {
                     id: doneText
                     anchors.centerIn: parent
-                    text: "Done"
+                    text: Services.I18n.t("common.done")
                     color: doneHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
                     font.pixelSize: Services.Sizes.fsBody
                     font.bold: true

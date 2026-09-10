@@ -33,8 +33,13 @@ Column {
             font.family: "JetBrainsMono NF"
         }
     }
+    // The caption never grows past its cell: four of them share a row, and a
+    // translated word is wider than the English one this was drawn with.
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
+        width: cell.width > 0 ? cell.width : implicitWidth
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
         text: cell.caption
         color: Services.Colors.ash
         font.pixelSize: 8

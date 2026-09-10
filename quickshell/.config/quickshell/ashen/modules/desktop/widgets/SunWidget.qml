@@ -9,24 +9,14 @@ DesktopWidget {
     id: root
     wid: "sun"
 
-    // Weather formats these to be READ ("6:12 PM" in 12-hour), so they cannot
-    // be parsed by counting characters -- same trap the clock panel pays.
-    function hhmmFrac(s) {
-        if (!s || s.length < 4) return -1
-        const t = String(s).trim()
-        const p = t.split(":")
-        let h = parseInt(p[0])
-        const m = parseInt(p[1])
-        if (isNaN(h) || isNaN(m)) return -1
-        if (t.indexOf("PM") >= 0 && h < 12) h += 12
-        if (t.indexOf("AM") >= 0 && h === 12) h = 0
-        return (h * 3600 + m * 60) / 86400
-    }
-
+    // Off Weather's minute counts, never off its printed times: those follow
+    // the language.
     readonly property real dayFrac: (Services.Time.now.getHours() * 3600
         + Services.Time.now.getMinutes() * 60 + Services.Time.now.getSeconds()) / 86400
-    readonly property real upFrac: root.hhmmFrac(Services.Weather.sunrise)
-    readonly property real downFrac: root.hhmmFrac(Services.Weather.sunset)
+    readonly property real upFrac: Services.Weather.sunriseMin < 0
+        ? -1 : Services.Weather.sunriseMin / 1440
+    readonly property real downFrac: Services.Weather.sunsetMin < 0
+        ? -1 : Services.Weather.sunsetMin / 1440
     readonly property bool daytime: root.dayFrac >= root.upFrac && root.dayFrac < root.downFrac
 
     readonly property string lightLeft: {
@@ -34,7 +24,8 @@ DesktopWidget {
         const mins = Math.round((root.daytime ? root.downFrac - root.dayFrac
                                               : (root.upFrac - root.dayFrac + 1) % 1) * 1440)
         const h = Math.floor(mins / 60)
-        return (h > 0 ? h + "h " : "") + (mins % 60) + "m"
+        return (h > 0 ? Services.I18n.t("time.hours", { n: h }) + " " : "")
+             + Services.I18n.t("time.mins", { n: mins % 60 })
     }
 
     // Glyph and digits never share a Text: the symbols font has no

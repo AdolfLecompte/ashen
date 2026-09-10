@@ -68,7 +68,7 @@ DesktopWidget {
         WidgetHead {
             implicitWidth: 300
             glyph: "\ue8d7"
-            name: "UPDATES"
+            name: Services.I18n.t("widget.updates")
             // Checking is a state worth showing: an empty list and an unasked
             // question look identical otherwise.
             note: Services.Updates.checking ? "checking"
@@ -105,7 +105,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
-            text: root.n === 1 ? "UPDATE" : "UPDATES"
+            text: Services.I18n.t(root.n === 1 ? "widget.update" : "widget.updates")
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsCaption
             font.letterSpacing: 1.6

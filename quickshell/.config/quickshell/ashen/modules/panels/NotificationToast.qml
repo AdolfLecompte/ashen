@@ -111,7 +111,8 @@ PanelWindow {
                     anchors.fill: parent
                     radius: 16
                     color: Services.Colors.surfacePanel
-                    border.width: 0
+                    border.width: Services.Colors.panelEdgeW
+                    border.color: Services.Colors.fillOutline
                     clip: true
                     transform: Translate { id: slideT }
 
@@ -223,7 +224,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 3
                             Text {
-                                text: card.modelData.summary || "SYSTEM ALERT"
+                                text: card.modelData.summary || Services.I18n.t("notify.systemAlert")
                                 color: Services.Colors.ash
                                 font.pixelSize: 8
                                 font.family: "JetBrainsMono NF"
@@ -294,7 +295,7 @@ PanelWindow {
                                 spacing: 6
                                 Text {
                                     width: Math.min(implicitWidth, parent.width - 74)
-                                    text: (card.modelData.appName || "Unknown").toUpperCase()
+                                    text: (card.modelData.appName || Services.I18n.t("notify.unknownApp")).toUpperCase()
                                     color: Services.Colors.ash
                                     font.pixelSize: 8
                                     font.family: "JetBrainsMono NF"
@@ -416,7 +417,8 @@ PanelWindow {
                 radius: 9
                 color: Services.Colors.surfacePanel
                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
-                border.width: 0
+                border.width: Services.Colors.panelEdgeW
+                border.color: Services.Colors.fillOutline
                 scale: Services.Sizes.hoverScale(countHover.containsMouse, countHover.pressed)
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
@@ -445,7 +447,8 @@ PanelWindow {
                 radius: 9
                 color: Services.Colors.surfacePanel
                 Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
-                border.width: 0
+                border.width: Services.Colors.panelEdgeW
+                border.color: Services.Colors.fillOutline
                 scale: Services.Sizes.hoverScale(sweepHover.containsMouse, sweepHover.pressed)
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 

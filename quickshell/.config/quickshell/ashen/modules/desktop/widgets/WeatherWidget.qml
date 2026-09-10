@@ -71,7 +71,7 @@ DesktopWidget {
             }
             Text {
                 text: (rd.showCity ? Services.Weather.city + " · " : "")
-                    + "feels " + Services.Weather.feels
+                    + Services.I18n.t("weather.feels", { t: Services.Weather.feels })
                 color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
@@ -167,7 +167,7 @@ DesktopWidget {
                     visible: modelData < cv.hours.length
                     // Guarded in the text too, not only in `visible`: a binding
                     // is evaluated whether or not the item is shown.
-                    text: modelData === 0 ? "NOW"
+                    text: modelData === 0 ? Services.I18n.t("weather.now")
                         : modelData < cv.hours.length ? cv.hours[modelData].label : ""
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsMeta
@@ -189,19 +189,19 @@ DesktopWidget {
             width: ex.cellW
             glyph: "\uf176"
             value: Services.Weather.rainProb + "%"
-            caption: "RAIN"
+            caption: Services.I18n.t("weather.rain")
         }
         Widgets.WxCell {
             width: ex.cellW
             glyph: "\uf157"
-            value: "UV " + Services.Weather.uvMax
-            caption: "UV INDEX"
+            value: Services.I18n.t("weather.uv", { n: Services.Weather.uvMax })
+            caption: Services.I18n.t("weather.uvIndex")
         }
         Widgets.WxCell {
             width: ex.cellW
             glyph: "\ue798"
             value: Services.Weather.humidity + "%"
-            caption: "HUMIDITY"
+            caption: Services.I18n.t("weather.humidity")
         }
         // The bearing as an arrow instead of two letters to decode: the glyph
         // points where the wind comes FROM, which is what the reading means.
@@ -209,7 +209,7 @@ DesktopWidget {
             width: ex.cellW
             glyph: Services.Weather.windGlyph(Services.Weather.windDir)
             value: Services.Weather.windKph + " km/h"
-            caption: "WIND"
+            caption: Services.I18n.t("weather.wind")
         }
     }
 

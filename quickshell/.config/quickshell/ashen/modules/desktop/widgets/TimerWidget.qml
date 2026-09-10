@@ -93,7 +93,7 @@ DesktopWidget {
     }
 
     component Timer_: Face {
-        caption: "TIMER"
+        caption: Services.I18n.t("widget.timer")
         figure: Services.Countdown.display
         // Full when it is aimed and empty when it rings, which is the way a
         // timer is read -- the service already publishes it that way.
@@ -121,7 +121,7 @@ DesktopWidget {
     }
 
     component Watch: Face {
-        caption: "STOPWATCH"
+        caption: Services.I18n.t("widget.stopwatch")
         figure: Services.Stopwatch.displayShort
         tracked: false
         live_: Services.Stopwatch.running

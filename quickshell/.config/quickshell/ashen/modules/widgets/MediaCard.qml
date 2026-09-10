@@ -112,7 +112,11 @@ Item {
     property string stableArtist: ""
     property string stableAlbum: ""
     function updateTrackInfo() {
-        if (!root.hasPlayer) {
+        // The PLAYER, not the flag: `hasPlayer` is a binding and lags a tick,
+        // and MPRIS drops the object to null between tracks -- which is how
+        // both of these threw "Cannot read property 'trackArtUrl' of null" on
+        // every single track change.
+        if (!root.activePlayer) {
             root.stableArtUrl = ""
             root.stableArtist = ""
             root.stableAlbum = ""
@@ -224,7 +228,7 @@ Item {
     readonly property string artTitle: root.hasPlayer
         ? (root.activePlayer.trackTitle || "") : ""
 
-    property string shownTitle: "Nothing playing"
+    property string shownTitle: Services.I18n.t("media.nothing")
     property string shownArtUrl: ""
     property string shownArtist: ""
     property string shownAlbum: ""
@@ -288,7 +292,7 @@ Item {
     }
 
     readonly property string titleText: root.hasPlayer
-        ? (root.activePlayer.trackTitle || "Untitled") : "Nothing playing"
+        ? (root.activePlayer.trackTitle || Services.I18n.t("media.untitled")) : Services.I18n.t("media.nothing")
     // Seconds into the track, for whoever needs the number rather than the
     // words -- the lyric column places its line with it.
     readonly property real position: root.activePlayer !== null ? root.activePlayer.position : 0

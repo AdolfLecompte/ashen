@@ -16,8 +16,8 @@ DesktopWidget {
     // Not `left`: every Item already has left/right/top/bottom as anchor
     // lines, and they are FINAL. Same family as `layer` and `focus`.
     readonly property string untilFull: Services.Battery.timeRemaining !== "--"
-        ? (Services.Battery.charging ? "Full in " + Services.Battery.timeRemaining
-                                     : Services.Battery.timeRemaining + " left")
+        ? Services.I18n.t(Services.Battery.charging ? "battery.fullIn" : "battery.left",
+                          { t: Services.Battery.timeRemaining })
         : ""
 
     // Slow number, asked for rather than polled -- and again whenever the

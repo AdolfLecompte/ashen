@@ -198,7 +198,8 @@ Scope {
         height: arrive.boxH(fullH)
         radius: 20
         color: Services.Colors.surfacePanel
-        border.width: 0
+        border.width: Services.Colors.panelEdgeW
+        border.color: Services.Colors.fillOutline
         clip: true
 
         opacity: arrive.fade
@@ -224,7 +225,7 @@ Scope {
                 transform: Translate { y: arrive.riseOf(0) }
 
                 Text {
-                    text: "Notifications"
+                    text: Services.I18n.t("settings.tab.notifications")
                     color: Services.Colors.snow
                     font.pixelSize: 15
                     font.bold: true
@@ -307,7 +308,7 @@ Scope {
                     }
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "whatever shows up lands here"
+                        text: Services.I18n.t("notify.empty")
                         color: Services.Colors.ash
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
@@ -686,7 +687,7 @@ Scope {
                         spacing: 6
                         Text {
                             width: Math.min(implicitWidth, parent.width - 60)
-                            text: (row.entry.appName || "Unknown").toUpperCase()
+                            text: (row.entry.appName || Services.I18n.t("notify.unknownApp")).toUpperCase()
                             color: Services.Colors.ash
                             font.pixelSize: 8
                             font.family: "JetBrainsMono NF"

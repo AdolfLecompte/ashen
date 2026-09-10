@@ -15,7 +15,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height; utilEdge: Services.AppState.processSourceEdge }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
     // stay mapped through the close animation
     visible: Services.AppState.processVisible || closeDelay.running
 
@@ -50,9 +50,12 @@ PanelWindow {
     // The same drop the clock and the system chips open with. Its pill is a
     // chip on the utility trigger, so the edge is read live from the pill
     // rather than written at click time: a keybind never clicks.
-    readonly property string srcEdge: Services.AppState.processSourceEdge
+    readonly property string srcEdge: Services.Sizes.overlayEdge
     // Its chip: on the utility pill of that edge, or on the bar.
-    readonly property var chipRect: Services.AppState.chipRectOf("process", root.srcEdge)
+    // No capsule since the utility pill went: this panel arrives from the
+    // screen edge. The rect is still read while that is decided, so it is a
+    // zero rect and not null -- reading .cx off null throws four times a frame.
+    readonly property var chipRect: ({ cx: 0, cy: 0, w: 44, h: 44 })
     readonly property real openXCalc: srcEdge === "" ? NaN
         : srcEdge === "left" ? Services.Sizes.panelTop
         : srcEdge === "right" ? root.width - card.openW - Services.Sizes.panelTop
@@ -314,7 +317,7 @@ PanelWindow {
                         index: 0
                         col: 0; row: 0; cw: 4; ch: 2
                         glyph: ""
-                        name: "CPU USAGE"
+                        name: Services.I18n.t("proc.cpu")
                         note: Services.SysMon.cpuModel
 
                         readonly property color tone: bodyRoot.toneAt(0)
@@ -375,7 +378,7 @@ PanelWindow {
                         index: 1
                         col: 4; row: 0; cw: 4; ch: 1
                         glyph: ""
-                        name: "MEMORY"
+                        name: Services.I18n.t("proc.memory")
                         id: ramCard
 
                         readonly property color tone: bodyRoot.toneAt(1)
@@ -426,7 +429,7 @@ PanelWindow {
                                 x: ramCard.inset
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 12
-                                text: "IN USE"
+                                text: Services.I18n.t("proc.inUse")
                                 color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsCaption
                                 font.letterSpacing: 1.2
@@ -449,7 +452,7 @@ PanelWindow {
                         index: 2
                         col: 4; row: 1; cw: 4; ch: 1
                         glyph: ""
-                        name: "THERMALS"
+                        name: Services.I18n.t("proc.thermals")
                         id: thermCard
 
                         readonly property color tone: bodyRoot.toneAt(2)
@@ -469,7 +472,7 @@ PanelWindow {
                                 tone: thermCard.tone
                                 label: Services.SysMon.cpuTemp > 0
                                     ? Services.SysMon.cpuTemp.toFixed(0) + "°" : "--"
-                                caption: "CPU"
+                                caption: Services.I18n.t("proc.cpuShort")
                                 phase: 0.7
                             }
                             Vessel {
@@ -479,7 +482,7 @@ PanelWindow {
                                 tone: bodyRoot.toneAt(6)
                                 label: Services.SysMon.gpuTemp > 0
                                     ? Services.SysMon.gpuTemp.toFixed(0) + "°" : "--"
-                                caption: "GPU"
+                                caption: Services.I18n.t("proc.gpuShort")
                                 phase: 2.9
                             }
                         }
@@ -490,7 +493,7 @@ PanelWindow {
                         index: 3
                         col: 0; row: 2; cw: 3; ch: 1
                         glyph: ""
-                        name: "GPU"
+                        name: Services.I18n.t("proc.gpuShort")
                         id: gpuCard
 
                         readonly property color tone: bodyRoot.toneAt(3)
@@ -528,7 +531,7 @@ PanelWindow {
                                 anchors.left: gpuNum.right
                                 anchors.leftMargin: 10
                                 anchors.baseline: gpuNum.baseline
-                                text: Services.SysMon.dgpuAwake ? "Discrete" : "Integrated"
+                                text: Services.SysMon.dgpuAwake ? Services.I18n.t("proc.discrete") : Services.I18n.t("proc.integrated")
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsMeta
                                 font.family: "JetBrainsMono NF"
@@ -538,7 +541,7 @@ PanelWindow {
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 12
                                 text: Services.SysMon.igpuFreq > 0
-                                    ? "CLOCK  " + Math.round(Services.SysMon.igpuFreq) + " MHz"
+                                    ? Services.I18n.t("proc.clock", { n: Math.round(Services.SysMon.igpuFreq) })
                                     : ""
                                 color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsCaption
@@ -561,7 +564,7 @@ PanelWindow {
                         index: 4
                         col: 3; row: 2; cw: 2; ch: 1
                         glyph: ""
-                        name: "NETWORK"
+                        name: Services.I18n.t("proc.network")
                         id: netCard
 
                         readonly property color tone: bodyRoot.toneAt(4)
@@ -630,7 +633,7 @@ PanelWindow {
                         index: 5
                         col: 5; row: 2; cw: 3; ch: 1
                         glyph: ""
-                        name: "STORAGE"
+                        name: Services.I18n.t("proc.storage")
                         note: Services.SysMon.diskPercent + "%"
                         id: diskCard
 
@@ -671,7 +674,7 @@ PanelWindow {
                                 anchors.left: diskNum.right
                                 anchors.leftMargin: 10
                                 anchors.baseline: diskNum.baseline
-                                text: "of " + Math.round(Services.SysMon.diskTotalGB) + " GB"
+                                text: Services.I18n.t("proc.ofTotal", { n: Math.round(Services.SysMon.diskTotalGB) })
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsMeta
                                 font.family: "JetBrainsMono NF"
@@ -680,7 +683,7 @@ PanelWindow {
                                 x: diskCard.inset
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 12
-                                text: "ROOT"
+                                text: Services.I18n.t("proc.root")
                                 color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsCaption
                                 font.letterSpacing: 1.2

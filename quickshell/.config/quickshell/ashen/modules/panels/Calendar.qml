@@ -78,7 +78,7 @@ PanelWindow {
             Text {
                 id: refDate
                 anchors.verticalCenter: parent.verticalCenter
-                text: Qt.formatDateTime(panelRef.now, "ddd, MMM d")
+                text: Services.Time.fmtOf(panelRef.now, "ddd, MMM d")
                 font.pixelSize: 15
                 font.bold: true
                 font.family: "JetBrainsMono NF"
@@ -155,7 +155,7 @@ PanelWindow {
         Text {
             id: flyDate
             text: card.morph < 0.5
-                ? Qt.formatDateTime(panelRef.now, "ddd, MMM d")
+                ? Services.Time.fmtOf(panelRef.now, "ddd, MMM d")
                 : panelRef.dateText.toUpperCase()
             // The card wears it as a title -- spaced out and in caps -- so the
             // flying copy has to arrive dressed the same way.

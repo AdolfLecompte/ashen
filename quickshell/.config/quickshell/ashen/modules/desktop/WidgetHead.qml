@@ -14,12 +14,18 @@ Item {
 
     implicitHeight: 18
 
+    // The name yields to the figure rather than running under it: translated
+    // names are longer than the English ones this was drawn with.
     Row {
+        id: row
         anchors.left: parent.left
+        anchors.right: note.left
+        anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 7
 
         Text {
+            id: mark
             anchors.verticalCenter: parent.verticalCenter
             text: root.glyph
             color: Services.Colors.ghost
@@ -28,6 +34,8 @@ Item {
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
+            width: Math.max(0, row.width - mark.width - row.spacing)
+            elide: Text.ElideRight
             text: root.name
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsCaption
@@ -37,6 +45,7 @@ Item {
         }
     }
     Text {
+        id: note
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         text: root.note

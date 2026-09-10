@@ -51,10 +51,10 @@ PanelWindow {
     // down on purpose is not that -- what sets these apart is that they make
     // you keep pressing.
     readonly property var actions: [
-        { icon: "", label: "Lock",      cmd: "",                   lock: true },
-        { icon: "", label: "Suspend",   cmd: "systemctl suspend"  },
-        { icon: "", label: "Restart",   cmd: "systemctl reboot"   },
-        { icon: "", label: "Shut down", cmd: "systemctl poweroff" },
+        { icon: "", label: Services.I18n.t("power.lock"),      cmd: "",                   lock: true },
+        { icon: "", label: Services.I18n.t("power.suspend"),   cmd: "systemctl suspend"  },
+        { icon: "", label: Services.I18n.t("power.restart"),   cmd: "systemctl reboot"   },
+        { icon: "", label: Services.I18n.t("power.shutdown"), cmd: "systemctl poweroff" },
     ]
 
     Rectangle {

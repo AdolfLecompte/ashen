@@ -201,7 +201,7 @@ PanelWindow {
                             spacing: 2
                             Text {
                                 Layout.alignment: Qt.AlignRight
-                                text: Services.Battery.charging ? "CHARGING" : "ON BATTERY"
+                                text: Services.Battery.charging ? Services.I18n.t("battery.charging") : Services.I18n.t("battery.onBattery")
                                 color: Services.Battery.charging ? Services.Colors.ghost
                                                                  : Services.Colors.mist
                                 font.pixelSize: 10
@@ -218,8 +218,8 @@ PanelWindow {
                                 visible: text !== ""
                                 text: Services.Battery.timeRemaining === "--" ? ""
                                     : Services.Battery.charging
-                                        ? ("Full in " + Services.Battery.timeRemaining)
-                                        : (Services.Battery.timeRemaining + " left")
+                                        ? Services.I18n.t("battery.fullIn", { t: Services.Battery.timeRemaining })
+                                        : Services.I18n.t("battery.left", { t: Services.Battery.timeRemaining })
                                 color: Services.Colors.snow
                                 font.pixelSize: 13
                                 font.family: "JetBrainsMono NF"
@@ -239,7 +239,7 @@ PanelWindow {
 
                         Text {
                             x: 12; y: 10
-                            text: "LAST 24 HOURS"
+                            text: Services.I18n.t("battery.last24")
                             color: Services.Colors.ash
                             font.pixelSize: 9
                             font.bold: true
@@ -303,7 +303,7 @@ PanelWindow {
 
                         Fact {
                             Layout.fillWidth: true
-                            caption: "HEALTH"
+                            caption: Services.I18n.t("battery.health")
                             value: Services.Battery.health > 0
                                 ? Services.Battery.health + "%" : "--"
                             // The two numbers the percentage is made of. The
@@ -315,7 +315,7 @@ PanelWindow {
                         }
                         Fact {
                             Layout.fillWidth: true
-                            caption: "CYCLES"
+                            caption: Services.I18n.t("battery.cycles")
                             value: Services.Battery.cycles > 0
                                 ? String(Services.Battery.cycles) : "--"
                         }
@@ -323,8 +323,8 @@ PanelWindow {
                             Layout.fillWidth: true
                             // Full and plugged in, nothing is moving -- which
                             // is a reading, not a blank.
-                            caption: !Services.Battery.charging ? "DRAWING"
-                                   : Services.Battery.watts > 0 ? "GOING IN" : "TOPPED UP"
+                            caption: !Services.Battery.charging ? Services.I18n.t("battery.drawing")
+                                   : Services.Battery.watts > 0 ? Services.I18n.t("battery.goingIn") : Services.I18n.t("battery.toppedUp")
                             value: Services.Battery.hasRate
                                 ? Services.Battery.watts.toFixed(1) + " W" : "--"
                         }
@@ -333,7 +333,7 @@ PanelWindow {
                     Widgets.Divider {}
 
                     Text {
-                        text: "POWER PROFILE"
+                        text: Services.I18n.t("battery.profile")
                         color: Services.Colors.ash
                         font.pixelSize: 10
                         font.family: "JetBrainsMono NF"
@@ -367,9 +367,9 @@ PanelWindow {
                             // A leaf, a balance and a rocket are a guess until
                             // someone tells you which is which. The word costs
                             // one line of 9 px and ends the guessing.
-                                { id: "power-saver", icon: ""},
-                                { id: "balanced", icon: ""},
-                                { id: "performance", icon: ""},
+                                { id: "power-saver", icon: "", label: Services.I18n.t("settings.system.saver") },
+                                { id: "balanced", icon: "", label: Services.I18n.t("settings.system.balanced") },
+                                { id: "performance", icon: "", label: Services.I18n.t("settings.system.performance") },
                             ]
                             delegate: Rectangle {
                                 required property var modelData

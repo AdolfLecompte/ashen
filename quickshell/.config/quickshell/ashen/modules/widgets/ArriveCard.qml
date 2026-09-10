@@ -81,6 +81,8 @@ Item {
         // "transparent" for a panel whose content is the surface -- the
         // wallpaper carousel is its own cards and wants no plate behind them.
         color: root.cardColor
+            border.width: Services.Colors.panelEdgeW
+            border.color: Services.Colors.fillOutline
         clip: true
         opacity: arrive.fade
         transform: Translate { y: arrive.offY }

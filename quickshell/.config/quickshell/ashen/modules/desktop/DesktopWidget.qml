@@ -108,11 +108,16 @@ Item {
         id: plate
         anchors.fill: parent
         radius: Services.Sizes.panelR
-        color: Services.Colors.surfacePill
-        // Only while arranging: the outline says which boxes are grabbable, and
-        // it is the one thing the desktop does not need the rest of the time.
-        border.color: root.editing ? Services.Colors.ghost : "transparent"
-        border.width: root.editing ? 2 : 0
+        color: Services.Prefs.widgetOutline ? Services.Colors.surfaceGlass
+                                            : Services.Colors.surfacePill
+        // Two reasons for a border, and arranging wins: while you are dragging
+        // boxes around, the accent edge says which ones are grabbable. The rest
+        // of the time it is the widget outline, or nothing.
+        border.color: root.editing ? Services.Colors.ghost
+                    : Services.Prefs.widgetOutline ? Services.Colors.fillOutline
+                    : "transparent"
+        border.width: root.editing ? 2
+                    : Services.Prefs.widgetOutline ? Services.Sizes.outlineW : 0
         Behavior on border.width { NumberAnimation { duration: Services.Sizes.msMicro } }
     }
 
