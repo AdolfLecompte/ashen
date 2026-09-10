@@ -42,3 +42,9 @@ hypr/.config/hypr/conf/userkeys.lua
 # they were two thirds of the repository.
 docs/probes/mark.png
 docs/probes/sddm/*.png
+
+# ── Working notes ─────────────────────────────────────────────────────────
+# Specs and plans written while building a thing, including the ones for
+# designs that were rejected. They are how a decision was reached, not what
+# the project documents -- docs/ is for the second kind.
+docs/superpowers/
