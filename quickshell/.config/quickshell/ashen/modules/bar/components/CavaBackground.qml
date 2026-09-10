@@ -17,7 +17,11 @@ Item {
     readonly property string edge: Services.Sizes.barPosition
     readonly property bool vertical: Services.Sizes.barVertical
 
-    onBarValuesChanged: canvas.requestPaint()
+    // Nothing is repainted while there is nothing to see: the wave is at zero
+    // opacity in silence, and a transparent Canvas costs exactly as much to
+    // draw as a visible one.
+    onBarValuesChanged: if (root.isActive) canvas.requestPaint()
+    onIsActiveChanged: canvas.requestPaint()
     onEdgeChanged: canvas.requestPaint()
 
     Canvas {

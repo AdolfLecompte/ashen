@@ -40,9 +40,17 @@ Singleton {
                 if (!data || !root.enabled) return
                 let parts = data.split(";").filter(s => s.length > 0).map(Number)
                 if (parts.length === 0) return
-                root.barValues = parts
                 let maxV = Math.max.apply(null, parts)
-                root.isActive = maxV > 2
+                // Silence is still sixty frames a second of zeros, and every one
+                // of them used to be published -- which woke a Canvas repaint in
+                // each wave on screen, all of them invisible by then. The frame
+                // that goes quiet IS published, so the bars fall to nothing
+                // rather than freezing tall behind the fade; after that nothing
+                // is until there is something to say again.
+                const speaking = maxV > 2
+                if (speaking || root.isActive)
+                    root.barValues = parts
+                root.isActive = speaking
             }
         }
         onRunningChanged: if (!running && root.procAlive) running = true
