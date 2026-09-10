@@ -42,7 +42,6 @@ Rectangle {
         anchors.centerIn: parent
         bare: true
         pillKey: "bluetooth"
-        minLabelW: 46
         maxLabelW: 108
         active: Services.Network.btEnabled
         open: Services.AppState.bluetoothVisible

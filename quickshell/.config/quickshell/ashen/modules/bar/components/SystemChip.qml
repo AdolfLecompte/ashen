@@ -46,11 +46,15 @@ Rectangle {
     // clock tints its weather icon. A caller overrides it when the glyph has
     // to say something louder than the wallpaper -- the battery going red.
     property color glyphTint: Services.Colors.neutral
-    // Optional width band for the label, off by default. Only the chips whose
-    // text is a name — the network and the bluetooth device — need it; a
-    // percentage is always the same handful of characters and clamping it just
-    // padded the chip out for nothing.
-    property real minLabelW: 0
+    // A CEILING on the label, off by default. Only the chips whose text is a
+    // name -- the network and the bluetooth device -- need it: a 32-character
+    // SSID would otherwise drag the panel that hangs off this chip across the
+    // screen.
+    //
+    // There used to be a floor as well, and it was the wrong shape entirely: a
+    // reading of "" (bluetooth with nothing connected, wifi switched off) still
+    // reserved its 46 px, and a compact "87%" was padded out to the same width
+    // as a name. A chip is as wide as what it has to say.
     property real maxLabelW: 0
 
     signal activated()
@@ -199,7 +203,6 @@ Rectangle {
             vert: chip.vertical
             shown: chip.label !== "" && !chip.vertical
             band: chip.maxLabelW > 0
-            loW: chip.minLabelW
             hiW: chip.maxLabelW
         }
 
@@ -301,14 +304,12 @@ Rectangle {
         property bool vert: false
         property bool shown: true
         property bool band: false
-        property real loW: 0
         property real hiW: 0
         color: read.col
-        // Floor and ceiling on the width: the chip is where the panel hangs from,
-        // so a long SSID used to drag the open panel across the screen and "Off"
-        // used to snap it narrow. Past the ceiling the name trails off.
-        width: read.band ? Math.max(read.loW, Math.min(implicitWidth, read.hiW))
-                         : implicitWidth
+        // A ceiling, never a floor: the chip is where the panel hangs from, so a
+        // long SSID used to drag the open panel across the screen. Past the
+        // ceiling the name trails off; under it the chip is simply narrower.
+        width: read.band ? Math.min(implicitWidth, read.hiW) : implicitWidth
         elide: read.band ? Text.ElideRight : Text.ElideNone
         // Sideways there is no room for the words. Zero text, not an empty label:
         // an empty one still counted as a lane in BarStrip's Grid and reserved the

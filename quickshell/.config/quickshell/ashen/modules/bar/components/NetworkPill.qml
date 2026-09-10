@@ -44,7 +44,6 @@ Rectangle {
         pillKey: "network"
         // A network name is whatever the router was called, so this one
         // gets a width band; the readings below do not need one.
-        minLabelW: 46
         maxLabelW: 108
         // Lit whenever the radio is on, connected or not — the bluetooth
         // chip keys on its radio alone and these two have to agree.

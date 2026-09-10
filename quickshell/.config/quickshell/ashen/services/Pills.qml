@@ -62,7 +62,13 @@ Singleton {
         { id: "compact", label: "Compact" },
         { id: "icon",    label: "Icon only" }
     ]
-    function contentOf(id) { return Prefs.contentOf(id) }
+    // What a pill SHOWS, and never a reading it is no longer offered: a saved
+    // `volume:compact` outlives the backlight it was chosen on, and a pill left
+    // drawing an option Settings has stopped listing is a state with no way out.
+    function contentOf(id) {
+        const want = Prefs.contentOf(id)
+        return root.contentsFor(id).some(v => v.id === want) ? want : "full"
+    }
     // May a capsule PAINT ITSELF to say it is on?
     //
     // Only when it is a capsule on a wallpaper. On a solid or island bar the
@@ -90,7 +96,18 @@ Singleton {
     //
     // compactable — has a shorter reading to fall back on. The rest carry one
     // number or one word and have nothing to trim.
-    readonly property var compactable: ["network", "bluetooth", "volume", "clock", "media", "window"]
+    //
+    // Computed, not a literal, because of the sound pill: its compact drops the
+    // BRIGHTNESS half, and a machine with no backlight never had that half to
+    // drop -- compact there draws precisely what full draws. The rule is the
+    // same one that took notifications and usb out of `iconable`; what is new is
+    // that this one is only true on some machines, so the option has to go away
+    // on those and stay on the others rather than be deleted for everybody.
+    readonly property var compactable: {
+        let out = ["network", "bluetooth", "clock", "media", "window"]
+        if (Brightness.icon(Brightness.level) !== "") out.push("volume")
+        return out
+    }
     // iconable — has a label that dropping would actually change. A pill that is
     // already just a glyph would draw "icon" exactly as it draws "full".
     // Workspaces is deliberately out: what it shows is settled by its own two

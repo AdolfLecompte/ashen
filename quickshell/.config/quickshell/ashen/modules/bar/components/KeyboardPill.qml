@@ -13,7 +13,12 @@ Rectangle {
     readonly property string content: Services.Pills.contentOf("keyboard")
     readonly property bool outlined: Services.Pills.isOutlined("keyboard")
 
-    width: root.vertical ? Services.Sizes.pillH : kbRow.width + 16
+    // Icon-only is a SQUARE, like every other pill that offers it. Without this
+    // branch the plate kept the width of a row whose label had just been
+    // emptied -- a glyph adrift in a pill sized for words that are not there.
+    width: root.vertical ? Services.Sizes.pillH
+         : root.content === "icon" ? Services.Sizes.pillH
+         : kbRow.width + 16
     height: root.vertical ? kbRow.height + 16 : Services.Sizes.pillH
     radius: Services.Sizes.pillR
     // One plate, drawn here: the chips inside are bare. A readout, so it never
