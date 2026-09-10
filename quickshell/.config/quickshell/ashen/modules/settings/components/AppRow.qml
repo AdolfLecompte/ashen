@@ -66,7 +66,7 @@ ColumnLayout {
         KeyChip { wid: root.kind }
 
         ActionBtn {
-            label: root.picking ? "Close" : "Change"
+            label: root.picking ? Services.I18n.t("common.close") : Services.I18n.t("common.change")
             onGo: root.picking = !root.picking
         }
     }
@@ -115,7 +115,7 @@ ColumnLayout {
                 anchors.leftMargin: 34
                 anchors.rightMargin: 10
                 verticalAlignment: TextInput.AlignVCenter
-                placeholderText: "Search apps"
+                placeholderText: Services.I18n.t("settings.apps.search")
                 color: Services.Colors.snow
                 placeholderTextColor: Services.Colors.ash
                 font.pixelSize: 11
@@ -191,7 +191,7 @@ ColumnLayout {
                 onGo: root.showAll = !root.showAll
             }
             ActionBtn {
-                label: "Automatic"
+                label: Services.I18n.t("common.automatic")
                 onGo: {
                     Services.Apps.setCommand(root.kind, "")
                     root.picking = false
@@ -203,7 +203,7 @@ ColumnLayout {
         // Typed by hand, for the cases a .desktop cannot express -- a terminal
         // with the flags that keep it to one instance, a browser in a profile.
         CommandField {
-            title: "Command"
+            title: Services.I18n.t("settings.apps.command")
             value: root.command
             fallback: root.fallback
             onCommitted: cmd => Services.Apps.setCommand(root.kind, cmd)

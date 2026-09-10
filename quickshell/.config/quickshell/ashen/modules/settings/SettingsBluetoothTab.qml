@@ -62,7 +62,7 @@ Item {
             Layout.fillWidth: true
             Text {
                 visible: false   // the drawer header carries the section name
-                text: "Bluetooth"
+                text: Services.I18n.t("settings.tab.bluetooth")
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsPanelTitle
                 font.bold: true
@@ -100,7 +100,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 2
                     Text { text: Services.Network.btDevice; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
-                    Text { text: "Connected"; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
+                    Text { text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                 }
                 Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
             }
@@ -111,7 +111,7 @@ Item {
             spacing: 4
             visible: tab.knownDevices.length > 0
             Text {
-                text: "Known Devices"
+                text: Services.I18n.t("settings.bt.known")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
@@ -133,7 +133,7 @@ Item {
             spacing: 4
             visible: tab.newDevices.length > 0
             Text {
-                text: tab.adapter && tab.adapter.discovering ? "Scanning..." : "Available"
+                text: tab.adapter && tab.adapter.discovering ? Services.I18n.t("common.scanning") : Services.I18n.t("settings.bt.available")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
@@ -166,7 +166,7 @@ Item {
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
-                    text: tab.adapter && tab.adapter.discovering ? "Scanning..." : (tab.adapter ? "No devices found" : "No adapter")
+                    text: tab.adapter && tab.adapter.discovering ? Services.I18n.t("common.scanning") : (tab.adapter ? Services.I18n.t("settings.bt.noDevices") : Services.I18n.t("settings.bt.noAdapter"))
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsInput
                     font.family: "JetBrainsMono NF"

@@ -18,8 +18,9 @@ Rectangle {
     radius: Services.Sizes.innerR
     color: btn.accent ? Services.Colors.ghost : Services.Colors.fillRest
     gradient: Services.Prefs.useGradients && btn.accent ? Services.Colors.accentGradient : null
-    scale: Services.Sizes.hoverScale(btn.warm, hov.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    // The BOX does not move. In a card full of rows, a button that swells
+    // shoves the row's rhythm around; the bar's pills grow because they float
+    // on a wallpaper with nothing to disturb. Here the word grows instead.
     Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
 
     Text {
@@ -31,6 +32,11 @@ Rectangle {
         font.pixelSize: Services.Sizes.fsBody
         font.bold: true
         font.family: "JetBrainsMono NF"
+        // Grow and brighten: the same two things the bar's hover says, moved
+        // from the plate to the letters. A transform, so the row never
+        // remeasures and nothing beside it shifts.
+        scale: Services.Sizes.hoverScale(btn.warm, hov.pressed)
+        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
         Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
     }
     MouseArea {

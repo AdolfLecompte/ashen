@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import "root:/services" as Services
 
 // The scrollable body every settings tab shares: same margins, same scrollbar,
 // same spacing between cards. Children are stacked in the column, so a tab is
@@ -21,7 +22,9 @@ Item {
 
         ColumnLayout {
             id: col
-            width: parent.width
+            // Capped and centred, never the full panel: see Sizes.readMeasure.
+            width: Math.min(parent.width, Services.Sizes.readMeasure)
+            x: (parent.width - width) / 2
             spacing: 14
         }
     }

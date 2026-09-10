@@ -130,14 +130,14 @@ RowLayout {
     // headed for.
     Text {
         visible: root.missing && !root.editing
-        text: "not installed"
+        text: Services.I18n.t("settings.apps.notInstalled")
         color: Services.Colors.error_
         font.pixelSize: Services.Sizes.fsMeta
         font.family: "JetBrainsMono NF"
     }
 
     ActionBtn {
-        label: root.editing ? "Save" : "Change"
+        label: root.editing ? Services.I18n.t("common.save") : Services.I18n.t("common.change")
         onGo: root.editing ? root.commit() : root.beginEdit()
     }
 }

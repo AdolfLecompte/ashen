@@ -10,7 +10,7 @@ import "root:/modules/settings/components"
 Section {
     id: tab
     Card {
-        title: "Do Not Disturb"
+        title: Services.I18n.t("settings.notify.dnd")
 
         RowLayout {
             Layout.fillWidth: true
@@ -20,7 +20,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text {
-                    text: "Silence notifications"
+                    text: Services.I18n.t("settings.notify.silence")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
@@ -36,9 +36,9 @@ Section {
     }
 
     Card {
-        title: "Toasts"
+        title: Services.I18n.t("settings.notify.toasts")
 
-        SectionLabel { text: "On screen for" }
+        SectionLabel { text: Services.I18n.t("settings.notify.duration") }
         Segmented {
             options: [
                 { id: "3", label: "3s" },
@@ -49,7 +49,7 @@ Section {
             current: String(Services.Prefs.toastSeconds)
             onPicked: id => Services.Prefs.toastSeconds = parseInt(id)
         }
-        SectionLabel { text: "Stacked at once" }
+        SectionLabel { text: Services.I18n.t("settings.notify.stack") }
         RowLayout {
             Layout.fillWidth: true
             spacing: 12
@@ -69,7 +69,7 @@ Section {
     // Notifications (`notifySound`, `notifySoundFile`, `soundVolume`), and the
     // Sound tab is about what the machine plays, not about what interrupts you.
     Card {
-        title: "Sound"
+        title: Services.I18n.t("settings.notify.sound")
 
         RowLayout {
             Layout.fillWidth: true
@@ -79,7 +79,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text {
-                    text: "Play a sound on arrival"
+                    text: Services.I18n.t("settings.notify.play")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
@@ -104,7 +104,7 @@ Section {
                     Layout.fillWidth: true
                     spacing: 2
                     Text {
-                        text: "Only for critical ones"
+                        text: Services.I18n.t("settings.notify.critical")
                         color: Services.Colors.snow
                         font.pixelSize: Services.Sizes.fsInput
                         font.bold: true
@@ -121,12 +121,12 @@ Section {
             // The slider speaks in whole percent, the preference in 0..1.
             Widgets.SliderRow {
                 glyph: ""
-                label: "Volume"
+                label: Services.I18n.t("common.volume")
                 value: Math.round(Services.Prefs.soundVolume * 100)
                 onMoved: pct => Services.Prefs.soundVolume = pct / 100
             }
 
-            SectionLabel { text: "Sound" }
+            SectionLabel { text: Services.I18n.t("settings.notify.sound") }
 
             // The freedesktop set every distribution ships, plus whatever the
             // user points at. Picking one plays it: choosing a sound you cannot
@@ -158,9 +158,6 @@ Section {
                         implicitWidth: chip.alone ? soundFlow.width
                                                   : (soundFlow.width - soundFlow.spacing) / 2
                         implicitHeight: Services.Sizes.innerH
-                        scale: Services.Sizes.hoverScaleFor(width, chip.warm, soundHover.pressed)
-                        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-
                         Rectangle {
                             anchors.fill: parent
                             radius: Services.Sizes.innerR
@@ -173,6 +170,10 @@ Section {
                         Text {
                             id: soundName
                             anchors.centerIn: parent
+                            // The box holds still, the name grows: same as every
+                            // other button in Settings.
+                            scale: Services.Sizes.hoverScaleFor(chip.width, chip.warm, soundHover.pressed)
+                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                             width: parent.width - 16
                             elide: Text.ElideRight
                             horizontalAlignment: Text.AlignHCenter

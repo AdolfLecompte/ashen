@@ -10,7 +10,7 @@ Rectangle {
     id: hero
 
     // The action button's word, and what it does.
-    property string action: "Open"
+    property string action: Services.I18n.t("common.open")
     signal triggered()
 
     Layout.fillWidth: true

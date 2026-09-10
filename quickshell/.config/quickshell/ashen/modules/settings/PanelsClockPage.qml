@@ -19,7 +19,7 @@ Section {
     // sample froze at whatever time the tab opened; the shared clock is.
     readonly property string timePreview: Services.Time.fmt(Services.Prefs.timeFormat)
     Card {
-        title: "Clock & Weather"
+        title: Services.I18n.t("settings.tab.clock")
         RowLayout {
             Layout.fillWidth: true
             spacing: 12
@@ -27,7 +27,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "Time Format"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { text: Services.I18n.t("settings.clock.format"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
                 Text { text: tab.timePreview; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
             }
             Segmented {
@@ -47,7 +47,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "Show Seconds"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { text: Services.I18n.t("settings.clock.seconds"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -56,7 +56,7 @@ Section {
             }
         }
 
-        SectionLabel { text: "Weather"; Layout.topMargin: 4 }
+        SectionLabel { text: Services.I18n.t("settings.clock.weather"); Layout.topMargin: 4 }
         RowLayout {
             Layout.fillWidth: true
             spacing: 12
@@ -64,8 +64,8 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "Temperature"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
-                Text { text: "Now: " + Services.Weather.temp; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
+                Text { text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { text: Services.I18n.t("settings.clock.now", { t: Services.Weather.temp }); color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
             }
             Segmented {
                 options: [
@@ -80,11 +80,11 @@ Section {
 
         RowLayout {
             Layout.fillWidth: true
-            SectionLabel { text: "Location"; Layout.fillWidth: true }
+            SectionLabel { text: Services.I18n.t("settings.clock.location"); Layout.fillWidth: true }
             SectionLabel {
                 text: Services.Weather.cityError
                     ? tab.missLine
-                    : (Services.Weather.city !== "" ? Services.Weather.city : "Auto (by IP)")
+                    : (Services.Weather.city !== "" ? Services.Weather.city : Services.I18n.t("settings.clock.autoIp"))
                 color: Services.Weather.cityError ? Services.Colors.error_ : Services.Colors.ash
             }
         }
@@ -143,10 +143,10 @@ Section {
                         anchors.margins: 4
                         width: 18; height: 18; radius: Services.Sizes.innerR
                         color: Services.Colors.fillSunken
-                        scale: Services.Sizes.hoverScale(rmCityArea.containsMouse, rmCityArea.pressed)
-                        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                         Text {
                             anchors.centerIn: parent
+                            scale: Services.Sizes.hoverScale(rmCityArea.containsMouse, rmCityArea.pressed)
+                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                             text: "\ue5cd"           // close
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 11
@@ -173,11 +173,11 @@ Section {
                 color: Services.Colors.fillInset
                 border.color: Services.Colors.fillLine
                 border.width: 1
-                scale: Services.Sizes.hoverScale(addCityArea.containsMouse, addCityArea.pressed)
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 4
+                    scale: Services.Sizes.hoverScale(addCityArea.containsMouse, addCityArea.pressed)
+                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                     Text {
                         text: "\ue145"                    // add
                         font.family: "Material Symbols Rounded"
@@ -185,7 +185,7 @@ Section {
                         color: Services.Colors.ghost
                     }
                     Text {
-                        text: "Add"
+                        text: Services.I18n.t("common.add")
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
                         color: addCityArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
@@ -246,7 +246,7 @@ Section {
                         TextField {
                             id: cityInput
                             Layout.fillWidth: true
-                            placeholderText: "Search city..."
+                            placeholderText: Services.I18n.t("settings.clock.searchCity")
                             color: Services.Colors.snow
                             placeholderTextColor: Services.Colors.ash
                             font.pixelSize: Services.Sizes.fsBody

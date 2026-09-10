@@ -135,7 +135,7 @@ Item {
         visible: grid.loose.length > 0
 
         Text {
-            text: "Not placed"
+            text: Services.I18n.t("settings.display.notPlaced")
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"

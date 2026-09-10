@@ -15,7 +15,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: win.width; winH: win.height; utilEdge: Services.AppState.settingsSourceEdge }
+    mask: Widgets.ShellMask { winW: win.width; winH: win.height }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.settingsVisible
     visible: shown || closeDelay.running
@@ -43,15 +43,20 @@ PanelWindow {
     // wallpaper's widgets; Panels is everything that talks to you; Network is
     // the two radios side by side. Nothing here opens another rail.
     property var categories: [
-        { id: "look",    icon: "\ue40a", label: "Look" },
-        { id: "desktop", icon: "\ue1bd", label: "Desktop" },
-        { id: "panels",  icon: "\ue7f5", label: "Panels" },
-        { id: "display", icon: "\ueb97", label: "Screen" },
-        { id: "devices", icon: "\ue32a", label: "Devices" },
-        { id: "input",   icon: "\ue312", label: "Input" },
-        { id: "network", icon: "\ue1ba", label: "Network" },
-        { id: "system",  icon: "\ue429", label: "System" },
-        { id: "about",   icon: "\ue88e", label: "About" },
+        // The order walks from what you SEE to what the machine IS: the four
+        // surfaces first, then the two senses, then what goes in and out, then
+        // the machine itself. Not alphabetical, and not the order they were
+        // written in.
+        { id: "look",    icon: "\ue40a", label: Services.I18n.t("settings.tab.look") },
+        { id: "bar",     icon: "\ue8f1", label: Services.I18n.t("settings.tab.bar") },
+        { id: "desktop", icon: "\ue1bd", label: Services.I18n.t("settings.tab.desktop") },
+        { id: "panels",  icon: "\ue7f5", label: Services.I18n.t("settings.tab.panels") },
+        { id: "display", icon: "\ueb97", label: Services.I18n.t("settings.tab.screen") },
+        { id: "sound",   icon: "\ue050", label: Services.I18n.t("settings.tab.sound") },
+        { id: "input",   icon: "\ue312", label: Services.I18n.t("settings.tab.input") },
+        { id: "network", icon: "\ue1ba", label: Services.I18n.t("settings.tab.network") },
+        { id: "system",  icon: "\ue429", label: Services.I18n.t("settings.tab.system") },
+        { id: "about",   icon: "\ue88e", label: Services.I18n.t("settings.tab.about") },
     ]
 
 
@@ -61,13 +66,20 @@ PanelWindow {
     // are the ones that used to name a whole tab.
     function tabSource(id) {
         if (id === "look" || id === "theme") return "SettingsLookTab.qml"
-        if (id === "desktop" || id === "bar" || id === "shape" || id === "layout"
-            || id === "widgets") return "DesktopPage.qml"
+        // `bar` and `desktop` are two tabs now. The old ids still land where
+        // the thing they name actually lives, so a keybind written last month
+        // does not break: shape and layout are the bar, widgets are the desktop.
+        if (id === "bar" || id === "shape" || id === "layout") return "BarPage.qml"
+        if (id === "desktop" || id === "widgets" || id === "dock") return "DesktopPage.qml"
         if (id === "panels" || id === "notifications" || id === "notify"
             || id === "clock" || id === "media") return "PanelsPage.qml"
         if (id === "display") return "SettingsDisplayTab.qml"
-        if (id === "devices" || id === "sound") return "DevicesPage.qml"
-        if (id === "input" || id === "keyboard" || id === "apps") return "InputPage.qml"
+        // "Devices" held sound and nothing else -- the keyboard is in Input and
+        // the radios are in Network -- so it is called Sound now. The old id
+        // still opens it.
+        if (id === "sound" || id === "devices") return "DevicesPage.qml"
+        if (id === "input" || id === "keyboard") return "InputPage.qml"
+        if (id === "apps") return "SystemPage.qml"
         if (id === "network" || id === "wifi" || id === "bluetooth") return "NetworkPage.qml"
         if (id === "system") return "SystemPage.qml"
         if (id === "about") return "AboutPage.qml"
@@ -79,9 +91,11 @@ PanelWindow {
         const t = Services.AppState.settingsTab
         if (t === "wifi" || t === "bluetooth" || t === "network") return "network"
         if (t === "theme") return "look"
-        if (t === "sound") return "devices"
-        if (t === "keyboard" || t === "apps") return "input"
-        if (t === "bar" || t === "shape" || t === "layout" || t === "widgets") return "desktop"
+        if (t === "devices") return "sound"
+        if (t === "keyboard") return "input"
+        if (t === "apps") return "system"
+        if (t === "shape" || t === "layout") return "bar"
+        if (t === "widgets" || t === "dock") return "desktop"
         if (t === "notifications" || t === "notify" || t === "clock" || t === "media") return "panels"
         return t
     }
@@ -105,9 +119,12 @@ PanelWindow {
     // it used to slide in from the right edge with nothing behind it. Read live
     // from the pill, never written at click time: a keybind never clicks, and
     // the panel used to grow from wherever the last click left the numbers.
-        readonly property string srcEdge: Services.AppState.settingsSourceEdge
+        readonly property string srcEdge: Services.Sizes.overlayEdge
     // Its chip: on the utility pill of that edge, or on the bar.
-    readonly property var chipRect: Services.AppState.chipRectOf("settings", win.srcEdge)
+    // No capsule since the utility pill went: this panel arrives from the
+    // screen edge. The rect is still read while that is decided, so it is a
+    // zero rect and not null -- reading .cx off null throws four times a frame.
+    readonly property var chipRect: ({ cx: 0, cy: 0, w: 44, h: 44 })
     readonly property real openXCalc: srcEdge === "" ? NaN
         : srcEdge === "left" ? Services.Sizes.panelTop
         : srcEdge === "right" ? win.width - card.openW - Services.Sizes.panelTop
@@ -142,7 +159,11 @@ PanelWindow {
         // you look at them. Panels that resize because their CONTENTS changed
         // still travel (PanelHost animates it); a window that resizes because
         // you walked to another room does not.
-        openW: Math.min(1460, win.width - 80)
+        // The rail, one column at Sizes.readMeasure, and the margins either
+        // side. It used to be 1460, which left the content floating in a third
+        // of a screen of nothing -- the panel was sized to the screen instead of
+        // to what it holds.
+        openW: Math.min(Services.Sizes.readMeasure + 260, win.width - 80)
         openH: Math.min(920, win.height - 90)
         cardRadius: Services.Sizes.panelR
 

@@ -1,3 +1,4 @@
+import Quickshell
 import QtQuick
 import QtQuick.Layouts
 
@@ -24,6 +25,22 @@ Rectangle {
 
     property bool grabbing: false
 
+    // THE reason rebinding never worked: Hyprland runs its own binds BEFORE
+    // handing the key to the client, so pressing SUPER+T at a listening chip
+    // opened a terminal and the chip never heard a thing. While it listens the
+    // session sits in an empty submap (conf/keybinds.lua), where nothing is
+    // bound and every key falls through to us.
+    //
+    // The dispatch is written in Lua because this Hyprland's config is Lua:
+    // `hyprctl dispatch submap name` answers "')' expected near 'name'".
+    onGrabbingChanged: Quickshell.execDetached(["hyprctl", "dispatch",
+        chip.grabbing ? "hl.dsp.submap(\"ashen-capture\")" : "hl.dsp.submap(\"reset\")"])
+
+    // A chip left listening because Settings was closed would leave the whole
+    // session in that submap -- no shortcuts at all until something reset it.
+    Component.onDestruction: if (chip.grabbing)
+        Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.submap(\"reset\")"])
+
     implicitWidth: Math.max(120, label.implicitWidth + 26)
     implicitHeight: 30
     radius: Services.Sizes.innerR
@@ -32,14 +49,15 @@ Rectangle {
     border.color: Services.Colors.error_
     Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
-    scale: chip.editable
-        ? Services.Sizes.hoverScale(hover.containsMouse, hover.pressed) : 1
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-
+    // The box holds still and the word grows: a chip that swells inside a row
+    // of shortcuts shoves its neighbours' rhythm around.
     Text {
         id: label
         anchors.centerIn: parent
-        text: chip.grabbing ? "press keys…" : chip.combo
+        scale: chip.editable
+            ? Services.Sizes.hoverScale(hover.containsMouse, hover.pressed) : 1
+        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+        text: chip.grabbing ? Services.I18n.t("settings.input.pressKeys") : chip.combo
         color: chip.grabbing ? Services.Colors.accentText
              : !chip.editable ? Services.Colors.mist
              : hover.containsMouse ? Services.Colors.snow

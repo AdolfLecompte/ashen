@@ -35,7 +35,7 @@ Item {
     // Where the picker looks. Same shape as the recording folder row in Sound.
     DirField {
         glyph: "\ue2c7"
-        title: "Wallpapers folder"
+        title: Services.I18n.t("settings.look.wallFolder")
         value: Services.Prefs.wallpaperDir !== ""
             ? Services.Prefs.wallpaperDir : Services.Paths.wallpapers
         placeholder: Services.Paths.wallpapers
@@ -49,7 +49,7 @@ Item {
 
     Text {
         visible: false   // the drawer header carries the section name
-        text: "Theme"
+        text: Services.I18n.t("settings.look.theme")
         color: Services.Colors.snow
         font.pixelSize: Services.Sizes.fsPanelTitle
         font.bold: true
@@ -59,7 +59,7 @@ Item {
 
     // A box, not a rule.
     Card {
-        title: "Color Scheme"
+        title: Services.I18n.t("settings.look.scheme")
         ColumnLayout {
             id: schemeSection
             Layout.fillWidth: true
@@ -75,8 +75,8 @@ Item {
             Segmented {
                 Layout.fillWidth: true
                 options: [
-                    { id: "dark", icon: "\ue51c", label: "Dark" },
-                    { id: "light", icon: "\ue518", label: "Light" },
+                    { id: "dark", icon: "\ue51c", label: Services.I18n.t("settings.look.dark") },
+                    { id: "light", icon: "\ue518", label: Services.I18n.t("settings.look.light") },
                 ]
                 current: Services.Prefs.themeMode
                 onPicked: id => Services.Theme.setMode(id)
@@ -112,8 +112,8 @@ Item {
                     }
                     ColumnLayout {
                         spacing: 1
-                        Text { text: "Dynamic"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
-                        Text { text: "From wallpaper"; color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
+                        Text { text: Services.I18n.t("settings.look.dynamic"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { text: Services.I18n.t("settings.look.fromWallpaper"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
                     }
                     Item { Layout.fillWidth: true }
 
@@ -281,13 +281,13 @@ Item {
                     RowLayout {
                         spacing: 8
                         Text { text: "\ue65f"; font.family: "Material Symbols Rounded"; font.pixelSize: 15; color: Services.Colors.ghost }
-                        Text { text: "Dynamic Style"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { text: Services.I18n.t("settings.look.dynStyle"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
                     }
                     Text {
                         // Only the half that says why the chips are inert; the
                         // other half only described them.
                         visible: !schemeSection.dynamicActive
-                        text: "Select the Dynamic scheme above to use these"
+                        text: Services.I18n.t("settings.look.dynHint")
                         color: Services.Colors.ash
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
@@ -378,7 +378,7 @@ Item {
                     Layout.fillWidth: true
                     spacing: 8
                     Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 15; color: Services.Colors.ghost }
-                    Text { text: "Gradient Accents"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { text: Services.I18n.t("settings.look.gradients"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
                     Item { Layout.fillWidth: true }
                     Toggle {
                         checked: Services.Prefs.useGradients
@@ -401,31 +401,52 @@ Item {
 
 
     Card {
-        title: "Panels"
+        title: Services.I18n.t("settings.tab.panels")
 
-        SectionLabel { text: "How they open" }
+        SectionLabel { text: Services.I18n.t("settings.look.howOpen") }
 
         Segmented {
             options: [
-                { id: "morph", label: "Transform" },
-                { id: "plain", label: "Window" },
+                { id: "morph", label: Services.I18n.t("settings.look.transform") },
+                { id: "plain", label: Services.I18n.t("settings.look.window") },
             ]
             current: Services.Prefs.panelStyle
             onPicked: id => Services.Prefs.panelStyle = id
+        }
+
+        // The panels' own outline. Not the bar's: the bar is a strip you look
+        // past all day, a panel is a room you opened on purpose, and wanting
+        // one drawn and the other filled is a real preference.
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            spacing: 12
+            RowGlyph { glyph: "\ue3c6" }        // border_outer
+            Text {
+                Layout.fillWidth: true
+                text: Services.I18n.t("settings.layout.outline")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+            }
+            Toggle {
+                checked: Services.Prefs.panelOutline
+                onToggled: Services.Prefs.panelOutline = !Services.Prefs.panelOutline
+            }
         }
     }
 
 
     // ── This wallpaper's own look ───────────────────────────────────────
     Card {
-        title: "Wallpaper profile"
+        title: Services.I18n.t("settings.look.profile")
 
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
 
             Text {
-                text: "Remember this wallpaper's look"
+                text: Services.I18n.t("settings.look.remember")
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsInput
                 font.family: "JetBrainsMono NF"
@@ -443,14 +464,14 @@ Item {
             spacing: 10
 
             Text {
-                text: "Default for wallpapers with no profile"
+                text: Services.I18n.t("settings.look.default")
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsInput
                 font.family: "JetBrainsMono NF"
             }
             Item { Layout.fillWidth: true }
             ActionBtn {
-                label: "Set from current"
+                label: Services.I18n.t("settings.look.setCurrent")
                 onGo: Services.Looks.saveBaseline()
             }
         }
@@ -459,7 +480,7 @@ Item {
             // Which wallpaper is wearing the look, or nothing at all.
             visible: text !== ""
             text: Services.Looks.remembering
-                ? "Follows " + (Services.Looks.current.split("/").pop()) : ""
+                ? Services.I18n.t("settings.look.follows", { w: Services.Looks.current.split("/").pop() }) : ""
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"

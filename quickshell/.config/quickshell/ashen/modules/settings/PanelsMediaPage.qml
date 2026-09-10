@@ -13,7 +13,7 @@ Section {
     // The sound and the words: both belong to the card that plays them, not to
     // the bar the card hangs off.
     Card {
-        title: "Media"
+        title: Services.I18n.t("settings.tab.media")
 
         RowLayout {
             Layout.fillWidth: true
@@ -22,7 +22,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "Visualizer"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { text: Services.I18n.t("settings.media.visualizer"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -40,7 +40,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "Lyrics"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }            }
+                Text { text: Services.I18n.t("settings.media.lyrics"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }            }
             Item { Layout.fillWidth: true }
             Toggle {
                 checked: Services.Prefs.mediaLyrics

@@ -11,12 +11,12 @@ Section {
     id: tab
 
     Card {
-        title: "Audio"
+        title: Services.I18n.t("settings.sound.audio")
         Widgets.SliderRow {
             glyph: Services.Audio.muted ? "" : ""
-            label: "Volume"
+            label: Services.I18n.t("common.volume")
             value: Services.Audio.volume
-            valueText: Services.Audio.muted ? "Muted" : shownPct + "%"
+            valueText: Services.Audio.muted ? Services.I18n.t("common.muted") : shownPct + "%"
             dimmed: Services.Audio.muted
             muted: Services.Audio.muted
             onGlyphClicked: Services.Audio.toggleMute()
@@ -37,9 +37,9 @@ Section {
 
         Widgets.SliderRow {
             glyph: Services.Audio.micMuted ? "" : ""
-            label: "Microphone"
+            label: Services.I18n.t("settings.sound.mic")
             value: Services.Audio.micVolume
-            valueText: Services.Audio.micMuted ? "Muted" : shownPct + "%"
+            valueText: Services.Audio.micMuted ? Services.I18n.t("common.muted") : shownPct + "%"
             dimmed: Services.Audio.micMuted
             muted: Services.Audio.micMuted
             // Click the mic glyph to mute/unmute
@@ -63,7 +63,7 @@ Section {
     }
 
     Card {
-        title: "Screen Recording"
+        title: Services.I18n.t("settings.sound.recording")
 
         RowLayout {
             Layout.fillWidth: true
@@ -73,7 +73,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text {
-                    text: "Capture desktop audio"
+                    text: Services.I18n.t("settings.sound.capture")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.bold: true
@@ -88,7 +88,7 @@ Section {
         }
         DirField {
             glyph: "\ue2c7"
-            title: "Save to"
+            title: Services.I18n.t("settings.sound.saveTo")
             value: Services.Prefs.recordDir !== ""
                 ? Services.Prefs.recordDir : Services.Paths.recordings
             placeholder: Services.Paths.recordings

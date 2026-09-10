@@ -43,9 +43,9 @@ PanelWindow {
     // The box, as a target the card FOLLOWS rather than a value it jumps to.
     // `Behavior` only fires on a write, so the size cannot be a readonly
     // binding: it is a plain property bound to the target.
-    readonly property real wantW: root.onHome ? Math.min(760, root.width - 160)
+    readonly property real wantW: root.onHome ? Math.min(900, root.width - 140)
                                               : Math.min(980, root.width - 120)
-    readonly property real wantH: root.onHome ? Math.min(560, root.height - 200)
+    readonly property real wantH: root.onHome ? Math.min(700, root.height - 160)
                                               : Math.min(760, root.height - 120)
     property real boxW: root.wantW
     property real boxH: root.wantH
@@ -128,173 +128,147 @@ PanelWindow {
                     anchors.centerIn: parent
                     width: parent.width - 80
                     spacing: 0
-                    opacity: (root.welcoming && root.shownFace === 0)
-                        ? card.contentAmt * faceSwap.fade : 0
+                    // One face for the whole welcome now: what changes is what
+                    // sits under the name, not which card is on top. The
+                    // side-to-side swap went with the second face.
+                    opacity: root.welcoming ? card.contentAmt : 0
                     visible: opacity > 0.01
-                    transform: Translate { x: faceSwap.offX }
 
-                    // The name IS the card. Letters land one after another and
-                    // then ride a wave that travels through the word -- the
-                    // same wave the media progress draws, spent on the one
-                    // surface allowed to be decorative.
-                    Widgets.WaveTitle {
+                    // The name IS the card, and it is the same mark the
+                    // installer prints and fastfetch draws -- one artifact, not
+                    // three drawings of one idea. It fades up rather than
+                    // animating letter by letter: a shape that means something
+                    // does not need to perform.
+                    Widgets.AshenMark {
                         id: title
                         Layout.alignment: Qt.AlignHCenter
-                        text: "ASHEN"
-                        pixelSize: 76
-                        letterSpacing: 14
-                        running: root.shown
-                        arrive: 0
-                        // The water is thrown first and then settles: the swell
-                        // is what makes it read as a wave rather than a wobble,
-                        // and a swell that never calms is a screensaver.
-                        amplitude: 18
-                        Component.onCompleted: { titleIn.start(); calm.start() }
-                        NumberAnimation on arrive {
-                            id: titleIn
-                            running: false
-                            from: 0; to: 1
-                            duration: 900
-                            easing.type: Services.Sizes.easeOut
-                        }
-                        NumberAnimation on amplitude {
-                            id: calm
-                            running: false
-                            from: 18; to: 6
-                            duration: 2600
-                            easing.type: Easing.OutCubic
-                        }
+                        pixelSize: 16
+                        color: Services.Colors.snow
+                        opacity: card.stage(0)
+                        transform: Translate { y: (1 - card.stage(0)) * 10 }
                     }
-                    Text {
+
+                    // What sits under the name changes; the name does not. The
+                    // welcome is one card that learns something, not two cards
+                    // that replace each other.
+                    Item {
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: 6
-                        opacity: card.stage(1)
-                        transform: Translate { y: (1 - card.stage(1)) * 8 }
-                        text: "A monochrome Hyprland shell, built with Quickshell"
-                        color: Services.Colors.mist
-                        font.pixelSize: Services.Sizes.fsInput
-                        font.family: "JetBrainsMono NF"
-                    }
-                    Text {
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: 2
-                        opacity: card.stage(2)
-                        transform: Translate { y: (1 - card.stage(2)) * 8 }
-                        text: "by Adolf"
-                        color: Services.Colors.ash
-                        font.pixelSize: Services.Sizes.fsMeta
-                        font.family: "JetBrainsMono NF"
-                    }
-
-                    RowLayout {
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: 30
-                        spacing: 12
-                        opacity: card.stage(3)
-                        transform: Translate { y: (1 - card.stage(3)) * 10 }
-
-                        ActionBtn {
-                            label: "About"
-                            onGo: Services.AppState.introPage = "about"
+                        Layout.topMargin: 10
+                        // The size of what is SHOWING, not of the taller of the
+                        // two: reserving the keys' height on the first screen
+                        // leaves a hole where nothing will ever be.
+                        implicitWidth: root.onHome ? saying.implicitWidth : keyList.implicitWidth
+                        implicitHeight: root.onHome ? saying.implicitHeight : keyList.implicitHeight
+                        Behavior on implicitWidth {
+                            NumberAnimation { duration: Services.Sizes.msPanel
+                                              easing.type: Services.Sizes.easeBox }
                         }
-                        ActionBtn {
-                            label: "Enjoy"
-                            accent: true
-                            onGo: root.dismiss()
+                        Behavior on implicitHeight {
+                            NumberAnimation { duration: Services.Sizes.msPanel
+                                              easing.type: Services.Sizes.easeBox }
                         }
-                    }
-                }
 
-                // ── Face two: what the keys do, and what to type ────────
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 34
-                    spacing: 14
-                    opacity: (root.welcoming && root.shownFace === 1)
-                        ? card.contentAmt * faceSwap.fade : 0
-                    visible: opacity > 0.01
-                    transform: Translate { x: faceSwap.offX }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 12
+                        // What it is.
                         ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 0
+                            id: saying
+                            anchors.centerIn: parent
+                            spacing: 2
+                            opacity: root.onHome ? 1 : 0
+                            visible: opacity > 0.01
+                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+
                             Text {
-                                text: "THE FOUR KEYS"
-                                color: Services.Colors.snow
-                                font.pixelSize: Services.Sizes.fsSectionTitle
-                                font.bold: true
-                                font.letterSpacing: 1.6
+                                Layout.alignment: Qt.AlignHCenter
+                                text: Services.I18n.t("app.tagline")
+                                color: Services.Colors.mist
+                                font.pixelSize: Services.Sizes.fsInput
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
-                                text: "Everything else lives in Settings"
-                                color: Services.Colors.mist
+                                Layout.alignment: Qt.AlignHCenter
+                                text: "by Adolf"
+                                color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsMeta
                                 font.family: "JetBrainsMono NF"
                             }
                         }
-                    }
 
-                    Rectangle { Layout.fillWidth: true; height: 1; color: Services.Colors.fillLine }
+                        // …and then what it does. Keys only: a command you type
+                        // is not a key. Read from services/Shortcuts, which
+                        // parses the real keybinds.lua, so a rebind shows here.
+                        // Two columns: six keys in one tall stack reads as a
+                        // form to fill in, and there is nothing to fill in.
+                        GridLayout {
+                            id: keyList
+                            anchors.centerIn: parent
+                            columns: 2
+                            columnSpacing: 22
+                            rowSpacing: 8
+                            opacity: root.onHome ? 0 : 1
+                            visible: opacity > 0.01
+                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
 
-                    Repeater {
-                        model: [
-                            // Tapped on its own, not chorded: the bind is
-                            // SUPER + SUPER_L on release.
-                            { keys: "SUPER", what: "Tap it — the launcher" },
-                            { keys: "SUPER + I", what: "Settings — every knob lives there" },
-                            { keys: "SUPER + SHIFT + D", what: "Arrange the widgets on the wallpaper" },
-                            { keys: "SUPER + SHIFT + W", what: "Change the wallpaper (the palette follows it)" },
-                            { keys: "ashen-widgets", what: "The same arranging, from a terminal" },
-                            { keys: "ashen-welcome", what: "This screen, and what changed in this version" }
-                        ]
-
-                        RowLayout {
-                            required property var modelData
-                            Layout.fillWidth: true
-                            spacing: 14
-
-                            Rectangle {
-                                Layout.preferredWidth: 200
-                                Layout.preferredHeight: 30
-                                radius: Services.Sizes.innerR
-                                color: Services.Colors.fillLine
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.keys
-                                    color: Services.Colors.ghost
-                                    font.pixelSize: Services.Sizes.fsBody
-                                    font.bold: true
-                                    font.family: "JetBrainsMono NF"
+                            Repeater {
+                                // The launcher is the exception: the bind is
+                                // SUPER on release, written `SUPER + SUPER_L`,
+                                // and nobody presses it that way -- you tap it.
+                                model: [
+                                    { keys: "SUPER", what: Services.I18n.t("intro.key.launcher") },
+                                    { keys: Services.Shortcuts.keyOf("terminal"), what: Services.I18n.t("intro.front.terminal") },
+                                    { keys: Services.Shortcuts.keyOf("browser"),  what: Services.I18n.t("intro.front.browser") },
+                                    { keys: Services.Shortcuts.keyOf("files"),    what: Services.I18n.t("intro.front.files") },
+                                    { keys: Services.Shortcuts.keyOf("settings"), what: Services.I18n.t("intro.front.settings") },
+                                    { keys: Services.Shortcuts.keyOf("clipboard"), what: Services.I18n.t("intro.key.clipboard") }
+                                ]
+                                delegate: RowLayout {
+                                    required property var modelData
+                                    spacing: 12
+                                    Rectangle {
+                                        Layout.preferredWidth: 168
+                                        Layout.preferredHeight: 28
+                                        radius: Services.Sizes.innerR
+                                        color: Services.Colors.fillLine
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.keys
+                                            color: Services.Colors.ghost
+                                            font.pixelSize: Services.Sizes.fsMeta
+                                            font.bold: true
+                                            font.family: "JetBrainsMono NF"
+                                        }
+                                    }
+                                    Text {
+                                        Layout.preferredWidth: 150
+                                        text: modelData.what
+                                        color: Services.Colors.snow
+                                        font.pixelSize: Services.Sizes.fsMeta
+                                        font.family: "JetBrainsMono NF"
+                                        wrapMode: Text.WordWrap
+                                    }
                                 }
                             }
-                            Text {
-                                Layout.fillWidth: true
-                                text: modelData.what
-                                color: Services.Colors.snow
-                                font.pixelSize: Services.Sizes.fsBody
-                                font.family: "JetBrainsMono NF"
-                                wrapMode: Text.WordWrap
-                            }
                         }
                     }
 
-                    Item { Layout.fillHeight: true }
-
                     RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.topMargin: 22
+                        spacing: 12
+                        opacity: card.stage(3)
+                        transform: Translate { y: (1 - card.stage(3)) * 10 }
+
+                        // Start shows the keys; enjoy is only offered once there
+                        // is nothing left to be shown.
                         ActionBtn {
-                            label: "Back"
-                            onGo: Services.AppState.introPage = "home"
-                        }
-                        Item { Layout.fillWidth: true }
-                        ActionBtn {
-                            label: "Enjoy"
+                            label: Services.I18n.t("intro.start")
                             accent: true
+                            visible: root.onHome
+                            onGo: Services.AppState.introPage = "about"
+                        }
+                        ActionBtn {
+                            label: Services.I18n.t("intro.enjoy")
+                            accent: true
+                            visible: !root.onHome
                             onGo: root.dismiss()
                         }
                     }
@@ -316,7 +290,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             spacing: 0
                             Text {
-                                text: "WHAT'S NEW"
+                                text: Services.I18n.t("intro.news.title")
                                 color: Services.Colors.snow
                                 font.pixelSize: Services.Sizes.fsSectionTitle
                                 font.bold: true
@@ -324,7 +298,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
-                                text: "Version " + Services.Release.version
+                                text: Services.I18n.t("intro.news.version", { v: Services.Release.version })
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsMeta
                                 font.family: "JetBrainsMono NF"
@@ -380,7 +354,7 @@ PanelWindow {
                             Text {
                                 Layout.fillWidth: true
                                 visible: Services.Release.notes.length === 0
-                                text: "No notes for this one."
+                                text: Services.I18n.t("intro.news.empty")
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsBody
                                 font.family: "JetBrainsMono NF"
@@ -393,14 +367,14 @@ PanelWindow {
                         spacing: 10
                         Text {
                             Layout.fillWidth: true
-                            text: "The whole changelog ships with the project"
+                            text: Services.I18n.t("intro.news.changelog")
                             color: Services.Colors.ash
                             font.pixelSize: Services.Sizes.fsMeta
                             font.family: "JetBrainsMono NF"
                             elide: Text.ElideRight
                         }
                         ActionBtn {
-                            label: "Got it"
+                            label: Services.I18n.t("intro.gotIt")
                             accent: true
                             onGo: root.dismiss()
                         }

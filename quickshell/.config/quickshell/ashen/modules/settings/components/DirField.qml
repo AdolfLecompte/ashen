@@ -146,7 +146,7 @@ RowLayout {
 
         Text {
             visible: root.badPath
-            text: "No such folder"
+            text: Services.I18n.t("settings.dir.missing")
             color: Services.Colors.error_
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -157,11 +157,11 @@ RowLayout {
         width: 84; height: 32
         radius: Services.Sizes.innerR
         color: Services.Colors.fillRest
-        scale: Services.Sizes.hoverScale(btnHover.containsMouse, btnHover.pressed)
-        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
         Text {
             anchors.centerIn: parent
-            text: root.editing ? "Save" : "Change"
+            scale: Services.Sizes.hoverScale(btnHover.containsMouse, btnHover.pressed)
+            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+            text: root.editing ? Services.I18n.t("common.save") : Services.I18n.t("common.change")
             color: btnHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
             Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
             font.pixelSize: Services.Sizes.fsBody

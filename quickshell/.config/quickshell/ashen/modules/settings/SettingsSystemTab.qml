@@ -10,13 +10,18 @@ import "root:/modules/settings/components"
 Section {
     id: tab
 
+    // What the profile-picture card is doing: "" (idle), "picking" while the
+    // dialog is up, "done" / "failed" for a moment after. The word in the
+    // button is the only confirmation a card like this can give.
+    property string faceState: ""
+
     // Idle steps in minutes; 0 means the listener is left out of hypridle.conf.
     function stepIdle(secs, deltaMin) {
         return Math.max(0, Math.min(120 * 60, secs + deltaMin * 60))
     }
     function idleLabel(secs) {
-        if (secs <= 0) return "Never"
-        return (secs % 60 === 0 ? (secs / 60) + " min" : secs + " s")
+        if (secs <= 0) return Services.I18n.t("common.never")
+        return (secs % 60 === 0 ? Services.I18n.t("settings.system.minutes", { n: secs / 60 }) : Services.I18n.t("settings.system.seconds", { n: secs }))
     }
 
     property string timeRemaining: "--"
@@ -91,8 +96,29 @@ Section {
         }
     }
 
+    // What the four app keybinds open. Lived in Input until 2026-09-07: which
+    // terminal opens is not something you type, it is what the machine reaches
+    // for, and that has been System's business in every desktop since.
+    // Named here rather than in keybinds.lua, where "brave" meant SUPER+W did
+    // nothing on a machine without it.
     Card {
-        title: "Power & Session"
+        title: Services.I18n.t("settings.system.apps")
+
+        Repeater {
+            model: Services.Apps.kinds
+
+            AppRow {
+                required property var modelData
+                kind: modelData.id
+                glyph: modelData.glyph
+                title: modelData.label
+                fallback: modelData.hint
+            }
+        }
+    }
+
+    Card {
+        title: Services.I18n.t("settings.system.power")
         RowLayout {
             spacing: 14
             Text {
@@ -105,13 +131,13 @@ Section {
             ColumnLayout {
                 spacing: 2
                 Text {
-                    text: Services.Battery.charging ? "Charging" : "On battery"
+                    text: Services.Battery.charging ? Services.I18n.t("settings.system.charging") : Services.I18n.t("settings.system.onBattery")
                     color: Services.Colors.mist
                     font.pixelSize: Services.Sizes.fsBody
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
-                    text: tab.timeRemaining !== "--" ? tab.timeRemaining : (Services.Battery.charging ? "Fully charged" : "Calculating...")
+                    text: tab.timeRemaining !== "--" ? tab.timeRemaining : (Services.Battery.charging ? Services.I18n.t("settings.system.full") : Services.I18n.t("settings.system.calculating"))
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsMeta
                     font.family: "JetBrainsMono NF"
@@ -119,14 +145,14 @@ Section {
             }
         }
 
-        SectionLabel { text: "Power Profile" }
+        SectionLabel { text: Services.I18n.t("settings.system.profile") }
 
         Segmented {
             stacked: true
             options: [
-                { id: "power-saver", icon: "", label: "Saver", available: tab.availableProfiles.includes("power-saver") },
-                { id: "balanced", icon: "", label: "Balanced", available: tab.availableProfiles.includes("balanced") },
-                { id: "performance", icon: "", label: "Performance", available: tab.availableProfiles.includes("performance") },
+                { id: "power-saver", icon: "", label: Services.I18n.t("settings.system.saver"), available: tab.availableProfiles.includes("power-saver") },
+                { id: "balanced", icon: "", label: Services.I18n.t("settings.system.balanced"), available: tab.availableProfiles.includes("balanced") },
+                { id: "performance", icon: "", label: Services.I18n.t("settings.system.performance"), available: tab.availableProfiles.includes("performance") },
             ]
             current: tab.activeProfile
             onPicked: id => tab.setProfile(id)
@@ -144,7 +170,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: "Keep Awake"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                Text { text: Services.I18n.t("settings.system.keepAwake"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -157,17 +183,17 @@ Section {
     }
 
     Card {
-        title: "Lock Screen"
+        title: Services.I18n.t("settings.system.lockScreen")
 
         // One switch per card out there. The clock and the login are the
         // screen itself, so they are not on the list.
         Repeater {
             model: [
-                { key: "weather", glyph: "\uf172", label: "Weather" },
-                { key: "machine", glyph: "\ue30a", label: "Session and battery" },
-                { key: "media", glyph: "\ue405", label: "What is playing" },
-                { key: "system", glyph: "\ueaa2", label: "System" },
-                { key: "notify", glyph: "\ue7f4", label: "Notifications" },
+                { key: "weather", glyph: "\uf172", label: Services.I18n.t("settings.clock.weather") },
+                { key: "machine", glyph: "\ue30a", label: Services.I18n.t("settings.system.lock.machine") },
+                { key: "media", glyph: "\ue405", label: Services.I18n.t("settings.system.lock.media") },
+                { key: "system", glyph: "\ueaa2", label: Services.I18n.t("settings.tab.system") },
+                { key: "notify", glyph: "\ue7f4", label: Services.I18n.t("settings.tab.notifications") },
             ]
             delegate: RowLayout {
                 id: lockRow
@@ -208,15 +234,83 @@ Section {
         }
     }
 
+    // The face the lock screen shows. It lives HERE, next to what the lock
+    // screen draws, and not in About: About is what this build and this
+    // machine are, and a portrait is neither.
+    PreviewCard {
+        source: Services.AppState.facePath
+        fallbackGlyph: "\uf0d3"
+        title: Services.I18n.t("settings.about.picture")
+        subtitle: Services.AppState.userLabel
+        // The button IS the progress report: there is nowhere else on this card
+        // to say that a dialog is open or that the copy landed.
+        action: tab.faceState === "picking" ? Services.I18n.t("settings.about.choosing")
+              : tab.faceState === "done" ? Services.I18n.t("settings.about.updated")
+              : tab.faceState === "failed" ? Services.I18n.t("settings.about.failed") : Services.I18n.t("common.change")
+        busy: tab.faceState === "picking"
+        onTriggered: {
+            tab.faceState = "picking"
+            Services.Picker.open("profile", "")
+        }
+    }
+    // Puts the word back to "Change" once it has been read.
+    Timer {
+        id: faceStateTimer
+        interval: 1500
+        onTriggered: tab.faceState = ""
+    }
+
+    // The shell's own picker, not zenity: same dialog as the widget pictures,
+    // and it looks like the rest of the desktop.
+    Connections {
+        target: Services.Picker
+        function onPicked(purpose, path) {
+            if (purpose !== "profile") return
+            if (path === "" || Services.AppState.homeDir === "") { tab.faceState = ""; return }
+            faceCopyProc.command = ["cp", path, Services.AppState.homeDir + "/.face"]
+            faceCopyProc.running = true
+        }
+        // Closed without choosing: not a failure, and not a change.
+        function onVisibleChanged() {
+            if (!Services.Picker.visible && tab.faceState === "picking") tab.faceState = ""
+        }
+    }
+
+    Process {
+        id: faceCopyProc
+        running: false
+        // The version bump is what every copy of the face repaints off, so it
+        // is only earned when the copy actually succeeded -- it used to fire
+        // even when nothing had been written.
+        onExited: (code) => {
+            if (code !== 0) {
+                tab.faceState = "failed"
+                faceStateTimer.restart()
+                Services.Notifications.addSystemToast(
+                    Services.I18n.t("settings.about.faceFail"), "\uf008", false, "face")
+                return
+            }
+            Services.AppState.faceVersion = Date.now()
+            tab.faceState = "done"
+            faceStateTimer.restart()
+            // Same shape as the screenshot toast: the picture you just chose,
+            // shown back to you. One `typeKey`, so a second change replaces the
+            // first instead of stacking.
+            Services.Notifications.addSystemToast(
+                Services.I18n.t("settings.about.faceOk"), "\uf008", false, "face",
+                { image: Services.AppState.facePath })
+        }
+    }
+
     Card {
-        title: "Idle & Suspend"
+        title: Services.I18n.t("settings.system.idle")
 
 
         Repeater {
             model: [
-                { key: "lock", label: "Lock the screen" },
-                { key: "screenOff", label: "Turn the screen off" },
-                { key: "suspend", label: "Suspend" },
+                { key: "lock", label: Services.I18n.t("settings.system.idle.lock") },
+                { key: "screenOff", label: Services.I18n.t("settings.system.idle.screenOff") },
+                { key: "suspend", label: Services.I18n.t("settings.system.idle.suspend") },
             ]
             delegate: RowLayout {
                 required property var modelData
@@ -264,7 +358,7 @@ Section {
             // Ordering mistakes are easy to make and impossible to see
             visible: Services.Prefs.idleSuspendSecs > 0
                 && Services.Prefs.idleLockSecs > Services.Prefs.idleSuspendSecs
-            text: "Suspend fires before the lock does — the machine will sleep unlocked."
+            text: Services.I18n.t("settings.system.idle.warn")
             color: Services.Colors.error_
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"

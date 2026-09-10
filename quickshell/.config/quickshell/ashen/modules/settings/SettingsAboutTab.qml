@@ -28,11 +28,6 @@ Section {
     readonly property string pkgInfo: Services.Machine.pkgInfo
     readonly property string monitorInfo: Services.Machine.monitorInfo
     property bool copied: false
-    // What the profile-picture card is doing right now: "" (idle), "picking"
-    // while the file dialog is up, "done" / "failed" for a moment after. The
-    // Copy Info button below works the same way -- a word in the button is the
-    // only confirmation a card like this can give.
-    property string faceState: ""
 
     // Uptime moves; the rest are settled by the time the tab is open.
     Component.onCompleted: Services.Machine.watch(true)
@@ -63,7 +58,7 @@ Section {
         Layout.fillWidth: true
         Text {
             visible: false   // the drawer header carries the section name
-            text: "About"
+            text: Services.I18n.t("settings.tab.about")
             color: Services.Colors.snow
             font.pixelSize: Services.Sizes.fsPanelTitle
             font.bold: true
@@ -88,7 +83,7 @@ Section {
                     color: tab.copied ? Services.Colors.accentText : Services.Colors.ghost
                 }
                 Text {
-                    text: tab.copied ? "Copied" : "Copy Info"
+                    text: tab.copied ? Services.I18n.t("settings.about.copied") : Services.I18n.t("settings.about.copy")
                     color: tab.copied ? Services.Colors.accentText : Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsBody
                     font.family: "JetBrainsMono NF"
@@ -103,95 +98,199 @@ Section {
     }
 
 
-    // The face the lock screen shows. It belongs with who the machine is, not
-    // with how it is painted.
-    PreviewCard {
-        source: Services.AppState.facePath
-        fallbackGlyph: "\uf0d3"
-        title: "Profile Picture"
-        subtitle: Services.AppState.userLabel
-        // The button IS the progress report: there is nowhere else on this card
-        // to say that a dialog is open or that the copy landed.
-        action: tab.faceState === "picking" ? "Choosing…"
-              : tab.faceState === "done" ? "Updated"
-              : tab.faceState === "failed" ? "Failed" : "Change"
-        busy: tab.faceState === "picking"
-        onTriggered: {
-            tab.faceState = "picking"
-            Services.Picker.open("profile", "")
-        }
-    }
-    // Puts the word back to "Change" once it has been read.
-    Timer {
-        id: faceStateTimer
-        interval: 1500
-        onTriggered: tab.faceState = ""
-    }
+    // ── This build ───────────────────────────────────────────────────────
+    // About named the machine and never named the shell. The version was only
+    // ever visible in the release notes, which had no door of their own.
+    Card {
+        // No title: the mark IS the name, and printing both says it twice.
+        // Same rows the terminal and the installer draw, at 12px because the
+        // smoke ramp is dithering and larger it separates into dots.
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
 
-    // The shell's own picker, not zenity: same dialog as the widget pictures,
-    // and it looks like the rest of the desktop.
-    Connections {
-        target: Services.Picker
-        function onPicked(purpose, path) {
-            if (purpose !== "profile") return
-            if (path === "" || Services.AppState.homeDir === "") { tab.faceState = ""; return }
-            faceCopyProc.command = ["cp", path, Services.AppState.homeDir + "/.face"]
-            faceCopyProc.running = true
-        }
-        // Closed without choosing: not a failure, and not a change.
-        function onVisibleChanged() {
-            if (!Services.Picker.visible && tab.faceState === "picking") tab.faceState = ""
-        }
-    }
-
-    Process {
-        id: faceCopyProc
-        running: false
-        // The version bump is what every copy of the face repaints off, so it
-        // is only earned when the copy actually succeeded -- it used to fire
-        // even when nothing had been written.
-        onExited: (code) => {
-            if (code !== 0) {
-                tab.faceState = "failed"
-                faceStateTimer.restart()
-                Services.Notifications.addSystemToast(
-                    "COULD NOT SET PROFILE PICTURE", "\uf008", false, "face")
-                return
+            Widgets.AshenMark {
+                pixelSize: 12
+                color: Services.Colors.snow
             }
-            Services.AppState.faceVersion = Date.now()
-            tab.faceState = "done"
-            faceStateTimer.restart()
-            // Same shape as the screenshot toast: the picture you just chose,
-            // shown back to you. One `typeKey`, so a second change replaces the
-            // first instead of stacking.
-            Services.Notifications.addSystemToast(
-                "PROFILE PICTURE UPDATED", "\uf008", false, "face",
-                { image: Services.AppState.facePath })
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Text {
+                    text: Services.Release.version === "" ? "—" : Services.Release.version
+                    color: Services.Colors.ghost
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: Services.I18n.t("app.tagline")
+                    color: Services.Colors.ash
+                    elide: Text.ElideRight
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+            // The repo is part of what this build IS, so it lives with the mark
+            // and the version instead of stranded at the bottom of a tab you
+            // have to scroll to reach.
+            Rectangle {
+                Layout.topMargin: 6
+                implicitWidth: repoRow.implicitWidth + 24
+                implicitHeight: 36
+                radius: Services.Sizes.innerR
+                color: Services.Colors.fillRest
+
+                RowLayout {
+                    id: repoRow
+                    anchors.centerIn: parent
+                    spacing: 8
+                    // The box holds still and the word grows, like every other
+                    // button in Settings.
+                    scale: Services.Sizes.hoverScale(linkHover.containsMouse, linkHover.pressed)
+                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                    Text {
+                        text: "\ue157"
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 15
+                        color: linkHover.containsMouse ? Services.Colors.snow : Services.Colors.ghost
+                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                    }
+                    Text {
+                        text: "github.com/AdolfLecompte/ashen"
+                        color: linkHover.containsMouse ? Services.Colors.snow : Services.Colors.surfaceText
+                        font.pixelSize: Services.Sizes.fsBody
+                        font.family: "JetBrainsMono NF"
+                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                    }
+                    Text {
+                        text: "\ue89e"
+                        font.family: "Material Symbols Rounded"
+                        font.pixelSize: 13
+                        color: Services.Colors.mist
+                    }
+                }
+                MouseArea {
+                    id: linkHover
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
+                    onClicked: Quickshell.execDetached(["sh", "-c", "xdg-open https://github.com/AdolfLecompte/ashen"])
+                }
+            }
+
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 2
+            spacing: 12
+            RowGlyph { glyph: "\ue8b2" }        // history
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 1
+                Text {
+                    text: Services.I18n.t("settings.about.whatsNew")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    text: Services.Voice.pick("about.notes")
+                    color: Services.Colors.ash
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+            // A door, not a room: the notes screen already exists and reads the
+            // CHANGELOG the repo ships.
+            ActionBtn {
+                label: Services.I18n.t("settings.about.read")
+                onGo: {
+                    Services.AppState.introMode = "notes"
+                    Services.AppState.introVisible = true
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+            RowGlyph { glyph: "\ue8d7" }        // system_update
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 1
+                Text {
+                    text: Services.I18n.t("settings.about.updates")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+                // The state IS the report: there is nowhere else on this row to
+                // say the network was away or that this build is ahead of the
+                // newest tag, which a checkout often is. It comes from the
+                // phrase bank -- a remark, not a label -- except when there is
+                // a version to name, which is information and cannot be a joke.
+                Text {
+                    // fillWidth or the column shrinks to the phrase and the
+                    // button walks left, out of line with the row above it.
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    visible: text !== ""
+                    text: Services.Release.checkState === "available"
+                          ? Services.Release.statusLine + " \u2014 " + Services.Release.latest
+                          : Services.Release.statusLine
+                    color: Services.Release.checkState === "available" ? Services.Colors.ghost
+                         : Services.Release.checkState === "failed" ? Services.Colors.error_
+                         : Services.Colors.ash
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+            ActionBtn {
+                // Always "Update", never "Check": nobody opens this row wanting
+                // to know, they open it wanting the newer one. Looking is the
+                // first half of updating, so the button does that half first
+                // and the line underneath reports what it found.
+                label: Services.I18n.t("settings.about.update")
+                accent: Services.Release.checkState === "available"
+                onGo: {
+                    if (Services.Release.checkState !== "available") { Services.Release.check(); return }
+                    // Running the installer again IS the update. The terminal is
+                    // whichever one Settings was told to open, never a name.
+                    Quickshell.execDetached(["sh", "-c",
+                        "ashen-app terminal -e sh -c 'bash \"$HOME/ashen/install/run.sh\"; read -n1'"])
+                }
+            }
         }
     }
 
     // A box, not a rule: the panel says where one thing ends by
     // starting the next one, the way every other tab does.
     Card {
-        title: "This machine"
+        title: Services.I18n.t("settings.about.machine")
         ColumnLayout {
             Layout.topMargin: 6
             spacing: 5
 
             Repeater {
                 model: [
-                    { label: "OS", value: tab.osName },
-                    { label: "Kernel", value: tab.kernel },
-                    { label: "Host", value: tab.hostname },
-                    { label: "Product", value: tab.product },
-                    { label: "Board", value: tab.board },
-                    { label: "Uptime", value: tab.uptime },
-                    { label: "CPU", value: tab.cpuInfo },
-                    { label: "GPU", value: tab.gpuInfo },
-                    { label: "Memory", value: tab.memInfo },
-                    { label: "Disk", value: tab.diskInfo },
-                    { label: "Packages", value: tab.pkgInfo },
-                    { label: "Monitor", value: tab.monitorInfo },
+                    { label: Services.I18n.t("settings.about.os"), value: tab.osName },
+                    { label: Services.I18n.t("settings.about.kernel"), value: tab.kernel },
+                    { label: Services.I18n.t("settings.about.host"), value: tab.hostname },
+                    { label: Services.I18n.t("settings.about.product"), value: tab.product },
+                    { label: Services.I18n.t("settings.about.board"), value: tab.board },
+                    { label: Services.I18n.t("settings.about.uptime"), value: tab.uptime },
+                    { label: Services.I18n.t("settings.about.cpu"), value: tab.cpuInfo },
+                    { label: Services.I18n.t("settings.about.gpu"), value: tab.gpuInfo },
+                    { label: Services.I18n.t("settings.about.memory"), value: tab.memInfo },
+                    { label: Services.I18n.t("settings.about.disk"), value: tab.diskInfo },
+                    { label: Services.I18n.t("settings.about.packages"), value: tab.pkgInfo },
+                    { label: Services.I18n.t("settings.about.monitor"), value: tab.monitorInfo },
                 ]
                 delegate: RowLayout {
                     required property var modelData
@@ -217,70 +316,4 @@ Section {
         }
     }
 
-    Widgets.Divider { Layout.topMargin: 10; Layout.bottomMargin: 4 }
-
-    ColumnLayout {
-        spacing: 4
-        Text {
-            text: "ASHEN"
-            color: Services.Colors.snow
-            font.pixelSize: Services.Sizes.fsReadout
-            font.bold: true
-            font.family: "JetBrainsMono NF"
-            font.letterSpacing: 2
-        }
-        Text {
-            text: "A monochrome Hyprland shell, built with Quickshell"
-            color: Services.Colors.mist
-            font.pixelSize: Services.Sizes.fsBody
-            font.family: "JetBrainsMono NF"
-        }
-        Text {
-            text: "by Adolf"
-            color: Services.Colors.ash
-            font.pixelSize: Services.Sizes.fsBody
-            font.family: "JetBrainsMono NF"
-            Layout.topMargin: 2
-        }
-    }
-
-    Rectangle {
-        Layout.topMargin: 12
-        width: repoRow.implicitWidth + 24
-        height: 40
-        radius: Services.Sizes.pillR
-        color: Services.Colors.fillRest
-        scale: Services.Sizes.hoverScale(linkHover.containsMouse, linkHover.pressed)
-        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-        RowLayout {
-            id: repoRow
-            anchors.centerIn: parent
-            spacing: 8
-            Text {
-                text: ""
-                font.family: "Material Symbols Rounded"
-                font.pixelSize: 16
-                color: Services.Colors.ghost
-            }
-            Text {
-                text: "github.com/AdolfLecompte/ashen"
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsBody
-                font.family: "JetBrainsMono NF"
-            }
-            Text {
-                text: ""
-                font.family: "Material Symbols Rounded"
-                font.pixelSize: 14
-                color: Services.Colors.mist
-            }
-        }
-        MouseArea {
-            id: linkHover
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            hoverEnabled: true
-            onClicked: Quickshell.execDetached(["sh", "-c", "xdg-open https://github.com/AdolfLecompte/ashen"])
-        }
-    }
 }

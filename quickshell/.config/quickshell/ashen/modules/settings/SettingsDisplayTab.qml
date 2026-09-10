@@ -74,7 +74,7 @@ TabPage {
     // share a row. Everything you can CHANGE goes underneath at full width:
     // the old half-column made every control a slot too narrow to read.
     Card {
-        title: "Monitors"
+        title: Services.I18n.t("settings.display.monitors")
 
         RowLayout {
             Layout.fillWidth: true
@@ -263,7 +263,7 @@ TabPage {
                     horizontalAlignment: Text.AlignHCenter
                     text: tab.selEnt
                         ? ("×" + tab.selEnt.scale + "  ·  "
-                           + ["Normal", "90°", "180°", "270°"][tab.selEnt.transform])
+                           + [Services.I18n.t("settings.display.normal"), "90°", "180°", "270°"][tab.selEnt.transform])
                         : ""
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsMeta
@@ -276,7 +276,7 @@ TabPage {
     // Everything about the selected screen, two controls to a row so a label
     // and its control are never fighting for the same 200 px.
     Card {
-        title: tab.selMon ? tab.selMon.name : "Selected screen"
+        title: tab.selMon ? tab.selMon.name : Services.I18n.t("settings.display.selected")
 
         Text {
             Layout.fillWidth: true
@@ -304,12 +304,12 @@ TabPage {
                 spacing: 4
                 visible: tab.canMirror
 
-                FieldLabel { text: "Use" }
+                FieldLabel { text: Services.I18n.t("settings.display.use") }
                 Segmented {
                     Layout.fillWidth: true
                     options: [
-                        { id: "extend", label: "Extended" },
-                        { id: tab.primaryKey, label: "Mirror " + tab.primaryName }
+                        { id: "extend", label: Services.I18n.t("settings.display.extended") },
+                        { id: tab.primaryKey, label: Services.I18n.t("settings.display.mirror", { m: tab.primaryName }) }
                     ]
                     current: tab.selEnt ? (tab.selEnt.mirror === "" ? "extend" : tab.selEnt.mirror) : "extend"
                     onPicked: id => tab.patch({ mirror: id === "extend" ? "" : id })
@@ -325,7 +325,7 @@ TabPage {
                 Layout.alignment: Qt.AlignTop
                 spacing: 4
 
-                FieldLabel { text: "Resolution"; dim: !tab.geometryLive }
+                FieldLabel { text: Services.I18n.t("settings.display.resolution"); dim: !tab.geometryLive }
                 Widgets.DevicePicker {
                     Layout.fillWidth: true
                     overlay: true
@@ -333,7 +333,7 @@ TabPage {
                     opacity: enabled ? 1 : 0.4
                     glyph: ""
                     devices: {
-                        const out = [{ name: "preferred", desc: "Preferred" }]
+                        const out = [{ name: "preferred", desc: Services.I18n.t("settings.display.preferred") }]
                         const modes = tab.selMon && tab.selMon.availableModes ? tab.selMon.availableModes : []
                         for (const m of modes) out.push({ name: m, desc: m })
                         return out
@@ -349,7 +349,7 @@ TabPage {
                 Layout.alignment: Qt.AlignTop
                 spacing: 4
 
-                FieldLabel { text: "Scale"; dim: !tab.geometryLive }
+                FieldLabel { text: Services.I18n.t("settings.display.scale"); dim: !tab.geometryLive }
                 Widgets.DevicePicker {
                     Layout.fillWidth: true
                     overlay: true
@@ -373,13 +373,13 @@ TabPage {
                 Layout.fillWidth: true
                 spacing: 4
 
-                FieldLabel { text: "Rotation"; dim: !tab.geometryLive }
+                FieldLabel { text: Services.I18n.t("settings.display.rotation"); dim: !tab.geometryLive }
                 Segmented {
                     Layout.fillWidth: true
                     enabled: tab.geometryLive
                     opacity: enabled ? 1 : 0.4
                     options: [
-                        { id: "0", label: "Normal" },
+                        { id: "0", label: Services.I18n.t("settings.display.normal") },
                         { id: "1", label: "90°" },
                         { id: "2", label: "180°" },
                         { id: "3", label: "270°" }
@@ -400,12 +400,12 @@ TabPage {
                     Layout.fillWidth: true
                     spacing: 2
                     Text {
-                        text: "Enabled"
+                        text: Services.I18n.t("settings.display.enabled")
                         color: Services.Colors.snow
                         font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"
                     }
                     Text {
-                        text: tab.onlyOneLeft ? "The only screen left on" : "Turn this screen off entirely"
+                        text: tab.onlyOneLeft ? Services.I18n.t("settings.display.onlyOne") : Services.I18n.t("settings.display.turnOff")
                         color: Services.Colors.ash
                         font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"
                     }
@@ -433,7 +433,7 @@ TabPage {
                 // Only when it is worth saying: with nothing pending, the
                 // grid on screen already IS the answer.
                 visible: Services.Displays.dirty
-                text: "Not live until you apply"
+                text: Services.I18n.t("settings.display.notLive")
                 color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
@@ -444,13 +444,13 @@ TabPage {
             // was to undo every control by hand.
             ActionBtn {
                 visible: Services.Displays.dirty
-                label: "Discard"
+                label: Services.I18n.t("common.discard")
                 onGo: Services.Displays.discard()
             }
 
             ActionBtn {
                 accent: true
-                label: "Apply"
+                label: Services.I18n.t("common.apply")
                 onGo: Services.Displays.commit()
             }
         }
@@ -460,13 +460,13 @@ TabPage {
     // and which workspaces a screen owns is a different question from how the
     // screen is set up.
     Card {
-        title: "Workspaces"
+        title: Services.I18n.t("settings.display.workspaces")
 
         Text {
             Layout.fillWidth: true
             visible: text !== ""
             text: tab.selEnt && tab.selEnt.ws.length > 0 && tab.selMon
-                ? tab.selMon.name + " opens on " + tab.selEnt.defaultWs : ""
+                ? Services.I18n.t("settings.display.opensOn", { m: tab.selMon.name, w: tab.selEnt.defaultWs }) : ""
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -591,10 +591,10 @@ TabPage {
     // shell's: it grows under the pointer and its label brightens.
 
     Card {
-        title: "Display"
+        title: Services.I18n.t("settings.tab.display")
         Widgets.SliderRow {
             glyph: ""
-            label: "Brightness"
+            label: Services.I18n.t("common.brightness")
             value: Services.Brightness.level
             onMoved: pct => Services.Brightness.setLevel(pct)
         }
@@ -614,7 +614,7 @@ TabPage {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2
-                    Text { text: "Night Light"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { text: Services.I18n.t("settings.display.nightLight"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                 }
                 Item { Layout.fillWidth: true }
                 Toggle {
@@ -636,9 +636,9 @@ TabPage {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
-                        Text { text: "Temperature"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Text {
-                            text: Services.NightLight.temperature + "K · " + (Services.NightLight.temperature <= 3500 ? "warmer" : Services.NightLight.temperature >= 5000 ? "subtle" : "balanced")
+                            text: Services.NightLight.temperature + "K · " + (Services.NightLight.temperature <= 3500 ? Services.I18n.t("settings.display.warmer") : Services.NightLight.temperature >= 5000 ? Services.I18n.t("settings.display.subtle") : Services.I18n.t("settings.display.balancedTemp"))
                             color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"
                         }
                     }
@@ -661,7 +661,7 @@ TabPage {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
-                        Text { text: "Auto schedule"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { text: Services.I18n.t("settings.display.schedule"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Text { text: Services.NightLight.scheduled ? "On between the times below" : "On constantly while enabled"; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
                     }
                     Item { Layout.fillWidth: true }
@@ -679,7 +679,7 @@ TabPage {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
-                        Text { text: "From"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
+                        Text { text: Services.I18n.t("settings.display.from"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
                         Text { text: Services.NightLight.fromTime; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Item { Layout.fillWidth: true }
                         StepBtn {
@@ -695,7 +695,7 @@ TabPage {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
-                        Text { text: "To"; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
+                        Text { text: Services.I18n.t("settings.display.to"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
                         Text { text: Services.NightLight.toTime; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Item { Layout.fillWidth: true }
                         StepBtn {

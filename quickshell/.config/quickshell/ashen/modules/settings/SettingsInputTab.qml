@@ -24,29 +24,12 @@ Section {
             || l.name.toLowerCase().indexOf(q) !== -1)
     }
 
-    // What the four app keybinds open. Named here rather than in keybinds.lua,
-    // where "brave" meant SUPER+W did nothing on a machine without it.
-    Card {
-        title: "Apps"
-
-        Repeater {
-            model: Services.Apps.kinds
-
-            AppRow {
-                required property var modelData
-                kind: modelData.id
-                glyph: modelData.glyph
-                title: modelData.label
-                fallback: modelData.hint
-            }
-        }
-    }
 
     Card {
-        title: "Keyboard"
+        title: Services.I18n.t("settings.tab.keyboard")
         RowLayout {
             Layout.fillWidth: true
-            SectionLabel { text: "Keyboard Layout"; Layout.fillWidth: true }
+            SectionLabel { text: Services.I18n.t("settings.input.layout"); Layout.fillWidth: true }
             SectionLabel {
                 // XKB caps at 4 groups; past that they cannot be selected
                 text: Services.Keyboard.layouts.length + " / " + Services.Keyboard.maxLayouts
@@ -104,10 +87,10 @@ Section {
                         width: 18; height: 18
                         radius: Services.Sizes.innerR
                         color: Services.Colors.fillSunken
-                        scale: Services.Sizes.hoverScale(rmArea.containsMouse, rmArea.pressed)
-                        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                         Text {
                             anchors.centerIn: parent
+                            scale: Services.Sizes.hoverScale(rmArea.containsMouse, rmArea.pressed)
+                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                             text: "\ue5cd"
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 11
@@ -135,12 +118,12 @@ Section {
                 border.color: Services.Colors.fillLine
                 border.width: 1
                 opacity: Services.Keyboard.canAdd ? 1.0 : 0.4
-                scale: Services.Keyboard.canAdd
-                    ? Services.Sizes.hoverScale(addArea.containsMouse, addArea.pressed) : 1.0
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                 ColumnLayout {
                     anchors.centerIn: parent
                     spacing: 4
+                    scale: Services.Keyboard.canAdd
+                        ? Services.Sizes.hoverScale(addArea.containsMouse, addArea.pressed) : 1.0
+                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                     Text {
                         text: "\ue145"
                         font.family: "Material Symbols Rounded"
@@ -149,7 +132,7 @@ Section {
                         Layout.alignment: Qt.AlignHCenter
                     }
                     Text {
-                        text: "Add"
+                        text: Services.I18n.t("common.add")
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
                         color: (addArea.containsMouse && Services.Keyboard.canAdd)
@@ -177,7 +160,7 @@ Section {
 
         Text {
             visible: !Services.Keyboard.canAdd
-            text: "XKB allows 4 layouts at most"
+            text: Services.I18n.t("settings.input.max")
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -223,7 +206,7 @@ Section {
                         TextField {
                             id: searchField
                             Layout.fillWidth: true
-                            placeholderText: "Search layout..."
+                            placeholderText: Services.I18n.t("settings.input.searchLayout")
                             text: tab.layoutQuery
                             onTextChanged: tab.layoutQuery = text
                             color: Services.Colors.snow
@@ -289,7 +272,7 @@ Section {
                             }
                             Text {
                                 visible: parent.parent.already
-                                text: "in use"
+                                text: Services.I18n.t("settings.input.inUse")
                                 color: Services.Colors.ash
                                 font.pixelSize: Services.Sizes.fsCaption
                                 font.family: "JetBrainsMono NF"
@@ -321,10 +304,10 @@ Section {
     }
 
     Card {
-        title: "Shortcuts"
+        title: Services.I18n.t("settings.input.shortcuts")
 
         Text {
-            text: "Press to rebind · right-click for the shipped one"
+            text: Services.I18n.t("settings.input.rebind")
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -372,7 +355,7 @@ Section {
                         Text {
                             visible: modelData.id !== ""
                                      && Services.Shortcuts.changed(modelData.id)
-                            text: "changed"
+                            text: Services.I18n.t("settings.input.changed")
                             color: Services.Colors.ghost
                             font.pixelSize: Services.Sizes.fsMeta
                             font.family: "JetBrainsMono NF"
@@ -384,7 +367,7 @@ Section {
 
         Text {
             visible: Services.Keybinds.binds.length === 0
-            text: "No shortcuts found — keybinds.lua could not be read."
+            text: Services.I18n.t("settings.input.noShortcuts")
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsBody
             font.family: "JetBrainsMono NF"

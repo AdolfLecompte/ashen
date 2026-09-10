@@ -56,6 +56,74 @@ Singleton {
     readonly property string version: root.current ? root.current.title : ""
     readonly property var notes: root.current ? root.current.entries : []
 
+    // ── Is there a newer Ashen? ──────────────────────────────────────────
+    // NOT services/Updates: that runs checkupdates and an AUR helper and answers
+    // "are my PACKAGES out of date", which is a different question. This one
+    // asks the repository, on a button -- a shell that phones home on a timer is
+    // a different thing from one that answers when asked.
+    //
+    // Two traps, both covered by docs/probes/run-version-probe.sh:
+    //   the tag is `v2.1.0` and the CHANGELOG heading is `2.1.0`
+    //   comparing as strings claims 2.10.0 < 2.9.0
+    function newer(a, b) {
+        const pa = String(a).replace(/^v/, "").split(".").map(Number)
+        const pb = String(b).replace(/^v/, "").split(".").map(Number)
+        for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+            const x = pa[i] || 0, y = pb[i] || 0
+            if (x !== y) return x > y
+        }
+        return false
+    }
+
+    property string latest: ""
+    property bool checking: false
+    // idle · checking · current · available · ahead · failed
+    property string checkState: "idle"
+
+    function check() {
+        if (root.checking) return
+        root.checking = true
+        root.checkState = "checking"
+        checkProc.running = true
+    }
+
+    Process {
+        id: checkProc
+        running: false
+        // --max-time so a panel never hangs on a network that is merely slow.
+        command: ["sh", "-c",
+            "curl -fsSL --max-time 8 https://api.github.com/repos/AdolfLecompte/ashen/releases/latest"
+            + " | grep -m1 '\"tag_name\"' | cut -d'\"' -f4"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.checking = false
+                const tag = text.trim()
+                if (tag === "") { root.checkState = "failed"; return }
+                root.latest = tag
+                // A checkout can be AHEAD of the newest tag. That is not an
+                // error and must not be offered as an update.
+                root.checkState = root.newer(tag, root.version) ? "available"
+                                : root.newer(root.version, tag) ? "ahead"
+                                : "current"
+            }
+        }
+        onExited: (code) => { if (code !== 0) { root.checking = false; root.checkState = "failed" } }
+    }
+
+    // What the row SAYS about all that. Not a label -- a remark, so it comes
+    // from the phrase bank like every other line the shell offers rather than
+    // states. A binding, deliberately: the bank arrives asynchronously and a
+    // binding re-runs when it does, where a signal handler would have fired
+    // once against an empty bank and left the row blank forever.
+    readonly property string statusKey:
+          root.checkState === "checking"  ? "about.checking"
+        : root.checkState === "current"   ? "about.current"
+        : root.checkState === "ahead"     ? "about.ahead"
+        : root.checkState === "failed"    ? "about.failed"
+        : root.checkState === "available" ? "about.available"
+        : "about.idle"
+    readonly property string statusLine: Voice.pick(root.statusKey)
+
     // Markdown leaves **bold** in the text; the panel draws rich text, so the
     // stars become tags rather than being read out loud.
     function rich(s) {
