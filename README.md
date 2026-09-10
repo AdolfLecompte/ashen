@@ -1,6 +1,6 @@
 <div align="center">
 
-```
+<pre>
  ░░░░░╗ ░░░░░░░╗░░╗  ░░╗░░░░░░░╗░░░╗   ░░╗
 ░░╔══░░╗░░╔════╝░░║  ░░║░░╔════╝░░░░╗  ░░║
 ▒▒▒▒▒▒▒║▒▒▒▒▒▒▒╗▒▒▒▒▒▒▒║▒▒▒▒▒╗  ▒▒╔▒▒╗ ▒▒║
@@ -8,9 +8,16 @@
 ██║  ██║███████║██║  ██║███████╗██║ ╚████║
 ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝
     a  g h o s t  i n  t h e  s h e l l
-```
+</pre>
 
 A monochrome Hyprland + Quickshell rice for Arch.
+
+<img alt="compositor: Hyprland" src="https://img.shields.io/badge/compositor-Hyprland-81d3de?style=for-the-badge&labelColor=0e1415">
+
+<img alt="last commit" src="https://img.shields.io/github/last-commit/AdolfLecompte/ashen?style=for-the-badge&label=last%20commit&labelColor=0e1415&color=252b2c&display_timestamp=author">
+<img alt="stars" src="https://img.shields.io/github/stars/AdolfLecompte/ashen?style=for-the-badge&label=stars&labelColor=0e1415&color=81d3de">
+<img alt="repo size" src="https://img.shields.io/github/repo-size/AdolfLecompte/ashen?style=for-the-badge&label=repo%20size&labelColor=0e1415&color=252b2c">
+<img alt="license" src="https://img.shields.io/github/license/AdolfLecompte/ashen?style=for-the-badge&label=license&labelColor=0e1415&color=81d3de">
 
 `Hyprland` · `Quickshell` · `Kitty` · `Zsh + Powerlevel10k` · `PipeWire` · `matugen`
 
