@@ -361,7 +361,6 @@ Singleton {
     //   "dots"    no reading at all -- a dot, and the one you are on is a bar
     property string workspaceStyle: "icons"
     // Kept so a saved `false` still means numbers on the first run after this.
-    property bool workspaceIcons: true
 
     // Idle timeouts in seconds, 0 = never. The Idle service turns these into
     // hypridle.conf; nothing else may write that file.
@@ -427,7 +426,7 @@ Singleton {
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications",
-        "workspaceIcons", "workspaceStyle", "idleLockSecs",
+        "workspaceStyle", "idleLockSecs",
         "idleScreenOffSecs", "idleSuspendSecs", "barPosition", "barStyle",
         "barLength", "barAutohide", "visualizer", "mediaLyrics",
         "nightLightEnabled", "nightLightScheduled", "nightLightTemp",
@@ -473,6 +472,11 @@ Singleton {
             const k = root.keys[i]
             if (obj[k] !== undefined) root[k] = obj[k]
         }
+        // Before 3.0.0 the workspace chips were a bool. Honour it once, here,
+        // for a file written by that version -- and then never again: the key
+        // is not in the manifest, so the next save is the last time it exists.
+        if (obj.workspaceStyle === undefined && obj.workspaceIcons !== undefined)
+            root.workspaceStyle = obj.workspaceIcons ? "icons" : "numbers"
         return true
     }
 

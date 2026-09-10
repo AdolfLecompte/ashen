@@ -54,8 +54,6 @@ Singleton {
     property real prevRxBytes: -1
     property real prevTxBytes: -1
 
-    // [{ pid, name, cpu, mem }], heaviest first
-
 
     onActiveChanged: if (active) {
         // the static bits only need one read, ever

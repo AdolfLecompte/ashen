@@ -61,7 +61,7 @@ Singleton {
 
     property bool clipboardVisible: false
 
-    property var bigOverlays: ["launcherVisible", "settingsVisible", "wallpaperVisible", "clipboardVisible", "processVisible", "utilitiesVisible"]
+    property var bigOverlays: ["launcherVisible", "settingsVisible", "wallpaperVisible", "clipboardVisible", "processVisible"]
     // Reactive read of a panel's own flag by name, for anything driven from
     // the pill catalogue rather than wired to one panel.
     function overlayOpen(name) { return name !== "" && root[name] === true }
@@ -74,7 +74,7 @@ Singleton {
     readonly property var panelFlags: ["volumeVisible", "batteryVisible", "mediaVisible",
         "notificationsVisible", "settingsVisible", "powerMenuVisible", "calendarVisible",
         "networkVisible", "bluetoothVisible", "usbVisible", "processVisible",
-        "clipboardVisible", "launcherVisible", "wallpaperVisible", "utilitiesVisible",
+        "clipboardVisible", "launcherVisible", "wallpaperVisible",
         "trayMenuVisible", "switcherVisible"]
     // Which screens have their auto-hiding bar out right now. The frame reads it
     // to hand that side over to the bar, so framed looks the same either way.
@@ -408,8 +408,6 @@ Singleton {
     // laid out yet still leaves from the right side of the screen.
 
 
-
-    property bool utilitiesVisible: false
     // The button stands down while the panel wears its face.
     property bool processTakenOver: false
     property bool wallpaperVisible: false
