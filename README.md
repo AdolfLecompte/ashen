@@ -10,9 +10,9 @@
     a  g h o s t  i n  t h e  s h e l l
 ```
 
-A monochrome Hyprland + Quickshell rice for Arch.
+A monochrome RIce + Quickshell rice for Arch.
 
-`Hyprland` · `Quickshell` · `Kitty` · `Zsh + Powerlevel10k` · `PipeWire` · `matugen`
+`Hyprland`
 
 </div>
 
