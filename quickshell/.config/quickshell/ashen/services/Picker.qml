@@ -35,6 +35,12 @@ Singleton {
         { label: "Home", path: Services.Paths.home }
     ]
 
+    // Which way the last move went, so the grid sweeps the way you walked:
+    // into a folder is forwards, the way back up is backwards. Same idea as
+    // AppState.mediaDir -- a path has no order of its own, so whoever caused
+    // the change is the only one who can say which way it goes.
+    property int step: 1
+
     function open(purpose, startDir) {
         root.purpose = purpose
         root.go(startDir && startDir !== "" ? startDir : root.startDirs[0].path)
@@ -44,13 +50,17 @@ Singleton {
         root.visible = false
         root.purpose = ""
     }
-    function go(path) {
-        root.dir = path
-        root.scan()
-    }
+    function go(path) { root.walk(path, 1) }
     function up() {
         const cut = root.dir.lastIndexOf("/")
-        if (cut > 0) root.go(root.dir.slice(0, cut))
+        if (cut > 0) root.walk(root.dir.slice(0, cut), -1)
+    }
+    // The direction is set BEFORE the path: what watches `dir` starts its sweep
+    // on the change, and would read last move's direction if it came after.
+    function walk(path, dir) {
+        root.step = dir
+        root.dir = path
+        root.scan()
     }
     function choose(path) {
         const who = root.purpose
