@@ -1,6 +1,7 @@
 import Quickshell
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // The battery readout. Was a chip on the system plate until that plate was taken apart, so it
@@ -29,12 +30,12 @@ Rectangle {
               ? Services.Colors.accentGradient : null
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: chip.open ? Services.Colors.ghost : Services.Colors.fillOutline
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
 
     // The bar's one hover language, from Sizes. The chip does not scale: two
     // things growing at once doubles it.
     scale: Services.Sizes.hoverScale(chip.hovered, chip.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
     SystemChip {
         id: chip

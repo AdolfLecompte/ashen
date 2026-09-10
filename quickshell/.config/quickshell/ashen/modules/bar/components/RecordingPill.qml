@@ -13,7 +13,7 @@ Rectangle {
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
     readonly property bool active: Services.AppState.recording
 
@@ -37,8 +37,8 @@ Rectangle {
               ? Services.Colors.accentGradient : null
     // Opening out to fit the clock is the pill telling you it started, so it
     // gets the same settle as the panels rather than a flat 150 ms slide.
-    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim { speed: Services.Sizes.msPronounced; curve: Services.Sizes.easeBox } }
+    Behavior on color { Widgets.ColorAnim {} }
 
     // Counted in AppState, so the floating indicator shows the same number.
     readonly property string elapsed: Services.AppState.recordingElapsed
@@ -56,8 +56,8 @@ Rectangle {
             font.pixelSize: (root.active && !root.vertical) ? 16 : 22
             font.family: "Material Symbols Rounded"
             anchors.verticalCenter: parent.verticalCenter
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
-            Behavior on font.pixelSize { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+            Behavior on color { Widgets.ColorAnim {} }
+            Behavior on font.pixelSize { Widgets.Anim {} }
 
             // A recording is the one thing on the bar that is still happening
             // while you look away, so the dot breathes for as long as it runs.

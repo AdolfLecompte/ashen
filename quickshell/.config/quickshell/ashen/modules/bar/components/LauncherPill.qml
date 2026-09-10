@@ -12,7 +12,7 @@ Rectangle {
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
     readonly property int pillH: Services.Sizes.pillH
     readonly property bool active: Services.AppState.launcherVisible
 
@@ -25,7 +25,7 @@ Rectangle {
     // plate is the pill itself, and it answers the pointer by growing.
     color: root.outlined ? Services.Colors.surfaceGlass : ((active && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
     gradient: Services.Prefs.useGradients && active ? Services.Colors.accentGradient : null
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on color { Widgets.ColorAnim {} }
 
     Text {
         anchors.centerIn: parent
@@ -38,7 +38,7 @@ Rectangle {
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on color { Widgets.ColorAnim {} }
     }
 
     MouseArea {

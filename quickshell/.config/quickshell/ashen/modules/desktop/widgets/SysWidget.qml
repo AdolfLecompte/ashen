@@ -203,7 +203,7 @@ DesktopWidget {
                 color: br.tone
                 gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                 Behavior on width {
-                    NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
+                    Widgets.Anim {}
                 }
             }
         }

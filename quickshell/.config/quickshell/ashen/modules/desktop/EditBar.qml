@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // While the desktop is being arranged: how things land, and the way out. It is
@@ -17,7 +18,7 @@ Item {
     z: 10
     visible: opacity > 0
     opacity: root.shown ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on opacity { Widgets.Anim {} }
     transform: Translate { y: root.shown ? 0 : -16 }
 
     Rectangle {
@@ -81,10 +82,10 @@ Item {
                             font.pixelSize: Services.Sizes.fsBody
                             font.bold: true
                             font.family: "JetBrainsMono NF"
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         }
                         scale: Services.Sizes.hoverScale(modeHover.containsMouse, modeHover.pressed)
-                        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                        Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                         MouseArea {
                             id: modeHover
@@ -120,7 +121,7 @@ Item {
                     color: tray.open ? Services.Colors.ghost : Services.Colors.fillRest
                     gradient: Services.Prefs.useGradients && tray.open
                         ? Services.Colors.accentGradient : null
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
                 Row {
                     id: trayRow
@@ -135,7 +136,7 @@ Item {
                         font.pixelSize: 14
                         font.family: "Material Symbols Rounded"
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
                         text: Services.I18n.t("widget.widgets")
@@ -146,11 +147,11 @@ Item {
                         font.bold: true
                         font.family: "JetBrainsMono NF"
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                 }
                 scale: Services.Sizes.hoverScale(trayHover.containsMouse, trayHover.pressed)
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                 MouseArea {
                     id: trayHover
@@ -188,10 +189,10 @@ Item {
                     font.pixelSize: Services.Sizes.fsBody
                     font.bold: true
                     font.family: "JetBrainsMono NF"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
                 scale: Services.Sizes.hoverScale(doneHover.containsMouse, doneHover.pressed)
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                 MouseArea {
                     id: doneHover

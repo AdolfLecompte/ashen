@@ -12,7 +12,7 @@ Rectangle {
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
     readonly property int pillH: Services.Sizes.pillH
     readonly property bool open: Services.AppState.notificationsVisible
     readonly property bool dnd: Services.AppState.doNotDisturb
@@ -26,7 +26,7 @@ Rectangle {
     // No inner box, and no hover tint on the plate.
     color: root.outlined ? Services.Colors.surfaceGlass : ((open && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
     gradient: Services.Prefs.useGradients && open ? Services.Colors.accentGradient : null
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
 
     PillCenter { key: "notification" }
 
@@ -41,7 +41,7 @@ Rectangle {
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 24
         font.family: "Material Symbols Rounded"
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on color { Widgets.ColorAnim {} }
 
         // Subtle fade + scale pop whenever the glyph swaps (bell <-> DND).
         transform: Scale {

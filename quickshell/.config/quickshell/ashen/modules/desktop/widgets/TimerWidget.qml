@@ -40,7 +40,7 @@ DesktopWidget {
             font.bold: true
             font.letterSpacing: 1.4
             font.family: "JetBrainsMono NF"
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+            Behavior on color { Widgets.ColorAnim {} }
         }
 
         Text {
@@ -72,7 +72,7 @@ DesktopWidget {
                 color: Services.Colors.ghost
                 gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                 Behavior on width {
-                    NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
+                    Widgets.Anim {}
                 }
             }
         }

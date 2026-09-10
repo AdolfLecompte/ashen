@@ -60,7 +60,7 @@ Rectangle {
     // The weather text still changes width under it (a degree gained, an icon
     // swapped), so the settle stays. What used to widen it -- a live stopwatch --
     // hangs under the bar now, in TimerDrops.
-    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
+    Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim { speed: Services.Sizes.msPronounced; curve: Services.Sizes.easeBox } }
     color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
     // The bar pivots the centre group on this point, so the HOUR sits dead
     // centre on screen and the date and weather fall either side of it.
@@ -84,7 +84,7 @@ Rectangle {
     // dead centre, so swelling it under a passing pointer nudged the whole
     // strip. The press is kept — that half is feedback for something you did.
     scale: pillHover.pressed ? Services.Sizes.pillPressScale : 1.0
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
     // Reports where it sits so the calendar can drop out of it
     PillCenter { key: "clock" }
@@ -116,7 +116,7 @@ Rectangle {
     Timer { id: handBack; interval: 330; onTriggered: root.takenOverByPanel = false }
 
     opacity: (root.takenOverByPanel && Services.Pills.wearsFace) ? 0.0 : 1.0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
 
     Column {

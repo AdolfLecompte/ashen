@@ -4,6 +4,7 @@ import Quickshell.Hyprland
 import QtQuick
 
 import "root:/modules/desktop/widgets"
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // The wallpaper's own layer: it sits above whatever is painting the background
@@ -99,7 +100,7 @@ PanelWindow {
         // out and brings it back rather than blinking widget by widget.
         opacity: Services.Desktop.hushed ? 0 : 1
         Behavior on opacity {
-            NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut }
+            Widgets.Anim { speed: Services.Sizes.msPanel }
         }
         focus: desk.editing
         Keys.onEscapePressed: Services.Desktop.editMode = false

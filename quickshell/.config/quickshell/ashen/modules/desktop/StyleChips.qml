@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // The shapes a widget can take, offered under it while the desktop is being
@@ -27,7 +28,7 @@ Item {
     z: 5
     visible: opacity > 0
     opacity: root.offered ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     implicitWidth: rows.width
     implicitHeight: rows.height
@@ -104,11 +105,11 @@ Item {
                         font.pixelSize: Services.Sizes.fsMeta
                         font.bold: true
                         font.family: "JetBrainsMono NF"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
 
                     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
-                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                     MouseArea {
                         id: hover

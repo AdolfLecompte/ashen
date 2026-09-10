@@ -33,7 +33,7 @@ Item {
     z: 6
     visible: opacity > 0
     opacity: root.offered ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     // How far off the frame the angles float.
     readonly property int gap: 6
@@ -68,7 +68,7 @@ Item {
 
             // Hover grows the angle and brightens it; nothing is ever filled.
             scale: Services.Sizes.hoverScale(drag_.containsMouse, drag_.pressed)
-            Behavior on scale { NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+            Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             // The two bars point INWARDS, at the corner they move.
             Rectangle {
@@ -77,7 +77,7 @@ Item {
                 radius: 1.5
                 y: grip.modelData.sy < 0 ? 0 : parent.height - height
                 color: grip.ink
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
             Rectangle {
                 width: 3
@@ -85,7 +85,7 @@ Item {
                 radius: 1.5
                 x: grip.modelData.sx < 0 ? 0 : parent.width - width
                 color: grip.ink
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
 
             MouseArea {
@@ -133,7 +133,7 @@ Item {
     Widgets.IconButton {
         visible: root.framable
         opacity: root.framable ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
         x: (root.target ? root.target.x + root.target.width - width : 0)
         y: (root.target ? root.target.y : 0) - root.gap - height

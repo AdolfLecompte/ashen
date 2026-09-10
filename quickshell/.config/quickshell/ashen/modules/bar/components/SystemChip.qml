@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // One chip inside the system pill: wifi, bluetooth, volume, battery,
@@ -81,7 +82,7 @@ Rectangle {
         onTriggered: chip.takenOver = false
     }
     opacity: (takenOver && Services.Pills.wearsFace) ? 0.0 : 1.0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     // The panel wears this for the first frames of its fall.
     onGlyphChanged: chip.publishFace()
@@ -151,7 +152,7 @@ Rectangle {
     height: vertical
         ? (chip.dual ? inner.height + 12 : Services.Sizes.innerH)
         : Services.Sizes.innerH
-    Behavior on height { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+    Behavior on height { enabled: !Services.Sizes.hidden; Widgets.Anim {} }
 
     // The plate does not react. Hover is the chip growing and its contents
     // lifting to snow -- nothing lights up underneath them.
@@ -162,11 +163,11 @@ Rectangle {
          : active ? Services.Colors.ghost : Services.Colors.fillRest
     gradient: (!chip.bare && Services.Pills.fills && Services.Prefs.useGradients && Services.Pills.fills && active)
               ? Services.Colors.accentGradient : null
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
 
     // The bar's one hover language, from Sizes.
     scale: chip.bare ? 1 : Services.Sizes.hoverScale(hovered, hover.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
     // A chip nothing opens is inert: no cursor, no hover growth, no lift to
     // snow, and clicks go straight through it. Answering the pointer is the
@@ -242,8 +243,8 @@ Rectangle {
         radius: Services.Sizes.innerR
         color: Services.Colors.surfacePill
         opacity: chip.expanded ? 1 : 0
-        Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim {} }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
         Column {
             id: tailCol

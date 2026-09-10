@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // Where a widget will land, drawn while arranging on the grid. Painted once per
@@ -11,7 +12,7 @@ Canvas {
 
     visible: opacity > 0
     opacity: (Services.Desktop.editMode && Services.Desktop.snap === "grid") ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on opacity { Widgets.Anim {} }
 
     onWidthChanged: requestPaint()
     onHeightChanged: requestPaint()

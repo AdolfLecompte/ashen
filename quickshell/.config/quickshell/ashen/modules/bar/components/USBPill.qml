@@ -14,7 +14,7 @@ Rectangle {
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
     readonly property bool anyMounted: {
         for (let d of Services.USB.devices) {
             if (d.mountpoint && d.mountpoint.length > 0) return true
@@ -65,10 +65,10 @@ Rectangle {
     readonly property bool wanted: root.present || root.takenOver || root.opacity > 0
     visible: root.wanted
     clip: true
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
-    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-    Behavior on height { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
+    Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim {} }
+    Behavior on height { enabled: !Services.Sizes.hidden; Widgets.Anim {} }
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     Text {
         id: icon
@@ -83,7 +83,7 @@ Rectangle {
                                    : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msEmphasis } }
+        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
     }
 
     PillCenter { key: "usb" }

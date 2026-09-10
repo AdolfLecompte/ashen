@@ -129,7 +129,7 @@ DesktopWidget {
             radius: Services.Sizes.panelR
             border.width: root.cropping ? 2 : 0
             border.color: Services.Colors.ghost
-            Behavior on border.width { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on border.width { Widgets.Anim { speed: Services.Sizes.msMicro } }
         }
     }
 

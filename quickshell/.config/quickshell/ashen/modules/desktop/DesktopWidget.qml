@@ -1,5 +1,6 @@
 import QtQuick
 
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // A widget sitting on the wallpaper. Holds the plate, the dragging and the
@@ -118,13 +119,13 @@ Item {
                     : "transparent"
         border.width: root.editing ? 2
                     : Services.Prefs.widgetOutline ? Services.Sizes.outlineW : 0
-        Behavior on border.width { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on border.width { Widgets.Anim { speed: Services.Sizes.msMicro } }
     }
 
     // Hover is the box growing, never a fill; only when there is something to
     // grab. Content brightening is each widget's own business.
     scale: root.editing ? Services.Sizes.hoverScaleFor(width, drag_.containsMouse, drag_.pressed) : 1
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
     Item {
         id: body

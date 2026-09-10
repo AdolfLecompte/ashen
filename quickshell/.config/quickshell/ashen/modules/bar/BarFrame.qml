@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Shapes
 
 import "root:/modules/bar/components"
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // The framed style's border. Drawn as ONE ring with a rounded hole: four bands
@@ -87,7 +88,7 @@ Scope {
                     ? Services.Sizes.barH : Services.Sizes.frameW
                 property real barSideNow: ring.barSide
                 Behavior on barSideNow {
-                    NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut }
+                    Widgets.Anim { speed: Services.Sizes.msEmphasis }
                 }
 
                 // The bar's depth on its own side, the border's elsewhere.

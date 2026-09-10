@@ -166,8 +166,8 @@ Item {
         height: root.vertical ? shownRow.height + root.pad * 2 : root.pillH
         // The box travels to its new size while it is empty — same order as the
         // media island: box first, content after.
-        Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeBox } }
-        Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeBox } }
+        Behavior on width { Widgets.Anim { curve: Services.Sizes.easeBox } }
+        Behavior on height { Widgets.Anim { curve: Services.Sizes.easeBox } }
 
         Connections {
             target: root
@@ -247,7 +247,7 @@ Item {
                     // `.containsMouse` throws.
                     readonly property bool warm: chipHover && chipHover.containsMouse
                     scale: Services.Sizes.hoverScale(warm, chipHover && chipHover.pressed)
-                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                     Rectangle {
                         anchors.fill: parent
@@ -257,7 +257,7 @@ Item {
                         // Active chips are carried by the sliding indicator, so they stay bare.
                         color: Services.Colors.fillRest
                         opacity: parent.isActive ? 0 : parent.hasWindows ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on opacity { Widgets.Anim {} }
                     }
 
                     // The dot itself. Fully round, so growing into the active
@@ -293,7 +293,7 @@ Item {
                                  ? "transparent"
                              : parent.hasWindows ? Services.Colors.ash
                                                  : Services.Colors.fillRest
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on color { Widgets.ColorAnim {} }
                     }
 
                     // A workspace with something on it shows what that is; an
@@ -320,8 +320,8 @@ Item {
                         // the trick away.
                         opacity: Services.AppState.wsPreviewMorphing
                             && Services.AppState.wsPreviewId === parent.wsId ? 0 : 1
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim {} }
                     }
 
                     PreviewHover {
@@ -358,7 +358,7 @@ Item {
                     width: root.innerH; height: root.innerH
                     readonly property bool warm: spHover && spHover.containsMouse
                     scale: Services.Sizes.hoverScale(warm, spHover && spHover.pressed)
-                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                     Rectangle {
                         anchors.fill: parent
@@ -370,7 +370,7 @@ Item {
                         border.color: Services.Colors.ghost
                         gradient: (Services.Prefs.useGradients && !Services.Pills.rings && parent.isShown)
                                   ? Services.Colors.accentGradient : null
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on color { Widgets.ColorAnim {} }
                     }
 
                     Text {
@@ -387,8 +387,8 @@ Item {
                         // Handed over to the preview's caption while it is open
                         opacity: Services.AppState.wsPreviewMorphing
                             && Services.AppState.wsPreviewId === parent.modelData.id ? 0 : 1
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim {} }
                     }
 
                     PreviewHover {

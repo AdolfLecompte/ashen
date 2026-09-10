@@ -4,6 +4,7 @@ import Quickshell.Services.Mpris
 import QtQuick
 
 import "root:/modules/desktop"
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // The sound as a circle: the cover in the middle, a ring of bars growing out of
@@ -83,7 +84,7 @@ DesktopWidget {
         implicitHeight: root.dia
 
         opacity: Services.Cava.isActive ? 1 : 0.55
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPanel } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msPanel } }
 
         // The line the bars stand on. Quiet on purpose -- it is the ground,
         // not a reading.

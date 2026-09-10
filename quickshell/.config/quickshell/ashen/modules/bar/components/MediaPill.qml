@@ -269,7 +269,7 @@ Item {
     // holding its slot in the bar or the row would close the gap and shift.
     opacity: hasPlayer ? 1.0 : 0.0
     Behavior on width { enabled: !root.swapping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on opacity { Widgets.Anim {} }
 
     // The pointer being on the pill is what lets a long title walk, and a
     // HoverHandler sees it even while the transport chips have the mouse --
@@ -302,7 +302,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         // other one's timing. The card sits on the same rect anyway, so the
         // few frames where both are drawn are indistinguishable.
         opacity: (root.takenOverByPanel && Services.Pills.wearsFace) ? 0.0 : 1.0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
         Grid {
             id: expandedRow
@@ -349,7 +349,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
     // looked exactly the same whether anything was playing or not.
     readonly property real playingAmt: (root.activePlayer !== null && root.activePlayer.isPlaying) ? 1.0 : 0.45
     opacity: trackSwap.fade * artFrame.playingAmt
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on opacity { Widgets.Anim {} }
     transform: Translate { x: trackSwap.offX }
     Image {
         id: pillArt

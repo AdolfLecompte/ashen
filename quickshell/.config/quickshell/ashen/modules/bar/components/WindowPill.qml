@@ -55,9 +55,9 @@ Rectangle {
     clip: true
     opacity: root.present ? 1.0 : 0.0
 
-    Behavior on width { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-    Behavior on height { enabled: !Services.Sizes.hidden; NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim {} }
+    Behavior on height { enabled: !Services.Sizes.hidden; Widgets.Anim {} }
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     Row {
         id: inner

@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "root:/modules/bar/components"
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 Scope {
@@ -228,8 +229,8 @@ Scope {
                 transform: Translate {
                     x: bar.peekX
                     y: bar.peekY
-                    Behavior on x { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
-                    Behavior on y { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
+                    Behavior on x { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
+                    Behavior on y { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
                 }
 
                 // On the strip itself, above every pill in the tree: a handler
@@ -259,7 +260,7 @@ Scope {
                         * (100 - Services.Sizes.barLength) / 200)
                     readonly property int along: Services.Sizes.plateAlong + strip.frame + strip.shorten
                     Behavior on shorten {
-                        NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut }
+                        Widgets.Anim { speed: Services.Sizes.msPronounced }
                     }
                     readonly property int cross: Services.Sizes.plateCross
 
@@ -440,7 +441,7 @@ Scope {
                     }
                     Component.onDestruction: content.forgetLater()
                     Behavior on scale { enabled: slot.entering; NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Easing.OutBack; easing.overshoot: Services.Sizes.overshoot } }
-                    Behavior on opacity { enabled: slot.entering; NumberAnimation { duration: Services.Sizes.msStandard } }
+                    Behavior on opacity { enabled: slot.entering; Widgets.Anim {} }
                 }
 
 
@@ -536,7 +537,7 @@ Scope {
                     // disappearing off the bar as collateral.
                     enabled: centreGroup.fits
                     opacity: centreGroup.fits ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                    Behavior on opacity { Widgets.Anim {} }
 
                     // The strip is inset by the same amount at both ends, so its
                     // middle is still the middle of the screen -- until one of

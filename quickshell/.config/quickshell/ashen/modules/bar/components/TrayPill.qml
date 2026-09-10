@@ -61,7 +61,7 @@ Rectangle {
                     opacity: trayHover.containsMouse ? 1.0 : 0.88
                     Behavior on opacity { NumberAnimation { duration: Services.Sizes.pillHoverMs } }
                     scale: Services.Sizes.hoverScale(trayHover.containsMouse, trayHover.pressed)
-                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                    Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
                     layer.enabled: trayHover.containsMouse
                     layer.effect: BrightnessContrast { brightness: 0.22 }

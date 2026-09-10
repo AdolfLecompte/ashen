@@ -1,6 +1,7 @@
 import QtQuick
 
 import "root:/modules/desktop"
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // How full the disks are. Flat bars, never curves: a filesystem moves by a
@@ -61,7 +62,7 @@ DesktopWidget {
                 color: Services.Colors.ghost
                 gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                 Behavior on width {
-                    NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
+                    Widgets.Anim {}
                 }
             }
         }

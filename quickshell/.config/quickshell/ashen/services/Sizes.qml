@@ -108,6 +108,13 @@ Singleton {
     readonly property int msEmphasis: 320     // resizing, or covering a distance
     readonly property int msPanel: 420        // a panel's own box
 
+    // Does anything move? False and every Anim/ColorAnim takes zero time: the
+    // values still arrive, they just stop travelling. Game mode turns this off
+    // and nothing else should -- it is not a preference, it is a mode. Distinct
+    // from `hidden`, which is about the bar being off screen while it changes
+    // edge, not about motion in general.
+    property bool motion: true
+
     // The curves, named by what they are for.
     readonly property int easeOut: Easing.OutCubic      // arriving, settling
     readonly property int easeIn: Easing.InCubic        // leaving

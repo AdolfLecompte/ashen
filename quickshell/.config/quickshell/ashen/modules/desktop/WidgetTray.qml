@@ -26,7 +26,7 @@ Item {
     z: 11
     visible: opacity > 0
     opacity: root.shown ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on opacity { Widgets.Anim {} }
     transform: Translate { y: root.shown ? 0 : -12 }
 
     // A tile in the tray: the widget's face over its name, and under that the
@@ -54,7 +54,7 @@ Item {
             color: tile.lit ? Services.Colors.ghost : Services.Colors.fillRest
             gradient: Services.Prefs.useGradients && tile.lit
                 ? Services.Colors.accentGradient : null
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
         }
 
         // The photo over that plate rather than as its colour: a
@@ -96,7 +96,7 @@ Item {
                 font.pixelSize: 24
                 font.family: "Material Symbols Rounded"
                 bottomPadding: 4
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -113,7 +113,7 @@ Item {
                 fontSizeMode: Text.HorizontalFit
                 minimumPixelSize: 9
                 elide: Text.ElideRight
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -132,7 +132,7 @@ Item {
         }
 
         scale: Services.Sizes.hoverScale(tileHover.containsMouse, tileHover.pressed)
-        Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+        Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
         MouseArea {
             id: tileHover
