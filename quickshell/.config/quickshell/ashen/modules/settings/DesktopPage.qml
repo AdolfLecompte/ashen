@@ -2,11 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import "root:/modules/settings/components"
 
-// The two surfaces that are always there, in one scroll: where the bar sits,
-// what it carries, and what stands on the wallpaper. They used to be three
-// tabs inside a tab, which hid two of them behind a guess.
+// What stands on the wallpaper: the dock on its edge, and the widgets. The bar
+// is next door -- it covers the desktop rather than standing on it.
 TabPage {
-    BarShapePage {}
-    BarLayoutPage {}
-    BarDesktopPage {}
+    DesktopSurfacesPage {}
 }
