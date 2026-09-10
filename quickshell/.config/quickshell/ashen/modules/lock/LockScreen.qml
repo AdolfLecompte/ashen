@@ -256,6 +256,10 @@ Scope {
                     source: surface.wallpaper !== "" ? ("file://" + surface.wallpaper) : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
+                    // At the screen's width, not the file's: a wallpaper larger
+                    // than the display was being decoded in full to be scaled
+                    // back down for it.
+                    sourceSize.width: wallImg.width
                     // frame path is fixed but its contents change per video;
                     // no cache or the lock shows the previous wallpaper's frame
                     cache: false

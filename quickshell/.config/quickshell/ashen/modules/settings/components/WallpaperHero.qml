@@ -34,6 +34,12 @@ Rectangle {
         source: Services.Wallpaper.stillUrl
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
+        // Decoded at the width it is DRAWN at, not the width it was shot at: a
+        // 4K wallpaper is 8 megapixels held in memory to fill a strip 220 px
+        // tall. Width and not height because the crop here is width-driven --
+        // the box is far wider than it is tall, so the width is what has to
+        // cover and the height spills over on its own.
+        sourceSize.width: shot.width
         visible: status === Image.Ready
         // The path is stable while the file behind it changes.
         cache: false

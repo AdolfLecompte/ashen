@@ -56,6 +56,9 @@ Rectangle {
                 source: card.source
                 fillMode: card.previewFill
                 asynchronous: true
+                // See WallpaperHero: a thumbnail 80 px tall has no use for the
+                // other seven and a half megapixels.
+                sourceSize.width: previewImg.width
                 visible: status === Image.Ready
                 // paths are stable while the file behind them changes
                 cache: false
