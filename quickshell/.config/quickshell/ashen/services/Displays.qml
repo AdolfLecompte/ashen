@@ -14,9 +14,14 @@ import "root:/services" as Services
 Singleton {
     id: root
 
-    // ── What Hyprland says is out there ──────────────────────────────────
-    // Every monitor, DISABLED ONES INCLUDED -- `hyprctl -j monitors` alone
-    // hides them, and those are exactly the ones you need to turn back on.
+    // ── What Hyprland says is out there ────────────────────
+    // `hyprctl monitors` lists what is lit right now; `all` adds the ones that
+    // are off, which are exactly the ones you need to turn back on. But `all`
+    // also keeps a cable that was pulled -- that is the phantom screen that
+    // stayed in the grid after the HDMI came out. So both lists are read in ONE
+    // command (two processes race, and a late live list would blank the grid)
+    // and a monitor only survives if it is lit, or if the record says WE are
+    // the ones holding it off.
     property var monitors: []
     property bool probed: false
 
@@ -25,11 +30,19 @@ Singleton {
     Process {
         id: probe
         running: true
-        command: ["hyprctl", "-j", "monitors", "all"]
+        command: ["sh", "-c",
+                  'printf \'{"all":\'; hyprctl -j monitors all; ' +
+                  'printf \',"live":\'; hyprctl -j monitors; printf "}"']
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.monitors = JSON.parse(text)
+                    const j = JSON.parse(text)
+                    const lit = {}
+                    for (const m of j.live) lit[root.keyOf(m)] = true
+                    root.monitors = j.all.filter(function (m) {
+                        const k = root.keyOf(m)
+                        return lit[k] === true || root.record(k).disabled === true
+                    })
                     root.probed = true
                 } catch (e) {
                     // A half-written socket read is not worth clearing the list
