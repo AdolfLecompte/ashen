@@ -151,7 +151,11 @@ Singleton {
             root.recordingElapsed = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s)
         }
     }
-    property bool keepAwake: false
+    // "off" | "locks" | "full" -- see Prefs.keepAwakeMode. The bool below is
+    // kept because plenty of things only ever asked "is it on at all", and a
+    // rename across all of them buys nothing.
+    property string keepAwakeMode: "off"
+    readonly property bool keepAwake: root.keepAwakeMode !== "off"
 
     // The pointer is on the dock's edge, or on the dock itself. Two surfaces
     // report into one flag: the sliver cannot see the dock's own hover and the
@@ -195,7 +199,7 @@ Singleton {
     function restoreQuickToggles() {
         if (root.prefsRestored || !Prefs.loaded) return
         root.doNotDisturb = Prefs.doNotDisturb
-        root.keepAwake = Prefs.keepAwake
+        root.keepAwakeMode = Prefs.keepAwakeMode
         // Set last: the change handlers below key on it to tell a restore from
         // a user flip, and a restore must not write back over what it just read.
         root.prefsRestored = true
@@ -210,7 +214,7 @@ Singleton {
     // enough: Idle watches Prefs.keepAwake and rewrites its config from there.
     // The daemon is never killed — it also locks the session before a suspend,
     // and that must survive Keep Awake.
-    onKeepAwakeChanged: if (root.prefsRestored) Prefs.keepAwake = root.keepAwake
+    onKeepAwakeModeChanged: if (root.prefsRestored) Prefs.keepAwakeMode = root.keepAwakeMode
 
     property bool settingsVisible: false
     property string settingsTab: "system"

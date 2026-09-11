@@ -138,10 +138,15 @@
     "listening again",
     "back on the air"
   ],
-  "awake.on": [
+  "awake.full": [
     "no naps",
     "eyes open",
     "it will wait up for you"
+  ],
+  "awake.locks": [
+    "awake it stays, you it does not wait for",
+    "lit, but not unlocked",
+    "the screen keeps watch, the door does not"
   ],
   "awake.off": [
     "it can sleep again",

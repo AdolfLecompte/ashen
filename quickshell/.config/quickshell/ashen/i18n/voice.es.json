@@ -138,10 +138,15 @@
     "otra vez escuchando",
     "de vuelta al aire"
   ],
-  "awake.on": [
+  "awake.full": [
     "nada de siestas",
     "ojos abiertos",
     "te esperará despierto"
+  ],
+  "awake.locks": [
+    "despierto, pero no abierto",
+    "la pantalla vela, la puerta no",
+    "sigue encendido y sigue cerrado"
   ],
   "awake.off": [
     "ya puede dormir",

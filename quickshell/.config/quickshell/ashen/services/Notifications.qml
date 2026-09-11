@@ -871,14 +871,16 @@ Singleton {
                 { title: Services.AppState.doNotDisturb ? "DO NOT DISTURB ON" : "DO NOT DISTURB OFF" }
             )
         }
-        function onKeepAwakeChanged() {
+        function onKeepAwakeModeChanged() {
             if (!Services.AppState.prefsRestored) return
+            const m = Services.AppState.keepAwakeMode
             root.addSystemToast(
-                Services.Voice.pick(Services.AppState.keepAwake ? "awake.on" : "awake.off"),
-                "",
+                Services.Voice.pick("awake." + m),
+                "\uefef",
                 false,
                 "keepawake",
-                { title: Services.AppState.keepAwake ? "KEEP AWAKE ON" : "KEEP AWAKE OFF" }
+                { title: m === "off" ? "KEEP AWAKE OFF"
+                       : m === "locks" ? "KEEP AWAKE · STILL LOCKS" : "KEEP AWAKE ON" }
             )
         }
         function onRecordingChanged() {

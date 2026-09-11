@@ -138,10 +138,15 @@
     "höre wieder zu",
     "zurück auf Sendung"
   ],
-  "awake.on": [
+  "awake.full": [
     "kein Nickerchen",
     "Augen auf",
     "es bleibt für dich wach"
+  ],
+  "awake.locks": [
+    "wach, aber nicht offen",
+    "der Bildschirm wacht, die Tür nicht",
+    "hell und trotzdem verschlossen"
   ],
   "awake.off": [
     "darf wieder schlafen",

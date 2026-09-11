@@ -172,12 +172,20 @@ Section {
                 spacing: 2
                 Text { text: Services.I18n.t("settings.system.keepAwake"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
             }
-            Item { Layout.fillWidth: true }
-            Toggle {
-                checked: Services.AppState.keepAwake
-                // AppState drives hypridle itself, so every flip agrees
-                onToggled: Services.AppState.keepAwake = !Services.AppState.keepAwake
-            }
+        }
+
+        // Three answers, so a Segmented rather than a switch -- the same control
+        // the power profiles above use. No `available:` here: all three always
+        // are.
+        Segmented {
+            options: [
+                { id: "off",   label: Services.I18n.t("settings.system.awakeOff") },
+                { id: "locks", label: Services.I18n.t("settings.system.awakeLocks") },
+                { id: "full",  label: Services.I18n.t("settings.system.awakeFull") }
+            ]
+            current: Services.AppState.keepAwakeMode
+            // AppState drives hypridle itself, so every route agrees.
+            onPicked: id => Services.AppState.keepAwakeMode = id
         }
 
     }

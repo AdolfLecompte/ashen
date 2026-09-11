@@ -82,7 +82,11 @@ Singleton {
     // live value every consumer reads; these two are only the seed it restores
     // from and writes back to.
     property bool doNotDisturb: false
-    property bool keepAwake: false
+    // Three answers, not two. `off` is the machine deciding; `locks` keeps the
+    // screen alight but still locks the session, which is the one you want when
+    // something is downloading and you are not in the room; `full` is nothing
+    // happens at all, for a film or a presentation.
+    property string keepAwakeMode: "off"
 
     // LEGACY, read once at load to seed the first arrangement and never written
     // again: being somewhere on the bar IS being visible now.
@@ -417,7 +421,7 @@ Singleton {
     readonly property var keys: [
         "clockSeconds", "clock24h", "tempUnit", "weatherLoc", "weatherLocs",
         "keyboardLayout", "useGradients", "panelStyle", "themeMode",
-        "language", "doNotDisturb", "keepAwake", "notifySound",
+        "language", "doNotDisturb", "keepAwakeMode", "notifySound",
         "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
         "toastSeconds", "maxToasts", "hiddenPills", "barLayout", "barContent",
         "barOutline", "panelOutline", "widgetOutline", "dockPins", "dockEdge",
@@ -477,6 +481,9 @@ Singleton {
         // is not in the manifest, so the next save is the last time it exists.
         if (obj.workspaceStyle === undefined && obj.workspaceIcons !== undefined)
             root.workspaceStyle = obj.workspaceIcons ? "icons" : "numbers"
+        // Keep Awake was a bool until 3.1: on meant nothing may happen at all.
+        if (obj.keepAwakeMode === undefined && obj.keepAwake !== undefined)
+            root.keepAwakeMode = obj.keepAwake ? "full" : "off"
         return true
     }
 

@@ -25,9 +25,16 @@ Singleton {
         return block + "}\n\n"
     }
 
-    // Keep Awake. It only drops the listeners: the daemon stays up so its sleep
-    // inhibitor — and with it the lock before suspend — keeps working.
-    readonly property bool inhibited: Prefs.keepAwake
+    // Keep Awake, in three answers. The daemon stays up whatever the answer is:
+    // its sleep inhibitor -- and with it the lock that runs before a suspend --
+    // has to keep working even when nothing else does.
+    //   off    every listener stands
+    //   locks  the screen stays alight and the machine stays awake, but the
+    //          session still locks: for something running while you are away
+    //   full   nothing happens at all
+    readonly property string mode: Prefs.keepAwakeMode
+    readonly property bool wantsLock: root.mode !== "full"
+    readonly property bool wantsBlank: root.mode === "off"
 
     function build() {
         // `general` is never dropped: it carries the lock that runs before the
@@ -41,13 +48,14 @@ Singleton {
             + "    before_sleep_cmd = qs ipc -c ashen call lockscreen lock && sleep 1\n"
             + "    after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({ state = \"on\" })'\n"
             + "}\n\n"
-        if (root.inhibited) return conf
         return conf
-            + root.listener(root.lockSecs, "qs ipc -c ashen call lockscreen lock", "")
-            + root.listener(root.screenOffSecs,
+            + (root.wantsLock
+               ? root.listener(root.lockSecs, "qs ipc -c ashen call lockscreen lock", "") : "")
+            + (root.wantsBlank
+               ? root.listener(root.screenOffSecs,
                           "hyprctl dispatch 'hl.dsp.dpms({ state = \"off\" })'",
                           "hyprctl dispatch 'hl.dsp.dpms({ state = \"on\" })'")
-            + root.listener(root.suspendSecs, "systemctl suspend", "")
+                 + root.listener(root.suspendSecs, "systemctl suspend", "") : "")
     }
 
     // The config travels as an argv entry, never through the shell's parser,
@@ -79,5 +87,5 @@ Singleton {
     onScreenOffSecsChanged: if (root.ready) root.write(true)
     onSuspendSecsChanged: if (root.ready) root.write(true)
     // Keep Awake flipped: rewrite with or without listeners and restart.
-    onInhibitedChanged: if (root.ready) root.write(true)
+    onModeChanged: if (root.ready) root.write(true)
 }
