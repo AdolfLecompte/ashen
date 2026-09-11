@@ -11,11 +11,53 @@ import "root:/services" as Services
 // Monitors that have no place yet, and mirrors, wait in the tray underneath:
 // a mirrored output has no geometry of its own, so it has no business on a
 // board that is only about position.
-Item {
+FocusScope {
     id: grid
 
     property string selected: ""
     signal picked(string key)
+
+    // ── Keyboard ─────────────────────────────────────────────────────────
+    // The board was a drag target and nothing else, which made arranging
+    // monitors the one thing in Settings you could not do without a mouse.
+    //
+    // Arrows walk a ring around the nine cells. Enter picks up whatever is
+    // under it -- the same thing a tap does. Shift+arrows carry the picked one
+    // to the next cell, and because moveToCell SWAPS, carrying it onto an
+    // occupied cell trades the two rather than refusing.
+    //
+    // Focus is taken on a click and by tabbing in, never claimed outright:
+    // Settings is full of text fields, and a grid that grabs arrow keys the
+    // moment it is on screen eats their cursor.
+    property int cursor: 0
+    activeFocusOnTab: true
+
+    function step(d) {
+        const n = Math.max(0, Math.min(8, grid.cursor + d))
+        // Left from the left edge, or right from the right edge, is nothing.
+        if (d === -1 && grid.cursor % 3 === 0) return
+        if (d === 1 && grid.cursor % 3 === 2) return
+        grid.cursor = n
+    }
+    function carry(d) {
+        if (grid.selected === "") return
+        const from = grid.cursor
+        grid.step(d)
+        if (grid.cursor === from) return
+        Services.Displays.moveToCell(grid.selected, grid.cursor)
+    }
+
+    Keys.onLeftPressed: event => event.modifiers & Qt.ShiftModifier ? grid.carry(-1) : grid.step(-1)
+    Keys.onRightPressed: event => event.modifiers & Qt.ShiftModifier ? grid.carry(1) : grid.step(1)
+    Keys.onUpPressed: event => event.modifiers & Qt.ShiftModifier ? grid.carry(-3) : grid.step(-3)
+    Keys.onDownPressed: event => event.modifiers & Qt.ShiftModifier ? grid.carry(3) : grid.step(3)
+    Keys.onReturnPressed: grid.pickHere()
+    Keys.onSpacePressed: grid.pickHere()
+
+    function pickHere() {
+        const k = grid.placed[grid.cursor]
+        if (k !== undefined) { grid.selected = k; grid.picked(k) }
+    }
 
     // 16:9, so a cell reads as a screen rather than a button.
     readonly property int cellW: 132
@@ -89,7 +131,13 @@ Item {
                 // drop target is a state, not a hover, and the hover language is
                 // reserved for the pointer resting on a thing you can press.
                 border.width: 1
+                // Three things this edge can say, and only one at a time: a drop
+                // is landing, the keyboard is standing here, or this is the
+                // middle. The ring only shows while the board has the focus --
+                // a cursor on a thing that is not listening is a lie.
+                readonly property bool atCursor: grid.activeFocus && grid.cursor === cell.index
                 border.color: drop.containsDrag ? Services.Colors.ghost
+                    : cell.atCursor ? Services.Colors.ghost
                     : (cell.isCentre ? Services.Colors.fillRest : Services.Colors.fillLine)
                 Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
@@ -118,7 +166,14 @@ Item {
                     monKey: cell.key
                     anchors.fill: parent
                     anchors.margins: 4
-                    onTapped: grid.picked(cell.key)
+                    // A tap plants the cursor where you tapped and hands the
+                    // board the focus, so the keyboard carries on from the
+                    // monitor you just pointed at instead of from cell zero.
+                    onTapped: {
+                        grid.cursor = cell.index
+                        grid.forceActiveFocus()
+                        grid.picked(cell.key)
+                    }
                 }
             }
         }
@@ -152,7 +207,10 @@ Item {
                     MonitorCard {
                         anchors.fill: parent
                         monKey: parent.modelData
-                        onTapped: grid.picked(parent.modelData)
+                        onTapped: {
+                            grid.forceActiveFocus()
+                            grid.picked(parent.modelData)
+                        }
                     }
                 }
             }
