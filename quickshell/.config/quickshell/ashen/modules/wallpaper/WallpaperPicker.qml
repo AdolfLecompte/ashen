@@ -35,6 +35,25 @@ Scope {
         // so the picker can open centred on it instead of at the far left.
         property string currentWallpaperPath: ""
 
+        // Which screen the next pick lands on, by output NAME because that is
+        // what awww and mpvpaper take. Empty means all of them, and that is
+        // where every opening starts.
+        property string targetOutput: ""
+        // The same screen as the layout knows it: a description, because a port
+        // name moves between reboots. See Displays.keyFor.
+        readonly property string targetKey: win.targetOutput === ""
+            ? "" : Services.Displays.keyFor(win.targetOutput)
+        // What the chosen screen is wearing right now.
+        function targetWallpaper() {
+            return win.targetOutput === "" ? win.currentWallpaperPath
+                                           : Services.Wallpaper.forKey(win.targetKey)
+        }
+        // Point the carousel at the newly chosen screen's own wallpaper.
+        function retarget(name) {
+            win.targetOutput = name
+            win.positionAtCurrent()
+        }
+
         // "static" = png/jpg/jpeg/webp (awww) | "animated" = gif (awww) + mp4/webm/mkv/mov (mpvpaper)
         property string category: "static"
 
@@ -66,9 +85,21 @@ Scope {
         property string shownCategory: "static"
         // True while the picker places the category itself.
         property bool settling: false
-        readonly property var wallpapers: allWallpapers.filter(p => shownCategory === "animated" ? isAnimated(p) : !isAnimated(p))
-        readonly property int animatedCount: allWallpapers.filter(p => isAnimated(p)).length
-        readonly property int staticCount: allWallpapers.length - animatedCount
+        // What the search box holds. The picker opens with it empty every time:
+        // a filter you cannot see the reason for is a picker that lost half your
+        // wallpapers.
+        property string query: ""
+        function matches(p) {
+            return win.query === ""
+                || p.split("/").pop().toLowerCase().indexOf(win.query.toLowerCase()) >= 0
+        }
+
+        readonly property var wallpapers: allWallpapers.filter(p =>
+            (shownCategory === "animated" ? isAnimated(p) : !isAnimated(p)) && win.matches(p))
+        // Counted through the search too, or the tab promises wallpapers the
+        // carousel is no longer willing to show.
+        readonly property int animatedCount: allWallpapers.filter(p => isAnimated(p) && win.matches(p)).length
+        readonly property int staticCount: allWallpapers.filter(p => !isAnimated(p) && win.matches(p)).length
 
         property int currentIndex: 0
         // Portrait cards: tall enough that the picture inside can slide
@@ -83,8 +114,39 @@ Scope {
         // hole out at the sides and a tight one in the middle.
         readonly property real cardGap: 16
         readonly property real cardNarrow: 258
-        readonly property real cardWide: 370
         readonly property real cardW: cardNarrow + cardGap
+
+        // The card you are choosing is as wide as its picture is: a frame cut
+        // to the image's own shape crops nothing, so the wallpaper is shown
+        // WHOLE instead of through a portrait slot. The neighbours stay narrow
+        // strips -- that contrast is what says which one you are on.
+        //
+        // The shape is read off the thumbnails as they decode (they are scaled
+        // preserving aspect, so a thumb's shape IS the original's) and kept
+        // here, because a card cannot ask another card how wide to stand.
+        property var ratios: ({})
+        function noteRatio(path, r) {
+            if (!path || !(r > 0.05) || win.ratios[path] === r) return
+            const m = win.ratios
+            m[path] = r
+            win.ratios = m
+        }
+        // 16:9 until the picture says otherwise: the overwhelming majority are,
+        // so the guess is usually already right and nothing moves.
+        function ratioOf(i) {
+            const p = win.wallpapers.length > i ? win.wallpapers[i] : ""
+            return (p && win.ratios[p]) ? win.ratios[p] : 16 / 9
+        }
+        // Every card has to read the SAME number or the gaps stop being equal,
+        // so this is the front card's width and nobody computes their own.
+        // Capped: an ultrawide wallpaper would otherwise push its neighbours
+        // clean off the screen.
+        readonly property real cardWideRaw:
+            Math.min(win.cardH * win.ratioOf(win.currentIndex), Math.max(win.cardNarrow, win.width - 2 * win.cardW))
+        property real cardWide: win.cardNarrow
+        Behavior on cardWide { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+        onCardWideRawChanged: win.cardWide = win.cardWideRaw
+        Component.onCompleted: win.cardWide = win.cardWideRaw
         readonly property real bandHeight: cardH + 24
 
         // The carousel is inside the card's body, which is rebuilt on every
@@ -102,8 +164,20 @@ Scope {
             win.listView.positionViewAtBeginning()
         }
 
+        // The list under the carousel just changed length, so whatever it was
+        // centred on is not there any more. Start over at the front.
+        onQueryChanged: {
+            win.currentIndex = 0
+            win.pendingIndex = 0
+            settleTimer.tries = 0
+            settleTimer.ticks = 0
+            win.settleAt()
+        }
+
         onShownChanged: {
             if (shown) {
+                win.query = ""
+                win.targetOutput = ""
                 // Re-read the on-screen wallpaper first; its handler kicks off
                 // the scan, and positionAtCurrent() runs once the list is in.
                 stateReader.running = true
@@ -116,7 +190,7 @@ Scope {
         // Centre the carousel on the wallpaper currently on screen. Switches the
         // static/animated tab to match so the entry is in the filtered list.
         function positionAtCurrent() {
-            let cur = win.currentWallpaperPath
+            let cur = win.targetWallpaper()
             if (cur && cur.length > 0) {
                 // No slide on the way in: landing on the category of the
                 // wallpaper you already have is not a change you asked for,
@@ -221,10 +295,22 @@ Scope {
         // all of that lives in the script, this just hands it a path
         function applyWallpaper(path) {
             if (!path) return
+            // Which screen the colours come from is the shell's call, not the
+            // script's: the layout lives here. Everything, or the primary on
+            // its own, repaints the shell; a secondary screen changes only its
+            // own picture.
+            const args = [Services.Paths.script("ashen-wallpaper.sh"), path]
+            const leads = win.targetOutput === "" || win.targetKey === Services.Displays.primaryKey
+            if (win.targetOutput !== "") {
+                args.push("--output", win.targetOutput)
+                if (leads) args.push("--palette")
+            }
             // The look this wallpaper remembers goes on FIRST: the script runs
-            // matugen itself, and it reads the mode and the style off disk.
-            Services.Looks.prepare(path)
-            Quickshell.execDetached([Services.Paths.script("ashen-wallpaper.sh"), path])
+            // matugen itself, and it reads the mode and the style off disk. Only
+            // for the screen the palette follows -- a profile pulled in by a
+            // secondary screen would repaint the whole shell.
+            if (leads) Services.Looks.prepare(path)
+            Quickshell.execDetached(args)
             // The picker goes the instant you choose, and the script takes
             // seconds to repaint everything: without a word the shell just
             // changes colour under you.
@@ -281,6 +367,24 @@ Scope {
             anchors.fill: parent
             focus: true
 
+            // The search box has no TextInput of its own on purpose. The card's
+            // body is rebuilt on every open, so a field in there would have to
+            // be handed the focus after it exists, and while it held the focus
+            // this scope's arrows -- which ARE the carousel -- would be dead.
+            // Routing the printable keys here instead keeps the picker's whole
+            // keyboard in one place. Runs before the named handlers below, so
+            // it must only claim what they do not: Return, Escape and the
+            // arrows all carry text under 0x20 or none at all.
+            Keys.onPressed: event => {
+                if (event.key === Qt.Key_Backspace) {
+                    win.query = win.query.slice(0, -1)
+                    event.accepted = true
+                } else if (event.text.length === 1 && event.text.charCodeAt(0) >= 0x20) {
+                    win.query += event.text
+                    event.accepted = true
+                }
+            }
+
             // Wrap at both ends, then let select() do the moving.
             Keys.onLeftPressed: win.select(win.currentIndex > 0 ? win.currentIndex - 1
                                                                 : win.wallpapers.length - 1)
@@ -292,7 +396,12 @@ Scope {
             Keys.onReturnPressed: {
                 if (win.wallpapers.length > 0) win.applyWallpaper(win.wallpapers[win.currentIndex])
             }
-            Keys.onEscapePressed: Services.AppState.wallpaperVisible = false
+            // One step back at a time: a search you typed is worth more than
+            // the panel being open, so Escape drops it first.
+            Keys.onEscapePressed: {
+                if (win.query !== "") win.query = ""
+                else Services.AppState.wallpaperVisible = false
+            }
         }
 
 
@@ -366,8 +475,8 @@ Scope {
                         id: tabsWrap
                         anchors.top: parent.top
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: container.width
-                        height: container.height
+                        width: toolbar.width
+                        height: toolbar.height
                         z: 30
                         property Item activeTab: null
 
@@ -375,11 +484,76 @@ Scope {
                         opacity: amt
                         transform: Translate { y: (1 - tabsWrap.amt) * -14 }
 
+                        // Search, categories, screen. Three pills on one line,
+                        // each on its own plate so every label stays readable
+                        // over whatever wallpaper is behind it.
+                        Row {
+                            id: toolbar
+                            anchors.centerIn: parent
+                            spacing: 8
+
+                        // Filters by file name. It is a readout, not a field:
+                        // the typing arrives from the window's key handler, see
+                        // the comment on Keys.onPressed there.
+                        Rectangle {
+                            id: searchPill
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 190
+                            height: 34
+                            radius: 12
+                            color: Services.Colors.surfacePill
+
+                            Row {
+                                anchors.left: parent.left
+                                anchors.leftMargin: 11
+                                anchors.right: parent.right
+                                anchors.rightMargin: 11
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 7
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "\ue8b6"
+                                    font.family: "Material Symbols Rounded"
+                                    font.pixelSize: 15
+                                    color: win.query === "" ? Services.Colors.mist : Services.Colors.accentText
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: searchPill.width - 40
+                                    elide: Text.ElideLeft
+                                    text: win.query === "" ? Services.I18n.t("wall.search") : win.query
+                                    color: win.query === "" ? Services.Colors.ash : Services.Colors.snow
+                                    font.pixelSize: 11
+                                    font.family: "JetBrainsMono NF"
+                                }
+                            }
+
+                            // Nothing to click: the picker always has the
+                            // keyboard, so the box is always the one listening.
+                            Rectangle {
+                                anchors.right: parent.right
+                                anchors.rightMargin: 11
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 1.5
+                                height: 14
+                                radius: 1
+                                color: Services.Colors.ghost
+                                visible: win.query !== ""
+                                SequentialAnimation on opacity {
+                                    running: parent.visible && Services.Sizes.motion
+                                    loops: Animation.Infinite
+                                    NumberAnimation { to: 0.15; duration: 520 }
+                                    NumberAnimation { to: 1.0;  duration: 520 }
+                                }
+                            }
+                        }
+
                         // One container pill holding both tabs, so the labels always sit on
                         // a solid backdrop (readable over any wallpaper) -- workspace style.
                         Rectangle {
                             id: container
-                            anchors.centerIn: parent
+                            anchors.verticalCenter: parent.verticalCenter
                             width: tabs.width + 8
                             height: 34
                             radius: 12
@@ -466,6 +640,29 @@ Scope {
                             }
                         }
                     }
+                    }
+
+                        // Which screen the next pick lands on. It only exists
+                        // with a second monitor plugged in: on one screen there
+                        // is nothing to choose and the picker is the old one.
+                        Widgets.DevicePicker {
+                            id: screenPick
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: Services.Displays.monitors.length > 1
+                            width: visible ? 200 : 0
+                            overlay: true
+                            glyph: "\ue30c"
+                            current: win.targetOutput
+                            devices: {
+                                const rows = [{ name: "", desc: Services.I18n.t("wall.allScreens") }]
+                                for (const m of Services.Displays.monitors)
+                                    rows.push({ name: m.name,
+                                                desc: m.description && m.description !== ""
+                                                      ? m.name + " · " + m.description : m.name })
+                                return rows
+                            }
+                            onPicked: name => win.retarget(name)
+                        }
                     }
                     }
 
@@ -659,6 +856,12 @@ Scope {
                                                 source = win.originalFor(img.path)
                                             }
                                             onPathChanged: fellBack = false
+                                            // implicitSize is the decoded
+                                            // thumb's, and the thumbs keep the
+                                            // original's aspect.
+                                            onImplicitHeightChanged:
+                                                if (implicitHeight > 0)
+                                                    win.noteRatio(img.path, implicitWidth / implicitHeight)
 
                                             // Width only: pinning both fits the thumb
                                             // inside that box and threw away the
@@ -710,22 +913,27 @@ Scope {
                                         visible: img.status !== Image.Ready
                                     }
 
-                                    // Name of the file, only legible on the card
-                                    // you are actually looking at.
+                                    // Name of the file, in the corner, only
+                                    // legible on the card you are looking at.
+                                    // It sits ON the picture now that the card
+                                    // shows the whole of it, so it stays as
+                                    // small as a label can be and gets out of
+                                    // the way of the image.
                                     Rectangle {
-                                        anchors.left: parent.left
                                         anchors.right: parent.right
-                                        anchors.bottom: parent.bottom
+                                        anchors.top: parent.top
                                         anchors.margins: 10
-                                        height: 26
-                                        radius: 8
+                                        height: 22
+                                        width: Math.min(nameText.implicitWidth + 18, parent.width - 20)
+                                        radius: 7
                                         color: Qt.rgba(0, 0, 0, 0.55)
                                         opacity: slot.prox
                                         visible: opacity > 0.02
 
                                         Text {
+                                            id: nameText
                                             anchors.centerIn: parent
-                                            width: parent.width - 20
+                                            width: parent.width - 14
                                             horizontalAlignment: Text.AlignHCenter
                                             elide: Text.ElideMiddle
                                             text: {
@@ -735,15 +943,17 @@ Scope {
                                                 return dot > 0 ? n.substring(0, dot) : n
                                             }
                                             color: Services.Colors.snow
-                                            font.pixelSize: 11
+                                            font.pixelSize: 10
                                             font.family: "JetBrainsMono NF"
                                         }
                                     }
 
-                                    // Marks what the card actually is, since a video shows a still frame
+                                    // Marks what the card actually is, since a
+                                    // video shows a still frame. Moved aside to
+                                    // leave the right-hand corner to the name.
                                     Rectangle {
                                         visible: win.wallpapers.length > index && win.isAnimated(win.wallpapers[index])
-                                        anchors.right: parent.right
+                                        anchors.left: parent.left
                                         anchors.top: parent.top
                                         anchors.margins: 10
                                         height: 20

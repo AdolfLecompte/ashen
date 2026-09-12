@@ -33,7 +33,7 @@ Singleton {
     Timer {
         id: settle
         interval: 400
-        onTriggered: wallFile.reload()
+        onTriggered: { wallFile.reload(); outFile.reload() }
     }
 
     FileView {
@@ -46,5 +46,33 @@ Singleton {
             root.version = Date.now()
         }
         onLoadFailed: root.path = ""
+    }
+
+    // What each SCREEN is wearing, one line of "<key>TAB<path>" per monitor,
+    // written by the same script. The key is the monitor's description, the
+    // same handle Displays.keyOf() hands out, because a port name moves
+    // between reboots.
+    property var perOutput: ({})
+
+    // The screen's own wallpaper, falling back to the shared one -- which is
+    // what every screen wears until somebody gives one its own.
+    function forKey(key) {
+        return (key !== "" && root.perOutput[key]) ? root.perOutput[key] : root.path
+    }
+
+    FileView {
+        id: outFile
+        path: root.home + "/.cache/ashen_wallpapers.txt"
+        watchChanges: true
+        onFileChanged: { reload(); settle.restart() }
+        onLoaded: {
+            const map = {}
+            for (const line of text().split("\n")) {
+                const tab = line.indexOf("\t")
+                if (tab > 0) map[line.substring(0, tab)] = line.substring(tab + 1)
+            }
+            root.perOutput = map
+        }
+        onLoadFailed: root.perOutput = ({})
     }
 }

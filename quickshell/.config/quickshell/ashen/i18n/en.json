@@ -296,6 +296,8 @@
   "util.power": "Power",
   "util.record": "Record",
   "wall.set": "WALLPAPER SET",
+  "wall.search": "Search…",
+  "wall.allScreens": "All screens",
   "wall.static": "Static",
   "wall.animated": "Animated",
   "wall.none": "No wallpapers in {d}",

@@ -296,6 +296,8 @@
   "util.power": "Energía",
   "util.record": "Grabar",
   "wall.set": "FONDO PUESTO",
+  "wall.search": "Buscar…",
+  "wall.allScreens": "Todas las pantallas",
   "wall.static": "Estáticos",
   "wall.animated": "Animados",
   "wall.none": "No hay fondos en {d}",

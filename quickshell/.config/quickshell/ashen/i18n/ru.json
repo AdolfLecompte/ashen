@@ -296,6 +296,8 @@
   "util.power": "Питание",
   "util.record": "Запись",
   "wall.set": "ОБОИ УСТАНОВЛЕНЫ",
+  "wall.search": "Поиск…",
+  "wall.allScreens": "Все экраны",
   "wall.static": "Статичные",
   "wall.animated": "Анимированные",
   "wall.none": "В {d} нет обоев",

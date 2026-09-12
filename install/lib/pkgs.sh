@@ -22,7 +22,7 @@ PKGS_OFFICIAL=(
     #   curl            <- cover art and lyrics (services/MediaArt, services/Lyrics)
     #   imagemagick     <- wallpaper thumbnails (scripts/ashen-wallpaper-thumbs.sh)
     #   pacman-contrib  <- `checkupdates` for the updates readout (services/Updates)
-    #   python          <- parses `hyprctl monitors -j` in scripts/ashen-wallpaper.sh
+    #   python          <- the cover-art picker, scripts/ashen-cover-pick.py
     #   gtk3            <- `gtk-launch`, how a notification action opens its app
     #   qt6ct           <- conf/env.lua points QT_QPA_PLATFORMTHEME at it and
     #                      ashen-accent.sh writes its palette

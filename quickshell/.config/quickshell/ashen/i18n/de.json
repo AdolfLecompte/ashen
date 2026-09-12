@@ -296,6 +296,8 @@
   "util.power": "Energie",
   "util.record": "Aufnehmen",
   "wall.set": "HINTERGRUND GESETZT",
+  "wall.search": "Suchen…",
+  "wall.allScreens": "Alle Bildschirme",
   "wall.static": "Statisch",
   "wall.animated": "Animiert",
   "wall.none": "Keine Hintergründe in {d}",

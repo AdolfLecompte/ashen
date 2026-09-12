@@ -20,7 +20,7 @@ depends=(
     hypridle mpvpaper ffmpeg wlsunset
     fastfetch cava xdg-utils libnotify
     # curl: cover art and lyrics. imagemagick: wallpaper thumbnails.
-    # python: parses `hyprctl monitors -j` in ashen-wallpaper.sh.
+    # python: the cover-art picker, ashen-cover-pick.py.
     # gtk3: `gtk-launch`, how a notification action opens its app.
     curl imagemagick python gtk3
     ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
