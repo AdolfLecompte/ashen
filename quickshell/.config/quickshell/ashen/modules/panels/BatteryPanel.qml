@@ -149,7 +149,9 @@ PanelWindow {
         pillGlyph: Services.AppState.pillGlyph("battery")
         pillLabel: Services.AppState.pillLabel("battery")
         openW: 440
-        openH: 396
+        // 396 was the card before game mode: its heading and chip add a
+        // 12 gap, a 13 line, another 12 and 52 of chip.
+        openH: 396 + 89
         cardRadius: 18
 
         body: Component {
@@ -418,6 +420,57 @@ PanelWindow {
                             }
                         }
                     }
+                    }
+
+                    // ── Game mode ────────────────────────────────────────
+                    // Its own heading, and not a fourth chip in the row above:
+                    // it is not a power profile, it touches the compositor and
+                    // not the governor, and sitting in that row would say it
+                    // was one of three you pick between.
+                    Text {
+                        text: Services.I18n.t("battery.game")
+                        color: Services.Colors.ash
+                        font.pixelSize: 10
+                        font.family: "JetBrainsMono NF"
+                        font.letterSpacing: 1
+                    }
+
+                    Rectangle {
+                        id: gameChip
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 52
+                        radius: 12
+                        // On, it wears the accent the way the chosen profile
+                        // above does. Off it rests on a plate, unlike the
+                        // profiles: those are three faces in a row and read as
+                        // a choice on their own, while one glyph floating in an
+                        // empty band does not read as a button at all. Hover
+                        // only brightens and grows it -- it never adds a fill.
+                        color: Services.Game.on ? Services.Colors.ghost : Services.Colors.fillRest
+                        gradient: Services.Prefs.useGradients && Services.Game.on
+                                  ? Services.Colors.accentGradient : null
+                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        scale: gameHover.containsMouse ? 1.02 : 1.0
+                        Behavior on scale { NumberAnimation { duration: Services.Sizes.msMicro } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "\uf135"
+                            font.family: "Material Symbols Rounded"
+                            font.pixelSize: 24
+                            color: Services.Game.on ? Services.Colors.accentText
+                                 : gameHover.containsMouse ? Services.Colors.snow
+                                 : Services.Colors.mist
+                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        }
+
+                        MouseArea {
+                            id: gameHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Services.Game.toggle()
+                        }
                     }
                 }
             }

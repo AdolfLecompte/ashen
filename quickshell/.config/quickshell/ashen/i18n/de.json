@@ -236,6 +236,7 @@
   "battery.drawing": "VERBRAUCH",
   "battery.goingIn": "ZUFLUSS",
   "battery.toppedUp": "VOLL",
+  "battery.game": "SPIELMODUS",
   "battery.profile": "ENERGIEPROFIL",
   "bt.off": "Bluetooth ist aus",
   "bt.nothingRange": "Nichts in Reichweite",

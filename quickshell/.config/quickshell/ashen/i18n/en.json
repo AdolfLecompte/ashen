@@ -236,6 +236,7 @@
   "battery.drawing": "DRAWING",
   "battery.goingIn": "GOING IN",
   "battery.toppedUp": "TOPPED UP",
+  "battery.game": "GAME MODE",
   "battery.profile": "POWER PROFILE",
   "bt.off": "Bluetooth is off",
   "bt.nothingRange": "Nothing in range",
