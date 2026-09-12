@@ -113,7 +113,7 @@ Singleton {
     // and nothing else should -- it is not a preference, it is a mode. Distinct
     // from `hidden`, which is about the bar being off screen while it changes
     // edge, not about motion in general.
-    property bool motion: true
+    readonly property bool motion: !Game.on
 
     // The curves, named by what they are for.
     readonly property int easeOut: Easing.OutCubic      // arriving, settling

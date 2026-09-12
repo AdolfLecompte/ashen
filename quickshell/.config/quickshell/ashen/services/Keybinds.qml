@@ -72,7 +72,7 @@ Singleton {
             "clipboard": "Clipboard",
             "process": "Process monitor", "launcher": "Launcher", "lockscreen": "Lock screen",
             "power": "Power menu", "osd": "On-screen display", "media": "Media",
-            "switcher": "Window switcher"
+            "switcher": "Window switcher", "game": "Game mode"
         }
         const label = names[target] !== undefined ? names[target] : target
         if (target === "switcher") {

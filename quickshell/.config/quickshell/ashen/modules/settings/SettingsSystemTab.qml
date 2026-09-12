@@ -190,6 +190,37 @@ Section {
 
     }
 
+    // Not folded into the power card above: this one touches the compositor,
+    // not the CPU governor, and reading them as one thing would suggest game
+    // mode changes your power profile. It does not.
+    Card {
+        title: Services.I18n.t("settings.system.game")
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+            RowGlyph { glyph: "\uf135" }
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                // One line, not a label repeating the card's own title with an
+                // explanation under it. What it does IS the label.
+                Text {
+                    text: Services.I18n.t("settings.system.gameHint")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+            Item { Layout.fillWidth: true }
+            Toggle {
+                checked: Services.Game.on
+                onToggled: Services.Game.toggle()
+            }
+        }
+    }
+
     Card {
         title: Services.I18n.t("settings.system.lockScreen")
 

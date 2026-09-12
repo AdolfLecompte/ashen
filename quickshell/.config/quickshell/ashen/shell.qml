@@ -411,6 +411,13 @@ ShellRoot {
         }
     }
     IpcHandler {
+        target: "game"
+        function on() { Services.Game.enter() }
+        function off() { Services.Game.leave() }
+        function toggle() { Services.Game.toggle() }
+        function status(): string { return Services.Game.on ? "on" : "off" }
+    }
+    IpcHandler {
         target: "wallpaper"
         // Scanning and positioning are driven by the picker's onShownChanged, so
         // both entry points (this keybind and the Settings tab) behave the same.

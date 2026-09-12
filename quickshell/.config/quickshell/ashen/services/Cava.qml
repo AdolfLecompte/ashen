@@ -8,11 +8,13 @@ Singleton {
     property var barValues: []
     property bool isActive: false
 
-    readonly property bool enabled: Prefs.visualizer
+    // Game mode reads through here rather than writing the preference: a crash
+    // mid-game would otherwise leave the visualiser switched off for good.
+    readonly property bool enabled: Prefs.visualizer && !Game.on
 
     // Off, it goes deaf first and dies after, so the wave fades the way it does
     // when the music stops. Killing it outright froze the last frame on screen.
-    property bool procAlive: Prefs.visualizer
+    property bool procAlive: root.enabled
     onEnabledChanged: {
         if (root.enabled) {
             stopSoon.stop()

@@ -190,6 +190,9 @@ Singleton {
         }
     }
     property bool doNotDisturb: false
+    // What the notification gate actually asks. Game mode is quiet without
+    // touching the user's own switch, so there is nothing to put back after.
+    readonly property bool quiet: root.doNotDisturb || Game.on
 
     // ── Quick toggles that outlive a restart ──────────────────────────────
     // The live value stays here (everything reads AppState), Prefs only holds

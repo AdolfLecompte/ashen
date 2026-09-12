@@ -32,7 +32,9 @@ Singleton {
     //   locks  the screen stays alight and the machine stays awake, but the
     //          session still locks: for something running while you are away
     //   full   nothing happens at all
-    readonly property string mode: Prefs.keepAwakeMode
+    // Game mode IS the third state, so it reads as one instead of fighting the
+    // switch in Settings over the same value.
+    readonly property string mode: Game.on ? "full" : Prefs.keepAwakeMode
     readonly property bool wantsLock: root.mode !== "full"
     readonly property bool wantsBlank: root.mode === "off"
 

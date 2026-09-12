@@ -25,6 +25,8 @@ hl.bind(K("clipboard", "SUPER + SHIFT + V"), hl.dsp.exec_cmd("sh -c 'qs ipc -c a
 hl.bind(K("processes", mod .. " + SHIFT + P"), hl.dsp.exec_cmd("qs ipc -c ashen call process toggle"), { locked = true })
 -- Arrange the desktop widgets. Off, the desktop takes no clicks at all.
 hl.bind(K("widgets", mod .. " + SHIFT + D"), hl.dsp.exec_cmd("qs ipc -c ashen call widgets edit"))
+-- Flat compositor, quiet shell. By hand only -- it never turns itself on.
+hl.bind(K("game", mod .. " + SHIFT + G"), hl.dsp.exec_cmd("qs ipc -c ashen call game toggle"))
 
 
 -- Move/resize floating windows with the mouse (SUPER + drag)

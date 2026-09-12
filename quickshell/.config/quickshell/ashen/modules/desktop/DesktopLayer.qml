@@ -51,7 +51,9 @@ PanelWindow {
         return false
     }
 
-    visible: desk.editing || !desk.covered
+    // Game mode takes them down the same way a fullscreen window does: their
+    // canvases are the shell's only permanent painters.
+    visible: desk.editing || (!desk.covered && !Services.Game.on)
     // What the widgets ask before running anything on a clock.
     // Every Item has a `layer` group of its own, and inside a Component that
     // one wins over an outer id -- which is why this window is not called that.
