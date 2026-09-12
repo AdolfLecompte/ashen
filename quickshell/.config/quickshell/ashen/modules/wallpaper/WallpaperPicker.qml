@@ -421,8 +421,8 @@ Scope {
             // sweep the whole screen, and a narrower card just cropped it.
             openW: win.width
             openXOverride: 0
-            // tabs + carousel + dots, and the padding between them
-            openH: 20 + 34 + 16 + win.bandHeight + 14 + 7 + 20
+            // toolbar + carousel + dots, and the padding between them
+            openH: 20 + 46 + 16 + win.bandHeight + 14 + 7 + 20
             cardRadius: 22
             // No plate: the wallpapers ARE the surface here, and a panel
             // behind them only got in the way.
@@ -484,89 +484,108 @@ Scope {
                         opacity: amt
                         transform: Translate { y: (1 - tabsWrap.amt) * -14 }
 
-                        // Search, categories, screen. Three pills on one line,
-                        // each on its own plate so every label stays readable
-                        // over whatever wallpaper is behind it.
-                        Row {
+                        // ONE bar, not a line of thin pills. Three separate
+                        // plates 34 high read as nothing over a photograph:
+                        // this is a panel surface with its own edge, and the
+                        // three jobs inside it are told apart by a hairline
+                        // rather than by a gap.
+                        Rectangle {
                             id: toolbar
                             anchors.centerIn: parent
-                            spacing: 8
+                            width: zones.width
+                            height: 46
+                            radius: 16
+                            color: Services.Colors.surfacePanel
+                            border.width: Services.Colors.panelEdgeW
+                            border.color: Services.Colors.fillOutline
+
+                        Row {
+                            id: zones
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 0
 
                         // Filters by file name. It is a readout, not a field:
                         // the typing arrives from the window's key handler, see
                         // the comment on Keys.onPressed there.
-                        Rectangle {
-                            id: searchPill
+                        Item {
+                            id: searchZone
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 190
-                            height: 34
-                            radius: 12
-                            color: Services.Colors.surfacePill
+                            width: 236
+                            height: toolbar.height
 
                             Row {
                                 anchors.left: parent.left
-                                anchors.leftMargin: 11
-                                anchors.right: parent.right
-                                anchors.rightMargin: 11
+                                anchors.leftMargin: 16
                                 anchors.verticalCenter: parent.verticalCenter
-                                spacing: 7
+                                spacing: 9
 
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: "\ue8b6"
                                     font.family: "Material Symbols Rounded"
-                                    font.pixelSize: 15
-                                    color: win.query === "" ? Services.Colors.mist : Services.Colors.accentText
+                                    font.pixelSize: 17
+                                    // Never accentText here: that colour is for
+                                    // a label sitting ON the accent fill, and on
+                                    // a dark plate it comes out near-black --
+                                    // the icon looked like it had switched off.
+                                    // Not ghost either: that is the accent, and
+                                    // a dark accent would dim it all over again.
+                                    // Typing has to make it BRIGHTER, always.
+                                    color: win.query === "" ? Services.Colors.mist : Services.Colors.snow
                                 }
                                 Text {
+                                    id: queryText
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: searchPill.width - 40
+                                    width: Math.min(implicitWidth, searchZone.width - 60)
                                     elide: Text.ElideLeft
                                     text: win.query === "" ? Services.I18n.t("wall.search") : win.query
                                     color: win.query === "" ? Services.Colors.ash : Services.Colors.snow
-                                    font.pixelSize: 11
+                                    font.pixelSize: 12
                                     font.family: "JetBrainsMono NF"
                                 }
-                            }
-
-                            // Nothing to click: the picker always has the
-                            // keyboard, so the box is always the one listening.
-                            Rectangle {
-                                anchors.right: parent.right
-                                anchors.rightMargin: 11
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: 1.5
-                                height: 14
-                                radius: 1
-                                color: Services.Colors.ghost
-                                visible: win.query !== ""
-                                SequentialAnimation on opacity {
-                                    running: parent.visible && Services.Sizes.motion
-                                    loops: Animation.Infinite
-                                    NumberAnimation { to: 0.15; duration: 520 }
-                                    NumberAnimation { to: 1.0;  duration: 520 }
+                                // Nothing to click: the picker always has the
+                                // keyboard, so this box is always the one
+                                // listening. The caret says so.
+                                Rectangle {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 1.5
+                                    height: 15
+                                    radius: 1
+                                    color: Services.Colors.ghost
+                                    visible: win.query !== ""
+                                    SequentialAnimation on opacity {
+                                        running: parent.visible && Services.Sizes.motion
+                                        loops: Animation.Infinite
+                                        NumberAnimation { to: 0.15; duration: 520 }
+                                        NumberAnimation { to: 1.0;  duration: 520 }
+                                    }
                                 }
                             }
                         }
 
-                        // One container pill holding both tabs, so the labels always sit on
-                        // a solid backdrop (readable over any wallpaper) -- workspace style.
                         Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 1
+                            height: 22
+                            color: Services.Colors.fillLine
+                        }
+
+                        // Both tabs share the bar's plate now, so only the
+                        // sliding indicator paints -- workspace style.
+                        Item {
                             id: container
                             anchors.verticalCenter: parent.verticalCenter
-                            width: tabs.width + 8
-                            height: 34
-                            radius: 12
-                            color: Services.Colors.surfacePill
+                            width: tabs.width + 16
+                            height: toolbar.height
 
                             // Sliding highlight behind the active tab (workspace-style)
                             Rectangle {
                                 visible: tabsWrap.activeTab !== null
-                                x: 4 + (tabsWrap.activeTab ? tabsWrap.activeTab.x : 0)
+                                x: 8 + (tabsWrap.activeTab ? tabsWrap.activeTab.x : 0)
                                 width: tabsWrap.activeTab ? tabsWrap.activeTab.width : 0
-                                height: 26
+                                height: 30
                                 anchors.verticalCenter: parent.verticalCenter
-                                radius: 9
+                                radius: 11
                                 color: Services.Colors.ghost
                                 gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                                 Behavior on x { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
@@ -577,7 +596,7 @@ Scope {
                             id: tabs
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
-                            anchors.leftMargin: 4
+                            anchors.leftMargin: 8
                             spacing: 8
 
 
@@ -594,9 +613,9 @@ Scope {
                                 onActiveChanged: if (active) tabsWrap.activeTab = this
                                 Component.onCompleted: if (active) tabsWrap.activeTab = this
 
-                                height: 26
-                                width: tabRow.implicitWidth + 20
-                                radius: 9
+                                height: 30
+                                width: tabRow.implicitWidth + 22
+                                radius: 11
                                 // Only the sliding indicator carries the active fill;
                                 // idle tabs are bare -- hover only brightens them,
                                 // it never paints a plate.
@@ -614,7 +633,7 @@ Scope {
                                         color: parent.parent.active ? Services.Colors.accentText
                                              : tabHover.containsMouse ? Services.Colors.snow
                                              : Services.Colors.mist
-                                        font.pixelSize: 13
+                                        font.pixelSize: 15
                                         font.family: "Material Symbols Rounded"
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
@@ -623,7 +642,7 @@ Scope {
                                         color: parent.parent.active ? Services.Colors.accentText
                                              : tabHover.containsMouse ? Services.Colors.snow
                                              : Services.Colors.mist
-                                        font.pixelSize: 11
+                                        font.pixelSize: 12
                                         font.bold: parent.parent.active
                                         font.family: "JetBrainsMono NF"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -642,27 +661,50 @@ Scope {
                     }
                     }
 
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: screenZone.visible
+                            width: 1
+                            height: 22
+                            color: Services.Colors.fillLine
+                        }
+
                         // Which screen the next pick lands on. It only exists
                         // with a second monitor plugged in: on one screen there
                         // is nothing to choose and the picker is the old one.
-                        Widgets.DevicePicker {
-                            id: screenPick
+                        Item {
+                            id: screenZone
                             anchors.verticalCenter: parent.verticalCenter
                             visible: Services.Displays.monitors.length > 1
-                            width: visible ? 200 : 0
-                            overlay: true
-                            glyph: "\ue30c"
-                            current: win.targetOutput
-                            devices: {
-                                const rows = [{ name: "", desc: Services.I18n.t("wall.allScreens") }]
-                                for (const m of Services.Displays.monitors)
-                                    rows.push({ name: m.name,
-                                                desc: m.description && m.description !== ""
-                                                      ? m.name + " · " + m.description : m.name })
-                                return rows
+                            width: visible ? 218 : 0
+                            height: toolbar.height
+
+                            Widgets.DevicePicker {
+                                id: screenPick
+                                anchors.left: parent.left
+                                anchors.leftMargin: 8
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 202
+                                // Matches the pills beside it and borrows the
+                                // bar's own plate, so the toolbar stays one
+                                // surface instead of a control parked on it.
+                                rowH: 30
+                                headPlate: "transparent"
+                                overlay: true
+                                glyph: "\ue30c"
+                                current: win.targetOutput
+                                devices: {
+                                    const rows = [{ name: "", desc: Services.I18n.t("wall.allScreens") }]
+                                    for (const m of Services.Displays.monitors)
+                                        rows.push({ name: m.name,
+                                                    desc: m.description && m.description !== ""
+                                                          ? m.name + " · " + m.description : m.name })
+                                    return rows
+                                }
+                                onPicked: name => win.retarget(name)
                             }
-                            onPicked: name => win.retarget(name)
                         }
+                    }
                     }
                     }
 

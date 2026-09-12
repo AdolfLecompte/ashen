@@ -15,7 +15,12 @@ Column {
     signal picked(string name)
 
     property bool expanded: false
-    readonly property int rowH: 28
+    // Settable: a picker standing in a toolbar has to match the pills beside
+    // it, and one sitting in a column of settings has to match the rows.
+    property int rowH: 28
+    // The head's own plate, for the same reason. Transparent when the caller
+    // has already drawn a surface under it.
+    property color headPlate: Services.Colors.fillInset
 
     // Float the list over what is under it instead of pushing it down. The
     // volume panel wants the inline behaviour -- its picker IS the bottom of the
@@ -69,7 +74,7 @@ Column {
         height: picker.rowH
         radius: 8
         // A control at rest, and it stays that plate: hover lifts the name.
-        color: Services.Colors.fillInset
+        color: picker.headPlate
         Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
 
         Row {
