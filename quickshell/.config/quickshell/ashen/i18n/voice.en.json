@@ -3,27 +3,42 @@
     "checking…",
     "reading your face…",
     "asking the machine…",
-    "looking you up…"
+    "looking you up…",
+    "thinking about it…",
+    "one moment…",
+    "weighing that up…"
   ],
   "lock.welcome": [
     "you're not an impostor, right?",
     "the machine remembers you",
     "close enough",
     "go on then",
-    "welcome back"
+    "welcome back",
+    "it's you",
+    "the door was expecting you",
+    "in you go",
+    "right on the first try"
   ],
   "lock.wrong": [
     "that's not it",
     "nope",
     "try that again",
     "the keys are all still there",
-    "not quite"
+    "not quite",
+    "something's off",
+    "that isn't the one",
+    "no",
+    "the door stays shut"
   ],
   "lock.wrongAgain": [
     "still not it",
     "take your time",
     "caps lock, maybe?",
-    "we can do this all night"
+    "we can do this all night",
+    "the keyboard is fine, by the way",
+    "nothing has changed since the last one",
+    "slower, maybe",
+    "it is not going to guess"
   ],
   "notify.empty": [
     "nothing over here",
@@ -31,227 +46,372 @@
     "lost something?",
     "not a peep",
     "you're all caught up",
-    "clean slate"
+    "clean slate",
+    "nobody wants anything",
+    "the world left you alone",
+    "nothing came in"
   ],
   "lyrics.none": [
     "no lyrics — just listen",
     "nobody wrote this one down",
     "words not included",
     "not in the book",
-    "hum along"
+    "hum along",
+    "no words for this one",
+    "it came without a script",
+    "nobody transcribed it"
   ],
   "lyrics.looking": [
     "looking for the words…",
     "asking who wrote this…",
-    "reading ahead…"
+    "reading ahead…",
+    "digging for the words…",
+    "somebody must have written this down…"
   ],
   "media.quiet": [
     "nothing playing",
     "silence, then",
     "the room is yours",
-    "nothing on"
+    "nothing on",
+    "not a note",
+    "the speakers are resting",
+    "no music, no noise"
   ],
   "launcher.idle": [
     "search applications…",
     "type a name…",
     "what are we opening?",
-    "name it and it opens"
+    "name it and it opens",
+    "start typing",
+    "who are we calling?",
+    "a few letters is enough"
   ],
   "launcher.noHits": [
     "nothing by that name",
     "not installed, apparently",
     "no such thing here",
-    "try fewer letters"
+    "try fewer letters",
+    "nothing answers to that",
+    "no program by that name",
+    "maybe it never got installed"
   ],
   "updates.none": [
     "up to date",
     "nothing to install",
     "as new as it gets",
-    "already current"
+    "already current",
+    "nothing new anywhere",
+    "the mirrors have nothing for you",
+    "everything is already here"
   ],
   "battery.low": [
     "might want a cable",
     "running on fumes soon",
-    "the wall is right there"
+    "the wall is right there",
+    "it will not last the film",
+    "find a socket soon",
+    "low, and going lower"
   ],
   "battery.critical": [
     "plug it in, seriously",
     "this is the last warning",
-    "about to lose you"
+    "about to lose you",
+    "this is it",
+    "seconds, not minutes",
+    "the cable or the dark"
   ],
   "shot.saved": [
     "got it",
     "that one's yours",
     "saved and copied",
-    "framed"
+    "framed",
+    "kept",
+    "on the disk and on the clipboard",
+    "that moment is yours now"
   ],
   "usb.empty": [
     "nothing plugged in",
     "all ports free",
-    "no passengers"
+    "no passengers",
+    "nothing attached",
+    "the ports are empty",
+    "just the machine"
   ],
   "audio.noApps": [
     "nothing is playing",
     "silence, then",
-    "no app is making a sound"
+    "no app is making a sound",
+    "nobody is making noise",
+    "not one app is playing",
+    "all quiet in there"
   ],
   "battery.noHistory": [
     "no history yet",
     "give it a while",
-    "nothing to plot yet"
+    "nothing to plot yet",
+    "nothing measured yet",
+    "come back in an hour",
+    "the line starts soon"
   ],
   "switcher.empty": [
     "no windows",
     "nothing open",
-    "clean desk"
+    "clean desk",
+    "not a single window",
+    "nothing to switch to",
+    "the screen is bare"
   ],
   "workspace.empty": [
     "empty",
     "nothing here",
-    "free"
+    "free",
+    "untouched",
+    "nobody lives here",
+    "still empty"
   ],
   "tray.noMenu": [
     "no menu",
     "this one is silent",
-    "nothing to offer"
+    "nothing to offer",
+    "it has nothing to say",
+    "no options here",
+    "just an icon"
   ],
   "clipboard.empty": [
     "nothing copied yet",
     "the clipboard is empty",
-    "copy something first"
+    "copy something first",
+    "nothing kept",
+    "you have not copied anything",
+    "no history yet"
   ],
   "clipboard.noShots": [
     "no captures kept yet",
-    "nothing shot yet"
+    "nothing shot yet",
+    "no screenshots here",
+    "nothing captured yet",
+    "the reel is empty"
   ],
   "search.noMatch": [
     "nothing by that name",
     "no match",
-    "try fewer letters"
+    "try fewer letters",
+    "nothing like that",
+    "not a single hit",
+    "try it differently"
   ],
   "dnd.on": [
     "holding your calls",
     "nobody gets through",
-    "the room is quiet now"
+    "the room is quiet now",
+    "not now",
+    "everything waits",
+    "the door is closed"
   ],
   "dnd.off": [
     "listening again",
-    "back on the air"
+    "back on the air",
+    "the door is open again",
+    "you'll hear about it now",
+    "back in the room"
   ],
   "awake.full": [
     "no naps",
     "eyes open",
-    "it will wait up for you"
+    "it will wait up for you",
+    "it will not sleep",
+    "wide awake, all of it",
+    "nothing switches off"
   ],
   "awake.locks": [
     "awake it stays, you it does not wait for",
     "lit, but not unlocked",
-    "the screen keeps watch, the door does not"
+    "the screen keeps watch, the door does not",
+    "awake, but still shut",
+    "the screen stays, the lock still comes",
+    "lit and locked"
   ],
   "awake.off": [
     "it can sleep again",
-    "back to normal hours"
+    "back to normal hours",
+    "it may rest again",
+    "the usual hours",
+    "sleep as before"
   ],
   "record.start": [
     "rolling",
     "everything you do now is evidence",
-    "the screen is watching back"
+    "the screen is watching back",
+    "recording",
+    "it is all being kept",
+    "every move, from now"
   ],
   "record.stop": [
     "that's a wrap",
     "cut",
-    "saved"
+    "saved",
+    "that is the take",
+    "stopped, and kept",
+    "no more tape"
   ],
   "night.on": [
     "warming the screen",
-    "easier on the eyes now"
+    "easier on the eyes now",
+    "taking the blue out",
+    "warmer now",
+    "kinder after dark"
   ],
   "night.off": [
     "back to daylight",
-    "colours as they were"
+    "colours as they were",
+    "the blue is back",
+    "true colours again",
+    "daylight"
   ],
   "timer.done": [
     "time's up",
     "that's the time you asked for",
-    "done"
+    "done",
+    "that is the time",
+    "finished",
+    "you asked, it happened"
   ],
   "charger.in": [
     "drinking",
     "topping up",
-    "the wall is feeding it"
+    "the wall is feeding it",
+    "it is filling",
+    "the cable is doing its job",
+    "power, at last"
   ],
   "charger.out": [
     "on its own now",
-    "unplugged"
+    "unplugged",
+    "by itself now",
+    "the cable is out",
+    "living on what it has"
   ],
   "wifi.scanning": [
     "listening for networks…",
     "sweeping the air…",
-    "asking what's out there…"
+    "asking what's out there…",
+    "reading the air…",
+    "who is broadcasting…",
+    "counting networks…"
   ],
   "bt.scanning": [
     "listening for radios…",
     "seeing who's around…",
-    "sweeping…"
+    "sweeping…",
+    "asking the room…",
+    "anyone out there…",
+    "listening…"
   ],
   "bt.pairing": [
     "shaking hands…",
     "introducing you two…",
-    "agreeing on a secret…"
+    "agreeing on a secret…",
+    "getting acquainted…",
+    "trading numbers…",
+    "learning to trust each other…"
   ],
   "updates.checking": [
     "asking the mirrors…",
     "counting what's new…",
-    "checking…"
+    "checking…",
+    "asking what is new…",
+    "reading the lists…",
+    "the mirrors are thinking…"
   ],
   "wallpaper.applied": [
     "new wall, new colours",
     "the shell took the hint",
-    "repainted"
+    "repainted",
+    "the walls are up",
+    "new picture, new palette",
+    "the whole place changed colour"
   ],
   "power.hold": [
     "still time to let go",
     "sure about this?",
-    "keep holding"
+    "keep holding",
+    "a moment more",
+    "you can still change your mind",
+    "not yet"
   ],
   "about.idle": [
     "ask and I'll look",
-    "nothing checked yet"
+    "nothing checked yet",
+    "say the word",
+    "nothing asked yet",
+    "it will look if you ask"
   ],
   "about.checking": [
     "asking the repository…",
-    "looking for a newer one…"
+    "looking for a newer one…",
+    "reading the releases…",
+    "asking upstream…"
   ],
   "about.current": [
     "this is the newest one",
-    "nothing to install"
+    "nothing to install",
+    "nothing newer exists",
+    "you have the last one"
   ],
   "about.ahead": [
     "you are ahead of the last tag",
-    "this build is newer than the release"
+    "this build is newer than the release",
+    "newer than anything released",
+    "this one came from the source"
   ],
   "about.failed": [
     "the network said nothing",
-    "could not reach the repository"
+    "could not reach the repository",
+    "no answer",
+    "the repository stayed quiet",
+    "could not ask"
   ],
   "about.available": [
     "there is a newer one",
-    "something to install"
+    "something to install",
+    "a newer one is out",
+    "there is one to fetch"
   ],
   "about.notes": [
     "what changed in this one",
-    "the notes for this build"
+    "the notes for this build",
+    "what is different here",
+    "the story of this build"
   ],
   "dock.pinned": [
     "pinned",
-    "it stays"
+    "it stays",
+    "it will be there tomorrow",
+    "kept on the dock"
   ],
   "dock.unpinned": [
     "unpinned",
-    "off the dock"
+    "off the dock",
+    "gone from the dock",
+    "it leaves with the window"
   ],
   "dock.empty": [
     "nothing pinned yet",
-    "the dock is empty"
+    "the dock is empty",
+    "nothing lives here yet",
+    "pin something",
+    "an empty shelf"
+  ],
+  "game.on": [
+    "effects off, shell quiet",
+    "flattened for the frames",
+    "nothing moving but the game",
+    "go on then"
+  ],
+  "game.off": [
+    "everything back",
+    "the shell can breathe again",
+    "effects returned",
+    "that was the last round?"
   ]
 }

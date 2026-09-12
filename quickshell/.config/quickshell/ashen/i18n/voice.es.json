@@ -3,27 +3,42 @@
     "comprobando…",
     "leyendo tu cara…",
     "preguntándole a la máquina…",
-    "buscándote…"
+    "buscándote…",
+    "pensándolo…",
+    "un momento…",
+    "dame un segundo…"
   ],
   "lock.welcome": [
     "no eres un impostor, ¿verdad?",
     "la máquina te recuerda",
     "suficientemente cerca",
     "pasa, pues",
-    "bienvenido de vuelta"
+    "bienvenido de vuelta",
+    "eres tú",
+    "la puerta te esperaba",
+    "adentro",
+    "a la primera"
   ],
   "lock.wrong": [
     "no era esa",
     "nop",
     "prueba otra vez",
     "las teclas siguen todas ahí",
-    "casi"
+    "casi",
+    "algo no cuadra",
+    "esa no",
+    "no",
+    "la puerta sigue cerrada"
   ],
   "lock.wrongAgain": [
     "sigue sin ser esa",
     "tómate tu tiempo",
     "¿bloq mayús, quizá?",
-    "podemos seguir así toda la noche"
+    "podemos seguir así toda la noche",
+    "el teclado está bien, por cierto",
+    "nada ha cambiado desde la anterior",
+    "más despacio, quizá",
+    "no la va a adivinar"
   ],
   "notify.empty": [
     "por aquí nada",
@@ -31,227 +46,371 @@
     "¿se te perdió algo?",
     "ni un ruido",
     "estás al día",
-    "borrón y cuenta nueva"
+    "borrón y cuenta nueva",
+    "nadie quiere nada",
+    "el mundo te dejó en paz",
+    "no entró nada"
   ],
   "lyrics.none": [
     "sin letra — solo escucha",
     "nadie la escribió",
     "letra no incluida",
     "no está en el libro",
-    "tararea"
+    "tararea",
+    "sin letra",
+    "vino sin guion"
   ],
   "lyrics.looking": [
     "buscando la letra…",
     "preguntando quién la escribió…",
-    "leyendo por delante…"
+    "leyendo por delante…",
+    "alguien tuvo que escribirla…"
   ],
   "media.quiet": [
     "no suena nada",
     "silencio, pues",
     "la sala es tuya",
-    "nada puesto"
+    "nada puesto",
+    "ni una nota",
+    "los altavoces descansan",
+    "ni música ni ruido"
   ],
   "launcher.idle": [
     "buscar aplicaciones…",
     "escribe un nombre…",
     "¿qué abrimos?",
-    "nómbralo y se abre"
+    "nómbralo y se abre",
+    "empieza a escribir",
+    "¿a quién llamamos?",
+    "con unas letras basta"
   ],
   "launcher.noHits": [
     "nada con ese nombre",
     "no está instalado, parece",
     "aquí no hay tal cosa",
-    "prueba con menos letras"
+    "prueba con menos letras",
+    "nada responde a eso",
+    "ningún programa se llama así",
+    "quizá nunca se instaló"
   ],
   "updates.none": [
     "todo al día",
     "nada que instalar",
     "más nuevo imposible",
-    "ya está al corriente"
+    "ya está al corriente",
+    "nada nuevo en ninguna parte",
+    "los espejos no tienen nada para ti",
+    "ya está todo aquí"
   ],
   "battery.low": [
     "igual quieres un cable",
     "pronto irá con lo justo",
-    "el enchufe está ahí mismo"
+    "el enchufe está ahí mismo",
+    "no aguanta la película",
+    "busca un enchufe pronto",
+    "baja, y bajando"
   ],
   "battery.critical": [
     "enchúfalo, en serio",
     "este es el último aviso",
-    "a punto de perderte"
+    "a punto de perderte",
+    "hasta aquí",
+    "segundos, no minutos",
+    "el cable o la oscuridad"
   ],
   "shot.saved": [
     "listo",
     "esa es tuya",
     "guardada y copiada",
-    "enmarcada"
+    "enmarcada",
+    "guardada",
+    "en el disco y en el portapapeles",
+    "ese momento ya es tuyo"
   ],
   "usb.empty": [
     "nada conectado",
     "todos los puertos libres",
-    "sin pasajeros"
+    "sin pasajeros",
+    "los puertos vacíos",
+    "solo la máquina"
   ],
   "audio.noApps": [
     "no suena nada",
     "silencio, pues",
-    "ninguna app hace ruido"
+    "ninguna app hace ruido",
+    "nadie hace ruido",
+    "ninguna aplicación suena",
+    "silencio ahí dentro"
   ],
   "battery.noHistory": [
     "aún no hay historial",
     "dale un rato",
-    "todavía nada que dibujar"
+    "todavía nada que dibujar",
+    "aún no hay medidas",
+    "vuelve en una hora",
+    "la línea empieza pronto"
   ],
   "switcher.empty": [
     "sin ventanas",
     "nada abierto",
-    "escritorio limpio"
+    "escritorio limpio",
+    "ni una ventana",
+    "nada a lo que saltar",
+    "la pantalla desnuda"
   ],
   "workspace.empty": [
     "vacío",
     "aquí no hay nada",
-    "libre"
+    "libre",
+    "intacto",
+    "aquí no vive nadie",
+    "sigue vacío"
   ],
   "tray.noMenu": [
     "sin menú",
     "este se calla",
-    "nada que ofrecer"
+    "nada que ofrecer",
+    "no tiene nada que decir",
+    "sin opciones",
+    "solo un icono"
   ],
   "clipboard.empty": [
     "aún no has copiado nada",
     "el portapapeles está vacío",
-    "copia algo primero"
+    "copia algo primero",
+    "nada guardado",
+    "no has copiado nada",
+    "sin historial todavía"
   ],
   "clipboard.noShots": [
     "aún no hay capturas",
-    "todavía nada disparado"
+    "todavía nada disparado",
+    "aquí no hay capturas",
+    "nada capturado aún",
+    "el carrete vacío"
   ],
   "search.noMatch": [
     "nada con ese nombre",
     "sin coincidencias",
-    "prueba con menos letras"
+    "prueba con menos letras",
+    "nada parecido",
+    "ni una coincidencia",
+    "prueba de otra forma"
   ],
   "dnd.on": [
     "te guardo las llamadas",
     "no pasa nadie",
-    "la sala está en silencio"
+    "la sala está en silencio",
+    "ahora no",
+    "todo espera",
+    "la puerta cerrada"
   ],
   "dnd.off": [
     "otra vez escuchando",
-    "de vuelta al aire"
+    "de vuelta al aire",
+    "la puerta otra vez abierta",
+    "ahora sí te enteras",
+    "de vuelta en la sala"
   ],
   "awake.full": [
     "nada de siestas",
     "ojos abiertos",
-    "te esperará despierto"
+    "te esperará despierto",
+    "no va a dormir",
+    "despierto del todo",
+    "no se apaga nada"
   ],
   "awake.locks": [
     "despierto, pero no abierto",
     "la pantalla vela, la puerta no",
-    "sigue encendido y sigue cerrado"
+    "sigue encendido y sigue cerrado",
+    "despierto, pero cerrado",
+    "la pantalla se queda, el cerrojo llega igual",
+    "encendido y con llave"
   ],
   "awake.off": [
     "ya puede dormir",
-    "de vuelta a su horario"
+    "de vuelta a su horario",
+    "ya puede descansar",
+    "el horario de siempre",
+    "a dormir como antes"
   ],
   "record.start": [
     "rodando",
     "todo lo que hagas ahora es prueba",
-    "la pantalla mira de vuelta"
+    "la pantalla mira de vuelta",
+    "grabando",
+    "todo queda registrado",
+    "cada movimiento, desde ya"
   ],
   "record.stop": [
     "corten",
     "fin de la toma",
-    "guardado"
+    "guardado",
+    "esa es la toma",
+    "parado y guardado",
+    "se acabó la cinta"
   ],
   "night.on": [
     "calentando la pantalla",
-    "más fácil para los ojos"
+    "más fácil para los ojos",
+    "quitando el azul",
+    "más cálido ahora",
+    "más amable de noche"
   ],
   "night.off": [
     "de vuelta a la luz del día",
-    "los colores como estaban"
+    "los colores como estaban",
+    "vuelve el azul",
+    "los colores de verdad",
+    "luz de día"
   ],
   "timer.done": [
     "se acabó el tiempo",
     "ese es el tiempo que pediste",
-    "hecho"
+    "hecho",
+    "ese es el tiempo",
+    "terminado",
+    "lo pediste, pasó"
   ],
   "charger.in": [
     "bebiendo",
     "llenando",
-    "el enchufe le da de comer"
+    "el enchufe le da de comer",
+    "se está llenando",
+    "el cable cumpliendo",
+    "energía, por fin"
   ],
   "charger.out": [
     "ahora va sola",
-    "desenchufada"
+    "desenchufada",
+    "por su cuenta",
+    "cable fuera",
+    "viviendo de lo que tiene"
   ],
   "wifi.scanning": [
     "escuchando redes…",
     "barriendo el aire…",
-    "preguntando qué hay ahí fuera…"
+    "preguntando qué hay ahí fuera…",
+    "leyendo el aire…",
+    "quién está emitiendo…",
+    "contando redes…"
   ],
   "bt.scanning": [
     "escuchando radios…",
     "viendo quién anda cerca…",
-    "barriendo…"
+    "barriendo…",
+    "preguntando a la sala…",
+    "¿hay alguien ahí?…",
+    "escuchando…"
   ],
   "bt.pairing": [
     "dándoos la mano…",
     "presentándoos…",
-    "acordando un secreto…"
+    "acordando un secreto…",
+    "haciendo migas…",
+    "intercambiando números…",
+    "aprendiendo a confiar…"
   ],
   "updates.checking": [
     "preguntando a los mirrors…",
     "contando lo nuevo…",
-    "comprobando…"
+    "comprobando…",
+    "preguntando qué hay de nuevo…",
+    "leyendo las listas…",
+    "los espejos lo están pensando…"
   ],
   "wallpaper.applied": [
     "fondo nuevo, colores nuevos",
     "el shell pilló la indirecta",
-    "repintado"
+    "repintado",
+    "paredes nuevas",
+    "otra foto, otra paleta",
+    "la casa entera cambió de color"
   ],
   "power.hold": [
     "aún puedes soltar",
     "¿seguro?",
-    "sigue apretando"
+    "sigue apretando",
+    "un momento más",
+    "todavía puedes cambiar de idea",
+    "aún no"
   ],
   "about.idle": [
     "pregunta y miro",
-    "aún no he mirado"
+    "aún no he mirado",
+    "tú dirás",
+    "aún no he preguntado",
+    "miro si me lo pides"
   ],
   "about.checking": [
     "preguntando al repositorio…",
-    "buscando una más nueva…"
+    "buscando una más nueva…",
+    "leyendo las versiones…",
+    "preguntando arriba…"
   ],
   "about.current": [
     "esta es la más nueva",
-    "nada que instalar"
+    "nada que instalar",
+    "no existe nada más nuevo",
+    "tienes la última"
   ],
   "about.ahead": [
     "vas por delante de la última etiqueta",
-    "esta compilación es más nueva que la release"
+    "esta compilación es más nueva que la release",
+    "más nueva que cualquier publicada",
+    "esta salió del código"
   ],
   "about.failed": [
     "la red no dijo nada",
-    "no llegué al repositorio"
+    "no llegué al repositorio",
+    "sin respuesta",
+    "el repositorio se quedó callado",
+    "no se pudo preguntar"
   ],
   "about.available": [
     "hay una más nueva",
-    "algo que instalar"
+    "algo que instalar",
+    "queda una por traer",
+    "ya salió otra",
+    "queda algo por bajar"
   ],
   "about.notes": [
     "qué cambió en esta",
-    "las notas de esta compilación"
+    "las notas de esta compilación",
+    "qué cambia aquí",
+    "la historia de esta versión"
   ],
   "dock.pinned": [
     "anclada",
-    "se queda"
+    "se queda",
+    "mañana seguirá ahí",
+    "se queda en el dock"
   ],
   "dock.unpinned": [
     "desanclada",
-    "fuera del dock"
+    "fuera del dock",
+    "se va con la ventana",
+    "desanclado",
+    "ya no se queda"
   ],
   "dock.empty": [
     "nada anclado todavía",
-    "el dock está vacío"
+    "el dock está vacío",
+    "aquí aún no vive nadie",
+    "ancla algo",
+    "una estantería vacía"
+  ],
+  "game.on": [
+    "efectos fuera, shell en silencio",
+    "aplanado por los fotogramas",
+    "aquí no se mueve nada más que el juego",
+    "venga, a jugar"
+  ],
+  "game.off": [
+    "todo de vuelta",
+    "el shell vuelve a respirar",
+    "efectos devueltos",
+    "¿esa fue la última partida?"
   ]
 }

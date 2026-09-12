@@ -3,27 +3,42 @@
     "prüfe…",
     "lese dein Gesicht…",
     "frage die Maschine…",
-    "schlage dich nach…"
+    "schlage dich nach…",
+    "denke nach…",
+    "einen moment…",
+    "gleich…"
   ],
   "lock.welcome": [
     "kein Hochstapler, oder?",
     "die Maschine erinnert sich",
     "nah genug",
     "dann mal los",
-    "willkommen zurück"
+    "willkommen zurück",
+    "du bist es",
+    "die tür hat gewartet",
+    "herein",
+    "gleich beim ersten mal"
   ],
   "lock.wrong": [
     "das war es nicht",
     "nope",
     "noch mal",
     "die Tasten sind alle noch da",
-    "fast"
+    "fast",
+    "irgendwas stimmt nicht",
+    "die war es nicht",
+    "nein",
+    "die tür bleibt zu"
   ],
   "lock.wrongAgain": [
     "immer noch nicht",
     "lass dir Zeit",
     "Feststelltaste, vielleicht?",
-    "wir können das die ganze Nacht machen"
+    "wir können das die ganze Nacht machen",
+    "die tastatur ist übrigens in ordnung",
+    "seit eben hat sich nichts geändert",
+    "vielleicht langsamer",
+    "raten wird sie nicht"
   ],
   "notify.empty": [
     "hier drüben nichts",
@@ -31,227 +46,372 @@
     "was verloren?",
     "kein Mucks",
     "alles nachgelesen",
-    "reiner Tisch"
+    "reiner Tisch",
+    "niemand will etwas",
+    "die welt lässt dich in ruhe",
+    "nichts ist angekommen"
   ],
   "lyrics.none": [
     "kein Text — einfach hören",
     "hat keiner aufgeschrieben",
     "Text nicht enthalten",
     "steht nicht im Buch",
-    "summ mit"
+    "summ mit",
+    "kein text",
+    "kam ohne drehbuch",
+    "niemand hat es aufgeschrieben"
   ],
   "lyrics.looking": [
     "suche die Worte…",
     "frage, wer das geschrieben hat…",
-    "lese voraus…"
+    "lese voraus…",
+    "suche den text…",
+    "irgendwer muss das notiert haben…"
   ],
   "media.quiet": [
     "nichts läuft",
     "stille, dann",
     "der Raum gehört dir",
-    "nichts an"
+    "nichts an",
+    "keine note",
+    "die lautsprecher ruhen",
+    "keine musik, kein lärm"
   ],
   "launcher.idle": [
     "Anwendungen suchen…",
     "tipp einen Namen…",
     "was öffnen wir?",
-    "nenn es und es öffnet"
+    "nenn es und es öffnet",
+    "fang an zu tippen",
+    "wen rufen wir?",
+    "ein paar buchstaben reichen"
   ],
   "launcher.noHits": [
     "nichts mit dem Namen",
     "wohl nicht installiert",
     "so etwas gibt es hier nicht",
-    "versuch weniger Buchstaben"
+    "versuch weniger Buchstaben",
+    "darauf hört nichts",
+    "kein programm heißt so",
+    "vielleicht nie installiert"
   ],
   "updates.none": [
     "alles aktuell",
     "nichts zu installieren",
     "neuer geht nicht",
-    "schon auf Stand"
+    "schon auf Stand",
+    "nirgends etwas neues",
+    "die spiegel haben nichts für dich",
+    "es ist schon alles da"
   ],
   "battery.low": [
     "vielleicht ein Kabel",
     "läuft bald auf Reserve",
-    "die Steckdose ist gleich da"
+    "die Steckdose ist gleich da",
+    "hält den film nicht durch",
+    "such bald eine steckdose",
+    "wenig, und weniger"
   ],
   "battery.critical": [
     "steck es ein, im Ernst",
     "das ist die letzte Warnung",
-    "gleich bist du weg"
+    "gleich bist du weg",
+    "das war es",
+    "sekunden, nicht minuten",
+    "das kabel oder das dunkel"
   ],
   "shot.saved": [
     "hab ich",
     "die gehört dir",
     "gespeichert und kopiert",
-    "gerahmt"
+    "gerahmt",
+    "behalten",
+    "auf der platte und in der zwischenablage",
+    "der moment gehört dir"
   ],
   "usb.empty": [
     "nichts eingesteckt",
     "alle Ports frei",
-    "keine Mitfahrer"
+    "keine Mitfahrer",
+    "nichts angeschlossen",
+    "die anschlüsse sind leer",
+    "nur die maschine"
   ],
   "audio.noApps": [
     "es läuft nichts",
     "stille, dann",
-    "keine App macht ein Geräusch"
+    "keine App macht ein Geräusch",
+    "niemand macht geräusche",
+    "keine anwendung spielt",
+    "drinnen ist es still"
   ],
   "battery.noHistory": [
     "noch kein Verlauf",
     "gib ihm etwas Zeit",
-    "noch nichts zu zeichnen"
+    "noch nichts zu zeichnen",
+    "noch nichts gemessen",
+    "komm in einer stunde wieder",
+    "die linie fängt gleich an"
   ],
   "switcher.empty": [
     "keine Fenster",
     "nichts offen",
-    "leerer Schreibtisch"
+    "leerer Schreibtisch",
+    "kein einziges fenster",
+    "nichts zum wechseln",
+    "der bildschirm ist nackt"
   ],
   "workspace.empty": [
     "leer",
     "hier ist nichts",
-    "frei"
+    "frei",
+    "unberührt",
+    "hier wohnt niemand",
+    "immer noch leer"
   ],
   "tray.noMenu": [
     "kein Menü",
     "das hier schweigt",
-    "nichts anzubieten"
+    "nichts anzubieten",
+    "hat nichts zu sagen",
+    "keine optionen",
+    "nur ein symbol"
   ],
   "clipboard.empty": [
     "noch nichts kopiert",
     "die Zwischenablage ist leer",
-    "kopier erst etwas"
+    "kopier erst etwas",
+    "nichts aufbewahrt",
+    "du hast nichts kopiert",
+    "noch kein verlauf"
   ],
   "clipboard.noShots": [
     "noch keine Aufnahmen",
-    "noch nichts geschossen"
+    "noch nichts geschossen",
+    "hier sind keine aufnahmen",
+    "noch nichts festgehalten",
+    "die rolle ist leer"
   ],
   "search.noMatch": [
     "nichts mit dem Namen",
     "kein Treffer",
-    "versuch weniger Buchstaben"
+    "versuch weniger Buchstaben",
+    "nichts dergleichen",
+    "kein einziger treffer",
+    "versuch es anders"
   ],
   "dnd.on": [
     "halte deine Anrufe",
     "niemand kommt durch",
-    "der Raum ist jetzt still"
+    "der Raum ist jetzt still",
+    "jetzt nicht",
+    "alles wartet",
+    "die tür ist zu"
   ],
   "dnd.off": [
     "höre wieder zu",
-    "zurück auf Sendung"
+    "zurück auf Sendung",
+    "die tür ist wieder offen",
+    "jetzt hörst du davon",
+    "zurück im raum"
   ],
   "awake.full": [
     "kein Nickerchen",
     "Augen auf",
-    "es bleibt für dich wach"
+    "es bleibt für dich wach",
+    "er schläft nicht",
+    "hellwach, ganz und gar",
+    "nichts schaltet ab"
   ],
   "awake.locks": [
     "wach, aber nicht offen",
     "der Bildschirm wacht, die Tür nicht",
-    "hell und trotzdem verschlossen"
+    "hell und trotzdem verschlossen",
+    "wach, aber verschlossen",
+    "der bildschirm bleibt, das schloss kommt trotzdem",
+    "hell und abgesperrt"
   ],
   "awake.off": [
     "darf wieder schlafen",
-    "zurück zu normalen Zeiten"
+    "zurück zu normalen Zeiten",
+    "darf wieder ruhen",
+    "die üblichen zeiten",
+    "schlaf wie vorher"
   ],
   "record.start": [
     "läuft",
     "alles ab jetzt ist Beweismaterial",
-    "der Bildschirm schaut zurück"
+    "der Bildschirm schaut zurück",
+    "nimmt auf",
+    "alles wird behalten",
+    "ab jetzt jede bewegung"
   ],
   "record.stop": [
     "das war's",
     "Schnitt",
-    "gespeichert"
+    "gespeichert",
+    "das ist die aufnahme",
+    "gestoppt und gesichert",
+    "kein band mehr"
   ],
   "night.on": [
     "wärme den Bildschirm",
-    "jetzt leichter für die Augen"
+    "jetzt leichter für die Augen",
+    "nehme das blau heraus",
+    "jetzt wärmer",
+    "nach einbruch freundlicher"
   ],
   "night.off": [
     "zurück ins Tageslicht",
-    "Farben wie vorher"
+    "Farben wie vorher",
+    "das blau ist zurück",
+    "wieder echte farben",
+    "tageslicht"
   ],
   "timer.done": [
     "Zeit ist um",
     "das ist die Zeit, die du wolltest",
-    "fertig"
+    "fertig",
+    "das ist die zeit",
+    "du hast gefragt, es ist passiert"
   ],
   "charger.in": [
     "trinkt",
     "füllt auf",
-    "die Wand füttert es"
+    "die Wand füttert es",
+    "füllt sich",
+    "das kabel tut seine arbeit",
+    "endlich strom"
   ],
   "charger.out": [
     "jetzt auf sich gestellt",
-    "ausgesteckt"
+    "ausgesteckt",
+    "jetzt allein",
+    "kabel raus",
+    "lebt von dem, was da ist"
   ],
   "wifi.scanning": [
     "horche nach Netzen…",
     "taste die Luft ab…",
-    "frage, was da draußen ist…"
+    "frage, was da draußen ist…",
+    "lese die luft…",
+    "wer sendet da…",
+    "zähle netze…"
   ],
   "bt.scanning": [
     "horche nach Funk…",
     "schaue, wer da ist…",
-    "taste ab…"
+    "taste ab…",
+    "frage den raum…",
+    "ist da jemand…",
+    "höre zu…"
   ],
   "bt.pairing": [
     "Hände schütteln…",
     "stelle euch vor…",
-    "einigt euch auf ein Geheimnis…"
+    "einigt euch auf ein Geheimnis…",
+    "man lernt sich kennen…",
+    "nummern werden getauscht…",
+    "vertrauen wird geübt…"
   ],
   "updates.checking": [
     "frage die Mirrors…",
     "zähle das Neue…",
-    "prüfe…"
+    "prüfe…",
+    "frage, was neu ist…",
+    "lese die listen…",
+    "die spiegel überlegen…"
   ],
   "wallpaper.applied": [
     "neue Wand, neue Farben",
     "die Shell hat den Wink verstanden",
-    "neu gestrichen"
+    "neu gestrichen",
+    "die wände stehen",
+    "neues bild, neue palette",
+    "das ganze haus hat die farbe gewechselt"
   ],
   "power.hold": [
     "noch kannst du loslassen",
     "sicher?",
-    "weiter halten"
+    "weiter halten",
+    "noch einen moment",
+    "du kannst es dir noch anders überlegen",
+    "noch nicht"
   ],
   "about.idle": [
     "frag, dann schaue ich",
-    "noch nicht nachgesehen"
+    "noch nicht nachgesehen",
+    "sag bescheid",
+    "noch nichts gefragt",
+    "ich schaue, wenn du willst"
   ],
   "about.checking": [
     "frage das Repository…",
-    "suche eine neuere…"
+    "suche eine neuere…",
+    "lese die veröffentlichungen…",
+    "frage oben nach…"
   ],
   "about.current": [
     "das ist die neueste",
-    "nichts zu installieren"
+    "nichts zu installieren",
+    "neueres gibt es nicht",
+    "du hast die letzte"
   ],
   "about.ahead": [
     "du bist dem letzten Tag voraus",
-    "dieser Build ist neuer als das Release"
+    "dieser Build ist neuer als das Release",
+    "neuer als alles veröffentlichte",
+    "diese kam aus dem quelltext"
   ],
   "about.failed": [
     "das Netz schwieg",
-    "Repository nicht erreicht"
+    "Repository nicht erreicht",
+    "keine antwort",
+    "das repository blieb still",
+    "konnte nicht fragen"
   ],
   "about.available": [
     "es gibt eine neuere",
-    "etwas zu installieren"
+    "etwas zu installieren",
+    "eine wäre zu holen",
+    "es ist eine erschienen",
+    "etwas zum herunterladen"
   ],
   "about.notes": [
     "was sich hier geändert hat",
-    "die Notizen zu diesem Build"
+    "die Notizen zu diesem Build",
+    "was hier anders ist",
+    "die geschichte dieser fassung"
   ],
   "dock.pinned": [
     "angeheftet",
-    "bleibt da"
+    "bleibt da",
+    "morgen ist es noch da",
+    "bleibt im dock"
   ],
   "dock.unpinned": [
     "gelöst",
-    "raus aus dem Dock"
+    "raus aus dem Dock",
+    "raus aus dem dock",
+    "geht mit dem fenster"
   ],
   "dock.empty": [
     "noch nichts angeheftet",
-    "das Dock ist leer"
+    "das Dock ist leer",
+    "hier wohnt noch niemand",
+    "heft etwas an",
+    "ein leeres regal"
+  ],
+  "game.on": [
+    "effekte aus, shell still",
+    "flach für die bilder pro sekunde",
+    "nichts bewegt sich außer dem spiel",
+    "dann los"
+  ],
+  "game.off": [
+    "alles zurück",
+    "die shell darf wieder atmen",
+    "effekte sind zurück",
+    "war das die letzte runde?"
   ]
 }

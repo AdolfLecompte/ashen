@@ -297,8 +297,6 @@
   "util.record": "Record",
   "game.onTitle": "GAME MODE ON",
   "game.offTitle": "GAME MODE OFF",
-  "game.onBody": "effects off, shell quiet",
-  "game.offBody": "everything back",
   "settings.system.game": "Game mode",
   "settings.system.gameHint": "Flat compositor, quiet shell",
   "wall.set": "WALLPAPER SET",

@@ -297,8 +297,6 @@
   "util.record": "Grabar",
   "game.onTitle": "MODO JUEGO",
   "game.offTitle": "MODO JUEGO FUERA",
-  "game.onBody": "efectos fuera, shell en silencio",
-  "game.offBody": "todo de vuelta",
   "settings.system.game": "Modo juego",
   "settings.system.gameHint": "Compositor plano, shell en silencio",
   "wall.set": "FONDO PUESTO",

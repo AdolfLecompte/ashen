@@ -188,11 +188,12 @@ Singleton {
         else root.enter()
     }
 
-    // Said plainly, not through Voice: the bank is loaded late and a phrase
-    // that is not in it yet comes out as an empty toast.
+    // Through Voice, like every other remark in the shell. Safe here where it
+    // was not for the restore path: this only ever fires on a keypress, long
+    // after the bank has loaded.
     function say(entering) {
         Services.Notifications.addSystemToast(
-            Services.I18n.t(entering ? "game.onBody" : "game.offBody"),
+            Services.Voice.pick(entering ? "game.on" : "game.off"),
             "\uf135", false, "game",
             { title: Services.I18n.t(entering ? "game.onTitle" : "game.offTitle") })
     }

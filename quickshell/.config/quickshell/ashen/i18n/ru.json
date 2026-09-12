@@ -297,8 +297,6 @@
   "util.record": "Запись",
   "game.onTitle": "ИГРОВОЙ РЕЖИМ",
   "game.offTitle": "ИГРОВОЙ РЕЖИМ ВЫКЛ",
-  "game.onBody": "эффекты выключены, оболочка молчит",
-  "game.offBody": "всё вернулось",
   "settings.system.game": "Игровой режим",
   "settings.system.gameHint": "Плоский композитор, тихая оболочка",
   "wall.set": "ОБОИ УСТАНОВЛЕНЫ",

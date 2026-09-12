@@ -297,8 +297,6 @@
   "util.record": "Aufnehmen",
   "game.onTitle": "SPIELMODUS AN",
   "game.offTitle": "SPIELMODUS AUS",
-  "game.onBody": "Effekte aus, Shell still",
-  "game.offBody": "alles zurück",
   "settings.system.game": "Spielmodus",
   "settings.system.gameHint": "Flacher Compositor, stille Shell",
   "wall.set": "HINTERGRUND GESETZT",
