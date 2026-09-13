@@ -740,7 +740,7 @@ never hears about the second row.
 anything drawing its own opaque box inside it is the double plate this shell
 threw out. The Process panel's cards ARE its surface -- out here there is
 already one underneath, so what carries over is the vocabulary (a glyph with a
-spaced NAME, the figure on the right, a past as a curve, a level as liquid) and
+spaced NAME, the figure on the right, a past and a level as ticks) and
 not the box.
 
 ### A cover, and the words

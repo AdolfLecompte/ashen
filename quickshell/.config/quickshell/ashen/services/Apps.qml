@@ -31,7 +31,6 @@ Singleton {
     // because Settings needs the same list to offer a browser or a terminal,
     // and two scans would disagree the moment one of them was stale.
     property var all: []
-    readonly property bool scanned: root.all.length > 0
 
     // What a .desktop says it IS. The launcher's own grouping is coarse on
     // purpose (one row of categories for a person browsing); picking a terminal

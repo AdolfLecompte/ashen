@@ -90,7 +90,6 @@ Singleton {
     // a reading; zero watts because the file is missing is not, and the panel
     // has to be able to tell them apart.
     property bool hasRate: false
-    property real energyNow: 0      // Wh
     property real energyFull: 0     // Wh
     property real energyDesign: 0   // Wh
 
@@ -119,13 +118,11 @@ Singleton {
         // from the voltage. Both end up as Wh and W here.
         const volt = (f.voltage_now || 0) / 1e6
         if (f.energy_now !== undefined) {
-            root.energyNow = f.energy_now / 1e6
             root.energyFull = (f.energy_full || 0) / 1e6
             root.energyDesign = (f.energy_full_design || 0) / 1e6
             root.watts = Math.abs((f.power_now || 0) / 1e6)
             root.hasRate = f.power_now !== undefined
         } else if (f.charge_now !== undefined) {
-            root.energyNow = f.charge_now / 1e6 * volt
             root.energyFull = (f.charge_full || 0) / 1e6 * volt
             root.energyDesign = (f.charge_full_design || 0) / 1e6 * volt
             root.watts = Math.abs((f.current_now || 0) / 1e6 * volt)

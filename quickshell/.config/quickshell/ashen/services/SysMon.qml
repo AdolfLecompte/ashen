@@ -47,7 +47,6 @@ Singleton {
     property string gpuInfo: "..."
     property real gpuUsage: 0
     property real gpuTemp: 0
-    property bool hasGpuStats: false
     // hybrid laptop: the dGPU sleeps (runtime_status = suspended) and polling
     // nvidia-smi would wake it up, so fall back to the iGPU clock instead
     property bool dgpuAwake: false
@@ -219,10 +218,8 @@ Singleton {
                     root.gpuUsage = parts[0] || 0
                     root.gpuTemp = parts[1] || 0
                     root.dgpuAwake = true
-                    root.hasGpuStats = true
                 } else {
                     root.dgpuAwake = false
-                    root.hasGpuStats = false
                     root.gpuUsage = 0
                     root.gpuTemp = 0
                 }

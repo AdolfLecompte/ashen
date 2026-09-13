@@ -230,7 +230,6 @@ Singleton {
     property real clockPillCenterX: 960
     property real clockPillCenterY: 60
     property real notificationPillCenterX: 80
-    property real notificationPillCenterY: 60
     property bool volumeVisible: false
     property bool batteryVisible: false
     property real mediaPillCenterX: 200
@@ -366,7 +365,7 @@ Singleton {
         else if (key === "bluetooth")    { root.bluetoothPillCenterX = x;     root.bluetoothPillCenterY = y }
         else if (key === "usb")          { root.usbPillCenterX = x;           root.usbPillCenterY = y }
         else if (key === "clock")        { root.clockPillCenterX = x;         root.clockPillCenterY = y }
-        else if (key === "notification") { root.notificationPillCenterX = x;  root.notificationPillCenterY = y }
+        else if (key === "notification") { root.notificationPillCenterX = x }
         else if (key === "power")        { root.powerPillCenterX = x;         root.powerPillCenterY = y }
     }
 
@@ -411,8 +410,6 @@ Singleton {
     // laid out yet still leaves from the right side of the screen.
 
 
-    // The button stands down while the panel wears its face.
-    property bool processTakenOver: false
     property bool wallpaperVisible: false
     property string networkTab: "wifi"
 }

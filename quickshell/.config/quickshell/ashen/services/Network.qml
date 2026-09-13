@@ -10,7 +10,6 @@ Singleton {
     property string wifiSsid: ""
     // The NetworkManager profile behind it ("SSID", "SSID 1", …), which is what
     // `connection up id` wants and is NOT what the user calls the network.
-    property string wifiProfile: ""
     property int wifiSignal: 0
     property bool wifiEnabled: false
     property string ethConnection: ""
@@ -67,7 +66,6 @@ Singleton {
                 // `dev status` hands back the PROFILE name, "SSID 1" on a duplicate, and
                 // writing it to wifiSsid made the pill flick between the two every poll.
                 // Only signalProc, which reads the real SSID off the AP, writes the name.
-                root.wifiProfile = ssid
                 root.ethConnection = eth
                 root.ethDevice = ethDev
                 if (ssid !== "") {
@@ -149,7 +147,7 @@ Singleton {
     // Fallback only, now that events do the work: something NM does not report
     // (a driver dropping the link) still gets picked up eventually.
     Timer {
-        interval: 10000
+        interval: 30000
         running: true
         repeat: true
         onTriggered: { wifiProc.running = true; radioProc.running = true }

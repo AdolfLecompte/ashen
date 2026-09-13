@@ -26,15 +26,10 @@ PanelWindow {
     // sampling only runs while the panel is up
     onShownChanged: {
         Services.SysMon.claim("process", shown)
-        // The chip steps aside for as long as the panel wears its face -- and
-        // in "window" style it never does.
-        Services.AppState.processTakenOver = shown && card.wearingFace
         if (!shown) closeDelay.restart()
     }
 
     Timer { id: closeDelay; interval: card.closeMs }
-
-    Component.onDestruction: Services.AppState.processTakenOver = false
 
     // Clicking anywhere off the card closes it, the same as every other panel.
     MouseArea {

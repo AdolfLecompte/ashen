@@ -17,7 +17,6 @@ Singleton {
     // What is left while paused, and what a reset goes back to
     property double leftover: 0
     property double preset: 5 * 60000
-    property bool rang: false
 
     property int tick: 0
 
@@ -50,7 +49,6 @@ Singleton {
         preset = ms
         leftover = ms
         endsAt = Date.now() + ms
-        rang = false
         running = true
     }
     function start() {
@@ -58,7 +56,6 @@ Singleton {
         let ms = leftover > 0 ? leftover : preset
         if (ms <= 0) return
         endsAt = Date.now() + ms
-        rang = false
         running = true
     }
     function pause() {
@@ -71,7 +68,6 @@ Singleton {
         running = false
         leftover = 0
         endsAt = 0
-        rang = false
     }
     // Aim the timer without starting it: what the panel's ring and its length
     // buttons do. Anything banked from a previous run is dropped -- the number
@@ -80,7 +76,6 @@ Singleton {
         if (ms <= 0 || running) return
         preset = ms
         leftover = 0
-        rang = false
     }
 
     // Nudge the preset from the panel's +/- controls
@@ -97,7 +92,6 @@ Singleton {
     function ring() {
         running = false
         leftover = 0
-        rang = true
         Services.Notifications.addSystemToast(Services.Voice.pick("timer.done"), "\ue425", false,
                                               "countdown", { title: Services.I18n.t("toast.timerDone") })
     }
