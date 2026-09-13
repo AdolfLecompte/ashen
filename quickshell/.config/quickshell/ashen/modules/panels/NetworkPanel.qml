@@ -414,7 +414,13 @@ PanelWindow {
                         readonly property Item live: bodyRoot.shownTab === "wifi"
                             ? wifiCol : ethCol
                         height: tabBody.live.implicitHeight
-                        Behavior on height { Widgets.Anim { speed: Services.Sizes.msPronounced } }
+                        // Not while the panel is still arriving: its layouts are first measured
+                        // on the frame it maps, and animating that jump slid a panel centred on a
+                        // side-bar pill. Only a real tab change travels.
+                        Behavior on height {
+                            enabled: netCard.contentAmt >= 1
+                            Widgets.Anim { speed: Services.Sizes.msPronounced }
+                        }
 
                         // Wifi tab
                         Column {

@@ -275,7 +275,11 @@ PanelWindow {
                         readonly property bool onApps: win.shownCat === "apps"
                         readonly property bool out: win.shownCat === "output"
                         readonly property Item shownItem: body.onApps ? appCol : devPicker
+                        // Not while the panel is still arriving: its layouts are first measured
+                        // on the frame it maps, and animating that jump slid a panel centred on a
+                        // side-bar pill. Only a real tab change travels.
                         Behavior on height {
+                            enabled: card.contentAmt >= 1
                             NumberAnimation {
                                 duration: Services.Sizes.msPronounced
                                 easing.type: Services.Sizes.easeOut
