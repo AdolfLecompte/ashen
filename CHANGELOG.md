@@ -27,6 +27,9 @@
   the selected screen, Shift carries it.
 - **The phrase bank doubled.** Every moment has at least four lines now, most six
   or seven, written per language.
+- **Recording has a shortcut.** `SUPER + SHIFT + R` starts and stops it, and
+  `qs ipc call record toggle|start|stop|status` drives it from a script. With
+  the recording capsule taken off the bar there used to be no way to record.
 
 ### Changed
 - **The shell idles at under half what it did.** cava kept sending sixty lines a
@@ -53,6 +56,10 @@
   It is one bar now, and the search icon no longer goes dark as you type.
 - **A fresh machine without the AUR prompt theme got an error instead of a
   shell.**
+- **A recording started with the capsule off the bar made the bar jump.** The
+  capsule appeared at full size and its neighbours snapped aside on a frame of
+  half-built pills. It now grows into place while they slide, and folds away
+  before the gap closes.
 
 ## 3.0.0
 
