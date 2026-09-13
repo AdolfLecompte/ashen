@@ -29,10 +29,9 @@ Rectangle {
     height: 110
     radius: Services.Sizes.cardR
     color: Services.Colors.fillLine
-    // Capped in PIXELS, not in percent: 6% of a card this wide is thirty px of
-    // growth, which pushed the picture and both corners past the tab's clip.
-    scale: Services.Sizes.hoverScaleFor(card.width, cardHover.containsMouse, cardHover.pressed)
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+    // The card holds still. It runs the full width of its section, so ANY
+    // growth -- even capped at a few pixels -- put its corners past the tab's
+    // clip and the box came out cut. The button is what answers the pointer.
 
     RowLayout {
         anchors.fill: parent
@@ -108,6 +107,8 @@ Rectangle {
         Rectangle {
             width: 90; height: 36
             radius: Services.Sizes.innerR
+            scale: Services.Sizes.hoverScale(cardHover.containsMouse, cardHover.pressed)
+            Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
             color: Services.Colors.ghost
             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
             opacity: card.busy ? 0.55 : 1

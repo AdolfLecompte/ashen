@@ -147,10 +147,9 @@ Section {
                     id: repoRow
                     anchors.centerIn: parent
                     spacing: 8
-                    // The box holds still and the word grows, like every other
-                    // button in Settings.
-                    scale: Services.Sizes.hoverScale(linkHover.containsMouse, linkHover.pressed)
-                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                    // The words only brighten. Growing them works for a short
+                    // label; a 30-character address grew past the 12 px its box
+                    // leaves on each side and the letters were cut at the edges.
                     Text {
                         text: "\ue157"
                         font.family: "Material Symbols Rounded"

@@ -92,8 +92,8 @@ Item {
                 Layout.preferredHeight: 56
                 radius: Services.Sizes.cardR
                 color: active ? Services.Colors.fillSunken : Services.Colors.fillRest
-                scale: Services.Sizes.hoverScaleFor(width, dynHover.containsMouse, dynHover.pressed)
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+                // No growth: a card the full width of its section is cut by the
+                // tab's clip the moment it grows. Its words brighten instead.
                 border.color: active ? Services.Colors.ghost : "transparent"
                 border.width: active ? 2 : 0
                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
@@ -113,7 +113,7 @@ Item {
                     ColumnLayout {
                         spacing: 1
                         Text { text: Services.I18n.t("settings.look.dynamic"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
-                        Text { text: Services.I18n.t("settings.look.fromWallpaper"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
+                        Text { text: Services.I18n.t("settings.look.fromWallpaper"); color: dynHover.containsMouse ? Services.Colors.snow : Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
                     }
                     Item { Layout.fillWidth: true }
 
