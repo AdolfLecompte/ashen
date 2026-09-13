@@ -68,8 +68,8 @@ DesktopWidget {
 
     // Glyph, name, figure. No box: the widget's own plate is the only one.
 
-    // A level as a capsule of water. The vessel IS the reading -- it is not a
-    // card with a reading inside it.
+    // A level: the figure, then a row of ticks lit up to it. It was a capsule
+    // of water with the figure re-inked under the surface.
     component Vessel: Item {
         id: vs
         property string reading: ""
@@ -78,43 +78,26 @@ DesktopWidget {
 
         implicitHeight: 30
 
-        Rectangle {
-            anchors.fill: parent
-            radius: height / 2
-            color: Services.Colors.fillLine
-            clip: true
-
-            Widgets.LiquidFill {
-                id: liquid
-                anchors.fill: parent
-                shape: "rect"
-                radius_: parent.height / 2
-                level: Math.max(0, Math.min(1, vs.value))
-                color_: vs.tone
-                running: root.live
-            }
+        Text {
+            id: vsText
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            text: vs.reading
+            color: Services.Colors.snow
+            font.pixelSize: Services.Sizes.fsBody
+            font.bold: true
+            font.family: "JetBrainsMono NF"
+            font.letterSpacing: 1.1
         }
-
-        Item {
-            id: face
-            anchors.fill: parent
-            Text {
-                anchors.centerIn: parent
-                text: vs.reading
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsBody
-                font.bold: true
-                font.family: "JetBrainsMono NF"
-                font.letterSpacing: 1.1
-            }
-        }
-
-        // The words go under the water rather than floating over it.
-        Widgets.Submerged {
-            anchors.fill: parent
-            source: face
-            mask: liquid
-            ink: Services.Colors.onColor(vs.tone)
+        Widgets.TickMeter {
+            anchors.left: vsText.right
+            anchors.leftMargin: 10
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            height: 18
+            mode: "level"
+            value: vs.value
+            color_: vs.tone
         }
     }
 
@@ -209,9 +192,10 @@ DesktopWidget {
         }
     }
 
-    // One reading, drawn the way the skin says. Water, or the flat language of
+    // One reading, drawn the way the skin says. Ticks, or the flat language of
     // the curve above it -- and where the reading has a past worth drawing, the
-    // dry skin draws that instead of a bar.
+    // chart skin draws that instead of a bar. The skin id stays "liquid" so a
+    // saved choice from before the ticks still lands on them.
     component Level: Item {
         id: lv
         property string reading: ""

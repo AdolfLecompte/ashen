@@ -36,10 +36,10 @@ Singleton {
             { id: "medium", label: "Medium" },
             { id: "compact", label: "Compact" }],
           skins: [
-            { id: "liquid", label: "Water" },
+            { id: "liquid", label: "Ticks" },
             { id: "chart", label: "Chart" }] },
         { id: "battery", group: "machine", label: "Battery", glyph: "\ue1a4", x: 460, y: 120, styles: [
-            { id: "vessel", label: "Vessel" },
+            { id: "vessel", label: "Ticks" },
             { id: "ring", label: "Ring" },
             { id: "plain", label: "Plain" }] },
         { id: "calendar", group: "time", label: "Calendar", glyph: "\uebcc", x: 460, y: 300, styles: [

@@ -120,8 +120,6 @@ PanelWindow {
 
                 // Busier means livelier: the swell grows and quickens with the
                 // reading instead of idling at one beat for everything.
-                function amp(f) { return 1.5 + Math.max(0, Math.min(1, f)) * 2.3 }
-                function beat(f) { return Math.round(6800 - Math.max(0, Math.min(1, f)) * 2400) }
 
                 // Every card on the board: its place on the grid, its name in
                 // the corner, and its own beat in the arrival.
@@ -190,24 +188,20 @@ PanelWindow {
                     property color tone: Services.Colors.ghost
                     property string label: ""
                     property string caption: ""
-                    property real phase: 0
 
                     radius: Services.Sizes.cardR
                     color: Services.Colors.fillInset
                     clip: true
 
-                    Widgets.LiquidFill {
-                        id: vsLiquid
-                        anchors.fill: parent
-                        shape: "rect"
-                        radius_: vs.radius
-                        level: vs.level
-                        waveAmp: bodyRoot.amp(vs.level)
-                        periodMs: bodyRoot.beat(vs.level)
-                        phaseA: vs.phase
-                        running: root.shown
+                    Widgets.TickMeter {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 12
+                        height: 16
+                        mode: "level"
+                        value: vs.level
                         color_: vs.tone
-                        layer.enabled: true
                     }
 
                     Item {
@@ -225,9 +219,10 @@ PanelWindow {
                             font.family: "JetBrainsMono NF"
                         }
                         Text {
-                            x: 12
-                            anchors.bottom: parent.bottom
-                            anchors.bottomMargin: 10
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12
+                            anchors.top: parent.top
+                            anchors.topMargin: 14
                             text: vs.caption
                             color: Services.Colors.ash
                             font.pixelSize: Services.Sizes.fsCaption
@@ -236,62 +231,6 @@ PanelWindow {
                         }
                     }
 
-                    Widgets.Submerged {
-                        anchors.fill: parent
-                        source: vsFace
-                        mask: vsLiquid
-                        ink: Services.Colors.onColor(vs.tone)
-                    }
-                }
-
-                // A proportion of something with a known ceiling: how much of
-                // the memory, how much of the drive. A ring would claim these
-                // are readings that move; they crawl.
-                component Meter: Item {
-                    id: mtr
-                    property real level: 0
-                    property color tone: Services.Colors.ghost
-                    property string leftNote: ""
-                    property string rightNote: ""
-                    height: 22
-
-                    Rectangle {
-                        id: track
-                        width: parent.width
-                        height: 8
-                        radius: 4
-                        color: Services.Colors.fillLine
-                        Rectangle {
-                            width: Math.max(height, parent.width * Math.max(0, Math.min(1, mtr.level)))
-                            height: parent.height
-                            radius: parent.radius
-                            color: mtr.tone
-                            gradient: Services.Prefs.useGradients
-                                ? Services.Colors.accentGradient : null
-                            Behavior on width {
-                                NumberAnimation { duration: Services.Sizes.msPronounced
-                                                  easing.type: Services.Sizes.easeOut }
-                            }
-                        }
-                    }
-                    Text {
-                        anchors.left: parent.left
-                        anchors.top: track.bottom
-                        anchors.topMargin: 4
-                        text: mtr.leftNote
-                        color: Services.Colors.ash
-                        font.pixelSize: Services.Sizes.fsCaption
-                        font.family: "JetBrainsMono NF"
-                    }
-                    Text {
-                        anchors.right: parent.right
-                        anchors.top: track.bottom
-                        anchors.topMargin: 4
-                        text: mtr.rightNote
-                        color: Services.Colors.ash
-                        font.pixelSize: Services.Sizes.fsCaption
-                        font.family: "JetBrainsMono NF"
-                    }
                 }
 
                 Item {
@@ -309,22 +248,6 @@ PanelWindow {
 
                         readonly property color tone: bodyRoot.toneAt(0)
 
-                        // No history curve here: the liquid sits on top of it, so
-                        // it repainted a chart nobody could see.
-                        Widgets.LiquidFill {
-                            id: cpuLiquid
-                            anchors.fill: parent
-                            shape: "rect"
-                            radius_: cpuCard.radius
-                            level: Services.SysMon.cpuPercent / 100
-                            waveAmp: bodyRoot.amp(Services.SysMon.cpuPercent / 100)
-                            periodMs: bodyRoot.beat(Services.SysMon.cpuPercent / 100)
-                            phaseA: 0.0
-                            running: root.shown
-                            color_: cpuCard.tone
-                            layer.enabled: true
-                        }
-
                         Item {
                             id: cpuFace
                             anchors.fill: parent
@@ -341,11 +264,18 @@ PanelWindow {
                             }
                         }
 
-                        Widgets.Submerged {
-                            anchors.fill: parent
-                            source: cpuFace
-                            mask: cpuLiquid
-                            ink: Services.Colors.onColor(cpuCard.tone)
+
+                        Widgets.TickMeter {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.margins: cpuCard.inset
+                            height: cpuCard.height - cpuCard.headH - cpuNum.height - cpuCard.inset * 2
+                            mode: "history"
+                            samples: Services.SysMon.cpuHistory
+                            tickW: 6
+                            gap: 5
+                            color_: cpuCard.tone
                         }
                     }
 
@@ -359,20 +289,6 @@ PanelWindow {
                         readonly property color tone: bodyRoot.toneAt(1)
                         readonly property real used: Services.SysMon.ramTotalMB > 0
                             ? Services.SysMon.ramUsedMB / Services.SysMon.ramTotalMB : 0
-
-                        Widgets.LiquidFill {
-                            id: ramLiquid
-                            anchors.fill: parent
-                            shape: "rect"
-                            radius_: ramCard.radius
-                            level: ramCard.used
-                            waveAmp: bodyRoot.amp(ramCard.used)
-                            periodMs: bodyRoot.beat(ramCard.used)
-                            phaseA: 1.1
-                            running: root.shown
-                            color_: ramCard.tone
-                            layer.enabled: true
-                        }
 
                         Item {
                             id: ramFace
@@ -402,11 +318,18 @@ PanelWindow {
                             }
                         }
 
-                        Widgets.Submerged {
-                            anchors.fill: parent
-                            source: ramFace
-                            mask: ramLiquid
-                            ink: Services.Colors.onColor(ramCard.tone)
+
+                        Widgets.TickMeter {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.margins: ramCard.inset
+                            height: 24
+                            mode: "level"
+                            value: ramCard.used
+                            tickW: 4
+                            gap: 3
+                            color_: ramCard.tone
                         }
                     }
 
@@ -437,7 +360,6 @@ PanelWindow {
                                 label: Services.SysMon.cpuTemp > 0
                                     ? Services.SysMon.cpuTemp.toFixed(0) + "°" : "--"
                                 caption: Services.I18n.t("proc.cpuShort")
-                                phase: 0.7
                             }
                             Vessel {
                                 width: (parent.width - 10) / 2
@@ -447,7 +369,6 @@ PanelWindow {
                                 label: Services.SysMon.gpuTemp > 0
                                     ? Services.SysMon.gpuTemp.toFixed(0) + "°" : "--"
                                 caption: Services.I18n.t("proc.gpuShort")
-                                phase: 2.9
                             }
                         }
                     }
@@ -460,21 +381,6 @@ PanelWindow {
                         id: gpuCard
 
                         readonly property color tone: bodyRoot.toneAt(3)
-                        readonly property real used: Services.SysMon.gpuPercent / 100
-
-                        Widgets.LiquidFill {
-                            id: gpuLiquid
-                            anchors.fill: parent
-                            shape: "rect"
-                            radius_: gpuCard.radius
-                            level: gpuCard.used
-                            waveAmp: bodyRoot.amp(gpuCard.used)
-                            periodMs: bodyRoot.beat(gpuCard.used)
-                            phaseA: 2.3
-                            running: root.shown
-                            color_: gpuCard.tone
-                            layer.enabled: true
-                        }
 
                         Item {
                             id: gpuFace
@@ -501,12 +407,18 @@ PanelWindow {
                             }
                         }
 
-                        // The words the liquid has reached, re-inked.
-                        Widgets.Submerged {
-                            anchors.fill: parent
-                            source: gpuFace
-                            mask: gpuLiquid
-                            ink: Services.Colors.onColor(gpuCard.tone)
+
+                        Widgets.TickMeter {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.margins: gpuCard.inset
+                            height: 24
+                            mode: "history"
+                            samples: Services.SysMon.gpuHistory
+                            tickW: 4
+                            gap: 3
+                            color_: gpuCard.tone
                         }
                     }
 
@@ -518,27 +430,6 @@ PanelWindow {
                         id: netCard
 
                         readonly property color tone: bodyRoot.toneAt(4)
-                        // Traffic has no ceiling to be a fraction of, so the
-                        // level is read on a log scale: a full card is 20 MB/s,
-                        // and the first kilobytes still show.
-                        readonly property real used: {
-                            const kb = Services.SysMon.netRxKBs + Services.SysMon.netTxKBs
-                            return Math.min(1, Math.log(1 + kb) / Math.log(1 + 20480))
-                        }
-
-                        Widgets.LiquidFill {
-                            id: netLiquid
-                            anchors.fill: parent
-                            shape: "rect"
-                            radius_: netCard.radius
-                            level: netCard.used
-                            waveAmp: bodyRoot.amp(netCard.used)
-                            periodMs: bodyRoot.beat(netCard.used)
-                            phaseA: 3.4
-                            running: root.shown
-                            color_: netCard.tone
-                            layer.enabled: true
-                        }
 
                         Item {
                             id: netFace
@@ -560,8 +451,8 @@ PanelWindow {
                             }
                             Text {
                                 x: netCard.inset
-                                anchors.bottom: parent.bottom
-                                anchors.bottomMargin: 12
+                                anchors.top: netNum.bottom
+                                anchors.topMargin: 1
                                 text: "↓ " + Math.round(Services.SysMon.netRxKBs)
                                       + "    ↑ " + Math.round(Services.SysMon.netTxKBs) + " KB/s"
                                 color: Services.Colors.ash
@@ -570,11 +461,18 @@ PanelWindow {
                             }
                         }
 
-                        Widgets.Submerged {
-                            anchors.fill: parent
-                            source: netFace
-                            mask: netLiquid
-                            ink: Services.Colors.onColor(netCard.tone)
+
+                        Widgets.TickMeter {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.margins: netCard.inset
+                            height: 24
+                            mode: "history"
+                            samples: Services.SysMon.netHistory
+                            tickW: 4
+                            gap: 3
+                            color_: netCard.tone
                         }
                     }
 
@@ -588,22 +486,6 @@ PanelWindow {
 
                         readonly property color tone: bodyRoot.toneAt(5)
                         readonly property real used: Services.SysMon.diskPercent / 100
-
-                        Widgets.LiquidFill {
-                            id: diskLiquid
-                            anchors.fill: parent
-                            shape: "rect"
-                            radius_: diskCard.radius
-                            level: diskCard.used
-                            // A drive does not slosh: it is the one reading here
-                            // that moves once a day.
-                            waveAmp: 1.4
-                            periodMs: 7600
-                            phaseA: 4.6
-                            running: root.shown
-                            color_: diskCard.tone
-                            layer.enabled: true
-                        }
 
                         Item {
                             id: diskFace
@@ -630,11 +512,18 @@ PanelWindow {
                             }
                         }
 
-                        Widgets.Submerged {
-                            anchors.fill: parent
-                            source: diskFace
-                            mask: diskLiquid
-                            ink: Services.Colors.onColor(diskCard.tone)
+
+                        Widgets.TickMeter {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.margins: diskCard.inset
+                            height: 24
+                            mode: "level"
+                            value: diskCard.used
+                            tickW: 4
+                            gap: 3
+                            color_: diskCard.tone
                         }
                     }
                 }

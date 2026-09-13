@@ -114,22 +114,28 @@ PanelWindow {
                     opacity: card.contentAmt
 
                     // ── The reading and the bar ────────────────────────────
-                    // One vessel holding the whole reading: the device, the
-                    // number and the slider all stand in the liquid, and the
-                    // part of them it has reached is re-inked -- the bar
-                    // changes colour exactly the way the lettering does.
-                    Widgets.LiquidPane {
+                    // A card holding the number and the slider. It used to be a
+                    // vessel of liquid rising behind them, which said the level a
+                    // second time -- the slider already is the level.
+                    Rectangle {
                         id: dial
                         width: parent.width
                         height: 118
-                        dimmed: win.muted
-                        fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost
-                        value: levelBar.shown
-                        easeMs: levelBar.dragging ? 0 : 220
-                        onTapped: win.toggleMute()
+                        radius: Services.Sizes.cardLgR
+                        color: Services.Colors.fillInset
+                        border.width: 1
+                        border.color: Services.Colors.fillRest
 
                         readonly property Item glyphItem: volGlyph
                         readonly property Item labelItem: volLabel
+
+                        // A tap on the card mutes. First child, so the slider's
+                        // own handle wins over it.
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: win.toggleMute()
+                        }
 
                         // No device line above the number: the picker right under this
                         // card names it, and naming it twice was the panel reading
@@ -153,15 +159,13 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: Math.round(levelBar.shown * 100) + "%"
                                 visible: !card.morphingLabel
-                                color: Services.Colors.snow
+                                color: win.muted ? Services.Colors.mist : Services.Colors.snow
                                 font.pixelSize: 34
                                 font.bold: true
                                 font.family: "JetBrainsMono NF"
                             }
                         }
 
-                        // The slider stands in the vessel: its own track and
-                        // fill, re-inked by the liquid it is standing in.
                         Widgets.SliderTrack {
                             id: levelBar
                             x: 18

@@ -83,9 +83,32 @@ Singleton {
         root.readCpu()
         root.readRam()
         if (!root.deep) return
+        root.remember()
         netProc.running = true
         sensorsProc.running = true
         gpuStatProc.running = true
+    }
+
+    // The last minute or so of the readings that move, oldest first, for the
+    // meters that draw a past. Kept only while something is showing it: a
+    // history nobody reads is not worth a timer. Each push reads the value the
+    // previous sample left, which lags the number beside it by one tick --
+    // invisible at this rate.
+    readonly property int historyLen: 48
+    property var cpuHistory: []
+    property var gpuHistory: []
+    property var netHistory: []
+    function push(list, v) {
+        const next = list.concat([Math.max(0, Math.min(1, v))])
+        return next.length > root.historyLen ? next.slice(next.length - root.historyLen) : next
+    }
+    function remember() {
+        root.cpuHistory = root.push(root.cpuHistory, root.cpuPercent / 100)
+        root.gpuHistory = root.push(root.gpuHistory, root.gpuPercent / 100)
+        // Traffic has no ceiling, so it is read on a log scale: 20 MB/s fills
+        // a tick and the first kilobytes still show.
+        const kb = root.netRxKBs + root.netTxKBs
+        root.netHistory = root.push(root.netHistory, Math.log(1 + kb) / Math.log(1 + 20480))
     }
 
     Timer {

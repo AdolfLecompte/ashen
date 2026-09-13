@@ -37,23 +37,25 @@ DesktopWidget {
 
     Component {
         id: vesselShape
-        Widgets.LiquidPane {
+        // The level as a row of ticks under the reading. It was a vessel of
+        // liquid; the ticks say the same fraction without repainting a wave.
+        Rectangle {
             width: 200
             height: 96
-            value: root.frac
-            // Charging is something happening, not something that is.
-            glow: Services.Battery.charging
-            lively: Services.Battery.charging
-            running: root.live
+            radius: Services.Sizes.cardLgR
+            color: Services.Colors.fillInset
+            border.width: 1
+            border.color: Services.Colors.fillRest
 
             Row {
-                anchors.centerIn: parent
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 14
                 spacing: 10
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.glyph
-                    color: Services.Colors.snow
+                    color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.snow
                     font.pixelSize: 26
                     font.family: "Material Symbols Rounded"
                 }
@@ -65,6 +67,16 @@ DesktopWidget {
                     font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
+            }
+
+            Widgets.TickMeter {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.margins: 16
+                height: 20
+                mode: "level"
+                value: root.frac
             }
         }
     }
