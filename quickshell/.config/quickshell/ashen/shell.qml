@@ -388,7 +388,11 @@ ShellRoot {
             const i = order.indexOf(Services.Prefs.barPosition)
             Services.Prefs.barPosition = order[(i + 1) % order.length]
         }
-        // The look, from a keybind. Same four the Bar tab offers.
+        // What the workspace chips show: icons, numbers or dots.
+        function workspaces(name: string) {
+            if (["icons", "numbers", "dots"].indexOf(name) === -1) return
+            Services.Prefs.workspaceStyle = name
+        }
         // How much of the edge it takes, 50-100 %.
         function length(pct: int) {
             Services.Prefs.barLength = Math.max(50, Math.min(100, pct))
@@ -405,6 +409,7 @@ ShellRoot {
             if (["full", "compact", "icon"].indexOf(mode) === -1) return
             Services.Prefs.setContent(pill, mode)
         }
+        // The look, from a keybind. Same four the Bar tab offers.
         function style(name: string) {
             if (["pills", "solid", "framed", "island"].indexOf(name) === -1) return
             Services.Prefs.barStyle = name

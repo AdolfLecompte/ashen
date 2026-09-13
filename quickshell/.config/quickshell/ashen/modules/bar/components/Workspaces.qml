@@ -236,10 +236,16 @@ Item {
                     // on and the preview opened onto nothing. Count real windows.
                     readonly property int winCount:
                         Hyprland.toplevels.values.filter(t => t.workspace && t.workspace.id === wsId).length
-                    width: root.dots ? (isActive ? root.dotOnW : root.dotW) : root.innerH
-                    height: root.innerH
+                    // A dot stretches ALONG the bar. On a side bar that is its
+                    // height: stretching the width made the one you stand on a
+                    // bar lying across a column only one pill wide.
+                    readonly property int along: root.dots ? (isActive ? root.dotOnW : root.dotW) : root.innerH
+                    width: root.vertical ? root.innerH : along
+                    height: root.vertical ? along : root.innerH
                     Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard
                                                           easing.type: Services.Sizes.easeOut } }
+                    Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard
+                                                           easing.type: Services.Sizes.easeOut } }
                     // Guarded: the MouseArea is declared further down, so on the
                     // first evaluation the id is not resolved yet and a bare
                     // `.containsMouse` throws.
@@ -267,9 +273,9 @@ Item {
                         // the one you are standing on. Taking the cell's whole
                         // width made every dot an oval, which reads as a short
                         // bar rather than as a point.
-                        width: parent.isActive ? parent.width : root.dotH
-                        height: root.dotH
-                        radius: height / 2
+                        width: (parent.isActive && !root.vertical) ? parent.width : root.dotH
+                        height: (parent.isActive && root.vertical) ? parent.height : root.dotH
+                        radius: Math.min(width, height) / 2
                         // Outlined, a dot is a RING: a row of filled circles on
                         // a drawn plate is the same filled-blob-inside-an-
                         // outline the rest of the bar just stopped doing. The

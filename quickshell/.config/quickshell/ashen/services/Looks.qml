@@ -17,8 +17,21 @@ Singleton {
     // line here, and nothing else in the file has to know its name.
     readonly property var keys: [
         "barStyle", "barPosition", "barLayout", "useGradients", "visualizer",
-        "panelStyle", "themeMode", "desktopLayout"
+        "panelStyle", "themeMode", "desktopLayout",
+        "barLength", "barOutline", "workspaceStyle", "barContent"
     ]
+
+    // The last four joined the list after profiles already existed, so a
+    // profile saved before then has no word on them -- and a missing key is
+    // skipped, which made the bar keep whatever length the PREVIOUS wallpaper
+    // had left it at while everything else about the look changed. Moving to a
+    // remembered wallpaper that predates them puts the LENGTH back as the
+    // shell ships it. Only the length: filling the workspace style too swapped
+    // somebody's numbers for icons on every old profile, which is a new
+    // surprise rather than a fix. The other three carry over until that
+    // wallpaper learns its own. Only for real profiles: the classic look for an
+    // unremembered wallpaper stays the two keys it has always been.
+    readonly property var shipped: ({ barLength: 100 })
 
     // What the shell looks like right now. Every key is read straight out of
     // its service: a binding only re-runs for what it can see, so this cannot
@@ -32,6 +45,10 @@ Singleton {
         panelStyle: Prefs.panelStyle,
         themeMode: Prefs.themeMode,
         desktopLayout: Prefs.desktopLayout,
+        barLength: Prefs.barLength,
+        barOutline: Prefs.barOutline,
+        workspaceStyle: Prefs.workspaceStyle,
+        barContent: Prefs.barContent,
         scheme: Theme.schemeId,
         dynamicType: Theme.dynamicType
     })
@@ -104,12 +121,14 @@ Singleton {
     }
 
     // The settings half of putting a profile on: no scripts, no repaint.
-    function applyKeys(p) {
+    function applyKeys(p, fillMissing) {
         const k = p.keys || {}
         for (const name of root.keys) {
-            if (k[name] === undefined) continue
-            if (name === "themeMode") Theme.stageMode(k[name])
-            else Prefs[name] = k[name]
+            let v = k[name]
+            if (v === undefined && fillMissing) v = root.shipped[name]
+            if (v === undefined) continue
+            if (name === "themeMode") Theme.stageMode(v)
+            else Prefs[name] = v
         }
         // barLayout is a packed string; the sections the bar actually reads are
         // rebuilt from it, and nothing else does that for us.
@@ -137,7 +156,8 @@ Singleton {
     function wearKeys(look) {
         if (!look || !look.keys) return
         root.applying = true
-        root.applyKeys(look)
+        root.applyKeys(look, root.pendingFills)
+        root.dressedFor = root.pendingPath
         settle.restart()
     }
 
@@ -149,6 +169,14 @@ Singleton {
     // Put a wallpaper's look on around the change itself: the widgets leave,
     // the picture crosses, and the new arrangement arrives with them.
     property var pending: null
+    // Whether putting `pending` on should fill the keys an old profile has no
+    // word on. Only on a real CHANGE of wallpaper: at startup the shell also
+    // dresses for the wallpaper already on screen, and filling there reset the
+    // workspace style and the bar length of the look you were wearing.
+    property bool pendingFills: false
+    // The wallpaper the shell last dressed for. Empty until the first one.
+    property string dressedFor: ""
+    property string pendingPath: ""
     // The wallpaper we are waiting to see land, and whether WE are the ones who
     // asked for it. The difference matters: our own switch knows what is
     // coming, so a different one landing meanwhile is an older script
@@ -159,6 +187,8 @@ Singleton {
 
     function swap(path, repaint) {
         const look = root.lookFor(path)
+        root.pendingFills = root.has(path) && root.dressedFor !== "" && root.dressedFor !== path
+        root.pendingPath = path
         root.applying = true
         Desktop.hushed = true
         root.wearTheme(look, repaint)
@@ -202,7 +232,8 @@ Singleton {
         if (!root.has(path)) return
         const p = root.profiles[path]
         root.applying = true
-        root.applyKeys(p)
+        root.applyKeys(p, false)
+        root.dressedFor = path
         root.wearTheme(p, repaint)
         settle.restart()
     }
@@ -290,6 +321,7 @@ Singleton {
         // Whatever is already on screen at login was put there by the restore
         // script, which knows nothing about profiles.
         if (Wallpaper.path === "") return
+        root.dressedFor = Wallpaper.path
         if (root.has(Wallpaper.path)) root.apply(Wallpaper.path, true)
         // NOT the default at startup: the shell has just read its own prefs,
         // and wearing the classic here would undo the desktop somebody left set

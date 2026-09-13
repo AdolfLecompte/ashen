@@ -33,11 +33,24 @@ Item {
     readonly property string style: root.styleOverride !== "" ? root.styleOverride : root.entry.style
     readonly property string skin: root.skinOverride !== "" ? root.skinOverride : root.entry.skin
 
-    // Where the record says it goes, kept on screen. Dragging writes straight
-    // to x/y (that is what drag does), so the binding is restored by hand when
-    // the hand lets go.
-    readonly property real targetX: Math.max(0, Math.min(root.entry.x, Math.max(0, root.fieldW - width)))
-    readonly property real targetY: Math.max(0, Math.min(root.entry.y, Math.max(0, root.fieldH - height)))
+    // Where the record says it goes, kept on screen and off the bar. Dragging
+    // writes straight to x/y (that is what drag does), so the binding is
+    // restored by hand when the hand lets go.
+    //
+    // Off the bar: a layout arranged under a top bar keeps its pixels, and
+    // moving the bar to a side put it straight on top of whatever stood along
+    // that edge -- the media card and the visualiser showed through between
+    // the pills. The record is left alone; only where it is DRAWN steps clear
+    // of the bar's band, so putting the bar back puts the widget back too.
+    // Only on the desktop: the lock screen places its own and has no bar.
+    readonly property string barEdge: root.managed ? Services.Sizes.applied : ""
+    readonly property real band: Services.Sizes.panelTop
+    readonly property real minX: root.barEdge === "left" ? root.band : 0
+    readonly property real minY: root.barEdge === "top" ? root.band : 0
+    readonly property real maxX: root.fieldW - (root.barEdge === "right" ? root.band : 0) - width
+    readonly property real maxY: root.fieldH - (root.barEdge === "bottom" ? root.band : 0) - height
+    readonly property real targetX: Math.max(root.minX, Math.min(root.entry.x, Math.max(root.minX, root.maxX)))
+    readonly property real targetY: Math.max(root.minY, Math.min(root.entry.y, Math.max(root.minY, root.maxY)))
     x: root.targetX
     y: root.targetY
 
