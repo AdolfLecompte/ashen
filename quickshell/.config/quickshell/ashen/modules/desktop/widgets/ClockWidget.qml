@@ -9,12 +9,20 @@ DesktopWidget {
     id: root
     wid: "clock"
 
+    // 12 or 24 hours, with or without seconds -- its own, or the bar's.
+    readonly property bool h24: root.skin === "24" || root.skin === "24s"
+                                || ((root.skin === "bar" || root.skin === "") && Services.Prefs.clock24h)
+    readonly property bool secs: root.skin === "12s" || root.skin === "24s"
+                                 || ((root.skin === "bar" || root.skin === "") && Services.Prefs.clockSeconds)
+    readonly property string hourFmt: root.h24 ? "HH" : "hh"
+    readonly property string timeFmt: root.hourFmt + ":mm" + (root.secs ? ":ss" : "") + (root.h24 ? "" : " AP")
+
     // ── Digital: the shell's own clock face, seconds written small ──────
     component Digital: Column {
         spacing: 2
 
         Widgets.ClockText {
-            time: Services.Time.fmt(Services.Prefs.timeFormat)
+            time: Services.Time.fmt(root.timeFmt)
             px: 64
             secRatio: 0.30
             color_: Services.Colors.snow
@@ -33,7 +41,7 @@ DesktopWidget {
         spacing: -14
 
         Text {
-            text: Services.Time.fmt(Services.Prefs.clock24h ? "HH" : "hh")
+            text: Services.Time.fmt(root.hourFmt)
             color: Services.Colors.snow
             font.pixelSize: 96
             font.bold: true

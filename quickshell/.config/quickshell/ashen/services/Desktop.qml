@@ -18,7 +18,15 @@ Singleton {
         { id: "clock", group: "time", label: "Clock", glyph: "\ue8ae", x: 80, y: 120, styles: [
             { id: "digital", label: "Digital" },
             { id: "analog", label: "Analog" },
-            { id: "stack", label: "Stacked" }] },
+            { id: "stack", label: "Stacked" }],
+          // How it tells the hour. The first follows the bar's own clock, so a
+          // widget arranged before this existed keeps reading the way it did.
+          skins: [
+            { id: "bar", label: "Bar" },
+            { id: "12", label: "12h" },
+            { id: "12s", label: "12h:ss" },
+            { id: "24", label: "24h" },
+            { id: "24s", label: "24h:ss" }] },
         { id: "weather", group: "time", label: "Weather", glyph: "\uf172", x: 80, y: 420, styles: [
             { id: "full", label: "Full" },
             { id: "compact", label: "Compact" },
@@ -34,10 +42,7 @@ Singleton {
           styles: [
             { id: "large", label: "Large" },
             { id: "medium", label: "Medium" },
-            { id: "compact", label: "Compact" }],
-          skins: [
-            { id: "liquid", label: "Ticks" },
-            { id: "chart", label: "Chart" }] },
+            { id: "compact", label: "Compact" }] },
         { id: "battery", group: "machine", label: "Battery", glyph: "\ue1a4", x: 460, y: 120, styles: [
             { id: "vessel", label: "Ticks" },
             { id: "ring", label: "Ring" },
