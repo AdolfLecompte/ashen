@@ -1,5 +1,59 @@
 # Changelog
 
+## 3.1.0
+
+### Added
+- **Game mode.** Flat compositor, quiet shell, by hand only: `SUPER + SHIFT + G`,
+  a chip under the power profiles, a switch in Settings, or
+  `qs ipc call game toggle`. It turns off animations, blur, shadows, rounding
+  and gaps, stops the visualiser, takes the desktop widgets down, holds
+  notifications and keeps the machine awake. What Hyprland had is read first and
+  put back exactly -- never with `hyprctl reload`, which would re-apply
+  monitors.lua and throw away your screen layout. Restart the shell mid-game and
+  it still knows how to leave.
+- **A wallpaper per screen.** With a second monitor plugged in, the picker grows
+  a screen selector; the pick lands on that screen alone. Videos too, one
+  mpvpaper per screen, paused while covered. The palette follows the primary
+  screen, and each screen gets its own wallpaper back at login.
+- **The picker searches.** Type to filter by file name; Escape clears the search
+  before it closes the picker. The card you are choosing is now as wide as its
+  picture, so the wallpaper is shown whole instead of through a portrait slot,
+  and its name sits in the corner.
+- **Keep Awake has a third answer.** Off, *still locks* -- the screen stays on
+  and the machine stays up, but the session still locks -- and *nothing sleeps*.
+- **A capsule for the machine.** CPU and memory in the bar, dragged in from
+  Settings > Bar > Layout like any other pill.
+- **The monitor board answers the keyboard.** Arrows move the focus, Enter places
+  the selected screen, Shift carries it.
+- **The phrase bank doubled.** Every moment has at least four lines now, most six
+  or seven, written per language.
+
+### Changed
+- **The shell idles at under half what it did.** cava kept sending sixty lines a
+  second of silence, and the shell parsed every one before throwing it away:
+  it now sleeps after two quiet seconds and wakes on the first note. Battery,
+  charger, brightness, the lock LEDs, CPU and memory are read from the kernel
+  in-process instead of through a shell every few seconds.
+- **Settings are written once per change, not once per field**, so changing
+  several at once can no longer lose one of them.
+- **One switch decides whether anything moves.** Every animation in the shell
+  goes through the same primitive, which is what lets game mode still them all.
+- **Wallpaper thumbnails are sharper**, sized for the wide card that now shows
+  them.
+
+### Fixed
+- **An unplugged monitor stayed in the display board.** Hyprland keeps a pulled
+  cable in its full list; the board now shows a screen only while it is lit, or
+  while Ashen is the one keeping it off.
+- **The blue-light filter did not come back after a restart**, and a stray
+  wlsunset from an earlier session could fight the new one.
+- **A pill reserved room for a label it did not have.** A disconnected Bluetooth
+  chip kept 46 px of nothing.
+- **The picker's toolbar was hard to see**: three thin plates over a photograph.
+  It is one bar now, and the search icon no longer goes dark as you type.
+- **A fresh machine without the AUR prompt theme got an error instead of a
+  shell.**
+
 ## 3.0.0
 
 ### Added
