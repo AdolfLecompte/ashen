@@ -36,18 +36,6 @@ PanelWindow {
     // empty until armed so the line grows in rather than being there already.
     readonly property var plotted: win.battArmed ? Services.Battery.plot(36) : []
 
-    // How much of the last day there actually is. A pack that has only been
-    // watched for two hours must not draw those two hours as a full day.
-    readonly property string spanText: {
-        const s = Services.Battery.series
-        if (s.length < 2) return ""
-        const hours = (Date.now() / 1000 - s[0].t) / 3600
-        // Only worth saying when the window is genuinely short: an hour missing
-        // off a day is not news.
-        if (hours >= Services.Battery.seriesHours - 2) return ""
-        return hours < 1 ? Math.round(hours * 60) + " min"
-                         : Math.round(hours) + " h"
-    }
 
     // A caption, a number and a footnote. Three of them stand in a row under
     // the curve; the shape is the panel's, so it lives here and not in widgets.
@@ -142,9 +130,10 @@ PanelWindow {
         pillGlyph: Services.AppState.pillGlyph("battery")
         pillLabel: Services.AppState.pillLabel("battery")
         openW: 440
-        // 396 was the card before game mode: its heading and chip add a
-        // 12 gap, a 13 line, another 12 and 52 of chip.
-        openH: 396 + 89
+        // Measured to what it holds. A card taller than its column does not
+        // leave the room at the bottom: the layout hands it out between every
+        // row, which is the dead space that showed up once the headings went.
+        openH: 372
         cardRadius: 18
 
         body: Component {
@@ -211,21 +200,10 @@ PanelWindow {
                     // own plate so the line has a floor to stand on.
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 104
+                        Layout.preferredHeight: 80
                         radius: Services.Sizes.cardR
                         color: Services.Colors.fillInset
 
-                        Text {
-                            anchors.right: parent.right
-                            anchors.rightMargin: 12
-                            y: 10
-                            visible: win.spanText !== ""
-                            text: win.spanText
-                            color: Services.Colors.mist
-                            font.pixelSize: 9
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                        }
 
                         Widgets.Trend {
                             id: curve
@@ -235,7 +213,7 @@ PanelWindow {
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
                             anchors.bottomMargin: 12
-                            height: 60
+                            height: 56
                             stepped: true
                             maxValue: 100
                             values: win.plotted
