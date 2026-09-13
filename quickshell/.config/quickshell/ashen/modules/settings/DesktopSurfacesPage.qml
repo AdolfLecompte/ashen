@@ -328,7 +328,7 @@ Section {
                 Text {
                     Layout.fillWidth: true
                     text: hit.modelData.name
-                    color: hitArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                    color: hitArea.hovered ? Services.Colors.snow : Services.Colors.mist
                     elide: Text.ElideRight
                     font.pixelSize: Services.Sizes.fsInput
                     font.family: "JetBrainsMono NF"
@@ -341,12 +341,10 @@ Section {
                         appQuery.text = ""
                     }
                 }
-                MouseArea {
-                    id: hitArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    acceptedButtons: Qt.NoButton
-                }
+                // A handler, not a MouseArea: this only listens for the pointer,
+                // and an anchored item inside a RowLayout is undefined behaviour
+                // Qt warns about on every build of the list.
+                HoverHandler { id: hitArea }
             }
         }
 
