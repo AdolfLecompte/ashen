@@ -12,9 +12,10 @@ set -uo pipefail
 # so the script keeps working when run by hand with no arguments.
 DIR="${1:-$HOME/Pictures/Wallpapers}"
 THUMBS="$HOME/.cache/ashen_wall_thumbs"
-# Wide enough that a portrait card (370x460, and up to 1.6x that while the
-# picture pans behind its frame) still scales DOWN.
-THUMB_W=1000
+# Wide enough that the card in front still scales DOWN. It is as wide as its
+# picture now -- ~820 px for a 16:9 wallpaper at the card's height -- and on a
+# HiDPI panel that is well past 1000 real pixels.
+THUMB_W=1400
 mkdir -p "$THUMBS"
 
 # The cache carries the width it was baked at. Raising THUMB_W used to leave

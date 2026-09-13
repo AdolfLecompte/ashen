@@ -908,7 +908,7 @@ Scope {
                                             // Width only: pinning both fits the thumb
                                             // inside that box and threw away the
                                             // resolution the cache had just baked.
-                                            sourceSize.width: 1000
+                                            sourceSize.width: 1400
                                             fillMode: Image.PreserveAspectCrop
                                             smooth: true
                                             asynchronous: true
