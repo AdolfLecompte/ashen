@@ -1,8 +1,5 @@
 import Quickshell
-import Quickshell.Hyprland
 import QtQuick
-import QtQuick.Layouts
-
 import "root:/modules/bar/components"
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services

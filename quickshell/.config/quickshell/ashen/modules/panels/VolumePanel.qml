@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets

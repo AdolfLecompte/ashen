@@ -1,7 +1,6 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Layouts
 import QtQuick.Controls
 
 import "root:/services" as Services

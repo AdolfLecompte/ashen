@@ -1,7 +1,6 @@
 import Quickshell
 import Quickshell.Services.Mpris
 import QtQuick
-import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets

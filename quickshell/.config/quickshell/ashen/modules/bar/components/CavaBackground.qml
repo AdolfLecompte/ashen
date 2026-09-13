@@ -1,4 +1,3 @@
-import Quickshell.Io
 import QtQuick
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services

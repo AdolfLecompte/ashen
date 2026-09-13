@@ -2,7 +2,6 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 
 import "root:/modules/widgets" as Widgets

@@ -1,10 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
-
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
 

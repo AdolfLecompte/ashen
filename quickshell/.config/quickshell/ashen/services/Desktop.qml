@@ -1,6 +1,5 @@
 pragma Singleton
 import Quickshell
-import Quickshell.Io
 import QtQuick
 
 // The widgets that live on the wallpaper: which ones are out, and where each

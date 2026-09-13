@@ -1,11 +1,9 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Widgets
 import Quickshell.Services.Pam
 import Qt5Compat.GraphicalEffects
 import QtQuick
-import QtQuick.Layouts
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
 import "root:/modules/desktop/widgets" as DeskWidgets

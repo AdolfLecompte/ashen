@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 import "root:/modules/widgets" as Widgets

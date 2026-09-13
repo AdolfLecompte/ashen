@@ -1,7 +1,6 @@
 // Ashen — idle timeouts (hypridle.conf generator).  by Adolf — github.com/AdolfLecompte
 pragma Singleton
 import Quickshell
-import Quickshell.Io
 import QtQuick
 
 // hypridle has no runtime API, so Settings writes its own copy of the config

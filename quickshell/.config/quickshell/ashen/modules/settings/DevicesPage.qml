@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import "root:/modules/settings/components"
 
 // What the machine plays through and records with. The keyboard and the apps

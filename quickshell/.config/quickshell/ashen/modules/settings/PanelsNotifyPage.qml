@@ -1,7 +1,6 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"

@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import "root:/modules/settings/components"
 
 // The bar itself: where it sits, what shape it wears, and what it carries.
