@@ -18,7 +18,8 @@ Singleton {
     readonly property var keys: [
         "barStyle", "barPosition", "barLayout", "useGradients", "visualizer",
         "panelStyle", "themeMode", "desktopLayout",
-        "barLength", "barOutline", "workspaceStyle", "barContent"
+        "barLength", "barOutline", "workspaceStyle", "barContent",
+        "dockEnabled", "dockEdge"
     ]
 
     // The last four joined the list after profiles already existed, so a
@@ -49,6 +50,8 @@ Singleton {
         barOutline: Prefs.barOutline,
         workspaceStyle: Prefs.workspaceStyle,
         barContent: Prefs.barContent,
+        dockEnabled: Prefs.dockEnabled,
+        dockEdge: Prefs.dockEdge,
         scheme: Theme.schemeId,
         dynamicType: Theme.dynamicType
     })
@@ -60,10 +63,16 @@ Singleton {
     // plain wallpaper left the last one's widgets and bar sitting there, and
     // the whole thing read as "it does not remember anything".
     property var baseline: ({})
-    // Until one is saved: the shell as it ships -- no widgets on the desktop,
-    // pills on the bar. Only these two, deliberately: turning somebody's light
-    // mode off because they never saved a default would be going too far.
-    readonly property var classic: ({ desktopLayout: "", barStyle: "pills" })
+    // Until one is saved: the shell as it ships -- no widgets on the desktop and
+    // the whole bar as it comes out of the box, edge, shape, layout, length and
+    // all. It used to reset only the shape, so a wallpaper that did not follow
+    // its own look wore whatever bar the last one had left behind, which is no
+    // standard at all. The theme is deliberately not in it: turning somebody's
+    // light mode off because they never saved a default would be going too far.
+    readonly property var classic: ({
+        desktopLayout: "", barStyle: "pills", barPosition: "top", barLayout: "",
+        barLength: 100, barOutline: false, barContent: ""
+    })
     readonly property var defaultLook: (root.baseline && root.baseline.keys)
         ? root.baseline : { on: true, keys: root.classic, theme: {} }
 
@@ -94,11 +103,25 @@ Singleton {
 
     // Start (or stop) remembering the wallpaper on screen. Turning it on takes
     // the picture immediately: what is on screen IS the look being kept.
+    // Off is remembered too, as a record that says so: a wallpaper with no
+    // record at all is adopted the first time it is worn, which is what makes
+    // following the wallpaper the default, and deleting the record on "off"
+    // would have adopted it straight back.
     function remember(on) {
         if (root.current === "") return
         const next = Object.assign({}, root.profiles)
-        if (on) next[root.current] = root.snapshot()
-        else delete next[root.current]
+        next[root.current] = on ? root.snapshot() : { on: false }
+        root.profiles = next
+        root.save()
+    }
+
+    // A wallpaper no one has decided about starts following its own look: it
+    // takes the look it is wearing once that look has landed.
+    property string adoptPath: ""
+    function adopt(path) {
+        if (!root.loaded || path === "" || root.profiles[path] !== undefined) return
+        const next = Object.assign({}, root.profiles)
+        next[path] = root.snapshot()
         root.profiles = next
         root.save()
     }
@@ -186,9 +209,14 @@ Singleton {
     property bool asked: false
 
     function swap(path, repaint) {
-        const look = root.lookFor(path)
+        // Never decided about: it keeps the look you are wearing and starts
+        // remembering it. The standard look is for a wallpaper told NOT to
+        // follow its own -- resetting the bar on every new picture would be a
+        // punishment for trying one.
+        const look = root.profiles[path] === undefined ? null : root.lookFor(path)
         root.pendingFills = root.has(path) && root.dressedFor !== "" && root.dressedFor !== path
         root.pendingPath = path
+        root.adoptPath = path
         root.applying = true
         Desktop.hushed = true
         root.wearTheme(look, repaint)
@@ -203,7 +231,10 @@ Singleton {
         afterCross.stop()
         root.waitingFor = ""
         root.asked = false
-        root.wearKeys(root.pending)
+        // Nothing to put on (a wallpaper keeping the current look) still has to
+        // let `applying` go, or nothing would ever be captured again.
+        if (root.pending) root.wearKeys(root.pending)
+        else { root.dressedFor = root.pendingPath; settle.restart() }
         root.pending = null
         Desktop.hushed = false
     }
@@ -251,7 +282,20 @@ Singleton {
     Timer {
         id: settle
         interval: 400
-        onTriggered: root.applying = false
+        onTriggered: {
+            root.applying = false
+            if (root.adoptPath !== "") {
+                root.adopt(root.adoptPath)
+                root.adoptPath = ""
+            }
+        }
+    }
+    // At login the look on screen came from the saved preferences, which may
+    // still be loading when this file is read: wait for them before adopting.
+    Timer {
+        id: adoptAtLogin
+        interval: 1500
+        onTriggered: root.adopt(Wallpaper.path)
     }
 
     onLiveChanged: root.capture()
@@ -323,6 +367,7 @@ Singleton {
         if (Wallpaper.path === "") return
         root.dressedFor = Wallpaper.path
         if (root.has(Wallpaper.path)) root.apply(Wallpaper.path, true)
+        else if (root.profiles[Wallpaper.path] === undefined) adoptAtLogin.restart()
         // NOT the default at startup: the shell has just read its own prefs,
         // and wearing the classic here would undo the desktop somebody left set
         // up on a wallpaper they simply never asked to remember.

@@ -58,6 +58,49 @@ Item {
 
 
     // A box, not a rule.
+    // ── This wallpaper's own look ───────────────────────────────────────
+    // Right under the wallpaper it belongs to: it decides what everything below
+    // it does when the wallpaper changes, so it cannot sit at the bottom.
+    Card {
+        title: Services.I18n.t("settings.look.profile")
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
+
+            Text {
+                text: Services.I18n.t("settings.look.remember")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+            }
+            Item { Layout.fillWidth: true }
+            Toggle {
+                checked: Services.Looks.remembering
+                enabled: Services.Looks.current !== ""
+                onToggled: Services.Looks.remember(!Services.Looks.remembering)
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
+
+            Text {
+                text: Services.I18n.t("settings.look.default")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+            }
+            Item { Layout.fillWidth: true }
+            ActionBtn {
+                label: Services.I18n.t("settings.look.setCurrent")
+                onGo: Services.Looks.saveBaseline()
+            }
+        }
+
+    }
+
     Card {
         title: Services.I18n.t("settings.look.scheme")
         ColumnLayout {
@@ -397,57 +440,6 @@ Item {
     }
 
 
-    // ── This wallpaper's own look ───────────────────────────────────────
-    Card {
-        title: Services.I18n.t("settings.look.profile")
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-
-            Text {
-                text: Services.I18n.t("settings.look.remember")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Item { Layout.fillWidth: true }
-            Toggle {
-                checked: Services.Looks.remembering
-                enabled: Services.Looks.current !== ""
-                onToggled: Services.Looks.remember(!Services.Looks.remembering)
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-
-            Text {
-                text: Services.I18n.t("settings.look.default")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Item { Layout.fillWidth: true }
-            ActionBtn {
-                label: Services.I18n.t("settings.look.setCurrent")
-                onGo: Services.Looks.saveBaseline()
-            }
-        }
-
-        Text {
-            // Which wallpaper is wearing the look, or nothing at all.
-            visible: text !== ""
-            text: Services.Looks.remembering
-                ? Services.I18n.t("settings.look.follows", { w: Services.Looks.current.split("/").pop() }) : ""
-            color: Services.Colors.ash
-            font.pixelSize: Services.Sizes.fsMeta
-            font.family: "JetBrainsMono NF"
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-    }
 
 
     Item { Layout.preferredHeight: 8 }
