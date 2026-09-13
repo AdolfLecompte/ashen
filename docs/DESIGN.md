@@ -357,18 +357,18 @@ For a toast, the label stays the headline and the remark goes underneath:
 | A column heading | `widgets/SectionHead` | A bare `Text` at 18–20 px |
 | A square icon button | **`widgets/IconButton`** | A private `component XBtn` |
 | A transport / utility chip | `widgets/CtlChip` | — |
-| A reading between empty and full | `widgets/LiquidPane` (panel) / `LiquidBox` (chip) | A dial, a ring, a bare progress bar |
+| A level, or a recent past | `widgets/TickMeter` (`level` / `history`) | Liquid, a dial, a Canvas that repaints every frame |
+| A choice from a set that can grow | `widgets/DevicePicker` with `overlay: true` | A `Segmented` row that squeezes every new option |
+| A value you drag | `widgets/SliderRow` / `SliderTrack` at their 16 px default | A thinner track |
 | A line that may not fit its slot | `widgets/MarqueeText` | `elide` alone, or text that scrolls unprompted |
 | A chip on the system pill | `bar/components/SystemChip` | — |
 | A row laid along the bar's axis | `bar/components/BarStrip` | A raw `Row`/`Grid` |
 | Settings surfaces | `settings/components/*` | — |
 | Arranging monitors | `settings/components/MonitorGrid` | A free drag canvas |
 
-**The one thing components/ still has no answer for is a button with a word in
-it.** `IconButton` is a glyph in a box. Settings > Display needs Apply and
-Revert to say what they do, so it carries a private `ActionBtn` — the fourth
-rule says a sixth private copy is never the answer, so if a second surface ever
-needs a text button, that is the moment it moves to `components/`.
+**A button with a word in it** is `settings/components/ActionBtn`: the box holds
+still and the word grows, which fits because it keeps 20 px either side of its
+label.
 
 ### The two tiers
 
@@ -443,31 +443,22 @@ know what you opened, because you opened it.
 `widgets/SectionHead` is kept for a surface that genuinely has to name itself
 to a stranger, and nothing in the shell currently does.
 
-### A reading is a vessel with liquid in it
+### A reading is a row of ticks
 
-**Anything that is a level between empty and full is shown as water in a box.**
-Sound and battery both read this way, and that is the whole reason a panel with
-one number in it does not need a dial, a ring or a bar to say what it already
-says.
+**A level or a recent past is drawn as a row of thin rounded ticks**
+(`widgets/TickMeter`) — the language the workspace dots and the visualiser
+already speak. The liquid that used to fill these cards is gone: it repainted a
+wave every frame the panel was open and read as decoration.
 
-- `widgets/LiquidPane` is the vessel: it takes `value` and whatever the caller
-  puts inside it, and re-inks the part of those contents the water has reached
-  (`widgets/Submerged`) so nothing ever sits on a tone it shares. Letters,
-  a glyph, a whole `SliderTrack` — the slider standing in the water changes
-  colour exactly the way the words beside it do.
-- `widgets/LiquidBox` is the same idea at chip size, and `widgets/LiquidFill`
-  is the surface both are painted with: two sine waves of different length so
-  the swell never reads as a sawtooth, on a 33 ms timer rather than every
-  frame.
-- **The vessel opens empty.** `armed` holds it at zero until the card is really
-  on screen and `sweepMs` runs it up from there: the climb is the panel saying
-  what it just read, and a box that is already full when it lands says nothing.
-- **`glow` is for something that is still happening**, not for something that
-  merely is: the battery breathes while it charges and stands still while it
-  discharges. It is the same 900/900 pulse the dial's halo had.
-- **Never on the bar.** Three canvases painting at 30 fps in the bar measured
-  29.5 % CPU against 12.7 % without them. A vessel belongs to a panel, which is
-  only alive while it is open.
+- **`level`** — every tick full height, lit up to the value. For things with a
+  ceiling that crawl: memory, a drive, a temperature, a battery.
+- **`history`** — each tick one recent sample, its height the value, newest on
+  the right. For things that move: CPU, GPU, traffic. `SysMon` keeps the last 48
+  samples of each, only while something is showing them.
+- **A slider is already a level.** The sound card has a number and a slider and
+  no meter behind them: a second drawing of the same value is noise.
+- Ticks are rectangles, not a Canvas: drawn once, touched only when a sample
+  lands.
 
 ### Text runs only under the pointer
 
@@ -506,6 +497,79 @@ A tool chip hands over to the panel it opens (`takenOver`), so while its panel
 is up the chip is not drawn: the card grew out of that rect and has to read as
 the chip unfolded. Each chip watches **its own** panel — keyed on "any panel
 from this edge", opening one would blank the others.
+
+### Words: only what the glyph cannot say
+
+**If an icon already names a thing, the word beside it goes.** Numbers stay, and
+so does any state you could not work out by looking.
+
+- **Nothing says the same thing twice.** "CHARGING" over a bolt, "Paired" under
+  every device on a ring that only holds paired devices, the device's name over
+  the picker that names it — each of those went.
+- **Captions under glyphs go** when the value explains itself: a raindrop
+  beside 67 % is humidity. A value that would not explain itself is rewritten
+  so it does — the week is `W37`, the day of the year `255/365`, the battery
+  time `2h 06 left` rather than a bare `2h 06`.
+- **The exception is a dashboard of cards.** The process monitor keeps a name
+  beside each card's glyph: six cards of bare numbers read as guesses. A card
+  that is one of many keeps its title; a line inside a card does not.
+- **Toast titles are short, and they are translations** — `PLUGGED IN`, not
+  `CHARGER CONNECTED`, and never an English string written into the code.
+- An explanation that sits under a control permanently is almost always
+  removable. What stays is an error, a warning about something that will go
+  wrong, or how to use something you cannot discover (`right-click to pin`).
+
+### Choosing: buttons for a closed set, a list for one that grows
+
+- **A `Segmented` row is for a set that will never grow**: an edge of the
+  screen, 12 or 24 hours, light or dark, three power profiles.
+- **Anything that can grow is a list** (`widgets/DevicePicker`, `overlay: true`):
+  the language, the notification sound (a file dropped in the sound folder turns
+  up in it), matugen's dynamic styles. A fifth language in a row of buttons
+  squeezes the other four.
+- **A choice that is visual stays a grid of tiles** — the fixed palettes show
+  their swatches, and a list would lose them.
+- **Offer only what changes something.** A pill's full / compact / icon lists
+  only the readings that pill actually draws on the current bar edge; a saved
+  choice no longer offered falls back to full.
+- Choices about one thing live together: what the workspace chips show is in
+  the Workspaces card of the layout, beside its count, not on another page.
+- Bar styles run least to most: Pills, Island, Solid, Framed.
+
+### Controls in Settings
+
+- **One slider thickness: 16 px.** `SliderRow` and `SliderTrack` default to it;
+  a thinner track reads as a hairline you have to aim for.
+- **No elastic spacer between a value and its buttons.** The label takes the
+  width. A spacer between the parts shares each row's leftover width
+  differently, and the buttons stand somewhere else on every line.
+- **A card is as tall as what it holds.** A `ColumnLayout` taller than its rows
+  does not leave the rest at the bottom — it spreads it between every row, and
+  that is what dead space between sections is.
+
+### Hover on wide things
+
+**Hover grows and brightens — only where growing fits.** A card that runs the
+full width of its section, or a long line of text in a box with a small margin,
+is cut by the clip the moment it grows, even by a few pixels. Those hold still
+and their content brightens instead (the profile picture card, the repo link,
+the dynamic palette card). Short labels and small chips keep growing.
+
+### One motion per change
+
+**A transition waits for what it reveals.** The picture picker slides on the
+folder's *listing*, not on the click: sliding on the click and then swapping the
+grid when the pictures arrived played the change twice. Whatever the new
+content takes to load is spent before the slide, not after it. And a grid of
+pictures reads cached thumbnails, never the originals — a 4K PNG cannot be
+decoded at a smaller size.
+
+### A side bar keeps its band
+
+A desktop widget is *drawn* clear of the bar's band on whichever edge the bar
+is on; its saved position is untouched, so moving the bar back puts the widget
+back. Arranged under a top bar and moved to a side, widgets used to sit right
+under the pills.
 
 ### Where it comes from is not where it goes
 
@@ -716,6 +780,12 @@ bar) until someone saves one. Without it, putting on a plain wallpaper left the
 last one's widgets and bar sitting there, and the whole feature read as not
 remembering anything.
 
+What a wallpaper remembers includes the bar's length, outline, workspace style
+and per-pill readings. A profile saved before those joined the list has no word
+on them: moving to it puts the length back as shipped and leaves the rest as
+they are, and only on a real change of wallpaper — never when the shell starts,
+where filling reset the look already on screen.
+
 The order matters: `ashen-wallpaper.sh` runs matugen itself and reads the mode
 and the style off disk, so the picker stages the profile **before** it starts
 the script. A wallpaper that arrives any other way is reconciled afterwards, at
@@ -794,7 +864,11 @@ Ordered by how much each buys.
 - [ ] Icons from §5, rendered and checked before committing
 - [ ] Durations and curves from §6; hover via `Sizes.hoverScale`
 - [ ] Buttons reuse `IconButton` / `CtlChip`
-- [ ] A level between empty and full is a `LiquidPane`, armed so it opens empty
+- [ ] A level or a recent past is a `TickMeter`; a slider is already a level
+- [ ] No word beside a glyph that already names the thing; no caption twice
+- [ ] Sliders at 16 px; a set that can grow is a list, not a `Segmented` row
+- [ ] Nothing full-width grows on hover
+- [ ] The card is as tall as its content
 - [ ] Every box is a rounded rectangle or a circle — nothing else
 - [ ] Nothing destructive is red
 - [ ] `Esc` closes it; click-off closes it; the exit animation is visible

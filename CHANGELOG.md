@@ -30,6 +30,10 @@
 - **Recording has a shortcut.** `SUPER + SHIFT + R` starts and stops it, and
   `qs ipc call record toggle|start|stop|status` drives it from a script. With
   the recording capsule taken off the bar there used to be no way to record.
+- **Readings are rows of ticks.** Memory, drives, temperatures and the
+  battery light up to their level; CPU, GPU and traffic draw each recent sample
+  as its own tick, so a card shows the last minute instead of one number. The
+  liquid that used to fill those cards is gone.
 
 ### Changed
 - **The shell idles at under half what it did.** cava kept sending sixty lines a
@@ -43,6 +47,18 @@
   goes through the same primitive, which is what lets game mode still them all.
 - **Wallpaper thumbnails are sharper**, sized for the wide card that now shows
   them.
+- **Fewer words everywhere.** Where a glyph already names something, the word
+  beside it went: captions under icons, "CHARGING" over a bolt, "Paired" under
+  paired devices, a device named twice. System notices have short, translated
+  titles. Numbers and states you cannot guess stayed, and so did the card names
+  in the process monitor.
+- **A choice that can grow is a list.** Language, notification sound and the
+  dynamic palette style are picked from a list rather than a row of buttons.
+- **Every slider is 16 px thick**, the pill modes offer only what each pill
+  actually draws, the workspace style lives with the other pill options, and
+  bar styles run from least to most: Pills, Island, Solid, Framed.
+- **The picture picker is fast.** Thumbnails are cached and made in parallel,
+  so a folder opened before shows at once.
 
 ### Fixed
 - **An unplugged monitor stayed in the display board.** Hyprland keeps a pulled
@@ -60,6 +76,17 @@
   capsule appeared at full size and its neighbours snapped aside on a frame of
   half-built pills. It now grows into place while they slide, and folds away
   before the gap closes.
+- **On a side bar, desktop widgets sat under the pills**, and in dots the
+  current workspace lay across the column. Widgets now keep clear of the bar,
+  and the dot stretches along it.
+- **Changing wallpaper kept the old bar length.** The length, outline, workspace
+  style and pill modes are part of what a wallpaper remembers.
+- **The picture picker slid twice** on every folder change; once now, and
+  downwards.
+- **Hovering the profile picture or the repo link cut them off** at the edge of
+  their section. Wide things no longer grow under the pointer.
+- **Settings rows had their buttons out of line** and some cards left dead
+  space between sections.
 
 ## 3.0.0
 
