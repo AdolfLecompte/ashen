@@ -19,10 +19,9 @@ depends=(
     wl-clipboard cliphist grim slurp wf-recorder
     hypridle mpvpaper ffmpeg wlsunset
     fastfetch cava xdg-utils libnotify
-    # curl: cover art and lyrics. imagemagick: wallpaper thumbnails.
-    # python: the cover-art picker, ashen-cover-pick.py.
-    # gtk3: `gtk-launch`, how a notification action opens its app.
-    curl imagemagick python gtk3
+    # curl: lyrics, weather and the update check. imagemagick: wallpaper
+    # thumbnails. gtk3: `gtk-launch`, how a notification action opens its app.
+    curl imagemagick gtk3
     ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
     awww matugen
     xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
@@ -71,10 +70,6 @@ package() {
     for s in scripts/ashen-*.sh; do
         install -Dm755 "$s" "$pkgdir/usr/bin/$(basename "$s")"
     done
-    # Not a .sh: the cover picker is python, and the shell calls it as
-    # `python3 <path>` -- but it still has to be findable by bare name when
-    # there is no checkout.
-    install -Dm755 scripts/ashen-cover-pick.py "$pkgdir/usr/bin/ashen-cover-pick.py"
     install -Dm755 scripts/ashen-app "$pkgdir/usr/bin/ashen-app"
     install -Dm755 scripts/ashen-setup "$pkgdir/usr/bin/ashen-setup"
     install -Dm755 scripts/ashen-widgets "$pkgdir/usr/bin/ashen-widgets"

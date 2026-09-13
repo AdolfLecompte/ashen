@@ -30,16 +30,18 @@ for p in zsh-theme-powerlevel10k zsh-autosuggestions zsh-syntax-highlighting \
 
 # Nothing was dropped on the way over from setup-system.sh. Frozen as a fixture
 # rather than read from that file: it is deleted in task 8, and a safety net that
-# disappears with the thing it guards is not one. Two names are deliberately out:
+# disappears with the thing it guards is not one. These are deliberately out:
 #   stow             -> lib/dots.sh places the dotfiles now
 #   papirus-folders  -> re-runs itself under sudo; ashen-folders.sh replaced it
 #   zenity           -> the shell picks pictures and folders with its own dialog
 #                       (services/Picker.qml, components/DirField.qml); the only
 #                       zenity left in the tree is a window rule naming its class
+#   python           -> it only ran the web cover lookup, gone in 3.1.0: every
+#                       surface reads the cover straight from the player
 missing=0
 while read -r p; do
     [ -z "$p" ] && continue
-    case "$p" in stow|papirus-folders|zenity) continue ;; esac
+    case "$p" in stow|papirus-folders|zenity|python) continue ;; esac
     has "$p" || { say FAIL "$p was in setup-system.sh and is gone"; missing=1; fail=1; }
 done < docs/probes/fixtures/setup-system-packages.txt
 [ "$missing" -eq 0 ] && say ok "nothing lost from setup-system.sh"

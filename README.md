@@ -51,8 +51,7 @@ That line is the whole thing. What it does, in order:
 
 1. **Checks this is Arch.** No pacman, no install — it says so and stops.
 2. **Fetches the repo into `~/ashen`.** The directory is not yours to choose: the
-   shell's Lua and `services/Paths.qml` look there by name, and a checkout called
-   `Ashen` used to disagree with them in silence.
+   shell's Lua and `services/Paths.qml` look there by name.
 3. **Hands over to `install/run.sh`**, which is what actually installs. Everything
    below is that script.
 
@@ -191,7 +190,7 @@ brightnessctl lm_sensors pciutils wl-clipboard cliphist
 grim slurp wf-recorder hypridle ffmpeg
 wlsunset awww matugen nemo
 fastfetch cava xdg-utils libnotify curl
-imagemagick pacman-contrib python gtk3 qt6ct
+imagemagick pacman-contrib gtk3 qt6ct
 papirus-icon-theme adw-gtk-theme ttf-jetbrains-mono-nerd ttf-material-symbols-variable noto-fonts-emoji
 xdg-desktop-portal-hyprland xdg-desktop-portal-gtk polkit-gnome zsh-autosuggestions zsh-syntax-highlighting
 fzf zoxide eza bat fd
@@ -244,10 +243,9 @@ and not only on a distro that happens to source it for you.
 | `sddm` | the login screen — **optional and never installed for you**: switching a display manager is not the installer's call. Already have it? The theme is installed and pointed at. |
 | `wlsunset` | night light (blue-light filter), manual and scheduled |
 | `lm_sensors` | temperatures in the process panel |
-| `curl` | cover art and lyrics for the playing track |
+| `curl` | lyrics for the playing track, weather, and the update check |
 | `magick` (imagemagick) | thumbnails in the wallpaper and picture pickers |
 | `checkupdates` (pacman-contrib) | pending-updates readout and its widget |
-| `python` | the cover-art picker |
 | `gtk-launch` (gtk3) | opening the app behind a notification action |
 | `qt6ct` | Qt apps follow the palette (`QT_QPA_PLATFORMTHEME`) |
 | `nvidia-utils` (`nvidia-smi`) | dGPU stats — **only** read when the GPU is already awake |

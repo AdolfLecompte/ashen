@@ -22,11 +22,10 @@ PKGS_OFFICIAL=(
     #   curl            <- lyrics (services/Lyrics)
     #   imagemagick     <- wallpaper thumbnails (scripts/ashen-wallpaper-thumbs.sh)
     #   pacman-contrib  <- `checkupdates` for the updates readout (services/Updates)
-    #   python          <- the cover-art picker, scripts/ashen-cover-pick.py
     #   gtk3            <- `gtk-launch`, how a notification action opens its app
     #   qt6ct           <- conf/env.lua points QT_QPA_PLATFORMTHEME at it and
     #                      ashen-accent.sh writes its palette
-    curl imagemagick pacman-contrib python gtk3 qt6ct
+    curl imagemagick pacman-contrib gtk3 qt6ct
     # adw-gtk-theme, NOT adw-gtk3: that name does not exist in the repos and a
     # single bad target used to abort the whole transaction.
     papirus-icon-theme adw-gtk-theme
