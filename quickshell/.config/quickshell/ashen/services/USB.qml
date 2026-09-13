@@ -61,11 +61,24 @@ Singleton {
         }
     }
 
+    // lsblk every three seconds was a process a third of the time for a list
+    // that changes when somebody plugs something in. The kernel's own lists are
+    // read in-process instead, and lsblk only runs when one of them moved: a
+    // new partition table, or a mount appearing or going -- which also catches
+    // the automounter, not only the mounts made from the panel.
+    SysFile { id: partsFile;  path: "/proc/partitions" }
+    SysFile { id: mountsFile; path: "/proc/self/mounts" }
+    property string seen: ""
     Timer {
         interval: 3000
         running: true
         repeat: true
-        onTriggered: root.refresh()
+        onTriggered: {
+            const now = partsFile.read() + "\u0000" + mountsFile.read()
+            if (now === root.seen) return
+            root.seen = now
+            root.refresh()
+        }
     }
 
     Timer {

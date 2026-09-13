@@ -82,45 +82,39 @@ Singleton {
     property real energyFull: 0     // Wh
     property real energyDesign: 0   // Wh
 
-    Process {
-        id: factsProc
-        // One shell round trip for six numbers. Missing files print nothing and
-        // the parser below simply leaves that field alone.
-        command: ["sh", "-c",
-            "B=/sys/class/power_supply/BAT0; " +
-            "for f in energy_now energy_full energy_full_design power_now cycle_count " +
-            "charge_now charge_full charge_full_design current_now voltage_now; do " +
-            "printf '%s=%s\\n' \"$f\" \"$(cat $B/$f 2>/dev/null)\"; done"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const f = {}
-                for (const line of text.trim().split("\n")) {
-                    const i = line.indexOf("=")
-                    if (i > 0 && line.length > i + 1) f[line.slice(0, i)] = parseFloat(line.slice(i + 1))
-                }
-                // Two families of kernel driver: some report energy (µWh, µW),
-                // some charge (µAh, µA) and leave the watts to be worked out
-                // from the voltage. Both end up as Wh and W here.
-                const volt = (f.voltage_now || 0) / 1e6
-                if (f.energy_now !== undefined) {
-                    root.energyNow = f.energy_now / 1e6
-                    root.energyFull = (f.energy_full || 0) / 1e6
-                    root.energyDesign = (f.energy_full_design || 0) / 1e6
-                    root.watts = Math.abs((f.power_now || 0) / 1e6)
-                    root.hasRate = f.power_now !== undefined
-                } else if (f.charge_now !== undefined) {
-                    root.energyNow = f.charge_now / 1e6 * volt
-                    root.energyFull = (f.charge_full || 0) / 1e6 * volt
-                    root.energyDesign = (f.charge_full_design || 0) / 1e6 * volt
-                    root.watts = Math.abs((f.current_now || 0) / 1e6 * volt)
-                    root.hasRate = f.current_now !== undefined
-                }
-                if (root.energyDesign > 0)
-                    root.health = Math.round(root.energyFull / root.energyDesign * 100)
-                if (f.cycle_count !== undefined) root.cycles = Math.round(f.cycle_count)
-            }
+    // One reader walked across the files: ten reads, no shell. Missing files
+    // come back empty and the parser below simply leaves that field alone.
+    SysFile { id: factsFile }
+    readonly property var factNames: ["energy_now", "energy_full", "energy_full_design",
+        "power_now", "cycle_count", "charge_now", "charge_full", "charge_full_design",
+        "current_now", "voltage_now"]
+
+    function readFacts() {
+        const f = {}
+        for (const name of root.factNames) {
+            const v = factsFile.readAt("/sys/class/power_supply/BAT0/" + name)
+            if (v !== "") f[name] = parseFloat(v)
         }
+        // Two families of kernel driver: some report energy (µWh, µW),
+        // some charge (µAh, µA) and leave the watts to be worked out
+        // from the voltage. Both end up as Wh and W here.
+        const volt = (f.voltage_now || 0) / 1e6
+        if (f.energy_now !== undefined) {
+            root.energyNow = f.energy_now / 1e6
+            root.energyFull = (f.energy_full || 0) / 1e6
+            root.energyDesign = (f.energy_full_design || 0) / 1e6
+            root.watts = Math.abs((f.power_now || 0) / 1e6)
+            root.hasRate = f.power_now !== undefined
+        } else if (f.charge_now !== undefined) {
+            root.energyNow = f.charge_now / 1e6 * volt
+            root.energyFull = (f.charge_full || 0) / 1e6 * volt
+            root.energyDesign = (f.charge_full_design || 0) / 1e6 * volt
+            root.watts = Math.abs((f.current_now || 0) / 1e6 * volt)
+            root.hasRate = f.current_now !== undefined
+        }
+        if (root.energyDesign > 0)
+            root.health = Math.round(root.energyFull / root.energyDesign * 100)
+        if (f.cycle_count !== undefined) root.cycles = Math.round(f.cycle_count)
     }
 
     // ── The last day of charge ───────────────────────────────────────────
@@ -195,35 +189,21 @@ Singleton {
         }
     }
 
-    Process {
-        id: batProc
-        command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: root.level = parseInt(text.trim()) || 0
-        }
-    }
+    SysFile { id: capFile;    path: "/sys/class/power_supply/BAT0/capacity" }
+    SysFile { id: statusFile; path: "/sys/class/power_supply/BAT0/status" }
 
-    Process {
-        id: chargeProc
-        command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/status"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const status = text.trim()
-                root.charging = status === "Charging" || status === "Full" || status === "Not charging"
-            }
-        }
+    function poll() {
+        root.level = parseInt(capFile.read()) || 0
+        const status = statusFile.read()
+        root.charging = status === "Charging" || status === "Full" || status === "Not charging"
+        root.readFacts()
     }
 
     Timer {
         interval: 5000
         running: true
         repeat: true
-        onTriggered: {
-            batProc.running = true
-            chargeProc.running = true
-            factsProc.running = true
-        }
+        triggeredOnStart: true
+        onTriggered: root.poll()
     }
 }

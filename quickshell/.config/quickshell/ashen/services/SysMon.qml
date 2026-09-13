@@ -82,8 +82,8 @@ Singleton {
     // The other three are a temperature sensor, a GPU query and a rate that
     // needs two samples to mean anything -- only a surface that shows them asks.
     function sample() {
-        cpuProc.running = true
-        ramProc.running = true
+        root.readCpu()
+        root.readRam()
         if (!root.deep) return
         netProc.running = true
         sensorsProc.running = true
@@ -112,26 +112,23 @@ Singleton {
         stdout: StdioCollector { onStreamFinished: root.cpuModel = text.trim() }
     }
 
-    Process {
-        id: cpuProc
-        command: ["sh", "-c", "grep '^cpu ' /proc/stat"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let parts = text.trim().split(/\s+/).slice(1).map(Number)
-                let idle = parts[3] + (parts[4] || 0)
-                let total = parts.reduce((a, b) => a + b, 0)
-                if (root.prevCpuTotal > 0) {
-                    let totalDiff = total - root.prevCpuTotal
-                    let idleDiff = idle - root.prevCpuIdle
-                    if (totalDiff > 0) {
-                        root.cpuPercent = Math.max(0, Math.min(100, 100 * (1 - idleDiff / totalDiff)))
-                    }
-                }
-                root.prevCpuTotal = total
-                root.prevCpuIdle = idle
+    // Read in-process: this comment used to say these two cost nothing worth
+    // counting while each one was a shell and a grep.
+    SysFile { id: statFile; path: "/proc/stat" }
+    function readCpu() {
+        let parts = statFile.read().split("\n")[0].trim().split(/\s+/).slice(1).map(Number)
+        if (parts.length < 5) return
+        let idle = parts[3] + (parts[4] || 0)
+        let total = parts.reduce((a, b) => a + b, 0)
+        if (root.prevCpuTotal > 0) {
+            let totalDiff = total - root.prevCpuTotal
+            let idleDiff = idle - root.prevCpuIdle
+            if (totalDiff > 0) {
+                root.cpuPercent = Math.max(0, Math.min(100, 100 * (1 - idleDiff / totalDiff)))
             }
         }
+        root.prevCpuTotal = total
+        root.prevCpuIdle = idle
     }
 
     Process {
@@ -146,19 +143,19 @@ Singleton {
         }
     }
 
-    Process {
-        id: ramProc
-        command: ["sh", "-c", "free -m | awk '/^Mem:/{print $3\",\"$2}'"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let parts = text.trim().split(",")
-                if (parts.length === 2) {
-                    root.ramUsedMB = parseFloat(parts[0]) || 0
-                    root.ramTotalMB = parseFloat(parts[1]) || 0
-                }
-            }
+    // Used is total minus AVAILABLE, the same sum `free` does -- not total
+    // minus free, which counts the page cache as used and reads a healthy
+    // machine as nearly full.
+    SysFile { id: memFile; path: "/proc/meminfo" }
+    function readRam() {
+        const kb = {}
+        for (const line of memFile.read().split("\n")) {
+            const m = line.match(/^(MemTotal|MemAvailable):\s+(\d+)/)
+            if (m) kb[m[1]] = parseInt(m[2])
         }
+        if (!(kb.MemTotal > 0) || kb.MemAvailable === undefined) return
+        root.ramTotalMB = Math.floor(kb.MemTotal / 1024)
+        root.ramUsedMB = Math.floor((kb.MemTotal - kb.MemAvailable) / 1024)
     }
 
     Process {

@@ -41,3 +41,4 @@ singleton Picker 1.0 Picker.qml
 singleton Shortcuts 1.0 Shortcuts.qml
 singleton I18n 1.0 I18n.qml
 singleton Game 1.0 Game.qml
+SysFile 1.0 SysFile.qml

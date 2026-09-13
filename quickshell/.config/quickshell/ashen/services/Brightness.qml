@@ -38,36 +38,41 @@ Singleton {
     // to a step it actually has.
     Timer { id: settle; interval: 250; onTriggered: root.refresh() }
 
-    // A key held down asks faster than a process can answer. Asking while one
-    // is in flight used to be dropped, so the number lagged two steps behind;
-    // the last ask is remembered and replayed when the reply lands.
-    property bool pending: false
+    // The backlight is named per machine -- intel_backlight, amdgpu_bl0,
+    // acpi_video0 -- so it is found once and then read in-process. The poll used
+    // to be a shell and a brightnessctl every 1.5 s. The writes still go through
+    // brightnessctl: it is what holds the permission to write the file.
+    SysFile { id: curFile }
+    SysFile { id: maxFile }
+    Process {
+        id: finder
+        running: true
+        command: ["sh", "-c", "for d in /sys/class/backlight/*; do [ -e \"$d/brightness\" ] && { printf %s \"$d\"; break; }; done"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const d = text.trim()
+                if (d === "") return
+                curFile.path = d + "/brightness"
+                maxFile.path = d + "/max_brightness"
+                root.refresh()
+            }
+        }
+    }
+
+    // Synchronous now, so a key held down can no longer ask faster than the
+    // answer comes back -- the old in-flight bookkeeping has nothing left to do.
     function refresh() {
-        if (brightnessProc.running) root.pending = true
-        else brightnessProc.running = true
+        if (curFile.path === "") return
+        const cur = parseInt(curFile.read())
+        const max = parseInt(maxFile.read())
+        if (isNaN(cur) || !(max > 0)) return
+        root.level = Math.round(cur / max * 100)
     }
 
     Timer {
         interval: 1500
         running: true
         repeat: true
-        triggeredOnStart: true
         onTriggered: root.refresh()
-    }
-
-    Process {
-        id: brightnessProc
-        command: ["sh", "-c", "brightnessctl -m"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let parts = text.trim().split(",")
-                if (parts.length > 3) {
-                    let pct = parseInt(parts[3].replace("%", ""))
-                    if (!isNaN(pct)) root.level = pct
-                }
-                if (root.pending) { root.pending = false; brightnessProc.running = true }
-            }
-        }
     }
 }

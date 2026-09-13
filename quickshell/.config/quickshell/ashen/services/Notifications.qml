@@ -775,29 +775,39 @@ Singleton {
     // --- Power profile changes (powerprofilesctl monitor, streaming) ---
     // --- Cargador conectado/desconectado ---
     property bool lastCharging: false
+    // The mains supply is named per machine -- AC0, ADP1, ACAD -- so it is found
+    // once, by its type, and then read in-process on every poll. It used to be a
+    // shell and a cat every two seconds for a single digit.
+    SysFile { id: mainsFile }
     Process {
-        id: chargerProc
-        command: ["sh", "-c", "cat /sys/class/power_supply/AC0/online 2>/dev/null || cat /sys/class/power_supply/ADP1/online 2>/dev/null || echo ''"]
-        running: false
+        id: mainsFinder
+        running: true
+        command: ["sh", "-c",
+            "for d in /sys/class/power_supply/*; do " +
+            "[ \"$(cat \"$d/type\" 2>/dev/null)\" = Mains ] && { printf %s \"$d/online\"; break; }; done"]
         stdout: StdioCollector {
             onStreamFinished: {
-                let val = text.trim()
-                if (val === "") return
-                let charging = val === "1"
-                if (root.initialized && charging !== root.lastCharging) {
-                    root.addSystemToast(Services.Voice.pick(charging ? "charger.in" : "charger.out"),
-                                        charging ? "" : "", false, "charger",
-                                        { title: charging ? "CHARGER CONNECTED" : "CHARGER DISCONNECTED" })
-                }
-                root.lastCharging = charging
+                mainsFile.path = text.trim()
+                root.checkCharger()
             }
         }
+    }
+    function checkCharger() {
+        let val = mainsFile.path === "" ? "" : mainsFile.read()
+        if (val === "") return
+        let charging = val === "1"
+        if (root.initialized && charging !== root.lastCharging) {
+            root.addSystemToast(Services.Voice.pick(charging ? "charger.in" : "charger.out"),
+                                charging ? "" : "", false, "charger",
+                                { title: charging ? "CHARGER CONNECTED" : "CHARGER DISCONNECTED" })
+        }
+        root.lastCharging = charging
     }
     Timer {
         interval: 2000
         running: true
         repeat: true
-        onTriggered: chargerProc.running = true
+        onTriggered: root.checkCharger()
     }
 
     Process {

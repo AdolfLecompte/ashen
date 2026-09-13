@@ -56,68 +56,86 @@ DesktopWidget {
         }
     }
 
+    // A hand pinned at (px, py): `len` out, a stub of 0.18 of that the other
+    // way so it reads as pinned rather than growing out of the pivot, and half
+    // its width past each end, which is what a round cap drew. Top level on
+    // purpose: an inline component cannot be declared inside another one.
+    component Hand: Rectangle {
+        property real px: 0
+        property real py: 0
+        property real len: 0
+        property real deg: 0
+        height: len * 1.18 + width
+        radius: width / 2
+        antialiasing: true
+        x: px - width / 2
+        y: py - len - width / 2
+        transform: Rotation {
+            origin.x: width / 2
+            origin.y: len + width / 2
+            angle: deg
+        }
+    }
+
     // ── Analog: dots for the hours, three straight hands ────────────────
     // No numbers on the dial: the rice has no surface anywhere that writes
     // twelve of anything, and the hands say enough.
-    component Analog: Canvas {
+    //
+    // The hands are rotated rectangles, not strokes on the canvas. The whole
+    // dial used to be one Canvas repainted every second -- twelve dots that
+    // never move rasterised on the CPU and uploaded again, once a second, for
+    // good. On the desktop that tick was most of the shell's idle cost. Now the
+    // canvas holds only the dots and repaints when the colours change; a second
+    // going by is three rotations the GPU does for nothing.
+    component Analog: Item {
         id: dial
         width: 196
         height: 196
-        antialiasing: true
 
-        // A second is the only thing here that moves on its own.
-        readonly property int tick: Services.Time.seconds
-        onTickChanged: requestPaint()
-        Connections {
-            target: Services.Colors
-            function onGhostChanged() { dial.requestPaint() }
-            function onSnowChanged() { dial.requestPaint() }
-        }
+        readonly property real cx: width / 2
+        readonly property real cy: height / 2
+        readonly property real r: Math.min(width, height) / 2 - 4
+        readonly property int h: Services.Time.hours % 12
+        readonly property int m: Services.Time.minutes
+        readonly property int s: Services.Time.seconds
 
-        function hand(ctx, angle, len, w, colour) {
-            const cx = width / 2
-            const cy = height / 2
-            ctx.strokeStyle = colour
-            ctx.lineWidth = w
-            ctx.lineCap = "round"
-            ctx.beginPath()
-            // A stub the other way, so a hand reads as pinned at the middle
-            // rather than growing out of it.
-            ctx.moveTo(cx - Math.sin(angle) * len * 0.18, cy + Math.cos(angle) * len * 0.18)
-            ctx.lineTo(cx + Math.sin(angle) * len, cy - Math.cos(angle) * len)
-            ctx.stroke()
-        }
-
-        onPaint: {
-            const ctx = getContext("2d")
-            ctx.reset()
-            const cx = width / 2
-            const cy = height / 2
-            const r = Math.min(width, height) / 2 - 4
-            const now = Services.Time.now
-
-            // The hour marks. The quarters are the accent, the rest recede.
-            for (let i = 0; i < 12; i++) {
-                const a = i * Math.PI / 6
-                const quarter = i % 3 === 0
-                ctx.fillStyle = quarter ? Services.Colors.ghost : Services.Colors.mist
-                ctx.beginPath()
-                ctx.arc(cx + Math.sin(a) * (r - 10), cy - Math.cos(a) * (r - 10),
-                        quarter ? 3 : 2, 0, Math.PI * 2)
-                ctx.fill()
+        Canvas {
+            id: marks
+            anchors.fill: parent
+            antialiasing: true
+            Connections {
+                target: Services.Colors
+                function onGhostChanged() { marks.requestPaint() }
+                function onMistChanged() { marks.requestPaint() }
             }
+            onPaint: {
+                const ctx = getContext("2d")
+                ctx.reset()
+                // The hour marks. The quarters are the accent, the rest recede.
+                for (let i = 0; i < 12; i++) {
+                    const a = i * Math.PI / 6
+                    const quarter = i % 3 === 0
+                    ctx.fillStyle = quarter ? Services.Colors.ghost : Services.Colors.mist
+                    ctx.beginPath()
+                    ctx.arc(dial.cx + Math.sin(a) * (dial.r - 10), dial.cy - Math.cos(a) * (dial.r - 10),
+                            quarter ? 3 : 2, 0, Math.PI * 2)
+                    ctx.fill()
+                }
+            }
+        }
 
-            const h = now.getHours() % 12
-            const m = now.getMinutes()
-            const s = now.getSeconds()
-            dial.hand(ctx, (h + m / 60) * Math.PI / 6, r * 0.50, 5, Services.Colors.snow)
-            dial.hand(ctx, (m + s / 60) * Math.PI / 30, r * 0.74, 3.5, Services.Colors.snow)
-            dial.hand(ctx, s * Math.PI / 30, r * 0.80, 1.5, Services.Colors.ghost)
+        Hand { px: dial.cx; py: dial.cy; width: 5;   len: dial.r * 0.50
+               color: Services.Colors.snow; deg: (dial.h + dial.m / 60) * 30 }
+        Hand { px: dial.cx; py: dial.cy; width: 3.5; len: dial.r * 0.74
+               color: Services.Colors.snow; deg: (dial.m + dial.s / 60) * 6 }
+        Hand { px: dial.cx; py: dial.cy; width: 1.5; len: dial.r * 0.80
+               color: Services.Colors.ghost; deg: dial.s * 6 }
 
-            ctx.fillStyle = Services.Colors.ghost
-            ctx.beginPath()
-            ctx.arc(cx, cy, 4, 0, Math.PI * 2)
-            ctx.fill()
+        Rectangle {
+            width: 8; height: 8; radius: 4
+            x: dial.cx - 4; y: dial.cy - 4
+            color: Services.Colors.ghost
+            antialiasing: true
         }
     }
 

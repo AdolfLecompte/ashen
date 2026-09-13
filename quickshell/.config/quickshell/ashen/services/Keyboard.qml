@@ -150,13 +150,43 @@ Singleton {
     }
 
     // Hyprland announces a layout change but says nothing about the locks, so
-    // they are asked for. Twice a second: it is a keypress the user just made,
-    // and the answer costs one hyprctl.
+    // they are asked for, twice a second: it is a keypress the user just made.
+    //
+    // Asked of the kernel's LEDs, not of hyprctl. `hyprctl devices -j` is every
+    // mouse, keyboard and switch on the machine, parsed on the GUI thread, and
+    // at this rate it was most of the shell's idle cost once nothing was being
+    // painted. The LED files are found once; a machine with no lock LEDs keeps
+    // the old way.
+    SysFile { id: capsFile }
+    SysFile { id: numFile }
+    property bool ledsFound: false
+    Process {
+        id: ledFinder
+        running: true
+        command: ["sh", "-c",
+            "c=$(ls -d /sys/class/leds/*::capslock 2>/dev/null | head -1); " +
+            "n=$(ls -d /sys/class/leds/*::numlock 2>/dev/null | head -1); " +
+            "printf '%s\\n%s' \"$c\" \"$n\""]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.split("\n")
+                const c = (lines[0] || "").trim(), n = (lines[1] || "").trim()
+                if (c === "" || n === "") return
+                capsFile.path = c + "/brightness"
+                numFile.path = n + "/brightness"
+                root.ledsFound = true
+            }
+        }
+    }
     Timer {
         interval: 500
         running: true
         repeat: true
-        onTriggered: devProc.running = true
+        onTriggered: {
+            if (!root.ledsFound) { devProc.running = true; return }
+            root.capsLock = capsFile.read() !== "0"
+            root.numLock = numFile.read() !== "0"
+        }
     }
 
     // Hyprland announces every layout change, whoever caused it
