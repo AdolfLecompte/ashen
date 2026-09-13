@@ -3,6 +3,7 @@ import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"
 
 // Power profile, battery estimate and the toggles that decide whether the
@@ -75,24 +76,18 @@ Section {
     Card {
         title: Services.I18n.t("settings.language.title")
 
-        SectionLabel { text: Services.I18n.t("settings.language.pick") }
-
-        Segmented {
-            // Names are NOT translated: a language is written in itself, so it
-            // can be recognised by someone who cannot read the current one.
-            options: Services.I18n.languages.map(l => ({ id: l.id, label: l.label }))
-            current: Services.I18n.lang
-            onPicked: id => Services.I18n.setLang(id)
-        }
-
-        Text {
+        // A list, not a row of buttons: four languages fit a row, the fifth
+        // does not, and every one added later would squeeze the rest.
+        // Names are NOT translated: a language is written in itself, so it
+        // can be recognised by someone who cannot read the current one.
+        Widgets.DevicePicker {
             Layout.fillWidth: true
-            text: Services.I18n.t("settings.language.hint") + " "
-                + Services.I18n.t("settings.language.live")
-            wrapMode: Text.WordWrap
-            color: Services.Colors.ash
-            font.pixelSize: Services.Sizes.fsMeta
-            font.family: "JetBrainsMono NF"
+            overlay: true
+            rowH: 34
+            glyph: "\ue894"      // language
+            devices: Services.I18n.languages.map(l => ({ name: l.id, desc: l.label }))
+            current: Services.I18n.lang
+            onPicked: name => Services.I18n.setLang(name)
         }
     }
 

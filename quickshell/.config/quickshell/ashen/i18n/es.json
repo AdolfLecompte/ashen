@@ -1,8 +1,5 @@
 {
   "settings.language.title": "Idioma",
-  "settings.language.pick": "Idioma de la interfaz",
-  "settings.language.hint": "Lo que aún no esté traducido se muestra en inglés.",
-  "settings.language.live": "Se aplica al elegirlo. No se reinicia nada.",
   "time.today": "Hoy",
   "time.now": "ahora",
   "time.mins": "{n}m",

@@ -168,7 +168,6 @@ PanelWindow {
                             width: parent.width - 36
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 16
-                            trackHeight: 14
                             hitMargin: 10
                         dimmed: win.muted
                             fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost

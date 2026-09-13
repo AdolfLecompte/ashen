@@ -144,7 +144,7 @@ PanelWindow {
                             readonly property var io: modelData.lastIpcObject
                             readonly property real sx: view.width / root.monW
                             readonly property real sy: view.height / root.monH
-                            readonly property bool placed: io && io.at && io.size
+                            readonly property bool placed: !!(io && io.at && io.size)
 
                             visible: placed
                             x: placed ? (io.at[0] - root.monX) * sx : 0

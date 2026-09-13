@@ -180,12 +180,16 @@ PanelWindow {
 
                         Item { Layout.fillWidth: true }
 
-                        // How long, and nothing else: "CHARGING" and "Full in" both
-                        // said again what the bolt in the glyph already says.
+                        // How long, and which way: a bare "2h 06" did not say whether
+                        // that was until full or until empty, and that is the one
+                        // reading on this card you actually plan around.
                         Text {
                             Layout.alignment: Qt.AlignVCenter
                             visible: text !== ""
-                            text: Services.Battery.timeShort
+                            text: Services.Battery.timeShort === "" ? ""
+                                : Services.Battery.charging
+                                    ? Services.I18n.t("battery.fullIn", { t: Services.Battery.timeShort })
+                                    : Services.I18n.t("battery.left", { t: Services.Battery.timeShort })
                             color: Services.Battery.charging ? Services.Colors.ghost
                                                              : Services.Colors.mist
                             font.pixelSize: 15

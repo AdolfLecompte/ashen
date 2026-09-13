@@ -26,7 +26,9 @@ ColumnLayout {
 
     property bool inline: false
     property int glyphSize: inline ? 15 : 18
-    property int trackHeight: inline ? 16 : 10
+    // One thickness everywhere. Settings drew its sliders at 10 and the panels at
+    // 16, and the thin ones read as a hairline you had to aim for.
+    property int trackHeight: 16
     property int valueSize: inline ? Services.Sizes.fsMeta : Services.Sizes.fsBody
 
     signal moved(int pct)

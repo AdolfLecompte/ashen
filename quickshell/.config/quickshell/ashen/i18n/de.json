@@ -1,8 +1,5 @@
 {
   "settings.language.title": "Sprache",
-  "settings.language.pick": "Sprache der Oberfläche",
-  "settings.language.hint": "Was noch nicht übersetzt ist, erscheint auf Englisch.",
-  "settings.language.live": "Gilt sofort. Nichts startet neu.",
   "time.today": "Heute",
   "time.now": "jetzt",
   "time.mins": "{n}m",

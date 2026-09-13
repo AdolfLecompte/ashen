@@ -19,7 +19,7 @@ Item {
     // below is what makes the bar easy to grab.
     // The mic slider turns red when muted
     property color fillColor: Services.Colors.ghost
-    property int trackHeight: 10
+    property int trackHeight: 16
     // extra grab area around the track, so it is not a 10px-tall target
     property int hitMargin: 8
     property bool dimmed: false
