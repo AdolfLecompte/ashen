@@ -332,7 +332,7 @@ Section {
                     elide: Text.ElideRight
                     font.pixelSize: Services.Sizes.fsInput
                     font.family: "JetBrainsMono NF"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
                 StepBtn {
                     glyph: "\ue145"        // add

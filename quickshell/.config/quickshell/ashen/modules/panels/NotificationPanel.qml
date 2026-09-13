@@ -386,7 +386,7 @@ Scope {
                         width: parent.width
                         height: visible ? 22 : 0
                         opacity: group.alive.length > 0 ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on opacity { Widgets.Anim {} }
 
                         Text {
                             id: groupName
@@ -410,7 +410,7 @@ Scope {
                             height: 15
                             radius: 7
                             color: Services.Colors.ghostAlpha(group.modelData.unread > 0 ? 0.4 : 0.16)
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                             Text {
                                 id: countTxt
                                 anchors.centerIn: parent
@@ -505,7 +505,7 @@ Scope {
                                     // thing opening and not as a list cut off.
                                     opacity: (index === 0 || group.open) ? 1 : 0
                                     Behavior on opacity {
-                                        NumberAnimation { duration: Services.Sizes.msPanel }
+                                        Widgets.Anim { speed: Services.Sizes.msPanel }
                                     }
                                     // The sweep runs down the list rather than taking
                                     // every row in the same frame.
@@ -556,7 +556,7 @@ Scope {
 
         readonly property int contentH: isSystem ? 38 : (bodyText.visible ? 84 : 62)
         height: contentH + (hasActs ? 38 : 0)
-        Behavior on height { NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+        Behavior on height { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
         // The sweep: each row leaves towards the edge, in its own turn.
         onClearingChanged: if (clearing) sweepOut.start()
@@ -575,7 +575,7 @@ Scope {
             radius: 12
             color: row.isSystem ? "transparent"
                                 : Services.Colors.ghostAlpha(row.pointed ? 0.14 : 0.08)
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             transform: Translate { id: rowSlide }
             clip: true
 
@@ -751,7 +751,7 @@ Scope {
                 // clicks in that corner, so the top-right of every row
                 // dismissed the notice instead of opening it.
                 visible: opacity > 0.01
-                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                 onActivated: win.removeRow(row.entry.id)
             }
 
@@ -775,7 +775,7 @@ Scope {
                         width: Math.min(130, rowActLabel.implicitWidth + 20)
                         radius: 8
                         color: Services.Colors.fillRest
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         scale: Services.Sizes.hoverScale(rowActHover.containsMouse, rowActHover.pressed)
                         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
@@ -787,7 +787,7 @@ Scope {
                             font.pixelSize: 10
                             font.family: "JetBrainsMono NF"
                             elide: Text.ElideRight
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         }
 
                         MouseArea {

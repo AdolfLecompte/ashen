@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // A key combination you can change: press the chip, then press the keys. The
 // combination IS the button, because "what do I press" and "what should I press
@@ -47,7 +48,7 @@ Rectangle {
     color: chip.grabbing ? Services.Colors.ghost : Services.Colors.fillLine
     border.width: chip.clash !== "" && !chip.grabbing ? 1 : 0
     border.color: Services.Colors.error_
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
     // The box holds still and the word grows: a chip that swells inside a row
     // of shortcuts shoves its neighbours' rhythm around.
@@ -66,7 +67,7 @@ Rectangle {
         font.pixelSize: Services.Sizes.fsMeta
         font.bold: true
         font.family: "JetBrainsMono NF"
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
     }
 
     MouseArea {

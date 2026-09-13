@@ -2,6 +2,7 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // The wallpaper, at the size it deserves: the picture is the whole card and
 // everything else rides on top of it. PreviewCard stays as it is -- the About
@@ -74,7 +75,7 @@ Rectangle {
         visible: shot.status === Image.Ready
         // Hover lifts the veil rather than filling the card.
         opacity: heroHover.containsMouse ? 1 : 0.86
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
         gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0) }
             GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.66) }

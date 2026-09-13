@@ -20,7 +20,7 @@ Rectangle {
     // Connected is a state and takes a fill; hover is not, and only lifts the
     // name to snow. A full-width row does not grow.
     color: device.connected ? Services.Colors.fillRest : Services.Colors.fillInset
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
     // BlueZ reports a freedesktop icon name ("audio-headset", "input-mouse"…);
     // map it to a Material Symbol. Order matters: "audio-headset" also matches
@@ -62,7 +62,7 @@ Rectangle {
                 text: Services.BtLink.displayName(row.device)
                 color: (row.device.connected || rowMouse.containsMouse)
                     ? Services.Colors.snow : Services.Colors.mist
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 font.pixelSize: 13
                 font.family: "JetBrainsMono NF"
                 font.bold: row.device.connected

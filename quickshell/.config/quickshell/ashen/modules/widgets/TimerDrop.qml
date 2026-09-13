@@ -33,8 +33,8 @@ Rectangle {
     // measurement, or the box and its contents each wait on the other.
     implicitWidth: Math.max(line.implicitWidth + (drop.stacked ? 16 : 22), drop.minWidth)
     implicitHeight: Math.max(line.implicitHeight + (drop.stacked ? 16 : 12), drop.minHeight)
-    Behavior on implicitWidth { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
-    Behavior on implicitHeight { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
+    Behavior on implicitWidth { Anim { speed: Services.Sizes.msPanel } }
+    Behavior on implicitHeight { Anim { speed: Services.Sizes.msPanel } }
 
     // Square only where the pill is actually behind it. A box that outgrows its
     // pill -- a countdown that reaches an hour -- would otherwise put square

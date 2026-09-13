@@ -71,7 +71,7 @@ Section {
             radius: Services.Sizes.innerR
             color: tab.copied ? Services.Colors.ghost : Services.Colors.fillLine
             gradient: Services.Prefs.useGradients && (tab.copied) ? Services.Colors.accentGradient : null
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             RowLayout {
                 id: copyRow
                 anchors.centerIn: parent
@@ -156,14 +156,14 @@ Section {
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 15
                         color: linkHover.containsMouse ? Services.Colors.snow : Services.Colors.ghost
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on color { Widgets.ColorAnim {} }
                     }
                     Text {
                         text: "github.com/AdolfLecompte/ashen"
                         color: linkHover.containsMouse ? Services.Colors.snow : Services.Colors.surfaceText
                         font.pixelSize: Services.Sizes.fsBody
                         font.family: "JetBrainsMono NF"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on color { Widgets.ColorAnim {} }
                     }
                     Text {
                         text: "\ue89e"

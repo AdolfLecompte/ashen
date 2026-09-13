@@ -33,7 +33,7 @@ Text {
     font.pixelSize: Services.Sizes.fsMeta
     font.family: "JetBrainsMono NF"
     elide: Text.ElideRight
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
     onLineChanged: root.retype()
     onArmedChanged: if (root.armed) root.retype()

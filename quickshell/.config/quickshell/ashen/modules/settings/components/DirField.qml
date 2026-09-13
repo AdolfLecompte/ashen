@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // A folder setting you type: click, type, Enter. It replaced zenity, which
 // drags a GTK dialog over a shell with its own look to enter a path you
@@ -93,7 +94,7 @@ RowLayout {
         Item {
             Layout.fillWidth: true
             implicitHeight: root.editing ? 28 : shownPath.implicitHeight
-            Behavior on implicitHeight { NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+            Behavior on implicitHeight { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             Text {
                 id: shownPath
@@ -120,7 +121,7 @@ RowLayout {
                 border.color: root.badPath ? Services.Colors.error_
                             : field.activeFocus ? Services.Colors.ghost
                                                 : Services.Colors.fillRest
-                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                 TextField {
                     id: field
@@ -163,7 +164,7 @@ RowLayout {
             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
             text: root.editing ? Services.I18n.t("common.save") : Services.I18n.t("common.change")
             color: btnHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             font.pixelSize: Services.Sizes.fsBody
             font.family: "JetBrainsMono NF"
         }

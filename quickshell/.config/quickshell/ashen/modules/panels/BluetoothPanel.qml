@@ -152,14 +152,14 @@ PanelWindow {
                             width: 52; height: 28; radius: 14
                             color: (root.adapter && root.adapter.enabled) ? Services.Colors.ghost : Services.Colors.fillRest
                             gradient: Services.Prefs.useGradients && ((root.adapter && root.adapter.enabled)) ? Services.Colors.accentGradient : null
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on color { Widgets.ColorAnim {} }
 
                             Rectangle {
                                 width: 20; height: 20; radius: 10
                                 color: Services.Colors.snow
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: (root.adapter && root.adapter.enabled) ? parent.width - width - 4 : 4
-                                Behavior on x { NumberAnimation { duration: Services.Sizes.msStandard } }
+                                Behavior on x { Widgets.Anim {} }
                             }
 
                             MouseArea {

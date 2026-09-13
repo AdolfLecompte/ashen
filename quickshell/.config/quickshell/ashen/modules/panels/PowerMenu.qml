@@ -61,7 +61,7 @@ PanelWindow {
         anchors.fill: parent
         color: Services.Colors.scrim
         opacity: root.shown ? 1.0 : 0.0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPronounced } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msPronounced } }
         MouseArea { anchors.fill: parent; enabled: root.shown; onClicked: root.close() }
     }
 
@@ -159,7 +159,7 @@ PanelWindow {
                     horizontalAlignment: Text.AlignHCenter
                     line: card.holdLine
                     opacity: card.holding ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                 }
 
                 Row {
@@ -300,7 +300,7 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: tile.active ? -14 : 0
                                 Behavior on anchors.verticalCenterOffset {
-                                    NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
+                                    Widgets.Anim {}
                                 }
                                 z: 1
                                 text: tile.modelData.icon
@@ -309,7 +309,7 @@ PanelWindow {
                                     : (tile.active ? Services.Colors.snow : Services.Colors.ghost)
                                 font.pixelSize: 68
                                 font.family: "Material Symbols Rounded"
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                             }
 
                             // Its own name, on its own tile: which one you are
@@ -326,8 +326,8 @@ PanelWindow {
                                 font.bold: true
                                 font.family: "JetBrainsMono NF"
                                 opacity: tile.active ? 1 : 0
-                                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                             }
 
                             MouseArea {

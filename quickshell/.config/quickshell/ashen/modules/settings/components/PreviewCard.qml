@@ -2,6 +2,7 @@ import QtQuick
 import Qt5Compat.GraphicalEffects
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // Profile picture and Wallpaper are the same card: a rounded preview of an
 // image, a glyph while there is none, a label pinned beside it and one
@@ -110,7 +111,7 @@ Rectangle {
             color: Services.Colors.ghost
             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
             opacity: card.busy ? 0.55 : 1
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
             Text {
                 anchors.centerIn: parent
                 text: card.action

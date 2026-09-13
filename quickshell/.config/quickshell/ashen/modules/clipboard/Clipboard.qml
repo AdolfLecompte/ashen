@@ -233,7 +233,7 @@ Scope {
                         color: tab.fg
                         font.pixelSize: 16
                         font.family: "Material Symbols Rounded"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
                         text: tab.label
@@ -241,7 +241,7 @@ Scope {
                         font.pixelSize: Services.Sizes.fsBody
                         font.bold: true
                         font.family: "JetBrainsMono NF"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
                         text: tab.count
@@ -249,7 +249,7 @@ Scope {
                         opacity: 0.7
                         font.pixelSize: 11
                         font.family: "JetBrainsMono NF"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                 }
 
@@ -300,8 +300,8 @@ Scope {
                                     radius: Services.Sizes.innerR
                                     color: Services.Colors.ghost
                                     gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
-                                    Behavior on x { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
-                                    Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+                                    Behavior on x { Widgets.Anim { speed: Services.Sizes.msPronounced } }
+                                    Behavior on width { Widgets.Anim {} }
                                 }
 
                                 Row {
@@ -337,7 +337,7 @@ Scope {
                                 // A resting outline is decoration; only focus earns one.
                                 border.color: Services.Colors.ghost
                                 border.width: searchField.activeFocus ? 1 : 0
-                                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 RowLayout {
                                     anchors.fill: parent
@@ -406,7 +406,7 @@ Scope {
                                     color: wipeHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
                                     font.pixelSize: 18
                                     font.family: "Material Symbols Rounded"
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 }
 
                                 MouseArea {
@@ -462,7 +462,7 @@ Scope {
                                         radius: 12
                                         color: index === win.selectedIndex ? Services.Colors.fillRest
                                                                            : Services.Colors.fillInset
-                                        Behavior on color { ColorAnimation { duration: Services.Sizes.msInstant } }
+                                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msInstant } }
 
                                         Text {
                                             anchors.fill: parent
@@ -488,7 +488,7 @@ Scope {
                                             // Only on the tile under the pointer.
                                             opacity: tileHover.containsMouse || tileDel.hovered ? 1 : 0
                                             visible: opacity > 0.01
-                                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                                             onActivated: win.deleteEntry(modelData)
                                         }
 
@@ -534,7 +534,7 @@ Scope {
                                         radius: 12
                                         color: index === win.selectedIndex ? Services.Colors.fillRest
                                                                            : Services.Colors.fillInset
-                                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                         ClippingRectangle {
                                             anchors.fill: parent
@@ -575,7 +575,7 @@ Scope {
                                             // used to make it fade away.
                                             opacity: tileHover.containsMouse || tileDel.hovered ? 1 : 0
                                             visible: opacity > 0.01
-                                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                                             onActivated: win.deleteEntry(modelData)
                                         }
 

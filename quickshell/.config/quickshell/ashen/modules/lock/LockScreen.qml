@@ -81,7 +81,7 @@ Scope {
             property bool authing: false
             property real auth: 0
             Behavior on auth {
-                NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut }
+                Widgets.Anim { speed: Services.Sizes.msPanel }
             }
             onAuthingChanged: surface.auth = authing ? 1 : 0
             // Typing is asking to log in, so the field never has to be found
@@ -290,8 +290,8 @@ Scope {
                 anchors.fill: parent
                 opacity: surface.unlocking ? 0.0 : (surface.revealed ? 1.0 : 0.0)
                 scale: surface.unlocking ? 1.04 : (surface.revealed ? 1.0 : 1.05)
-                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
-                Behavior on scale { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
+                Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
+                Behavior on scale { Widgets.Anim { speed: Services.Sizes.msPanel } }
 
                 Item {
                     anchors.fill: parent
@@ -527,7 +527,7 @@ Scope {
                                 : (surface.checking || surface.greeting) ? Services.Colors.ghost
                                 : Services.Colors.fillRest
                             border.width: 2
-                            Behavior on border.color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on border.color { Widgets.ColorAnim {} }
                             Image {
                                 id: faceImg
                                 anchors.fill: parent
@@ -617,7 +617,7 @@ Scope {
                                     : passInput.activeFocus ? Services.Colors.ghost
                                     : Services.Colors.fillRest
                                 border.width: 1
-                                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 // Click to (re)grab keyboard focus. Helps when the
                                 // field loses activeFocus (e.g. after resume) so the
@@ -640,7 +640,7 @@ Scope {
                                     color: surface.errorMsg !== "" ? Services.Colors.error_ : Services.Colors.ghost
                                     font.pixelSize: 18
                                     font.family: "Material Symbols Rounded"
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 }
 
                                 Item {
@@ -718,7 +718,7 @@ Scope {
                                                         NumberAnimation { duration: 220; easing.type: Services.Sizes.easeOut }
                                                     }
                                                     Behavior on opacity {
-                                                        NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut }
+                                                        Widgets.Anim { speed: Services.Sizes.msMicro }
                                                     }
                                                 }
                                             }
@@ -778,7 +778,7 @@ Scope {
                                     color: surface.checking ? Services.Colors.ghost : Services.Colors.ash
                                     font.pixelSize: 18
                                     font.family: "Material Symbols Rounded"
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                     MouseArea {
                                         anchors.fill: parent
                                         anchors.margins: -6
@@ -811,7 +811,7 @@ Scope {
                                     isError: surface.sayingIsError
                                     font.pixelSize: 12
                                     opacity: text !== "" ? 1.0 : 0.0
-                                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                                    Behavior on opacity { Widgets.Anim {} }
                                 }
                             }
                         }
@@ -847,7 +847,7 @@ Scope {
                                      ? Services.Colors.snow : Services.Colors.mist
                                 font.pixelSize: 24
                                 font.family: "Material Symbols Rounded"
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 // The shell's one hover language: it grows and
                                 // brightens, the plate never lights up.
                                 scale: Services.Sizes.hoverScale(powerPillHover.containsMouse, powerPillHover.pressed)
@@ -871,10 +871,10 @@ Scope {
                             visible: opacity > 0
                             // Same deploy as the system (bar) panels: fade + slide in
                             // from the direction it opens — upwards, so it rises from below.
-                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+                            Behavior on opacity { Widgets.Anim {} }
                             transform: Translate {
                                 y: surface.showPower ? 0 : 12
-                                Behavior on y { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+                                Behavior on y { Widgets.Anim {} }
                             }
                             Repeater {
                                 // Nothing here is red: error_ is for something
@@ -900,7 +900,7 @@ Scope {
                                                                         : Services.Colors.mist
                                         font.pixelSize: 24
                                         font.family: "Material Symbols Rounded"
-                                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         scale: Services.Sizes.hoverScale(powerHover.containsMouse, powerHover.pressed)
                                         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                     }
@@ -918,7 +918,7 @@ Scope {
                                         color: Services.Colors.surfacePill
                                         opacity: powerHover.containsMouse ? 1 : 0
                                         visible: opacity > 0.01
-                                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                                         Text {
                                             id: tipText
                                             anchors.centerIn: parent
@@ -991,7 +991,7 @@ Scope {
                             color: surface.lockShut ? Services.Colors.snow : Services.Colors.ghost
                             font.pixelSize: 64
                             font.family: "Material Symbols Rounded"
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on color { Widgets.ColorAnim {} }
                         }
                     }
                 }

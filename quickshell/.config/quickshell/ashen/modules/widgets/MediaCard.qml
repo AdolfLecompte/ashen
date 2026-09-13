@@ -500,7 +500,7 @@ Item {
 
                         property real progress: (root.activePlayer !== null && root.activePlayer.length > 0)
                             ? Math.max(0, Math.min(1, root.activePlayer.position / root.activePlayer.length)) : 0
-                        Behavior on progress { NumberAnimation { duration: Services.Sizes.msEmphasis } }
+                        Behavior on progress { Anim { speed: Services.Sizes.msEmphasis } }
                         property real phase: 0
                         readonly property bool playing: root.activePlayer !== null && root.activePlayer.isPlaying
 
@@ -774,7 +774,7 @@ Item {
             // the bars collapsing onto their axis, not by the column going
             // translucent. A washed cava reads as a screenshot of one.
             opacity: root.beat(4)
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPanel } }
+            Behavior on opacity { Anim { speed: Services.Sizes.msPanel } }
 
             // Axis the bars grow out of. Silence collapses every bar to its cap,
             // and without something to sit on those caps read as a column of

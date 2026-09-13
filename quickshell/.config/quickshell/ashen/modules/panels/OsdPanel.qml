@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 Scope {
     id: root
@@ -79,7 +80,7 @@ Scope {
 
             opacity: win.shown ? 1.0 : 0.0
             scale: win.shown ? 1.0 : 0.85
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+            Behavior on opacity { Widgets.Anim {} }
             Behavior on scale { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Easing.OutBack; easing.overshoot: Services.Sizes.overshoot } }
 
             Column {
@@ -113,7 +114,7 @@ Scope {
                         // Short: at 260 ms every tap on the volume key restarted
                         // an animation the next tap interrupted, so the bar
                         // crawled a step behind the key being held down.
-                        Behavior on height { NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+                        Behavior on height { Widgets.Anim { speed: Services.Sizes.msMicro } }
                     }
                 }
                 Text {

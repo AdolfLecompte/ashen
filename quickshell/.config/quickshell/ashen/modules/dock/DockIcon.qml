@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // One application in the dock: its icon, and a dot when it has a window.
 Item {
@@ -42,7 +43,7 @@ Item {
         }
         fillMode: Image.PreserveAspectFit
         opacity: root.warm ? 1.0 : 0.88
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
     }
 
     readonly property bool pinned: root.appId !== ""
@@ -57,7 +58,7 @@ Item {
         width: 4; height: 4; radius: 2
         color: Services.Colors.ghost
         opacity: root.running ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on opacity { Widgets.Anim {} }
     }
 
     MouseArea {

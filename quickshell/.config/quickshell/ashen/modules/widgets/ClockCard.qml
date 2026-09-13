@@ -341,8 +341,8 @@ Item {
                     font.pixelSize: parent.sel ? 34 : 24
                     font.bold: parent.sel
                     font.family: "JetBrainsMono NF"
-                    Behavior on font.pixelSize { NumberAnimation { duration: Services.Sizes.msMicro } }
-                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on font.pixelSize { Anim { speed: Services.Sizes.msMicro } }
+                    Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
                 }
             }
         }
@@ -523,7 +523,7 @@ Item {
                                 // idle pills are bare -- hover only brightens them,
                                 // it never paints a plate.
                                 color: "transparent"
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 Row {
                                     id: tabRow
@@ -744,7 +744,7 @@ Item {
                                     color: best ? Services.Colors.ghost : Services.Colors.fillInset
                                     gradient: Services.Prefs.useGradients && best
                                         ? Services.Colors.accentGradient : null
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
                                     Column {
                                         anchors.centerIn: parent
@@ -792,7 +792,7 @@ Item {
                                 spacing: 2
                                 opacity: Services.Countdown.active ? 0 : 1
                                 visible: opacity > 0.01
-                                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                                Behavior on opacity { Anim {} }
 
                                 Wheel { id: wHours;   count: 24; unitMs: 3600000 }
                                 WheelColon { }
@@ -810,8 +810,8 @@ Item {
                                 font.family: "JetBrainsMono NF"
                                 opacity: Services.Countdown.active ? 1 : 0
                                 visible: opacity > 0.01
-                                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                                Behavior on opacity { Anim {} }
+                                Behavior on color { ColorAnim {} }
                             }
                         }
 
@@ -829,7 +829,7 @@ Item {
                                     color: picked ? Services.Colors.ghost : Services.Colors.fillInset
                                     gradient: Services.Prefs.useGradients && picked
                                         ? Services.Colors.accentGradient : null
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                                     Text {
                                         anchors.centerIn: parent
                                         text: modelData + "m"

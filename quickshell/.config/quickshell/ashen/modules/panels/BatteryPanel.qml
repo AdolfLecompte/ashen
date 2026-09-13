@@ -183,7 +183,7 @@ PanelWindow {
                                                              : Services.Colors.snow
                             font.pixelSize: 34
                             font.family: "Material Symbols Rounded"
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on color { Widgets.ColorAnim {} }
                         }
                         Text {
                             id: battLabel
@@ -390,7 +390,7 @@ PanelWindow {
                                 // it never paints a plate.
                                 color: "transparent"
                                 opacity: available ? 1.0 : 0.35
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                     Column {
                                         anchors.centerIn: parent
@@ -405,7 +405,7 @@ PanelWindow {
                                             font.family: "Material Symbols Rounded"
                                             font.pixelSize: 24
                                             color: parent.tone
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                     }
 
@@ -449,9 +449,9 @@ PanelWindow {
                         color: Services.Game.on ? Services.Colors.ghost : Services.Colors.fillRest
                         gradient: Services.Prefs.useGradients && Services.Game.on
                                   ? Services.Colors.accentGradient : null
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         scale: gameHover.containsMouse ? 1.02 : 1.0
-                        Behavior on scale { NumberAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
                         Text {
                             anchors.centerIn: parent
@@ -461,7 +461,7 @@ PanelWindow {
                             color: Services.Game.on ? Services.Colors.accentText
                                  : gameHover.containsMouse ? Services.Colors.snow
                                  : Services.Colors.mist
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         }
 
                         MouseArea {

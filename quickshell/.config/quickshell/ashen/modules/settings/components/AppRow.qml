@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // One of the four app keys: which program it opens, and which keys open it.
 // Both on one line because they are one question -- "what does SUPER+T do" --
@@ -98,7 +99,7 @@ ColumnLayout {
             color: Services.Colors.fillLine
             border.width: 1
             border.color: search.activeFocus ? Services.Colors.ghost : Services.Colors.fillRest
-            Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
             Text {
                 anchors.left: parent.left

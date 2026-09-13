@@ -144,7 +144,7 @@ Scope {
         readonly property real cardWideRaw:
             Math.min(win.cardH * win.ratioOf(win.currentIndex), Math.max(win.cardNarrow, win.width - 2 * win.cardW))
         property real cardWide: win.cardNarrow
-        Behavior on cardWide { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+        Behavior on cardWide { Widgets.Anim {} }
         onCardWideRawChanged: win.cardWide = win.cardWideRaw
         Component.onCompleted: win.cardWide = win.cardWideRaw
         readonly property real bandHeight: cardH + 24
@@ -621,7 +621,7 @@ Scope {
                                 // it never paints a plate.
                                 color: "transparent"
 
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 Row {
                                     id: tabRow
@@ -844,7 +844,7 @@ Scope {
                                     // continuous and smoothing it only adds lag.
                                     // Hover rides on top with its own easing.
                                     property real hoverBoost: cardHover.containsMouse ? 0.03 : 0
-                                    Behavior on hoverBoost { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on hoverBoost { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
                                     // Gentler than before: the width already
                                     // carries most of "this is the one".
@@ -940,7 +940,7 @@ Scope {
                                         maskSource: maskRect
                                         visible: img.status === Image.Ready
                                         opacity: img.status === Image.Ready ? 1.0 : 0.0
-                                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                                     }
 
                                     // Placeholder while decoding, avoids the black gap
@@ -1072,8 +1072,8 @@ Scope {
                                 height: 7; radius: 4
                                 color: lit ? Services.Colors.ghost : Services.Colors.snowAlpha(0.2)
                                 gradient: Services.Prefs.useGradients && lit ? Services.Colors.accentGradient : null
-                                Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard } }
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                                Behavior on width { Widgets.Anim {} }
+                                Behavior on color { Widgets.ColorAnim {} }
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor

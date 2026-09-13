@@ -183,7 +183,7 @@ Item {
             font.family: "Material Symbols Rounded"
             font.pixelSize: root.glyphSize
             color: root.fillColor
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
         }
         Text {
             id: labelText
@@ -219,7 +219,7 @@ Item {
             minimumPixelSize: 7
             elide: Text.ElideRight
             opacity: root.caption === "" ? 0 : 1
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
         }
     }
     }

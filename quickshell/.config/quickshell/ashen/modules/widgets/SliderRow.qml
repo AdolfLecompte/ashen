@@ -44,7 +44,7 @@ ColumnLayout {
         color: sliderRow.muted ? Services.Colors.mist
              : (glyphArea.containsMouse && sliderRow.glyphInteractive
                 ? Services.Colors.snow : Services.Colors.ghost)
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
         scale: sliderRow.glyphInteractive
             ? Services.Sizes.hoverScale(glyphArea.containsMouse, glyphArea.pressed) : 1.0
         Behavior on scale {

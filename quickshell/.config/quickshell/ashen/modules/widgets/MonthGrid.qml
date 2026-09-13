@@ -50,7 +50,7 @@ Grid {
             // Vertical: the cell is a square block, not a wide pill, so the
             // light reads down it -- lit top, dark foot.
             gradient: Services.Prefs.useGradients && isToday ? Services.Colors.accentGradientV : null
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
             Text {
                 anchors.centerIn: parent
@@ -58,7 +58,7 @@ Grid {
                 color: parent.isToday ? Services.Colors.accentText
                      : (dayHover.containsMouse && parent.isValid) ? Services.Colors.snow
                      : Services.Colors.mist
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                 font.pixelSize: 12
                 font.family: "JetBrainsMono NF"
                 font.bold: parent.isToday

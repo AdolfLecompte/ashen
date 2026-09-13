@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // One-of-many picker with the sliding highlight the workspace pill uses: the
 // accent travels, never jumps, and every exclusive choice in Settings goes
@@ -95,7 +96,7 @@ Item {
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: root.iconSize
                         color: cell.active ? Services.Colors.accentText : Services.Colors.mist
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
                         visible: cell.hasLabel
@@ -103,7 +104,7 @@ Item {
                         font.pixelSize: root.labelSize
                         font.family: "JetBrainsMono NF"
                         color: cell.active ? Services.Colors.accentText : Services.Colors.snow
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                 }
 

@@ -20,7 +20,7 @@ Rectangle {
     // that the name lifts to snow. A full-width row does not grow -- it would
     // climb over its neighbours.
     color: Services.Colors.fillInset
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
     RowLayout {
         anchors.fill: parent
@@ -40,7 +40,7 @@ Rectangle {
             Text {
                 text: row.net.ssid
                 color: rowMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 font.pixelSize: 13
                 font.family: "JetBrainsMono NF"
                 elide: Text.ElideRight

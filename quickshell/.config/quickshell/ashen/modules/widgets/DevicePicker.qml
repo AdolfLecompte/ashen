@@ -75,7 +75,7 @@ Column {
         radius: 8
         // A control at rest, and it stays that plate: hover lifts the name.
         color: picker.headPlate
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
         Row {
             anchors.left: parent.left
@@ -98,7 +98,7 @@ Column {
                 text: picker.currentDesc()
                 elide: Text.ElideRight
                 color: headArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                 font.pixelSize: 11
                 font.family: "JetBrainsMono NF"
             }
@@ -114,7 +114,7 @@ Column {
             font.pixelSize: 16
             color: Services.Colors.mist
             rotation: picker.expanded ? 180 : 0
-            Behavior on rotation { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+            Behavior on rotation { Anim {} }
         }
 
         MouseArea {
@@ -134,9 +134,9 @@ Column {
             width: head.width
             clip: !picker.overlay
             height: picker.expanded ? optsCol.implicitHeight : 0
-            Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+            Behavior on height { Anim {} }
             opacity: picker.expanded ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
             visible: opacity > 0.01
 
             // A floating list needs its own back, or the rows underneath show
@@ -157,7 +157,7 @@ Column {
                 spacing: 2
                 // Slides down from under the header rather than appearing whole.
                 y: picker.expanded ? 0 : -6
-                Behavior on y { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+                Behavior on y { Anim {} }
 
                 Repeater {
                     model: picker.devices
@@ -169,7 +169,7 @@ Column {
                         radius: 8
                         // Picked is a state and takes a fill; hover is not.
                         color: active ? Services.Colors.fillRest : "transparent"
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
                         Text {
                             anchors.left: parent.left
@@ -181,7 +181,7 @@ Column {
                             elide: Text.ElideRight
                             color: (active || optArea.containsMouse)
                                 ? Services.Colors.snow : Services.Colors.mist
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                             font.pixelSize: 11
                             font.family: "JetBrainsMono NF"
                             font.bold: active

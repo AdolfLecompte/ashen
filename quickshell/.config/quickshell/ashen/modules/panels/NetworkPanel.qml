@@ -376,7 +376,7 @@ PanelWindow {
                                             font.pixelSize: 16
                                             font.family: "Material Symbols Rounded"
                                             anchors.verticalCenter: parent.verticalCenter
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                                            Behavior on color { Widgets.ColorAnim {} }
                                         }
                                         Text {
                                             text: modelData.label
@@ -384,7 +384,7 @@ PanelWindow {
                                             font.pixelSize: 13
                                             font.family: "JetBrainsMono NF"
                                             anchors.verticalCenter: parent.verticalCenter
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                                            Behavior on color { Widgets.ColorAnim {} }
                                         }
                                     }
                                     MouseArea {
@@ -414,7 +414,7 @@ PanelWindow {
                         readonly property Item live: bodyRoot.shownTab === "wifi"
                             ? wifiCol : ethCol
                         height: tabBody.live.implicitHeight
-                        Behavior on height { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
+                        Behavior on height { Widgets.Anim { speed: Services.Sizes.msPronounced } }
 
                         // Wifi tab
                         Column {
@@ -440,13 +440,13 @@ PanelWindow {
                                     width: 52; height: 28; radius: 14
                                     color: root.wifiEnabled ? Services.Colors.ghost : Services.Colors.fillRest
                                     gradient: Services.Prefs.useGradients && (root.wifiEnabled) ? Services.Colors.accentGradient : null
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                                    Behavior on color { Widgets.ColorAnim {} }
                                     Rectangle {
                                         width: 20; height: 20; radius: 10
                                         color: Services.Colors.snow
                                         anchors.verticalCenter: parent.verticalCenter
                                         x: root.wifiEnabled ? parent.width - width - 4 : 4
-                                        Behavior on x { NumberAnimation { duration: Services.Sizes.msStandard } }
+                                        Behavior on x { Widgets.Anim {} }
                                     }
                                     MouseArea {
                                         anchors.fill: parent
@@ -583,8 +583,8 @@ PanelWindow {
                                 clip: true
                                 height: root.showConnectDialog ? 92 : 0
                                 opacity: root.showConnectDialog ? 1 : 0
-                                Behavior on height { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeBox } }
-                                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on height { Widgets.Anim { speed: Services.Sizes.msPronounced; curve: Services.Sizes.easeBox } }
+                                Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
                                 function join() {
                                     // argv, not a shell string: an SSID or password holding
@@ -629,7 +629,7 @@ PanelWindow {
                                             border.color: passInput.activeFocus
                                                 ? Services.Colors.ghost : Services.Colors.fillStrong
                                             border.width: 1
-                                            Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                             RowLayout {
                                                 anchors.fill: parent
@@ -690,7 +690,7 @@ PanelWindow {
                                                 anchors.centerIn: parent
                                                 text: Services.I18n.t("common.cancel")
                                                 color: cancelMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
-                                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                                 font.pixelSize: 12
                                                 font.family: "JetBrainsMono NF"
                                             }

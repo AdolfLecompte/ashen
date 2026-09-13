@@ -164,7 +164,7 @@ Section {
                             color: chip.active ? Services.Colors.ghost : Services.Colors.fillRest
                             gradient: Services.Prefs.useGradients && chip.active
                                 ? Services.Colors.accentGradient : null
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on color { Widgets.ColorAnim {} }
                         }
 
                         Text {
@@ -184,7 +184,7 @@ Section {
                                  : chip.warm ? Services.Colors.snow : Services.Colors.surfaceText
                             font.pixelSize: Services.Sizes.fsBody
                             font.family: "JetBrainsMono NF"
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on color { Widgets.ColorAnim {} }
                         }
                         MouseArea {
                             id: soundHover

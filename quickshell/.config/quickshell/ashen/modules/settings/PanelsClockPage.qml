@@ -108,7 +108,7 @@ Section {
                     radius: Services.Sizes.pillR
                     color: cityCard.active ? Services.Colors.ghost : Services.Colors.fillLine
                     gradient: Services.Prefs.useGradients && (cityCard.active) ? Services.Colors.accentGradient : null
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: 12
@@ -151,7 +151,7 @@ Section {
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 11
                             color: rmCityArea.containsMouse ? Services.Colors.snow : Services.Colors.ash
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         }
                         MouseArea {
                             id: rmCityArea
@@ -189,7 +189,7 @@ Section {
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
                         color: addCityArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                 }
                 MouseArea {
@@ -215,9 +215,9 @@ Section {
             implicitHeight: cityPickerCol.implicitHeight + 20
             // Slide open/closed instead of snapping.
             Layout.preferredHeight: tab.cityPickerOpen ? implicitHeight : 0
-            Behavior on Layout.preferredHeight { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+            Behavior on Layout.preferredHeight { Widgets.Anim {} }
             opacity: tab.cityPickerOpen ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             ColumnLayout {
                 id: cityPickerCol
@@ -294,7 +294,7 @@ Section {
                                 Text {
                                     text: modelData.label
                                     color: sugArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                     font.pixelSize: Services.Sizes.fsBody
                                     font.family: "JetBrainsMono NF"
                                     elide: Text.ElideRight

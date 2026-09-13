@@ -86,7 +86,7 @@ PanelWindow {
                 // the service gives the card to be gone in.
                 Behavior on height {
                     enabled: !card.leaving
-                    NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut }
+                    Widgets.Anim { speed: Services.Sizes.msMicro }
                 }
 
 
@@ -121,7 +121,7 @@ PanelWindow {
                         anchors.fill: parent
                         radius: parent.radius
                         color: Services.Colors.ghostAlpha(cardHover.containsMouse ? 0.07 : 0.0)
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
 
                     // ── Entry and exit, spelled out ───────────────────────
@@ -374,7 +374,7 @@ PanelWindow {
                                 width: Math.min(140, actLabel.implicitWidth + 22)
                                 radius: 9
                                 color: Services.Colors.fillRest
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 scale: Services.Sizes.hoverScale(actHover.containsMouse, actHover.pressed)
                                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
@@ -386,7 +386,7 @@ PanelWindow {
                                     font.pixelSize: 11
                                     font.family: "JetBrainsMono NF"
                                     elide: Text.ElideRight
-                                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 }
 
                                 MouseArea {
@@ -416,7 +416,7 @@ PanelWindow {
                 height: 30
                 radius: 9
                 color: Services.Colors.surfacePanel
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 border.width: Services.Colors.panelEdgeW
                 border.color: Services.Colors.fillOutline
                 scale: Services.Sizes.hoverScale(countHover.containsMouse, countHover.pressed)
@@ -429,7 +429,7 @@ PanelWindow {
                     font.pixelSize: 11
                     font.bold: true
                     font.family: "JetBrainsMono NF"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
 
                 MouseArea {
@@ -446,7 +446,7 @@ PanelWindow {
                 height: 30
                 radius: 9
                 color: Services.Colors.surfacePanel
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 border.width: Services.Colors.panelEdgeW
                 border.color: Services.Colors.fillOutline
                 scale: Services.Sizes.hoverScale(sweepHover.containsMouse, sweepHover.pressed)
@@ -460,7 +460,7 @@ PanelWindow {
                     color: sweepHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
                     font.pixelSize: 15
                     font.family: "Material Symbols Rounded"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
 
                 MouseArea {

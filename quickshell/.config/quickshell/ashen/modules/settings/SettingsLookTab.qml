@@ -96,7 +96,7 @@ Item {
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                 border.color: active ? Services.Colors.ghost : "transparent"
                 border.width: active ? 2 : 0
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                 RowLayout {
                     anchors.fill: parent
@@ -195,7 +195,7 @@ Item {
                         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                         border.color: active ? Services.Colors.ghost : "transparent"
                         border.width: active ? 2 : 0
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                         RowLayout {
                             anchors.fill: parent
@@ -268,7 +268,7 @@ Item {
                 color: Services.Colors.fillInset
                 implicitHeight: dynCol.implicitHeight + 24
                 opacity: schemeSection.dynamicActive ? 1.0 : 0.45
-                Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                Behavior on opacity { Widgets.Anim {} }
 
                 ColumnLayout {
                     id: dynCol
@@ -315,7 +315,7 @@ Item {
                                 radius: Services.Sizes.innerR
                                 color: active ? Services.Colors.ghost : Services.Colors.fillLine
                                 gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 scale: Services.Sizes.hoverScaleFor(width, dynTypeHover.containsMouse, dynTypeHover.pressed)
                                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                 RowLayout {

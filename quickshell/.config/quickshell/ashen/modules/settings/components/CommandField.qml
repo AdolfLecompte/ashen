@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // A command you type: click, type, Enter. Empty is a real answer -- it means
 // "whatever this machine already prefers" -- so this never refuses to save one.
@@ -76,7 +77,7 @@ RowLayout {
         Item {
             Layout.fillWidth: true
             implicitHeight: root.editing ? 28 : shown.implicitHeight
-            Behavior on implicitHeight { NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+            Behavior on implicitHeight { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             Text {
                 id: shown
@@ -103,7 +104,7 @@ RowLayout {
                 color: Services.Colors.fillLine
                 border.width: 1
                 border.color: field.activeFocus ? Services.Colors.ghost : Services.Colors.fillRest
-                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                 TextField {
                     id: field

@@ -36,7 +36,7 @@ PanelWindow {
         color: Services.Colors.scrim
         opacity: win.shown ? 1 : 0
         Behavior on opacity {
-            NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
+            Widgets.Anim {}
         }
     }
 
@@ -403,7 +403,7 @@ PanelWindow {
                                         height: 22
                                         color: Services.Colors.scrim
                                         opacity: fileHover.containsMouse ? 1 : 0
-                                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                                        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
                                         Text {
                                             anchors.fill: parent
@@ -445,7 +445,7 @@ PanelWindow {
                         font.pixelSize: Services.Sizes.fsBody
                         font.family: "JetBrainsMono NF"
                         opacity: card.stage(1)
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                     }
                 }
             }

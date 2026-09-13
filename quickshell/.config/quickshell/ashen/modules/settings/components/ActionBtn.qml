@@ -1,5 +1,6 @@
 import QtQuick
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // The one button in Settings with a word inside it rather than a glyph: the
 // end of a card, where something actually happens. Lived privately in the
@@ -21,7 +22,7 @@ Rectangle {
     // The BOX does not move. In a card full of rows, a button that swells
     // shoves the row's rhythm around; the bar's pills grow because they float
     // on a wallpaper with nothing to disturb. Here the word grows instead.
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on color { Widgets.ColorAnim {} }
 
     Text {
         id: btnText
@@ -37,7 +38,7 @@ Rectangle {
         // remeasures and nothing beside it shifts.
         scale: Services.Sizes.hoverScale(btn.warm, hov.pressed)
         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on color { Widgets.ColorAnim {} }
     }
     MouseArea {
         id: hov

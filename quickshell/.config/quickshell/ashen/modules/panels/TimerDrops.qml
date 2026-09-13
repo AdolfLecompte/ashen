@@ -64,7 +64,7 @@ PanelWindow {
     // Perpendicular to the bar whichever edge it is on, which is the whole
     // reason this is a fraction and not a hand-written slide per edge.
     property real reveal: root.wanted ? 1 : 0
-    Behavior on reveal { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
+    Behavior on reveal { Widgets.Anim { speed: Services.Sizes.msPanel } }
 
     Item {
         id: block
@@ -85,8 +85,8 @@ PanelWindow {
             : (root.fromBelow ? root.barEdge - block.height : root.barEdge)
 
         // Sliding to the new centre as the box grows, never jumping.
-        Behavior on x { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
-        Behavior on y { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
+        Behavior on x { Widgets.Anim { speed: Services.Sizes.msPanel } }
+        Behavior on y { Widgets.Anim { speed: Services.Sizes.msPanel } }
 
         Widgets.TimerDrop {
             id: box

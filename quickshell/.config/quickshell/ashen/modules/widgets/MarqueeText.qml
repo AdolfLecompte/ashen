@@ -49,7 +49,7 @@ Item {
             // so a long title does not simply run out of the pill.
             width: root.runs ? implicitWidth : root.width
             elide: root.runs ? Text.ElideNone : Text.ElideRight
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+            Behavior on color { ColorAnim {} }
         }
 
         // The copy that comes round behind it. Only alive while running, so a

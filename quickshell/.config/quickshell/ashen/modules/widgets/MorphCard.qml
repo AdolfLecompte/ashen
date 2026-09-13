@@ -27,11 +27,11 @@ Item {
     // which is the one thing the window style asked not to have.
     Behavior on openW {
         enabled: plate.spread >= 1 && !plate.plain
-        NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut }
+        Anim { speed: Services.Sizes.msPanel }
     }
     Behavior on openH {
         enabled: plate.spread >= 1 && !plate.plain
-        NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut }
+        Anim { speed: Services.Sizes.msPanel }
     }
 
     // What the blob is made of. Transparent for a card whose content already

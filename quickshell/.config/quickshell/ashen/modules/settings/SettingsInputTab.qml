@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import "root:/services" as Services
 import "root:/modules/settings/components"
+import "root:/modules/widgets" as Widgets
 
 // Keyboard layouts today; mouse and touchpad belong here when they land.
 Section {
@@ -52,7 +53,7 @@ Section {
                     radius: Services.Sizes.cardR
                     color: kbCard.active ? Services.Colors.ghost : Services.Colors.fillLine
                     gradient: Services.Prefs.useGradients && (kbCard.active) ? Services.Colors.accentGradient : null
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     ColumnLayout {
                         anchors.centerIn: parent
                         spacing: 4
@@ -95,7 +96,7 @@ Section {
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 11
                             color: rmArea.containsMouse ? Services.Colors.snow : Services.Colors.ash
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         }
                         MouseArea {
                             id: rmArea
@@ -137,7 +138,7 @@ Section {
                         font.family: "JetBrainsMono NF"
                         color: (addArea.containsMouse && Services.Keyboard.canAdd)
                             ? Services.Colors.snow : Services.Colors.mist
-                        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                         Layout.alignment: Qt.AlignHCenter
                     }
                 }
@@ -175,9 +176,9 @@ Section {
             implicitHeight: pickerCol.implicitHeight + 20
             // Slide open/closed instead of snapping.
             Layout.preferredHeight: tab.pickerOpen ? implicitHeight : 0
-            Behavior on Layout.preferredHeight { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+            Behavior on Layout.preferredHeight { Widgets.Anim {} }
             opacity: tab.pickerOpen ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             ColumnLayout {
                 id: pickerCol
@@ -264,7 +265,7 @@ Section {
                                 color: parent.parent.already ? Services.Colors.ash
                                      : rowArea.containsMouse ? Services.Colors.snow
                                      : Services.Colors.mist
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                 font.pixelSize: Services.Sizes.fsBody
                                 font.family: "JetBrainsMono NF"
                                 elide: Text.ElideRight

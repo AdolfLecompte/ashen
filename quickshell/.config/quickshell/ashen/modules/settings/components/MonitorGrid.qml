@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // The 3x3 board Settings > Display arranges monitors on. Nine slots instead of
 // a free canvas: the eight around the centre are exactly the eight ways a
@@ -139,7 +140,7 @@ FocusScope {
                 border.color: drop.containsDrag ? Services.Colors.ghost
                     : cell.atCursor ? Services.Colors.ghost
                     : (cell.isCentre ? Services.Colors.fillRest : Services.Colors.fillLine)
-                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                 DropArea {
                     id: drop
@@ -246,7 +247,7 @@ FocusScope {
             color: card.chosen ? Services.Colors.ghost : Services.Colors.fillRest
             gradient: Services.Prefs.useGradients && card.chosen ? Services.Colors.accentGradient : null
             opacity: card.mirrored || card.off ? 0.45 : 1.0
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+            Behavior on color { Widgets.ColorAnim {} }
 
             // What the drop target reads off the dragged item
             property string monKey: card.monKey
@@ -255,8 +256,8 @@ FocusScope {
             Drag.dragType: Drag.Internal
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
-            Behavior on x { enabled: !dragArea.drag.active; NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
-            Behavior on y { enabled: !dragArea.drag.active; NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+            Behavior on x { enabled: !dragArea.drag.active; Widgets.Anim { speed: Services.Sizes.msMicro } }
+            Behavior on y { enabled: !dragArea.drag.active; Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             ColumnLayout {
                 anchors.centerIn: parent
@@ -272,7 +273,7 @@ FocusScope {
                     font.pixelSize: Services.Sizes.fsBody
                     font.bold: true
                     font.family: "JetBrainsMono NF"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                    Behavior on color { Widgets.ColorAnim {} }
                 }
                 Text {
                     Layout.fillWidth: true
@@ -282,7 +283,7 @@ FocusScope {
                     color: card.chosen ? Services.Colors.accentBody : Services.Colors.surfaceBody
                     font.pixelSize: Services.Sizes.fsCaption
                     font.family: "JetBrainsMono NF"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                    Behavior on color { Widgets.ColorAnim {} }
                 }
             }
 

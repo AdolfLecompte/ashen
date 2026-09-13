@@ -54,7 +54,7 @@ Section {
         height: 28
         transform: Translate { x: slot.shift }
         Behavior on shift {
-            NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
+            Widgets.Anim {}
         }
 
         Rectangle {
@@ -68,7 +68,7 @@ Section {
             radius: Services.Sizes.innerR
             z: dragArea.drag.active ? 100 : 0
             color: dragArea.drag.active ? Services.Colors.ghost : Services.Colors.fillRest
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             scale: dragArea.drag.active
                 ? 1.0 : Services.Sizes.hoverScale(hoverArea.containsMouse, hoverArea.pressed)
             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
@@ -84,8 +84,8 @@ Section {
             Drag.hotSpot.x: width / 2
             Drag.hotSpot.y: height / 2
 
-            Behavior on x { enabled: !dragArea.drag.active; NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
-            Behavior on y { enabled: !dragArea.drag.active; NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+            Behavior on x { enabled: !dragArea.drag.active; Widgets.Anim { speed: Services.Sizes.msMicro } }
+            Behavior on y { enabled: !dragArea.drag.active; Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             // Icon first, then the name: the same face the pill wears on the
             // utility pill, so a chip in this editor is recognisable as the
@@ -199,7 +199,7 @@ Section {
                                          : Services.Colors.fillInset
             border.color: dropZone.containsDrag ? Services.Colors.fillSunken : "transparent"
             border.width: 1
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
             DropArea {
                 id: dropZone
@@ -512,7 +512,7 @@ Section {
             color: resetHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             MouseArea {
                 id: resetHover
                 anchors.fill: parent

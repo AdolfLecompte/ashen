@@ -205,7 +205,7 @@ Scope {
                     color: Services.Colors.fillLine
                     border.color: searchField.activeFocus ? Services.Colors.ghost : Services.Colors.ghostAlpha(0.2)
                     border.width: 1
-                    Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                     RowLayout {
                         anchors.fill: parent
@@ -298,7 +298,7 @@ Scope {
                                 // idle slots are bare -- hover only brightens them,
                                 // it never paints a plate.
                                 color: "transparent"
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 Text {
                                     anchors.fill: parent
@@ -342,7 +342,7 @@ Scope {
                         spacing: 8
                         opacity: win.missed ? 1 : 0
                         visible: opacity > 0.01
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on opacity { Widgets.Anim {} }
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -382,7 +382,7 @@ Scope {
                             // a glow and nothing else in the shell frames a row.
                             color: index === win.selectedIndex ? Services.Colors.fillRest : "transparent"
                             border.width: 0
-                            Behavior on color { ColorAnimation { duration: Services.Sizes.msInstant } }
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msInstant } }
 
                             RowLayout {
                                 anchors.fill: parent

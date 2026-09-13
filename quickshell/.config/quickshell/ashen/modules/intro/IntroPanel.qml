@@ -52,10 +52,10 @@ PanelWindow {
     onWantWChanged: root.boxW = root.wantW
     onWantHChanged: root.boxH = root.wantH
     Behavior on boxW {
-        NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeBox }
+        Widgets.Anim { speed: Services.Sizes.msPanel; curve: Services.Sizes.easeBox }
     }
     Behavior on boxH {
-        NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeBox }
+        Widgets.Anim { speed: Services.Sizes.msPanel; curve: Services.Sizes.easeBox }
     }
 
     // Turning to About is a page sliding, not two cards dissolving into each
@@ -82,7 +82,7 @@ PanelWindow {
         anchors.fill: parent
         color: Services.Colors.scrim
         opacity: root.shown ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPanel } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msPanel } }
         MouseArea {
             anchors.fill: parent
             enabled: root.shown
@@ -175,7 +175,7 @@ PanelWindow {
                             spacing: 2
                             opacity: root.onHome ? 1 : 0
                             visible: opacity > 0.01
-                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on opacity { Widgets.Anim {} }
 
                             Text {
                                 Layout.alignment: Qt.AlignHCenter
@@ -206,7 +206,7 @@ PanelWindow {
                             rowSpacing: 8
                             opacity: root.onHome ? 0 : 1
                             visible: opacity > 0.01
-                            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                            Behavior on opacity { Widgets.Anim {} }
 
                             Repeater {
                                 // The launcher is the exception: the bind is
@@ -281,7 +281,7 @@ PanelWindow {
                     spacing: 14
                     opacity: root.welcoming ? 0 : card.contentAmt
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                    Behavior on opacity { Widgets.Anim {} }
 
                     RowLayout {
                         Layout.fillWidth: true

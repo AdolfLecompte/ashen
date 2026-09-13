@@ -293,7 +293,7 @@ Item {
                 color: Services.Colors.fillLine
                 border.color: passInput.activeFocus ? Services.Colors.ghost : Services.Colors.fillStrong
                 border.width: 1
-                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 12

@@ -98,7 +98,7 @@ TabPage {
                     // made the whole section jump -- and the one thing this preview is
                     // not about is which numbers the mode has.
                     Layout.preferredHeight: rig.ext + rig.standH + 16
-                    Behavior on Layout.preferredHeight { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
+                    Behavior on Layout.preferredHeight { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
 
                     Item {
                         id: rig
@@ -125,11 +125,11 @@ TabPage {
                         readonly property real ext: rig.longest
                         readonly property real standH: 26
 
-                        Behavior on width { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
-                        Behavior on height { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
+                        Behavior on width { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
+                        Behavior on height { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
 
                         opacity: tab.selEnt && tab.selEnt.disabled ? 0.4 : 1.0
-                        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+                        Behavior on opacity { Widgets.Anim {} }
 
                         // The stand stays on the desk: on a real pivot monitor the
                         // neck is fixed and the panel turns on it. It hangs off
@@ -148,7 +148,7 @@ TabPage {
                             x: (rig.width - width) / 2
                             y: rig.neckTop
                             height: rig.neckLen
-                            Behavior on y { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeInOut } }
+                            Behavior on y { Widgets.Anim { speed: Services.Sizes.msEmphasis; curve: Services.Sizes.easeInOut } }
                             // Solid, not a wash of the accent: two translucent parts
                             // laid over each other showed the neck through the screen.
                             color: Services.Colors.tint(Services.Colors.surface, Services.Colors.ghost, 0.16)
@@ -159,7 +159,7 @@ TabPage {
                             radius: 3
                             x: (rig.width - width) / 2
                             y: rig.neckTop + rig.neckLen
-                            Behavior on y { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeInOut } }
+                            Behavior on y { Widgets.Anim { speed: Services.Sizes.msEmphasis; curve: Services.Sizes.easeInOut } }
                             color: Services.Colors.tint(Services.Colors.surface, Services.Colors.ghost, 0.16)
                         }
 
@@ -169,13 +169,13 @@ TabPage {
                             height: rig.bodyH
                             x: (rig.width - width) / 2
                             y: (rig.ext - height) / 2
-                            Behavior on x { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
-                            Behavior on y { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
+                            Behavior on x { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
+                            Behavior on y { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
 
                             // Only this turns, about its own middle -- which is where a
                             // pivot arm actually holds a screen.
                             rotation: tab.selEnt ? tab.selEnt.transform * 90 : 0
-                            Behavior on rotation { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeInOut } }
+                            Behavior on rotation { Widgets.Anim { speed: Services.Sizes.msEmphasis; curve: Services.Sizes.easeInOut } }
 
                             radius: Services.Sizes.cardR
                             color: Services.Colors.tint(Services.Colors.surface, Services.Colors.ghost, 0.30)
@@ -205,7 +205,7 @@ TabPage {
                                 color: tab.selEnt && tab.selEnt.disabled
                                     ? Services.Colors.tint(Services.Colors.surface, Services.Colors.ghost, 0.45)
                                     : Services.Colors.ghost
-                                Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+                                Behavior on color { Widgets.ColorAnim {} }
                             }
 
                             ColumnLayout {
@@ -231,7 +231,7 @@ TabPage {
                                     }
                                     // Transform only: a font.pixelSize that animates
                                     // relayouts the column every frame.
-                                    Behavior on scale { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeOut } }
+                                    Behavior on scale { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
                                 }
                                 Text {
                                     Layout.fillWidth: true
@@ -548,8 +548,8 @@ TabPage {
             // Unclaimed numbers keep their outline and nothing else, so the
             // ones this screen owns are the only filled things in the row.
             opacity: chip.mine ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+            Behavior on opacity { Widgets.Anim {} }
+            Behavior on color { Widgets.ColorAnim {} }
         }
         Rectangle {
             anchors.fill: parent
@@ -558,7 +558,7 @@ TabPage {
             border.width: 1
             border.color: Services.Colors.fillLine
             opacity: chip.mine ? 0 : 1
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard } }
+            Behavior on opacity { Widgets.Anim {} }
         }
 
         Text {
@@ -570,7 +570,7 @@ TabPage {
             font.pixelSize: Services.Sizes.fsBody
             font.bold: true
             font.family: "JetBrainsMono NF"
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+            Behavior on color { Widgets.ColorAnim {} }
         }
 
         MouseArea {

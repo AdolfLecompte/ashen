@@ -271,7 +271,7 @@ PanelWindow {
                                             color: tab.fg
                                             font.family: "Material Symbols Rounded"
                                             font.pixelSize: 14
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
@@ -280,7 +280,7 @@ PanelWindow {
                                             font.pixelSize: 10
                                             font.bold: true
                                             font.family: "JetBrainsMono NF"
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                     }
 

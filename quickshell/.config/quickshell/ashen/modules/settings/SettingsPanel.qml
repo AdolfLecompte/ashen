@@ -230,7 +230,7 @@ PanelWindow {
                                             color: railItem.fg
                                             font.pixelSize: 16
                                             font.family: "Material Symbols Rounded"
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                         Text {
                                             anchors.verticalCenter: parent.verticalCenter
@@ -239,7 +239,7 @@ PanelWindow {
                                             font.pixelSize: Services.Sizes.fsBody
                                             font.bold: true
                                             font.family: "JetBrainsMono NF"
-                                            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                     }
 

@@ -43,11 +43,11 @@ Rectangle {
                 : lit ? Services.Colors.ghost : Services.Colors.fillOutline
     gradient: (Services.Prefs.useGradients && !Services.Pills.rings && lit)
               ? Services.Colors.accentGradient : null
-    Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+    Behavior on color { ColorAnim {} }
 
     scale: available && !inert
         ? Services.Sizes.hoverScale(hover.containsMouse, hover.pressed) : 1.0
-    Behavior on scale { NumberAnimation { duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut } }
+    Behavior on scale { Anim { speed: Services.Sizes.msMicro } }
 
     Text {
         anchors.centerIn: parent
@@ -62,7 +62,7 @@ Rectangle {
                                                    : Services.Colors.mist))
         font.family: "Material Symbols Rounded"
         font.pixelSize: chip.glyphSize
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on color { ColorAnim {} }
     }
 
     MouseArea {

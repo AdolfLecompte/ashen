@@ -71,10 +71,10 @@ PanelWindow {
 
         // Origin-anchored open: grows out of its tray icon + fades, smooth settle.
         property real openAmt: root.shown ? 1.0 : 0.0
-        Behavior on openAmt { NumberAnimation { duration: Services.Sizes.msEmphasis; easing.type: Services.Sizes.easeBox } }
+        Behavior on openAmt { Widgets.Anim { speed: Services.Sizes.msEmphasis; curve: Services.Sizes.easeBox } }
 
         opacity: root.shown ? 1.0 : 0.0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut } }
+        Behavior on opacity { Widgets.Anim {} }
         transform: Scale {
             origin.x: Services.Sizes.originX(card.x, card.width, Services.AppState.trayMenuCenterX)
             origin.y: Services.Sizes.originY(card.y, card.height, Services.AppState.trayMenuCenterY)
@@ -185,7 +185,7 @@ PanelWindow {
         radius: Services.Sizes.innerR
         // The plate does not answer the pointer -- the label does, below.
         color: "transparent"
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
         // A separator is a hairline, not a row: it keeps its own margins so a
         // nested run still lines up with the labels above it.
@@ -246,7 +246,7 @@ PanelWindow {
                 font.pixelSize: Services.Sizes.fsBody
                 font.family: "JetBrainsMono NF"
                 elide: Text.ElideRight
-                Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
         }
 

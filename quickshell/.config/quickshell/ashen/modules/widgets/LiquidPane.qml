@@ -54,7 +54,7 @@ Item {
         color: Services.Colors.fillInset
         border.width: 1
         border.color: Services.Colors.fillRest
-        Behavior on border.color { ColorAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on border.color { ColorAnim {} }
     }
 
     LiquidFill {
@@ -64,7 +64,7 @@ Item {
         radius_: vessel.radius
         level: pane.frac
         opacity: pane.dimmed ? 0.55 : 1.0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
         // Fuller means livelier, the same rule the other vessels read by; and
         // livelier still while something is actually flowing.
         waveAmp: (1.5 + pane.frac * 1.9) * (pane.lively ? 1.6 : 1.0)

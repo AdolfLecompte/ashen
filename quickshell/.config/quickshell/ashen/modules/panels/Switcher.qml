@@ -126,7 +126,7 @@ PanelWindow {
         anchors.fill: parent
         color: Services.Colors.scrim
         opacity: root.shown ? 1.0 : 0.0
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPronounced } }
+        Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msPronounced } }
         MouseArea { anchors.fill: parent; enabled: root.shown; onClicked: root.close() }
     }
 
@@ -230,7 +230,7 @@ PanelWindow {
                                 // the key is on.
                                 border.width: 2
                                 border.color: tile.picked ? Services.Colors.ghost : "transparent"
-                                Behavior on border.color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                                Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 ScreencopyView {
                                     id: shot

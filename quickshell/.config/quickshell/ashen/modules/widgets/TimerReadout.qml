@@ -38,9 +38,9 @@ Item {
     clip: true
 
     opacity: rd.on ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
-    Behavior on implicitWidth { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
-    Behavior on implicitHeight { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeOut } }
+    Behavior on opacity { Anim { speed: Services.Sizes.msPanel } }
+    Behavior on implicitWidth { Anim { speed: Services.Sizes.msPanel } }
+    Behavior on implicitHeight { Anim { speed: Services.Sizes.msPanel } }
 
     Grid {
         id: lay
@@ -85,7 +85,7 @@ Item {
                     font.pixelSize: 14
                     font.bold: true
                     font.family: "JetBrainsMono NF"
-                    Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+                    Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                 }
 
                 MouseArea {

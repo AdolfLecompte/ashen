@@ -70,13 +70,13 @@ Item {
             height: parent.height
             radius: parent.radius
             color: root.fillColor
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
             width: track.width * root.shown
             // Easing is for changes coming from elsewhere (keys, OSD); while
             // dragging it is just lag between the cursor and the bar.
             Behavior on width {
                 enabled: !root.dragging
-                NumberAnimation { duration: Services.Sizes.msMicro }
+                Anim { speed: Services.Sizes.msMicro }
             }
         }
     }

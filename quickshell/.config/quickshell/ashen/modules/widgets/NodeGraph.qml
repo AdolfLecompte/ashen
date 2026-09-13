@@ -44,7 +44,7 @@ Item {
     // list that had been rearranged.
     property bool live: true
     property real liveAmt: live ? 1 : 0
-    Behavior on liveAmt { NumberAnimation { duration: Services.Sizes.msPanel; easing.type: Services.Sizes.easeBox } }
+    Behavior on liveAmt { Anim { speed: Services.Sizes.msPanel; curve: Services.Sizes.easeBox } }
 
     // ── Scan ────────────────────────────────────────────────────────────
     // The last slot is always the scan chip. Pressing it takes the middle and
@@ -446,8 +446,8 @@ Item {
             // needs a shorter pattern or the dashes turn into bars.
             dashPattern: [2, 2.4]
 
-            Behavior on strokeWidth { NumberAnimation { duration: Services.Sizes.msMicro } }
-            Behavior on strokeColor { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on strokeWidth { Anim { speed: Services.Sizes.msMicro } }
+            Behavior on strokeColor { ColorAnim { speed: Services.Sizes.msMicro } }
 
             startX: w.x0
             startY: w.y0
@@ -505,7 +505,7 @@ Item {
             opacity: root.liveAmt * (swapping ? 1 - root.swapAmt * 3 : 1)
                    * ((resting || onHover) ? 1 : 0)
             visible: opacity > 0.01
-            Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
 
             fromX: root.cx
             fromY: root.cy
@@ -546,7 +546,7 @@ Item {
         // the way as they cross, rather than drawing a line inside them.
         opacity: (index >= 0 && alive && clearance > 6) ? 1 : 0
         visible: opacity > 0.01
-        Behavior on opacity { NumberAnimation { duration: Services.Sizes.msMicro } }
+        Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
 
         // Neither end has agreed to anything yet — a swap is a request and so
         // is a stranger you have armed — so this one is dashed throughout.
@@ -590,7 +590,7 @@ Item {
         z: 2
         color: root.hubFilled ? Services.Colors.ghost : Services.Colors.fillLine
         gradient: Services.Prefs.useGradients && root.hubFilled ? Services.Colors.accentGradient : null
-        Behavior on color { ColorAnimation { duration: Services.Sizes.msStandard } }
+        Behavior on color { ColorAnim {} }
 
         // A soft ring around it, so the hub reads as the source the wires come
         // out of rather than just the biggest node. It goes with the swap: a
@@ -760,7 +760,7 @@ Item {
 
             color: (!empty && modelData.active) || promoting || armed ? Services.Colors.ghost
                  : Services.Colors.fillLine
-            Behavior on color { ColorAnimation { duration: Services.Sizes.msMicro } }
+            Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
             // Folded into the hub with the radio off, and it fades on the way
             // rather than sliding under it as a solid block.
