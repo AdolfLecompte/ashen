@@ -36,14 +36,34 @@ Column {
     property Item overlayRoot: picker.Window.contentItem
     property real popX: 0
     property real popY: 0
+    // A floating list near the bottom of its card opens UPWARD: hung below, it
+    // spilled past the card's edge over whatever was underneath.
+    property bool openUp: false
 
+    // Which side has room, measured against the nearest clipping ancestor (the
+    // page that scrolls, the card), else the window. Decided once as it opens:
+    // a list that flipped sides while the page scrolled would be a second move.
+    function chooseSide() {
+        let b = picker.overlayRoot
+        for (let p = picker.parent; p; p = p.parent)
+            if (p.clip) { b = p; break }
+        if (!b) return
+        const top = head.mapToItem(b, 0, 0).y
+        const below = b.height - (top + head.height + 4)
+        const above = top - 4
+        picker.openUp = below < optsCol.implicitHeight + 8 && above > below
+    }
     function place() {
         if (!picker.overlay || !picker.overlayRoot) return
-        const p = head.mapToItem(picker.overlayRoot, 0, head.height + 4)
+        const p = head.mapToItem(picker.overlayRoot, 0,
+            picker.openUp ? -(4 + optsCol.implicitHeight) : head.height + 4)
         picker.popX = p.x
         picker.popY = p.y
     }
-    onExpandedChanged: picker.place()
+    onExpandedChanged: {
+        if (picker.expanded && picker.overlay) picker.chooseSide()
+        picker.place()
+    }
 
     Timer {
         running: picker.overlay && picker.expanded
@@ -158,8 +178,8 @@ Column {
                 id: optsCol
                 width: parent.width
                 spacing: 2
-                // Slides down from under the header rather than appearing whole.
-                y: picker.expanded ? 0 : -6
+                // Slides out from the header's side rather than appearing whole.
+                y: picker.expanded ? 0 : (picker.openUp ? 6 : -6)
                 Behavior on y { Anim {} }
 
                 Repeater {

@@ -10,6 +10,12 @@ Item {
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("media")
+    // What is laid out, copied from `content` with the size animation held off:
+    // a new mode is a new shape, and a box easing to it while its contents had
+    // already jumped drew the transport past the plate. One change, one frame.
+    property string laid: ""
+    property bool reshaping: false
+    onContentChanged: { root.reshaping = true; root.laid = root.content; root.reshaping = false }
     readonly property bool outlined: Services.Pills.isOutlined("media")
     readonly property int pillH: Services.Sizes.pillH
     readonly property bool vertical: Services.Sizes.barVertical
@@ -142,7 +148,7 @@ Item {
     // width inside a 56 px column -- and was clipped away or drawn crooked
     // until something else nudged it. Hidden, nobody can see it jump.
     readonly property bool swapping: Services.Sizes.hidden
-    Behavior on height { enabled: !root.swapping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
+    Behavior on height { enabled: !root.swapping && !root.reshaping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
     // The panel is a morphed copy of this pill, so while it is open the pill
     // itself steps aside: the card standing on its rect *is* the pill now.
     // Coming back it waits for the card to finish shrinking before reappearing,
@@ -169,7 +175,7 @@ Item {
     // Only the body fades out on takeover, never this Item: it has to keep
     // holding its slot in the bar or the row would close the gap and shift.
     opacity: hasPlayer ? 1.0 : 0.0
-    Behavior on width { enabled: !root.swapping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
+    Behavior on width { enabled: !root.swapping && !root.reshaping; SmoothedAnimation { duration: Services.Sizes.msPronounced } }
     Behavior on opacity { Widgets.Anim {} }
 
     // The pointer being on the pill is what lets a long title walk, and a
@@ -184,7 +190,7 @@ Item {
     // …and its size, so the panel knows the rect it has to grow out of
     Binding { target: Services.AppState; property: "mediaPillW"; value: root.width }
     Binding { target: Services.AppState; property: "mediaPillH"; value: root.height }
-Component.onCompleted: { activePlayer = livePlayer; updateArt() }
+    Component.onCompleted: { root.reshaping = true; root.laid = root.content; root.reshaping = false; activePlayer = livePlayer; updateArt() }
 
     Rectangle {
         anchors.fill: parent
@@ -220,8 +226,8 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
             // only when full, the transport unless icon. A Grid given a column
             // it does not fill still charges one `spacing` for it.
             readonly property int cells: 1
-                + (root.content === "full" ? 1 : 0)
-                + (root.content !== "icon" ? 1 : 0)
+                + (root.laid === "full" ? 1 : 0)
+                + (root.laid !== "icon" ? 1 : 0)
             columns: root.vertical ? 1 : expandedRow.cells
             horizontalItemAlignment: Grid.AlignHCenter
             verticalItemAlignment: Grid.AlignVCenter
@@ -292,7 +298,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
                 // The title column is what `compact` gives up: the cover says
                 // WHICH song and the transport is what you reach for, so the
                 // words are the part a small media pill can do without.
-                visible: !root.vertical && root.content === "full"
+                visible: !root.vertical && root.laid === "full"
                 spacing: 3
                 width: root.vertical ? 0 : 120
                 opacity: trackSwap.fade
@@ -324,7 +330,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
             // workspace you are standing on is lit.
             Grid {
                 // `icon` is the cover alone -- no words, no transport.
-                visible: root.content !== "icon"
+                visible: root.laid !== "icon"
                 // Three chips, three columns: see the note above.
                 columns: root.vertical ? 1 : 3
                 horizontalItemAlignment: Grid.AlignHCenter

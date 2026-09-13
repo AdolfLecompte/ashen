@@ -50,6 +50,13 @@ PanelWindow {
         Services.AppState.mediaVisible = false
 
     // Chip sizes at each end of the trip
+    // What the pill is drawing: the copy below has to be the same shape, or
+    // the pieces fly out of places the pill does not have. The title only on a
+    // full top/bottom pill, the transport unless icon.
+    readonly property string pillContent: Services.Pills.contentOf("media")
+    readonly property bool pillVertical: Services.Sizes.barVertical
+    readonly property bool titleInPill: !root.pillVertical && root.pillContent === "full"
+    readonly property bool ctlInPill: root.pillContent !== "icon"
     readonly property real chipSm: Services.Sizes.innerH
     readonly property real playSm: Services.Sizes.innerH
     // Origin of the pill reference layout, in card coordinates
@@ -85,27 +92,31 @@ PanelWindow {
         openH: root.openH
 
         // ── Reference layout A: the pill ────────────────────────────────
-        // A structural copy of MediaPill's row, laid out but never drawn, so the
-        // shared items know where the pill puts them. Centred, not left-anchored:
-        // the box then grows around its contents instead of dragging them along.
-        Row {
+        // A structural copy of MediaPill's grid -- same cells, same axis, same
+        // gaps -- laid out but never drawn, so the shared items know where the
+        // pill puts them. Centred, not left-anchored: the box then grows around
+        // its contents instead of dragging them along.
+        Grid {
             id: pillRef
             opacity: 0
             anchors.centerIn: parent
             spacing: 8
+            columns: root.pillVertical ? 1
+                : 1 + (root.titleInPill ? 1 : 0) + (root.ctlInPill ? 1 : 0)
+            horizontalItemAlignment: Grid.AlignHCenter
+            verticalItemAlignment: Grid.AlignVCenter
 
             Item {
                 id: refArt
                 width: Services.Sizes.pillH - 10
                 height: Services.Sizes.pillH - 10
-                anchors.verticalCenter: parent.verticalCenter
             }
 
             Column {
                 id: refCol
+                visible: root.titleInPill
                 width: 120
                 spacing: 3
-                anchors.verticalCenter: parent.verticalCenter
 
                 Text {
                     textFormat: Text.PlainText
@@ -147,10 +158,13 @@ PanelWindow {
                 }
             }
 
-            Row {
+            Grid {
                 id: refCtl
-                spacing: 4
-                anchors.verticalCenter: parent.verticalCenter
+                visible: root.ctlInPill
+                columns: root.pillVertical ? 1 : 3
+                spacing: Services.Sizes.btnGap
+                horizontalItemAlignment: Grid.AlignHCenter
+                verticalItemAlignment: Grid.AlignVCenter
 
                 Item { id: refPrev; width: root.chipSm; height: root.chipSm }
                 Item { id: refPlay; width: root.playSm; height: root.playSm }
@@ -229,19 +243,21 @@ PanelWindow {
         Text {
             textFormat: Text.PlainText
             id: flyTitle
-            readonly property real s: card.lerp(11 / 18, 1, card.morph)
-            readonly property real visW: card.lerp(refCol.width, panelRef.titleW, card.morph)
+            readonly property real m: root.titleInPill ? card.morph : 1
+            readonly property real alone: root.titleInPill ? 1 : card.contentAmt
+            readonly property real s: card.lerp(11 / 18, 1, flyTitle.m)
+            readonly property real visW: card.lerp(refCol.width, panelRef.titleW, flyTitle.m)
             text: panelRef.shownTitle
             color: Services.Colors.snow
-            opacity: panelRef.swapFade
+            opacity: panelRef.swapFade * flyTitle.alone
             font.pixelSize: 18
             font.bold: true
             font.family: "JetBrainsMono NF"
             elide: Text.ElideRight
             width: visW / s
-            x: card.lerp(root.prColX + refTitle.x, panelRef.x + panelRef.titleX, card.morph)
+            x: card.lerp(root.prColX + refTitle.x, panelRef.x + panelRef.titleX, flyTitle.m)
             y: card.lerp(root.prColY + refTitle.y + refTitle.height / 2,
-                         panelRef.y + panelRef.titleCY, card.morph) - height / 2
+                         panelRef.y + panelRef.titleCY, flyTitle.m) - height / 2
             transform: [
                 Scale {
                     origin.x: 0
@@ -259,14 +275,17 @@ PanelWindow {
         Text {
             textFormat: Text.PlainText
             id: flyPos
+            readonly property real m: root.titleInPill ? card.morph : 1
+            readonly property real alone: root.titleInPill ? 1 : card.contentAmt
+            opacity: flyPos.alone
             text: panelRef.posText
             color: Services.Colors.mist
             font.pixelSize: 10; font.bold: true
             font.family: "JetBrainsMono NF"
             x: card.lerp(root.prColX + refTimes.x + refPos.x,
-                         panelRef.x + panelRef.posX, card.morph)
+                         panelRef.x + panelRef.posX, flyPos.m)
             y: card.lerp(root.prColY + refTimes.y + refPos.y + refPos.height / 2,
-                         panelRef.y + panelRef.posCY, card.morph) - height / 2
+                         panelRef.y + panelRef.posCY, flyPos.m) - height / 2
         }
         // The slash has nowhere to go once the numbers separate, so it is the
         // one shared piece that does fade — quickly, before the gap opens.
@@ -278,21 +297,24 @@ PanelWindow {
             font.pixelSize: 10; font.bold: true
             font.family: "JetBrainsMono NF"
             opacity: 1 - Math.min(1, card.morph * 4)
-            visible: opacity > 0.01
+            visible: root.titleInPill && opacity > 0.01
             x: card.lerp(root.prColX + refTimes.x + refSep.x, flyPos.x + flyPos.width, card.morph)
             y: flyPos.y
         }
         Text {
             textFormat: Text.PlainText
             id: flyLen
+            readonly property real m: root.titleInPill ? card.morph : 1
+            readonly property real alone: root.titleInPill ? 1 : card.contentAmt
+            opacity: flyLen.alone
             text: panelRef.lenText
             color: Services.Colors.mist
             font.pixelSize: 10; font.bold: true
             font.family: "JetBrainsMono NF"
             x: card.lerp(root.prColX + refTimes.x + refLen.x,
-                         panelRef.x + panelRef.lenX, card.morph)
+                         panelRef.x + panelRef.lenX, flyLen.m)
             y: card.lerp(root.prColY + refTimes.y + refLen.y + refLen.height / 2,
-                         panelRef.y + panelRef.lenCY, card.morph) - height / 2
+                         panelRef.y + panelRef.lenCY, flyLen.m) - height / 2
         }
 
         // Transport chips: the same three plates the bar shows, grown and
@@ -300,40 +322,46 @@ PanelWindow {
         // behaves identically at either size.
         Widgets.CtlChip {
             id: flyPrev
+            readonly property real m: root.ctlInPill ? card.morph : 1
+            opacity: root.ctlInPill ? 1 : card.contentAmt
             glyph: "\ue045"
-            size: card.lerp(root.chipSm, panelRef.chipLg, card.morph)
-            glyphSize: card.lerp(18, 20, card.morph)
+            size: card.lerp(root.chipSm, panelRef.chipLg, flyPrev.m)
+            glyphSize: card.lerp(18, 20, flyPrev.m)
             available: root.activePlayer !== null && root.activePlayer.canGoPrevious
             onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(-1); root.activePlayer.previous() }
             x: card.lerp(pillRef.x + refCtl.x + refPrev.x + refPrev.width / 2,
-                         panelRef.x + panelRef.prevCX, card.morph) - width / 2
+                         panelRef.x + panelRef.prevCX, flyPrev.m) - width / 2
             y: card.lerp(pillRef.y + refCtl.y + refPrev.y + refPrev.height / 2,
-                         panelRef.y + panelRef.prevCY, card.morph) - height / 2
+                         panelRef.y + panelRef.prevCY, flyPrev.m) - height / 2
         }
         Widgets.CtlChip {
             id: flyPlay
+            readonly property real m: root.ctlInPill ? card.morph : 1
+            opacity: root.ctlInPill ? 1 : card.contentAmt
             glyph: panelRef.playGlyph
-            size: card.lerp(root.playSm, panelRef.playLg, card.morph)
-            glyphSize: card.lerp(20, 24, card.morph)
+            size: card.lerp(root.playSm, panelRef.playLg, flyPlay.m)
+            glyphSize: card.lerp(20, 24, flyPlay.m)
             available: root.hasPlayer
             active: root.activePlayer !== null && root.activePlayer.isPlaying
             onTriggered: if (root.activePlayer) root.activePlayer.togglePlaying()
             x: card.lerp(pillRef.x + refCtl.x + refPlay.x + refPlay.width / 2,
-                         panelRef.x + panelRef.playCX, card.morph) - width / 2
+                         panelRef.x + panelRef.playCX, flyPlay.m) - width / 2
             y: card.lerp(pillRef.y + refCtl.y + refPlay.y + refPlay.height / 2,
-                         panelRef.y + panelRef.playCY, card.morph) - height / 2
+                         panelRef.y + panelRef.playCY, flyPlay.m) - height / 2
         }
         Widgets.CtlChip {
             id: flyNext
+            readonly property real m: root.ctlInPill ? card.morph : 1
+            opacity: root.ctlInPill ? 1 : card.contentAmt
             glyph: "\ue044"
-            size: card.lerp(root.chipSm, panelRef.chipLg, card.morph)
-            glyphSize: card.lerp(18, 20, card.morph)
+            size: card.lerp(root.chipSm, panelRef.chipLg, flyNext.m)
+            glyphSize: card.lerp(18, 20, flyNext.m)
             available: root.activePlayer !== null && root.activePlayer.canGoNext
             onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(1); root.activePlayer.next() }
             x: card.lerp(pillRef.x + refCtl.x + refNext.x + refNext.width / 2,
-                         panelRef.x + panelRef.nextCX, card.morph) - width / 2
+                         panelRef.x + panelRef.nextCX, flyNext.m) - width / 2
             y: card.lerp(pillRef.y + refCtl.y + refNext.y + refNext.height / 2,
-                         panelRef.y + panelRef.nextCY, card.morph) - height / 2
+                         panelRef.y + panelRef.nextCY, flyNext.m) - height / 2
         }
     }
 }
