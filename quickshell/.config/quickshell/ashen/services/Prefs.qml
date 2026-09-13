@@ -98,11 +98,6 @@ Singleton {
         root.hiddenPillList = root.hiddenPills.split(",").filter(x => x !== "")
     }
 
-    // A pill exists exactly when the layout gives it a place.
-    function pillVisible(id) {
-        return root.barSectionOf(id) !== ""
-    }
-
     // ── Bar layout ──────────────────────────────────────────────────────
     // "v2|left;centre;right;parked", ids comma separated. ONE packed string:
     // the adapter drops writes made in the same tick. The 4th part (dragged off

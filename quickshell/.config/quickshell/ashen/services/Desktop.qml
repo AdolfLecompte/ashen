@@ -156,11 +156,6 @@ Singleton {
         const w = root.widget(id)
         return (w && w.skins) ? w.skins : []
     }
-    function skinLabel(id) {
-        const cur = root.entry(id).skin
-        for (const sk of root.skinsOf(id)) if (sk.id === cur) return sk.label
-        return ""
-    }
 
     // Nothing is on until asked for: a fresh install keeps the desktop it had.
     property var layout: ({})
@@ -281,14 +276,6 @@ Singleton {
     // A frame pulled out by its corner. Never smaller than something you can
     // still grab, and on the grid when that is how you are arranging.
     readonly property int minFrame: 96
-    function setSize(id, w, h) {
-        const snap = v => root.snap === "grid"
-            ? Math.round(v / root.gridStep) * root.gridStep : Math.round(v)
-        root.write(id, {
-            w: Math.max(root.minFrame, snap(w)),
-            h: Math.max(root.minFrame, snap(h))
-        })
-    }
     // A corner drag moves two things at once -- the size, and the side that
     // did not move. Two writes would leave the picture walking across the
     // desktop between them.
@@ -311,8 +298,6 @@ Singleton {
             oy: Math.max(-1, Math.min(1, oy))
         })
     }
-    // Back to the shape's own size, and to the middle of the picture.
-    function clearSize(id) { root.write(id, { w: 0, h: 0, zoom: 1, ox: 0, oy: 0 }) }
 
     // The shape a widget is WEARING, as opposed to the one last picked: a frame
     // pulled to a size of its own is no longer Small, and a chip still lit

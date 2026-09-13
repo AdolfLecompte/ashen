@@ -97,9 +97,6 @@ Item {
     function riseOf(i) { return plate.plain ? 0 : (1 - root.stage(i)) * 10 }
 
     // Where the blob actually is, for anything that has to line up with it.
-    readonly property alias plateX: plate.x
-    readonly property alias plateY: plate.y
-    readonly property alias plateW: plate.width
     readonly property alias plateH: plate.height
 
     function lerp(a, b, t) { return a + (b - a) * t }

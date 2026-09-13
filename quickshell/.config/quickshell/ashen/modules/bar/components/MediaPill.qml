@@ -51,20 +51,6 @@ Item {
         let s = Math.floor(seconds % 60)
         return m + ":" + (s < 10 ? "0" : "") + s
     }
-    function seekPrev() {
-        if (!root.hasPlayer) return
-        let p = root.activePlayer
-        Services.AppState.mediaStep(-1)
-        if (p.canGoPrevious) { p.previous(); return }
-        if (p.canSeek) p.position = Math.max(0, p.position - 10)
-    }
-    function seekNext() {
-        if (!root.hasPlayer) return
-        let p = root.activePlayer
-        Services.AppState.mediaStep(1)
-        if (p.canGoNext) { p.next(); return }
-        if (p.canSeek) p.position = Math.min(p.length, p.position + 10)
-    }
     property string stableArtUrl: ""
     // Artist and album are held the same way the URL is, and for the same
     // reason: MPRIS empties every field for a few frames between tracks, and

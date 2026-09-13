@@ -59,14 +59,9 @@ Singleton {
         return (isNaN(h) || isNaN(m)) ? -1 : h * 60 + m
     }
 
-    // Wind direction as a compass point. Only the clock card reads it; the lock
-    // screen shows the speed in km/h, where the bearing said nothing.
-    function windCompass(deg) {
-        const pts = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-        return pts[Math.round((deg % 360) / 45) % 8]
-    }
-    // The same eight sectors as an arrow instead of two letters: the glyph
-    // named after the bearing points that way, so it reads without decoding.
+
+    // Wind direction as an arrow: the glyph named after the bearing points that
+    // way, so it reads without decoding two letters.
     function windGlyph(deg) {
         const pts = ["\uf1e0", "\uf1e1", "\uf1df", "\uf1e4",   // N NE E SE
                      "\uf1e3", "\uf1e5", "\uf1e6", "\uf1e2"]   // S SW W NW

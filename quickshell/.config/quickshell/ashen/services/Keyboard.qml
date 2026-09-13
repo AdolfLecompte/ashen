@@ -17,7 +17,6 @@ Singleton {
     readonly property string code: activeIndex >= 0 && activeIndex < layouts.length
         ? layouts[activeIndex] : ""
     readonly property string label: code === "" ? "--" : code.toUpperCase()
-    readonly property bool multiple: layouts.length > 1
 
     // The two locks, read from the same device the layout comes from. They live
     // here and not in whoever draws them: the bar shows them, the notification
@@ -58,11 +57,6 @@ Singleton {
                 root.available = out
             }
         }
-    }
-
-    function nameFor(code) {
-        let hit = root.available.find(l => l.code === code)
-        return hit ? hit.name : code.toUpperCase()
     }
 
     // hyprctl *keyword* does not work on this Lua config ("non-legacy parsers,

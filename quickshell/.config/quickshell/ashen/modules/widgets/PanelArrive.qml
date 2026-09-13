@@ -48,8 +48,6 @@ Item {
     // Centred while it unfolds; pinned to its top edge while it unrolls.
     function boxX(fullX, full) { return root.plain ? fullX : fullX + (full - root.boxW(full)) / 2 }
     function boxY(fullY, full) { return root.plain ? fullY : fullY + (full - root.boxH(full)) / 2 }
-    // Nothing is glued to an edge here, so a corner is always its full radius.
-    function boxRadius(full) { return full }
 
     // Per-piece stagger out of the single content driver: piece i starts a
     // little after piece i-1 and they all land together.

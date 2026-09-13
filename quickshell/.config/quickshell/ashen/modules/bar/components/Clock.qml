@@ -14,14 +14,6 @@ Rectangle {
     // to be assigned from a Timer of this pill's own, one of four.
     readonly property string currentTime: Services.Time.fmt(Services.Prefs.timeFormat)
     readonly property string currentDate: Services.Time.fmt("ddd, MMM d")
-    readonly property string timeIcon: {
-        const h = Services.Time.hours
-        if (h < 5) return ""
-        if (h < 8) return ""
-        if (h < 17) return ""
-        if (h < 20) return ""
-        return ""
-    }
     // A side bar is one pill wide: the clock stacks hours over minutes there and
     // drops the date and the weather chip.
     readonly property bool vertical: Services.Sizes.barVertical

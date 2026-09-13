@@ -52,10 +52,6 @@ Item {
     readonly property color cardColor:
         card.mix(pillColor, Services.Colors.surfacePanel, tone)
     readonly property real plateFade: card.plateless ? 0 : 1
-    // A flying piece still needs a tone to be read against, and it is not the
-    // plate that is not there: it is the surface the panel sits on.
-    readonly property color inkAgainst: root.plateless
-        ? Services.Colors.surfacePanel : root.cardColor
     // What a carried piece looks like while it is on its way: OFF, the way a
     // disabled chip reads. It is lit only once it is in its place -- see the
     // `ink` driver.

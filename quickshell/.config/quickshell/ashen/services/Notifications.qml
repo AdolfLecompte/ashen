@@ -180,15 +180,6 @@ Singleton {
 
     function dismissPopup(id) { root.beginLeave(id, true) }
 
-    // How long a card that is on its way out still has. A delegate rebuilt
-    // mid-exit asks this to decide whether it is worth playing the exit again
-    // or whether it should just land.
-    function leaveLeft(id) {
-        const ent = root.activePopups.find(p => p.id === id)
-        if (!ent || !ent.leaveAt) return 0
-        return Math.max(0, ent.leaveAt - Date.now())
-    }
-
     // ── Live D-Bus notifications ──────────────────────────────────────────
     // The Notification object is the only thing that can invoke an action or
     // tell the sender it was closed, so it is kept alive past its toast for
@@ -230,8 +221,6 @@ Singleton {
         }
         root.closeLive(id, byUser)
     }
-
-    function isActionable(id) { return root.liveIds.indexOf(id) !== -1 }
 
     // Housekeeping the sender offers about ITSELF rather than about the thing
     // it is telling you. Brave puts "Site settings" on every web notification;

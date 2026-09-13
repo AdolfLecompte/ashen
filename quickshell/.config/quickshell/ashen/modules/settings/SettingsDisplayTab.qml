@@ -499,24 +499,7 @@ TabPage {
         return on <= 1
     }
 
-    // Step through the modes the panel actually reports, wrapping. "preferred"
-    // is index 0 and stays as the honest default.
-    function cycleMode(dir) {
-        if (!tab.selMon) return
-        const modes = ["preferred"].concat(tab.selMon.availableModes || [])
-        let i = modes.indexOf(tab.selEnt.mode)
-        if (i < 0) i = 0
-        tab.patch({ mode: modes[(i + dir + modes.length) % modes.length] })
-    }
 
-    function cycleScale(dir) {
-        if (!tab.selMon) return
-        const s = Services.Displays.modeSize(tab.selMon, tab.selEnt)
-        const list = Services.Displays.validScales(s.w, s.h)
-        let i = list.indexOf(tab.selEnt.scale)
-        if (i < 0) i = 0
-        tab.patch({ scale: list[(i + dir + list.length) % list.length] })
-    }
 
     // One workspace number. Tapping claims it for the selected screen or gives
     // it back; tapping one this screen already owns makes it the one the screen

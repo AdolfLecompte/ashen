@@ -62,10 +62,6 @@ Singleton {
     property bool clipboardVisible: false
 
     property var bigOverlays: ["launcherVisible", "settingsVisible", "wallpaperVisible", "clipboardVisible", "processVisible"]
-    // Reactive read of a panel's own flag by name, for anything driven from
-    // the pill catalogue rather than wired to one panel.
-    function overlayOpen(name) { return name !== "" && root[name] === true }
-
     // Every panel that opens on a click. One at a time is not a nicety here:
     // the panels mask the bar's strip out of their input region so the click
     // reaches the pill, which means nothing else is left to close the panel

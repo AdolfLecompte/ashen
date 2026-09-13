@@ -305,8 +305,8 @@ Anything larger reads as a toy.
 | `window` | It unfolds where it lives (`ArriveCard`), capsule or not |
 
 Nothing chooses between them by hand: a panel hands its body to `PanelHost`,
-which asks whether the capsule is actually on screen (`Pills.isTool` or
-`Prefs.pillVisible`) and picks the card. A panel with no capsule at all always
+which asks whether the capsule is actually on screen (`Pills.onScreen`) and
+picks the card. A panel with no capsule at all always
 unfolds, which is what `EdgeEntry` is for.
 
 ---

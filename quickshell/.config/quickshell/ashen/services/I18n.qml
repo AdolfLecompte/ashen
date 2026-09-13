@@ -37,7 +37,6 @@ Singleton {
     // A pref naming a language that no longer ships reads as English rather
     // than as an empty shell.
     readonly property string lang: root.known(Prefs.language) ? Prefs.language : "en"
-    readonly property string langLabel: root.entry(root.lang).label
 
     // Dates and numbers go through this, never through the system locale: the
     // shell has to speak one language, not two.
