@@ -199,19 +199,17 @@ Scope {
                 // side bar always (Sizes.barSpill). Everything on the bar is laid
                 // out against THIS, so the extra width changes nothing; a chip
                 // that paints past it simply is not clipped.
-                // Yes, this trades `fill` against the four sides it is made of,
-                // which is the pattern that emptied the media capsule
-                // (see MediaPill). Spelling it out as four always-answered
-                // anchors -- top/bottom fixed, left/right toggling with the
-                // edge -- was tried on 2026-09-09 and drew NOTHING on either
-                // side bar: the window landed at the right rect and the strip
-                // inside it never appeared. It works as written; leave it.
-                anchors.fill: bar.vertical ? undefined : parent
-                anchors.top: bar.vertical ? parent.top : undefined
-                anchors.bottom: bar.vertical ? parent.bottom : undefined
-                anchors.left: (bar.vertical && bar.edge !== "right") ? parent.left : undefined
-                anchors.right: (bar.vertical && bar.edge === "right") ? parent.right : undefined
+                // Placed by numbers, not anchors. It used to trade `fill` against
+                // the four sides with bindings that switched on the edge, and a
+                // few moves between a side and the top left an anchor behind:
+                // the strip filled the whole spill-wide side window, the plate
+                // came out 260 px wide and short, and no capsule was drawn.
+                // Four anchors that always answer were tried on 2026-09-09 and
+                // drew nothing at all. Geometry has no stale state to keep.
+                x: (bar.vertical && bar.edge === "right") ? parent.width - Services.Sizes.barH : 0
+                y: 0
                 width: bar.vertical ? Services.Sizes.barH : parent.width
+                height: parent.height
 
                 // Moving the bar just hides it: it goes, the edge changes while
                 // nothing is on screen, and it comes back. Same duration both
