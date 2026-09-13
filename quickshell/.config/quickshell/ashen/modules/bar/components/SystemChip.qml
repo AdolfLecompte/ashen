@@ -22,7 +22,7 @@ Rectangle {
     readonly property bool dual: chip.altGlyph !== "" || chip.altLabel !== ""
     // On: filled with the accent, text goes dark.
     property bool active: false
-    // Its panel is open — on a vertical bar that holds the chip expanded.
+    // Its panel is open — on a vertical bar that hides the chip's name.
     property bool open: false
     property bool interactive: true
     // Standing alone as a pill of its own rather than inside a plate: the pill
@@ -102,7 +102,16 @@ Rectangle {
     property bool vertical: Services.Sizes.barVertical
     readonly property bool hovered: hover.containsMouse
     readonly property bool pressed: hover.pressed
-    readonly property bool expanded: vertical && (hovered || open)
+    // A side bar names the chip only when the pointer rests on it: a pass
+    // over the bar says nothing, and a click asks for the panel, not the name,
+    // so it hides the name until the pointer leaves.
+    readonly property bool expanded: vertical && chip.lingered && !open
+    property bool lingered: false
+    Timer { id: linger; interval: 900; onTriggered: chip.lingered = true }
+    onHoveredChanged: {
+        if (chip.hovered) linger.restart()
+        else { linger.stop(); chip.lingered = false }
+    }
     // Lit, the text is whichever of black and white can be read on the accent --
     // matugen hands the shell whatever the wallpaper had, so "the accent is
     // light" is not something to assume. The hover tint never takes dark text:
@@ -182,7 +191,7 @@ Rectangle {
         enabled: chip.interactive
         hoverEnabled: chip.interactive
         cursorShape: Qt.PointingHandCursor
-        onClicked: chip.activated()
+        onClicked: { linger.stop(); chip.lingered = false; chip.activated() }
     }
 
     // Only a chip with a panel behind it needs to publish where it is.

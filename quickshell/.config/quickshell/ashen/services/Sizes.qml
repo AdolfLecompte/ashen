@@ -30,7 +30,9 @@ Singleton {
     // column of capsules had three different gaps in it depending on who stood
     // next to whom. A 44 px button already reads as a different thing from a
     // 190 px column without the gap having to say so.
-    readonly property int barGap: root.barVertical ? 10 : 6
+    // On a plate (solid, island, framed) nothing but bare icons stands on the
+    // bar, and capsule air between them read as a bar with holes in it.
+    readonly property int barGap: root.barSolid ? 2 : (root.barVertical ? 10 : 6)
 
     // A side bar is 56 px of INPUT but its window is wider, so a chip can paint
     // its reading out past the strip instead of growing taller. The mask stays
@@ -295,7 +297,9 @@ Singleton {
     // and left edges, which is why it went unnoticed for so long. Takes the
     // screen rather than reading Screens.active: with a bar per monitor, the one
     // asking is not always the focused one.
-    function barOriginX(s) { return (s && barPosition === "right") ? s.width - barH : 0 }
+    // A right-hand bar's window is the strip plus its spill (barSpill), so its
+    // left edge sits that much further in than the strip does.
+    function barOriginX(s) { return (s && barPosition === "right") ? s.width - barH - barSpill : 0 }
     function barOriginY(s) { return (s && barPosition === "bottom") ? s.height - barH : 0 }
 
     // Where a panel that drops out of a bar pill belongs, in window coords.

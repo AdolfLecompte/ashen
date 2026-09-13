@@ -61,7 +61,7 @@ Item {
         Services.AppState.setPillSize(key, pill.width, pill.height)
     }
 
-    Component.onCompleted: report()
+    Component.onCompleted: { root.hookAncestors(); root.report() }
     // …and the moment it DOES know, it says it again: the first attempt was
     // skipped precisely because the answer would have been wrong.
     onBarScreenChanged: report()
@@ -86,6 +86,30 @@ Item {
         function onWidthChanged() { root.report() }
         function onHeightChanged() { root.report() }
     }
+
+    // …and when anything holding it moves. A pill does not move inside its
+    // group when the group itself shifts -- a neighbour going compact slides
+    // the whole end of the bar -- so its own x never changed and the panel
+    // opened where the pill used to be, then slid when the timer caught up.
+    property var hooked: []
+    function hookAncestors() {
+        root.unhookAncestors()
+        const list = []
+        for (let p = root.pill ? root.pill.parent : null; p; p = p.parent) {
+            p.xChanged.connect(root.report)
+            p.yChanged.connect(root.report)
+            list.push(p)
+        }
+        root.hooked = list
+    }
+    function unhookAncestors() {
+        for (const p of root.hooked) {
+            try { p.xChanged.disconnect(root.report); p.yChanged.disconnect(root.report) } catch (e) {}
+        }
+        root.hooked = []
+    }
+    Component.onDestruction: root.unhookAncestors()
+    onPillChanged: root.hookAncestors()
 
     // …and when the bar itself moves to another edge or slides out and back
     Connections {

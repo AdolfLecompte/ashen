@@ -53,6 +53,10 @@ Item {
     // pill belongs -- which is a question about the BAR. A morph that happens
     // somewhere else (the lock screen has no bar) names its own spot instead.
     property real openXOverride: NaN
+    // Is its pill on the bar? A parked pill reports nothing, and morphing out
+    // of wherever it last was flew the card in from a spot on no bar: with no
+    // pill it arrives as a window, in the middle of the screen.
+    property bool hasPill: true
     property real openYOverride: NaN
 
     // True once the surface has landed and the morph is armed. The panel
@@ -163,10 +167,12 @@ Item {
 
         // Where the grown-up card wants to end up: it still tracks its pill and
         // follows the bar around.
-        readonly property real openX: isNaN(root.openXOverride)
+        readonly property real openX: !root.hasPill ? (root.width - root.openW) / 2
+            : isNaN(root.openXOverride)
             ? Services.Sizes.panelX(root.width, root.openW, root.pillCX)
             : root.openXOverride
-        readonly property real openY: isNaN(root.openYOverride)
+        readonly property real openY: !root.hasPill ? (root.height - root.openH) / 2
+            : isNaN(root.openYOverride)
             ? Services.Sizes.panelY(root.height, root.openH, root.pillCY)
             : root.openYOverride
 
@@ -177,7 +183,7 @@ Item {
         // "Window" style: the drivers land on 1 at once and only the opacity
         // moves, so the card appears where it would have dropped without
         // becoming the pill first. The morph timings below are untouched.
-        readonly property bool plain: Services.Prefs.panelStyle === "plain"
+        readonly property bool plain: Services.Prefs.panelStyle === "plain" || !root.hasPill
         property real plainFade: 0
 
         // Where the drivers rest while closed. In "window" they stay landed -- the

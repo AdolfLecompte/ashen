@@ -61,6 +61,7 @@ PanelWindow {
         pillH: Math.max(1, Services.AppState.clockPillH)
         pillCX: Services.AppState.clockPillCenterX
         pillCY: Services.AppState.clockPillCenterY
+        hasPill: Services.Pills.onScreen("clock")
         openW: root.openW
         openH: root.openH
 

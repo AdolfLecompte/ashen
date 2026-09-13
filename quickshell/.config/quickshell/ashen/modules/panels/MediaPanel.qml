@@ -80,6 +80,7 @@ PanelWindow {
         pillH: Math.max(1, Services.AppState.mediaPillH)
         pillCX: Services.AppState.mediaPillCenterX
         pillCY: Services.AppState.mediaPillCenterY
+        hasPill: Services.Pills.onScreen("media")
         openW: root.openW
         openH: root.openH
 
