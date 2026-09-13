@@ -64,16 +64,26 @@ PanelWindow {
             Item {
                 anchors.fill: parent
 
-                // The exchange when you change folder. Keyed on the path, and
-                // the direction comes from whoever moved: Picker.step is 1 for
-                // walking in, -1 for the way back up.
+                // The exchange when you change folder. Keyed on the LISTING, not
+                // the path: the path changes on the click and the pictures only
+                // arrive when the folder has been read, so sliding on the path
+                // changed the grid twice -- once on the slide, again when the
+                // list landed. The grid shows what the swap last committed.
+                // Vertical, like the grid it moves: you walk down into a folder.
                 Widgets.SlideSwap {
                     id: folderSwap
-                    axis: "horizontal"
-                    travel: 16
-                    key: Services.Picker.dir
+                    axis: "vertical"
+                    travel: 18
+                    key: Services.Picker.listed
                     keyDir: Services.Picker.step
+                    onCommit: {
+                        pickBody.shownFolders = Services.Picker.folders
+                        pickBody.shownFiles = Services.Picker.files
+                    }
                 }
+                id: pickBody
+                property var shownFolders: []
+                property var shownFiles: []
 
                 // ── Where you are, and the way back up ──────────────
                 Row {
@@ -267,12 +277,12 @@ PanelWindow {
                         // reloaded, not that you moved. Same primitive every
                         // other exchange in the shell uses.
                         opacity: folderSwap.fade
-                        transform: Translate { x: folderSwap.offX }
+                        transform: Translate { y: folderSwap.offY }
 
                         // Folders first, as plates with their name: a picture
                         // grid you cannot walk out of is a dead end.
                         Repeater {
-                            model: Services.Picker.folders
+                            model: pickBody.shownFolders
 
                             Item {
                                 id: dirCell
@@ -340,7 +350,7 @@ PanelWindow {
 
                         // The pictures, as themselves.
                         Repeater {
-                            model: Services.Picker.files
+                            model: pickBody.shownFiles
 
                             Item {
                                 id: shot
@@ -354,7 +364,7 @@ PanelWindow {
                                 // whole grid arrives as one sweep rather than
                                 // two.
                                 readonly property real beat:
-                                    card.stage(2 + Services.Picker.folders.length + shot.index)
+                                    card.stage(2 + pickBody.shownFolders.length + shot.index)
                                 opacity: shot.beat
                                 transform: Translate { y: (1 - shot.beat) * 12 }
 
@@ -384,7 +394,22 @@ PanelWindow {
                                     Image {
                                         id: thumb
                                         anchors.fill: parent
-                                        source: "file://" + shot.full
+                                        // The cached copy when there is one. Picked
+                                        // once, and switched to the copy later only if
+                                        // the original has not finished decoding: a
+                                        // tile that is already drawn does not blink.
+                                        property string chosen: ""
+                                        function choose() {
+                                            const t = Services.Picker.thumbs[shot.full]
+                                            if (chosen === "") chosen = t || ("file://" + shot.full)
+                                            else if (t && status !== Image.Ready) chosen = t
+                                        }
+                                        Component.onCompleted: choose()
+                                        Connections {
+                                            target: Services.Picker
+                                            function onThumbsChanged() { thumb.choose() }
+                                        }
+                                        source: chosen
                                         fillMode: Image.PreserveAspectCrop
                                         asynchronous: true
                                         sourceSize.width: 276
@@ -436,9 +461,10 @@ PanelWindow {
                     // exactly the same, and only one of them is an answer.
                     Text {
                         anchors.centerIn: parent
-                        visible: Services.Picker.scanning
-                                 || (Services.Picker.files.length === 0
-                                     && Services.Picker.folders.length === 0)
+                        // Only over an empty grid: over the last folder it flashed
+                        // for the moment the next one took to read.
+                        visible: pickBody.shownFiles.length === 0
+                                 && pickBody.shownFolders.length === 0
                         text: Services.Picker.scanning ? Services.I18n.t("picker.loading")
                                                        : Services.I18n.t("picker.noPictures")
                         color: Services.Colors.ash
