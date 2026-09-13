@@ -28,6 +28,21 @@ A monochrome Hyprland + Quickshell rice for Arch.
 
 ---
 
+## Previews
+
+<table>
+  <tr>
+    <td width="50%"><img src="previews/preview1.png" alt="Preview 1" width="100%"></td>
+    <td width="50%"><img src="previews/preview2.png" alt="Preview 2" width="100%"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="previews/preview3.png" alt="Preview 3" width="100%"></td>
+    <td width="50%"><img src="previews/preview4.png" alt="Preview 4" width="100%"></td>
+  </tr>
+</table>
+
+---
+
 ## Install
 
 ```sh
