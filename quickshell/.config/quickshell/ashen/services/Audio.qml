@@ -98,14 +98,6 @@ Singleton {
             "for i in $(pactl list short source-outputs | cut -f1); do pactl move-source-output $i '" + name + "'; done"])
     }
 
-    function descOf(list, name) {
-        for (const d of list) if (d.name === name) return root.shortName(d.desc)
-        return ""
-    }
-    // The one in use right now, either side.
-    readonly property string activeSinkName: root.descOf(root.sinks, root.defaultSink)
-    readonly property string activeSourceName: root.descOf(root.sources, root.defaultSource)
-
     // ── Per-app streams ────────────────────────────────────────────────────
     // A playback stream is a stream that is ALSO a sink: audio goes into it on
     // its way out. `isStream && !isSink` is a recorder (cava listening to the

@@ -295,60 +295,20 @@ Item {
                         Layout.fillWidth: true
                     }
 
-                    // Four across, two rows: eight chips of their own width left a
-                    // ragged hole at the end of the last row.
-                    GridLayout {
+                    // A list: matugen ships eight styles and adds more, and a grid
+                    // of eight chips was already two rows of words.
+                    Widgets.DevicePicker {
                         Layout.fillWidth: true
                         Layout.topMargin: 2
-                        columns: 4
-                        columnSpacing: 8
-                        rowSpacing: 8
-                        Repeater {
-                            model: Services.Theme.dynamicTypes
-                            delegate: Rectangle {
-                                required property var modelData
-                                readonly property bool active: Services.Theme.dynamicType === modelData.id
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: 1
-                                Layout.preferredHeight: 32
-                                height: 32
-                                radius: Services.Sizes.innerR
-                                color: active ? Services.Colors.ghost : Services.Colors.fillLine
-                                gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
-                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                                scale: Services.Sizes.hoverScaleFor(width, dynTypeHover.containsMouse, dynTypeHover.pressed)
-                                Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-                                RowLayout {
-                                    id: dynRow
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 8
-                                    anchors.rightMargin: 8
-                                    spacing: 5
-                                    Text {
-                                        visible: parent.parent.active
-                                        text: ""
-                                        font.family: "Material Symbols Rounded"
-                                        font.pixelSize: 11
-                                        color: Services.Colors.accentText
-                                    }
-                                    Text {
-                                        text: modelData.label
-                                        font.pixelSize: Services.Sizes.fsBody
-                                        font.family: "JetBrainsMono NF"
-                                        color: parent.parent.active ? Services.Colors.accentText : Services.Colors.snow
-                                        elide: Text.ElideRight
-                                        Layout.fillWidth: true
-                                        horizontalAlignment: Text.AlignHCenter
-                                    }
-                                }
-                                MouseArea {
-                                    id: dynTypeHover
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: { Services.Theme.setDynamicType(modelData.id); Services.Theme.recolor() }
-                                }
-                            }
+                        overlay: true
+                        rowH: 34
+                        enabled: schemeSection.dynamicActive
+                        glyph: "\ue40a"
+                        devices: Services.Theme.dynamicTypes.map(t => ({ name: t.id, desc: t.label }))
+                        current: Services.Theme.dynamicType
+                        onPicked: name => {
+                            Services.Theme.setDynamicType(name)
+                            Services.Theme.recolor()
                         }
                     }
                 }

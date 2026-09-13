@@ -126,6 +126,7 @@ PanelWindow {
                 component Card: Rectangle {
                     id: cd
                     property string glyph: ""
+                    property string name: ""
                     property int index: 0
                     property int col: 0
                     property int row: 0
@@ -162,6 +163,18 @@ PanelWindow {
                             color: Services.Colors.mist
                             font.pixelSize: 16
                             font.family: "Material Symbols Rounded"
+                        }
+                        // The name stays beside the glyph here. Taken off with the
+                        // rest of the captions it left six cards of bare numbers,
+                        // and a percentage with no word over it is a guess.
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: cd.name
+                            color: Services.Colors.mist
+                            font.pixelSize: Services.Sizes.fsCaption
+                            font.bold: true
+                            font.letterSpacing: 1.4
+                            font.family: "JetBrainsMono NF"
                         }
                     }
                     Text {
@@ -245,6 +258,7 @@ PanelWindow {
                         index: 0
                         col: 0; row: 0; cw: 4; ch: 2
                         glyph: ""
+                        name: Services.I18n.t("proc.cpu")
 
                         readonly property color tone: bodyRoot.toneAt(0)
 
@@ -284,6 +298,7 @@ PanelWindow {
                         index: 1
                         col: 4; row: 0; cw: 4; ch: 1
                         glyph: ""
+                        name: Services.I18n.t("proc.memory")
                         id: ramCard
 
                         readonly property color tone: bodyRoot.toneAt(1)
@@ -340,6 +355,7 @@ PanelWindow {
                         index: 2
                         col: 4; row: 1; cw: 4; ch: 1
                         glyph: ""
+                        name: Services.I18n.t("proc.thermals")
                         id: thermCard
 
                         readonly property color tone: bodyRoot.toneAt(2)
@@ -378,6 +394,7 @@ PanelWindow {
                         index: 3
                         col: 0; row: 2; cw: 3; ch: 1
                         glyph: ""
+                        name: Services.I18n.t("proc.gpuShort")
                         id: gpuCard
 
                         readonly property color tone: bodyRoot.toneAt(3)
@@ -427,6 +444,7 @@ PanelWindow {
                         index: 4
                         col: 3; row: 2; cw: 2; ch: 1
                         glyph: ""
+                        name: Services.I18n.t("proc.network")
                         id: netCard
 
                         readonly property color tone: bodyRoot.toneAt(4)
@@ -481,6 +499,7 @@ PanelWindow {
                         index: 5
                         col: 5; row: 2; cw: 3; ch: 1
                         glyph: ""
+                        name: Services.I18n.t("proc.storage")
                         note: Services.SysMon.diskPercent + "%"
                         id: diskCard
 

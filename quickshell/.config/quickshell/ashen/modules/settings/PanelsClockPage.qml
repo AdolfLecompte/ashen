@@ -15,9 +15,6 @@ Section {
     property string missLine: Services.Voice.pick("search.noMatch")
     // City add-picker (weather): open state for the search box
     property bool cityPickerOpen: false
-    // Live preview under "Time Format". A `new Date()` is not reactive and the
-    // sample froze at whatever time the tab opened; the shared clock is.
-    readonly property string timePreview: Services.Time.fmt(Services.Prefs.timeFormat)
     Card {
         title: Services.I18n.t("settings.tab.clock")
         RowLayout {
@@ -28,7 +25,6 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text { text: Services.I18n.t("settings.clock.format"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
-                Text { text: tab.timePreview; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
             }
             Segmented {
                 options: [
@@ -65,7 +61,6 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text { text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
-                Text { text: Services.I18n.t("settings.clock.now", { t: Services.Weather.temp }); color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
             }
             Segmented {
                 options: [

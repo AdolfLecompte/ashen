@@ -542,7 +542,7 @@ Singleton {
         return Time.fmtOf(new Date(ts), "MMM d")
     }
 
-    // `opts` is optional: { title: "BATTERY LOW: 20%", image: "/path.png",
+    // `opts` is optional: { title: "BATTERY 20%", image: "/path.png",
     // actions: [{ id, text, run }] }. `run` is a shell
     // line -- a system toast has no D-Bus notification behind it to invoke.
     function addSystemToast(message, glyph, isLetter, typeKey, opts) {
@@ -584,7 +584,7 @@ Singleton {
                 const path = text.trim()
                 if (path === "") {
                     root.addSystemToast(Services.Voice.pick("shot.saved"), "\uf727", false,
-                                        "screenshot", { title: "SCREENSHOT SAVED" })
+                                        "screenshot", { title: Services.I18n.t("toast.shot") })
                     return
                 }
                 // No buttons: grimblast already put it on the clipboard, and
@@ -596,7 +596,7 @@ Singleton {
                 // easy half. The file name is the rest of the answer.
                 const name = path.substring(path.lastIndexOf("/") + 1)
                 root.addSystemToast("Pictures/Screenshots/" + name, "\uf727", false, "screenshot", {
-                    title: "SCREENSHOT SAVED",
+                    title: Services.I18n.t("toast.shot"),
                     image: "file://" + path,
                     actions: [{ id: "default", run: "xdg-open '" + path + "'" }]
                 })
@@ -751,12 +751,12 @@ Singleton {
         target: Services.Keyboard
         function onCapsLockChanged() {
             if (!root.initialized) return
-            root.addSystemToast(Services.Keyboard.capsLock ? "CAPS LOCK ON" : "CAPS LOCK OFF",
+            root.addSystemToast(Services.I18n.t(Services.Keyboard.capsLock ? "toast.capsOn" : "toast.capsOff"),
                                 "\ue318", false, "capslock")
         }
         function onNumLockChanged() {
             if (!root.initialized) return
-            root.addSystemToast(Services.Keyboard.numLock ? "NUM LOCK ON" : "NUM LOCK OFF",
+            root.addSystemToast(Services.I18n.t(Services.Keyboard.numLock ? "toast.numOn" : "toast.numOff"),
                                 "\uf2af", false, "numlock")
         }
     }
@@ -788,7 +788,7 @@ Singleton {
         if (root.initialized && charging !== root.lastCharging) {
             root.addSystemToast(Services.Voice.pick(charging ? "charger.in" : "charger.out"),
                                 charging ? "" : "", false, "charger",
-                                { title: charging ? "CHARGER CONNECTED" : "CHARGER DISCONNECTED" })
+                                { title: Services.I18n.t(charging ? "toast.pluggedIn" : "toast.unplugged") })
         }
         root.lastCharging = charging
     }
@@ -811,7 +811,7 @@ Singleton {
                     let profIcon = line.indexOf("saver") !== -1 ? ""
                         : line.indexOf("performance") !== -1 ? ""
                         : ""
-                    root.addSystemToast("PROFILE: " + line.toUpperCase(), profIcon, false, "powerprofile")
+                    root.addSystemToast(Services.I18n.t("toast.profile", { p: line.toUpperCase() }), profIcon, false, "powerprofile")
                 }
                 root.lastPowerProfile = line
             }
@@ -832,15 +832,15 @@ Singleton {
             if (lvl <= 5 && !root.warned5) {
                 root.warned5 = true
                 root.addSystemToast(Services.Voice.pick("battery.critical"), "", false,
-                                    "battery5", { title: "BATTERY CRITICAL: 5%" })
+                                    "battery5", { title: Services.I18n.t("toast.battery", { n: 5 }) })
             } else if (lvl <= 10 && !root.warned10) {
                 root.warned10 = true
                 root.addSystemToast(Services.Voice.pick("battery.critical"), "", false,
-                                    "battery10", { title: "BATTERY LOW: 10%" })
+                                    "battery10", { title: Services.I18n.t("toast.battery", { n: 10 }) })
             } else if (lvl <= 20 && !root.warned20) {
                 root.warned20 = true
                 root.addSystemToast(Services.Voice.pick("battery.low"), "", false,
-                                    "battery20", { title: "BATTERY LOW: 20%" })
+                                    "battery20", { title: Services.I18n.t("toast.battery", { n: 20 }) })
             }
         }
         function onChargingChanged() {
@@ -867,7 +867,7 @@ Singleton {
                 "",
                 false,
                 "dnd",
-                { title: Services.AppState.doNotDisturb ? "DO NOT DISTURB ON" : "DO NOT DISTURB OFF" }
+                { title: Services.I18n.t(Services.AppState.doNotDisturb ? "toast.dndOn" : "toast.dndOff") }
             )
         }
         function onKeepAwakeModeChanged() {
@@ -878,8 +878,8 @@ Singleton {
                 "\uefef",
                 false,
                 "keepawake",
-                { title: m === "off" ? "KEEP AWAKE OFF"
-                       : m === "locks" ? "KEEP AWAKE · STILL LOCKS" : "KEEP AWAKE ON" }
+                { title: Services.I18n.t(m === "off" ? "toast.awakeOff"
+                       : m === "locks" ? "toast.awakeLocks" : "toast.awakeOn") }
             )
         }
         function onRecordingChanged() {
@@ -888,7 +888,7 @@ Singleton {
                 "",
                 false,
                 "recording",
-                { title: Services.AppState.recording ? "SCREEN RECORDING STARTED" : "SCREEN RECORDING STOPPED" }
+                { title: Services.I18n.t(Services.AppState.recording ? "toast.recording" : "toast.recStopped") }
             )
         }
     }

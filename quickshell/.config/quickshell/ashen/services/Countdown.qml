@@ -99,7 +99,7 @@ Singleton {
         leftover = 0
         rang = true
         Services.Notifications.addSystemToast(Services.Voice.pick("timer.done"), "\ue425", false,
-                                              "countdown", { title: "TIMER DONE" })
+                                              "countdown", { title: Services.I18n.t("toast.timerDone") })
     }
 
     Timer {

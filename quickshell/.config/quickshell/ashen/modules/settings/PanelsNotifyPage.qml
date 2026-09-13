@@ -127,75 +127,21 @@ Section {
 
             SectionLabel { text: Services.I18n.t("settings.notify.sound") }
 
-            // The freedesktop set every distribution ships, plus whatever the
-            // user points at. Picking one plays it: choosing a sound you cannot
-            // hear is choosing blind.
-            // Two columns of equal chips, not a row of their own widths: the
-            // names are all different lengths and the last line ended wherever
-            // it happened to end.
-            Flow {
-                id: soundFlow
+            // A list, not a grid of chips: anything dropped in the shell's sound
+            // folder turns up here, so the set grows on its own. Picking one
+            // plays it -- choosing a sound you cannot hear is choosing blind.
+            // The shell's own are marked: they travel with the rice.
+            Widgets.DevicePicker {
                 Layout.fillWidth: true
-                spacing: 6
-
-                Repeater {
-                    id: soundRep
-                    model: Services.Notifications.soundChoices
-
-                    delegate: Item {
-                        id: chip
-                        required property var modelData
-                        required property int index
-                        readonly property bool active:
-                            Services.Notifications.soundFile === chip.modelData.path
-                        readonly property bool warm: soundHover.containsMouse
-                        // An odd count leaves the last one alone: it takes the
-                        // whole row instead of half of it.
-                        readonly property bool alone: chip.index === soundRep.count - 1
-                                                      && soundRep.count % 2 === 1
-
-                        implicitWidth: chip.alone ? soundFlow.width
-                                                  : (soundFlow.width - soundFlow.spacing) / 2
-                        implicitHeight: Services.Sizes.innerH
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: Services.Sizes.innerR
-                            color: chip.active ? Services.Colors.ghost : Services.Colors.fillRest
-                            gradient: Services.Prefs.useGradients && chip.active
-                                ? Services.Colors.accentGradient : null
-                            Behavior on color { Widgets.ColorAnim {} }
-                        }
-
-                        Text {
-                            id: soundName
-                            anchors.centerIn: parent
-                            // The box holds still, the name grows: same as every
-                            // other button in Settings.
-                            scale: Services.Sizes.hoverScaleFor(chip.width, chip.warm, soundHover.pressed)
-                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-                            width: parent.width - 16
-                            elide: Text.ElideRight
-                            horizontalAlignment: Text.AlignHCenter
-                            // The shell's own are marked: they travel with the
-                            // rice, the rest are whatever this machine has.
-                            text: (chip.modelData.mine ? "✦ " : "") + chip.modelData.name
-                            color: chip.active ? Services.Colors.accentText
-                                 : chip.warm ? Services.Colors.snow : Services.Colors.surfaceText
-                            font.pixelSize: Services.Sizes.fsBody
-                            font.family: "JetBrainsMono NF"
-                            Behavior on color { Widgets.ColorAnim {} }
-                        }
-                        MouseArea {
-                            id: soundHover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                Services.Prefs.notifySoundFile = chip.modelData.path
-                                Services.Notifications.play(chip.modelData.path)
-                            }
-                        }
-                    }
+                overlay: true
+                rowH: 34
+                glyph: "\ue050"
+                devices: Services.Notifications.soundChoices.map(c => ({
+                    name: c.path, desc: (c.mine ? "\u2726 " : "") + c.name }))
+                current: Services.Notifications.soundFile
+                onPicked: name => {
+                    Services.Prefs.notifySoundFile = name
+                    Services.Notifications.play(name)
                 }
             }
         }
