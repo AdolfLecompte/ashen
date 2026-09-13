@@ -27,6 +27,8 @@ hl.bind(K("processes", mod .. " + SHIFT + P"), hl.dsp.exec_cmd("qs ipc -c ashen 
 hl.bind(K("widgets", mod .. " + SHIFT + D"), hl.dsp.exec_cmd("qs ipc -c ashen call widgets edit"))
 -- Flat compositor, quiet shell. By hand only -- it never turns itself on.
 hl.bind(K("game", mod .. " + SHIFT + G"), hl.dsp.exec_cmd("qs ipc -c ashen call game toggle"))
+-- Screen recording. The bar capsule is optional, so it cannot be the only way in.
+hl.bind(K("record", mod .. " + SHIFT + R"), hl.dsp.exec_cmd("qs ipc -c ashen call record toggle"))
 
 
 -- Move/resize floating windows with the mouse (SUPER + drag)

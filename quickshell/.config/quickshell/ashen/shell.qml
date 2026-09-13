@@ -410,6 +410,15 @@ ShellRoot {
             Services.Prefs.barStyle = name
         }
     }
+    // Recording used to start only from its bar capsule -- take the capsule off
+    // the bar and there was no way to record at all.
+    IpcHandler {
+        target: "record"
+        function toggle() { Services.AppState.toggleRecording() }
+        function start() { if (!Services.AppState.recording) Services.AppState.startRecording() }
+        function stop() { if (Services.AppState.recording) Services.AppState.stopRecording() }
+        function status(): string { return Services.AppState.recording ? "recording" : "idle" }
+    }
     IpcHandler {
         target: "game"
         function on() { Services.Game.enter() }
