@@ -258,6 +258,8 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         source: root.shownArtUrl
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
+        // The player reuses its temp file name: never serve a cached picture.
+        cache: false
         visible: false
         layer.enabled: true
     }
@@ -277,8 +279,8 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
     Text {
         textFormat: Text.PlainText
         anchors.centerIn: parent
-        // Only when there is genuinely no cover, never while one decodes.
-        visible: root.shownArtUrl === ""
+        // No cover, or one that did not load: never an empty square.
+        visible: pillArt.status !== Image.Ready
         text: ""
         color: Services.Colors.ash
         font.family: "Material Symbols Rounded"

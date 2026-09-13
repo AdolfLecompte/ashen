@@ -205,13 +205,15 @@ PanelWindow {
                 source: panelRef.shownArtUrl
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
+                // The player reuses its temp file name: never serve a cached picture.
+                cache: false
                 visible: status === Image.Ready
             }
             Text {
                 textFormat: Text.PlainText
                 anchors.centerIn: parent
-                // Only when there is genuinely no cover, never while one decodes.
-                visible: panelRef.shownArtUrl === ""
+                // No cover, or one that did not load: never an empty square.
+                visible: flyImg.status !== Image.Ready
                 text: "\ue405"
                 color: Services.Colors.ash
                 font.family: "Material Symbols Rounded"
