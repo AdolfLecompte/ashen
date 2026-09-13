@@ -464,6 +464,23 @@ Section {
                             onPicked: id => Services.Prefs.setContent(lookCard.modelData, id)
                         }
 
+                        // Workspaces has no full / compact / icon: what its chips
+                        // show is this choice instead, so it takes the same place
+                        // in the same card. It lived on the shape page, apart from
+                        // every other choice about what a pill shows.
+                        Segmented {
+                            visible: lookCard.modelData === "workspaces"
+                            Layout.fillWidth: true
+                            cellHeight: 28
+                            options: [
+                                { id: "icons",   icon: "", label: Services.I18n.t("settings.bar.wsIcons") },
+                                { id: "numbers", icon: "", label: Services.I18n.t("settings.bar.wsNumbers") },
+                                { id: "dots",    icon: "", label: Services.I18n.t("settings.bar.wsDots") }
+                            ]
+                            current: Services.Prefs.workspaceStyle
+                            onPicked: id => Services.Prefs.workspaceStyle = id
+                        }
+
                         // Workspaces alone carries a QUANTITY as well as a look.
                         // Inside its own card, where it plainly belongs to it.
                         RowLayout {

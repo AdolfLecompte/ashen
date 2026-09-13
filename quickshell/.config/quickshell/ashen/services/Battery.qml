@@ -38,6 +38,18 @@ Singleton {
     // "1.4 hours" as upower words it, or "--". Read on demand: it is a slow
     // number and nothing needs it until a surface shows it.
     property string timeRemaining: "--"
+    // The same time, short enough to sit beside the percentage: upower says
+    // "35.0 minutes" and "2.1 hours", which is a sentence where a number goes.
+    readonly property string timeShort: {
+        const m = root.timeRemaining.match(/^([\d.]+)\s*(\w+)/)
+        if (!m) return ""
+        const n = parseFloat(m[1])
+        if (isNaN(n)) return ""
+        const mins = /^h/i.test(m[2]) ? Math.round(n * 60) : /^s/i.test(m[2]) ? 1 : Math.round(n)
+        if (mins < 60) return mins + " min"
+        const h = Math.floor(mins / 60), r = mins % 60
+        return h + "h " + (r < 10 ? "0" : "") + r
+    }
     function refreshTime() { timeProc.running = true }
     Process {
         id: timeProc
@@ -84,16 +96,23 @@ Singleton {
 
     // One reader walked across the files: ten reads, no shell. Missing files
     // come back empty and the parser below simply leaves that field alone.
-    SysFile { id: factsFile }
+    // One reader per file. A single reader walked across them by changing its
+    // path handed back ANOTHER file's contents -- the panel showed the voltage
+    // as the cycle count and a worn pack at 100% health.
     readonly property var factNames: ["energy_now", "energy_full", "energy_full_design",
         "power_now", "cycle_count", "charge_now", "charge_full", "charge_full_design",
         "current_now", "voltage_now"]
+    Instantiator {
+        id: factFiles
+        model: root.factNames
+        delegate: SysFile { required property string modelData; path: "/sys/class/power_supply/BAT0/" + modelData }
+    }
 
     function readFacts() {
         const f = {}
-        for (const name of root.factNames) {
-            const v = factsFile.readAt("/sys/class/power_supply/BAT0/" + name)
-            if (v !== "") f[name] = parseFloat(v)
+        for (let i = 0; i < factFiles.count; i++) {
+            const v = factFiles.objectAt(i).read()
+            if (v !== "") f[root.factNames[i]] = parseFloat(v)
         }
         // Two families of kernel driver: some report energy (µWh, µW),
         // some charge (µAh, µA) and leave the watts to be worked out

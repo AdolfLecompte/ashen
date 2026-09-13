@@ -411,7 +411,7 @@ ShellRoot {
         }
         // The look, from a keybind. Same four the Bar tab offers.
         function style(name: string) {
-            if (["pills", "solid", "framed", "island"].indexOf(name) === -1) return
+            if (["pills", "island", "solid", "framed"].indexOf(name) === -1) return
             Services.Prefs.barStyle = name
         }
     }

@@ -45,24 +45,25 @@ PanelWindow {
         // Only worth saying when the window is genuinely short: an hour missing
         // off a day is not news.
         if (hours >= Services.Battery.seriesHours - 2) return ""
-        return hours < 1 ? Math.round(hours * 60) + " min of it"
-                         : Math.round(hours) + " h of it"
+        return hours < 1 ? Math.round(hours * 60) + " min"
+                         : Math.round(hours) + " h"
     }
 
     // A caption, a number and a footnote. Three of them stand in a row under
     // the curve; the shape is the panel's, so it lives here and not in widgets.
-    component Fact: ColumnLayout {
-        property string caption: ""
+    // A glyph and a number. The captions were words in capitals over every
+    // value -- HEALTH, CYCLES, GOING IN -- and a heart, a loop and a bolt say
+    // the same at a glance.
+    component Fact: RowLayout {
+        property string glyph: ""
         property string value: ""
-        property string note: ""
-        spacing: 1
+        spacing: 6
         Text {
-            text: parent.caption
+            text: parent.glyph
             color: Services.Colors.ash
-            font.pixelSize: 9
-            font.bold: true
-            font.letterSpacing: 1
-            font.family: "JetBrainsMono NF"
+            font.pixelSize: 16
+            font.family: "Material Symbols Rounded"
+            Layout.alignment: Qt.AlignVCenter
         }
         Text {
             text: parent.value
@@ -70,15 +71,7 @@ PanelWindow {
             font.pixelSize: 17
             font.bold: true
             font.family: "JetBrainsMono NF"
-        }
-        Text {
-            visible: text !== ""
-            text: parent.note
-            color: Services.Colors.mist
-            font.pixelSize: 9
-            font.family: "JetBrainsMono NF"
-            elide: Text.ElideRight
-            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
         }
     }
 
@@ -198,34 +191,17 @@ PanelWindow {
 
                         Item { Layout.fillWidth: true }
 
-                        ColumnLayout {
+                        // How long, and nothing else: "CHARGING" and "Full in" both
+                        // said again what the bolt in the glyph already says.
+                        Text {
                             Layout.alignment: Qt.AlignVCenter
-                            spacing: 2
-                            Text {
-                                Layout.alignment: Qt.AlignRight
-                                text: Services.Battery.charging ? Services.I18n.t("battery.charging") : Services.I18n.t("battery.onBattery")
-                                color: Services.Battery.charging ? Services.Colors.ghost
-                                                                 : Services.Colors.mist
-                                font.pixelSize: 10
-                                font.bold: true
-                                font.letterSpacing: 1
-                                font.family: "JetBrainsMono NF"
-                            }
-                            Text {
-                                Layout.alignment: Qt.AlignRight
-                                // Only when it has something the line above does
-                                // not already say: "CHARGING / Fully charged" is
-                                // the same fact twice, and "Calculating..." is
-                                // the panel talking about itself.
-                                visible: text !== ""
-                                text: Services.Battery.timeRemaining === "--" ? ""
-                                    : Services.Battery.charging
-                                        ? Services.I18n.t("battery.fullIn", { t: Services.Battery.timeRemaining })
-                                        : Services.I18n.t("battery.left", { t: Services.Battery.timeRemaining })
-                                color: Services.Colors.snow
-                                font.pixelSize: 13
-                                font.family: "JetBrainsMono NF"
-                            }
+                            visible: text !== ""
+                            text: Services.Battery.timeShort
+                            color: Services.Battery.charging ? Services.Colors.ghost
+                                                             : Services.Colors.mist
+                            font.pixelSize: 15
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
                         }
                     }
 
@@ -239,15 +215,6 @@ PanelWindow {
                         radius: Services.Sizes.cardR
                         color: Services.Colors.fillInset
 
-                        Text {
-                            x: 12; y: 10
-                            text: Services.I18n.t("battery.last24")
-                            color: Services.Colors.ash
-                            font.pixelSize: 9
-                            font.bold: true
-                            font.letterSpacing: 1
-                            font.family: "JetBrainsMono NF"
-                        }
                         Text {
                             anchors.right: parent.right
                             anchors.rightMargin: 12
@@ -305,42 +272,25 @@ PanelWindow {
 
                         Fact {
                             Layout.fillWidth: true
-                            caption: Services.I18n.t("battery.health")
+                            glyph: "\ue87d"      // favorite: what the pack still holds
                             value: Services.Battery.health > 0
                                 ? Services.Battery.health + "%" : "--"
-                            // The two numbers the percentage is made of. The
-                            // other facts only said their own caption again in
-                            // words ("full charges", "Wh in it"); those are gone.
-                            note: Services.Battery.energyDesign > 0
-                                ? (Services.Battery.energyFull.toFixed(1) + " / "
-                                   + Services.Battery.energyDesign.toFixed(1) + " Wh") : ""
                         }
                         Fact {
                             Layout.fillWidth: true
-                            caption: Services.I18n.t("battery.cycles")
+                            glyph: "\ue863"      // autorenew: charge cycles
                             value: Services.Battery.cycles > 0
                                 ? String(Services.Battery.cycles) : "--"
                         }
                         Fact {
                             Layout.fillWidth: true
-                            // Full and plugged in, nothing is moving -- which
-                            // is a reading, not a blank.
-                            caption: !Services.Battery.charging ? Services.I18n.t("battery.drawing")
-                                   : Services.Battery.watts > 0 ? Services.I18n.t("battery.goingIn") : Services.I18n.t("battery.toppedUp")
+                            glyph: "\uea0b"      // bolt: watts, in or out
                             value: Services.Battery.hasRate
                                 ? Services.Battery.watts.toFixed(1) + " W" : "--"
                         }
                     }
 
                     Widgets.Divider {}
-
-                    Text {
-                        text: Services.I18n.t("battery.profile")
-                        color: Services.Colors.ash
-                        font.pixelSize: 10
-                        font.family: "JetBrainsMono NF"
-                        font.letterSpacing: 1
-                    }
 
                     Item {
                         id: profSelect
@@ -423,17 +373,9 @@ PanelWindow {
                     }
 
                     // ── Game mode ────────────────────────────────────────
-                    // Its own heading, and not a fourth chip in the row above:
-                    // it is not a power profile, it touches the compositor and
-                    // not the governor, and sitting in that row would say it
+                    // Its own row, not a fourth chip beside the profiles: it is
+                    // not a power profile, and standing in that row would say it
                     // was one of three you pick between.
-                    Text {
-                        text: Services.I18n.t("battery.game")
-                        color: Services.Colors.ash
-                        font.pixelSize: 10
-                        font.family: "JetBrainsMono NF"
-                        font.letterSpacing: 1
-                    }
 
                     Rectangle {
                         id: gameChip

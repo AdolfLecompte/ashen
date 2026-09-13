@@ -351,6 +351,9 @@ Section {
                 { key: "screenOff", label: Services.I18n.t("settings.system.idle.screenOff") },
                 { key: "suspend", label: Services.I18n.t("settings.system.idle.suspend") },
             ]
+            // Label, value, the two buttons -- and no elastic spacer between them:
+            // with one there every row shared its leftover width differently, and
+            // the buttons stood in a different place on each line.
             delegate: RowLayout {
                 required property var modelData
                 Layout.fillWidth: true
@@ -380,12 +383,10 @@ Section {
                     Layout.preferredWidth: 64
                     horizontalAlignment: Text.AlignRight
                 }
-                Item { Layout.fillWidth: true }
                 StepBtn {
                     glyph: ""
                     onClicked: parent.apply(tab.stepIdle(parent.secs, -5))
                 }
-                Item { Layout.fillWidth: true }
                 StepBtn {
                     glyph: ""
                     onClicked: parent.apply(tab.stepIdle(parent.secs, 5))

@@ -19,10 +19,6 @@ FileView {
         reload()
         return text().trim()
     }
-    // Point it somewhere else and read that instead. For a set of files read
-    // together, where one reader beats a dozen objects.
-    function readAt(p) {
-        path = p
-        return read()
-    }
+    // One reader, one path. Re-pointing a reader at another file and reading
+    // it at once returns what the previous path held: use a reader per file.
 }

@@ -30,10 +30,12 @@ Section {
 
         Segmented {
             options: [
+                // Least to most: bare capsules, a plate per group, one plate for
+                // the whole edge, and that plate joined to a frame round the screen.
                 { id: "pills", icon: "", label: Services.I18n.t("settings.bar.pills") },
+                { id: "island", icon: "\ue8f3", label: Services.I18n.t("settings.bar.island") },
                 { id: "solid", icon: "", label: Services.I18n.t("settings.bar.solid") },
                 { id: "framed", icon: "", label: Services.I18n.t("settings.bar.framed") },
-                { id: "island", icon: "\ue8f3", label: Services.I18n.t("settings.bar.island") },
             ]
             current: Services.Prefs.barStyle
             onPicked: id => Services.Prefs.barStyle = id
@@ -86,30 +88,6 @@ Section {
                 checked: Services.Prefs.barAutohide
                 onToggled: Services.Prefs.barAutohide = !Services.Prefs.barAutohide
             }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 12
-            RowGlyph { glyph: "\ue53b" }        // apps
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
-                Text { text: Services.I18n.t("settings.bar.wsicons"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
-            }
-        }
-
-        // Three answers, not a switch: a chip shows the app's icon, its number,
-        // or nothing at all -- a dot, with the one you are on drawn as a bar.
-        Segmented {
-            options: [
-                { id: "icons",   icon: "\ue53b", label: Services.I18n.t("settings.bar.wsIcons") },
-                { id: "numbers", icon: "\ue3ec", label: Services.I18n.t("settings.bar.wsNumbers") },
-                { id: "dots",    icon: "\ue061", label: Services.I18n.t("settings.bar.wsDots") }
-            ]
-            current: Services.Prefs.workspaceStyle
-            onPicked: id => Services.Prefs.workspaceStyle = id
         }
     }
 }
