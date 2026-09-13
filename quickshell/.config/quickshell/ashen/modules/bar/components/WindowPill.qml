@@ -72,20 +72,26 @@ Rectangle {
             font.family: "Material Symbols Rounded"
         }
         Text {
+            id: nameText
             // On a side bar there is no room for a name, and the glyph already
             // says which program it is. `icon` says the same thing on purpose.
             visible: !root.vertical && root.content !== "icon"
-            width: visible ? Math.min(implicitWidth, 180) : 0
+            // Measured apart from the Text: an elided Text recomputes its
+            // implicitWidth from the width it was given, so capping one with
+            // the other is a binding loop the log reports on every new title.
+            width: visible ? Math.min(Math.ceil(nameMetrics.advanceWidth), 180) : 0
             anchors.verticalCenter: parent.verticalCenter
-            // full = what this window is, compact = what program it belongs to.
-            // The difference is the whole point of the two: a document title
-            // changes every time you switch tabs, a program name does not.
-            text: root.content === "compact" ? root.appClass : root.appName
+            text: root.appName
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsBody
             font.bold: true
             font.family: "JetBrainsMono NF"
             elide: Text.ElideRight
+        }
+        TextMetrics {
+            id: nameMetrics
+            font: nameText.font
+            text: nameText.text
         }
     }
 

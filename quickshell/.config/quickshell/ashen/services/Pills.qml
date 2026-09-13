@@ -104,8 +104,20 @@ Singleton {
     // same one that took notifications and usb out of `iconable`; what is new is
     // that this one is only true on some machines, so the option has to go away
     // on those and stay on the others rather than be deleted for everybody.
+    //
+    // Checked pill by pill against what each one draws, not against what its
+    // comments promised:
+    //   bluetooth  OUT. Compact was the connected device and nothing else --
+    //              which is exactly full with a device connected, and exactly
+    //              icon without one. It never drew anything of its own.
+    //   window     OUT. Full was the tail of the title and compact the window
+    //              class, and the tail of a title IS the program: "Brave"
+    //              against "brave-browser", the same thing spelt twice.
+    //   media      only on a top or bottom bar. Compact drops the title, and a
+    //              side bar never had room for one.
     readonly property var compactable: {
-        let out = ["network", "bluetooth", "clock", "media", "window", "sys"]
+        let out = ["network", "clock", "sys"]
+        if (!Sizes.barVertical) out.push("media")
         if (Brightness.icon(Brightness.level) !== "") out.push("volume")
         return out
     }
@@ -117,8 +129,15 @@ Singleton {
     // Notifications and USB are OUT: both are a glyph in a square and nothing
     // else, so "icon" would draw exactly what "full" draws -- an option that
     // changes nothing is worse than no option, because it makes you test it.
-    readonly property var iconable: ["media", "recording", "window",
-                                     "network", "bluetooth", "volume", "battery", "keyboard", "sys"]
+    //
+    // On a side bar the window name and the recording timer are never drawn at
+    // all -- the glyph is the whole pill there -- so for those two icon only
+    // means something on a top or bottom bar.
+    readonly property var iconable: {
+        let out = ["media", "network", "bluetooth", "volume", "battery", "keyboard", "sys"]
+        if (!Sizes.barVertical) out.push("recording", "window")
+        return out
+    }
     function contentsFor(id) {
         return root.contents.filter(v =>
             (v.id !== "compact" || root.compactable.indexOf(id) !== -1) &&

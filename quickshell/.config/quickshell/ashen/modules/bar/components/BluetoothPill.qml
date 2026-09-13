@@ -51,11 +51,7 @@ Rectangle {
         // exactly the same on the bar.
         glyph: Services.Network.btDevice !== "" ? "\ue1a8"
              : (Services.Network.btEnabled ? "\ue1a7" : "\ue1a9")
-        // Compact says only what is CONNECTED. "Scanning" and "Off" are states
-        // the glyph already carries, and a pill asked to be compact has said it
-        // does not want a word for them.
         label: root.content === "icon" ? ""
-             : root.content === "compact" ? Services.Network.btDevice
              : (Services.Network.btDevice !== "" ? Services.Network.btDevice
              : (Services.Network.btEnabled ? Services.I18n.t("net.scanning") : Services.I18n.t("net.disabled")))
         onActivated: Services.AppState.togglePanel("bluetoothVisible")

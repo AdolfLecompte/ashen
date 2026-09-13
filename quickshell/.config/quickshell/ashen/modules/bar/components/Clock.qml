@@ -121,8 +121,12 @@ Rectangle {
         // horizontal pill shows in a row, stacked in the same order. No rules
         // between them -- 15 px against 9 px already says which one is the
         // headline, and two hairlines in a 44 px column read as a fence.
+        // Compact is the hour alone here as well: a side bar used to ignore
+        // it and keep the date and the weather, so the option did nothing on
+        // the one edge where room is tightest.
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.content === "full"
             text: root.vertDay
             color: Services.Colors.mist
             font.pixelSize: 9
@@ -131,13 +135,14 @@ Rectangle {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.content === "full"
             text: root.vertDayNum
             color: Services.Colors.mist
             font.pixelSize: 11
             font.family: "JetBrainsMono NF"
             font.bold: true
         }
-        Item { width: 1; height: 3 }
+        Item { width: 1; height: 3; visible: root.content === "full" }
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -176,9 +181,10 @@ Rectangle {
 
         // Weather closes the pill the way the date opens it: the sky over its
         // number, not beside it.
-        Item { width: 1; height: 3 }
+        Item { width: 1; height: 3; visible: root.content === "full" }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.content === "full"
             text: Services.Weather.icon
             font.pixelSize: 14
             font.family: "Material Symbols Rounded"
@@ -186,6 +192,7 @@ Rectangle {
         }
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.content === "full"
             text: Services.Weather.temp
             color: Services.Colors.mist
             font.pixelSize: 9
