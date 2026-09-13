@@ -247,7 +247,10 @@ Singleton {
     // the bar is sitting there.
     // Which edge a panel with no capsule on the bar arrives from. Named for what
     // it does now rather than for the utility pill it used to belong to.
-    readonly property string overlayEdge: applied === "bottom" ? "left" : "bottom"
+    // From the bottom, or from the top when the bar is down there: the left edge
+    // it used to take made a centred panel arrive sideways, which read as
+    // something out of place rather than as the same panel moved.
+    readonly property string overlayEdge: applied === "bottom" ? "top" : "bottom"
     readonly property bool barVertical: applied === "left" || applied === "right"
 
     // ── Auto-hide ────────────────────────────────────────────────────────

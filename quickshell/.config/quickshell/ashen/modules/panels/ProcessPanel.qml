@@ -60,7 +60,7 @@ PanelWindow {
         : srcEdge === "right" ? root.width - card.openW - Services.Sizes.panelTop
         : (root.width - card.openW) / 2
     readonly property real openYCalc: srcEdge === "" ? NaN
-        : srcEdge === "top" ? Services.Sizes.panelTop
+        : srcEdge === "top" ? Math.max(68, Services.Sizes.marginTop + 18)
         : srcEdge === "bottom" ? root.height - card.openH - Math.max(68, Services.Sizes.marginBottom + 18)
         : (root.height - card.openH) / 2
 
