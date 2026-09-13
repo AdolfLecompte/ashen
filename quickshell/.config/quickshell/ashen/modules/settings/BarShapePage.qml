@@ -50,6 +50,7 @@ Section {
             spacing: 12
             RowGlyph { glyph: "\ue3c6" }        // border_outer
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.layout.outline")
                 color: Services.Colors.snow
@@ -81,7 +82,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.bar.autohide"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.bar.autohide"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {

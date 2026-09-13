@@ -43,6 +43,7 @@ Rectangle {
     Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         text: btn.glyph
         // Lit, the glyph is whichever of black and white can be read on the

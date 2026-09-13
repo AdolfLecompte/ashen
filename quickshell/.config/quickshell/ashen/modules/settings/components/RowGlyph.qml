@@ -8,6 +8,7 @@ Rectangle {
     property string glyph: ""
     implicitWidth: 26; implicitHeight: 26; radius: Services.Sizes.innerR; color: "transparent"
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         text: rg.glyph
         font.family: "Material Symbols Rounded"

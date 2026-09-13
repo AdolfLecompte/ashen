@@ -39,6 +39,7 @@ DesktopWidget {
         implicitHeight: 18
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             text: ln.caption
@@ -48,6 +49,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width * 0.74
@@ -66,6 +68,7 @@ DesktopWidget {
         // The hostname is the machine's name, so it is the headline and not
         // another row in the table.
         Text {
+            textFormat: Text.PlainText
             text: Services.Machine.hostname
             color: Services.Colors.snow
             font.pixelSize: 34
@@ -73,6 +76,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.Machine.shortOs
             color: Services.Colors.ghost
             font.pixelSize: Services.Sizes.fsInput
@@ -90,6 +94,7 @@ DesktopWidget {
     component Compact: Column {
         spacing: 2
         Text {
+            textFormat: Text.PlainText
             text: Services.Machine.hostname
             color: Services.Colors.snow
             font.pixelSize: 26
@@ -97,6 +102,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.Machine.shortOs + "  ·  up " + Services.Machine.shortUptime
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsBody
@@ -111,6 +117,7 @@ DesktopWidget {
         spacing: 6
 
         Text {
+            textFormat: Text.PlainText
             text: Services.AppState.userName + "@" + Services.Machine.hostname
             color: Services.Colors.snow
             font.pixelSize: 26
@@ -118,6 +125,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.Machine.shortOs
             color: Services.Colors.ghost
             font.pixelSize: Services.Sizes.fsInput
@@ -134,6 +142,7 @@ DesktopWidget {
             topPadding: 8
 
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Battery.icon(Services.Battery.level, Services.Battery.charging)
                 // Charging is something happening; a level is not, at any level.
@@ -142,6 +151,7 @@ DesktopWidget {
                 font.family: "Material Symbols Rounded"
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Battery.level + "%"
                 color: Services.Colors.snow
@@ -150,6 +160,7 @@ DesktopWidget {
                 font.family: "JetBrainsMono NF"
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Battery.timeRemaining !== "--"
                     ? Services.I18n.t(Services.Battery.charging ? "battery.fullIn" : "battery.left",

@@ -30,6 +30,7 @@ Row {
     spacing: 0
 
     Text {
+        textFormat: Text.PlainText
         text: root.hhmm
         color: root.color_
         font.pixelSize: root.px
@@ -40,6 +41,7 @@ Row {
     // it: a real baseline anchor would put the small digits on the line of the
     // big ones and leave them looking dropped.
     Text {
+        textFormat: Text.PlainText
         visible: root.ss !== ""
         anchors.bottom: parent.bottom
         anchors.bottomMargin: root.px * 0.17
@@ -53,6 +55,7 @@ Row {
     // The meridiem stays the size of the hour: it is part of the reading, not
     // a tick going by.
     Text {
+        textFormat: Text.PlainText
         visible: root.ap !== ""
         leftPadding: root.px * 0.26
         text: root.ap

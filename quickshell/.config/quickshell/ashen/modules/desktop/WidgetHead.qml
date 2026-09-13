@@ -25,6 +25,7 @@ Item {
         spacing: 7
 
         Text {
+            textFormat: Text.PlainText
             id: mark
             anchors.verticalCenter: parent.verticalCenter
             text: root.glyph
@@ -33,6 +34,7 @@ Item {
             font.family: "Material Symbols Rounded"
         }
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             width: Math.max(0, row.width - mark.width - row.spacing)
             elide: Text.ElideRight
@@ -45,6 +47,7 @@ Item {
         }
     }
     Text {
+        textFormat: Text.PlainText
         id: note
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter

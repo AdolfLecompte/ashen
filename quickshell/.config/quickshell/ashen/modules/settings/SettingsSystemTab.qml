@@ -117,6 +117,7 @@ Section {
         RowLayout {
             spacing: 14
             Text {
+                textFormat: Text.PlainText
                 text: Services.Battery.level + "%"
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsReadout
@@ -126,12 +127,14 @@ Section {
             ColumnLayout {
                 spacing: 2
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.Battery.charging ? Services.I18n.t("settings.system.charging") : Services.I18n.t("settings.system.onBattery")
                     color: Services.Colors.mist
                     font.pixelSize: Services.Sizes.fsBody
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: tab.timeRemaining !== "--" ? tab.timeRemaining : (Services.Battery.charging ? Services.I18n.t("settings.system.full") : Services.I18n.t("settings.system.calculating"))
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsMeta
@@ -157,6 +160,7 @@ Section {
             Layout.fillWidth: true
             spacing: 12
             Text {
+                textFormat: Text.PlainText
                 text: ""
                 font.family: "Material Symbols Rounded"
                 font.pixelSize: 20
@@ -165,7 +169,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.system.keepAwake"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.system.keepAwake"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
             }
         }
 
@@ -201,6 +205,7 @@ Section {
                 // One line, not a label repeating the card's own title with an
                 // explanation under it. What it does IS the label.
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.system.gameHint")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
@@ -253,6 +258,7 @@ Section {
 
                 RowGlyph { glyph: lockRow.modelData.glyph }
                 Text {
+                    textFormat: Text.PlainText
                     text: lockRow.modelData.label
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
@@ -363,6 +369,7 @@ Section {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: modelData.label
                     color: Services.Colors.snow
@@ -370,6 +377,7 @@ Section {
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: tab.idleLabel(parent.secs)
                     color: parent.secs > 0 ? Services.Colors.ghost : Services.Colors.mist
                     font.pixelSize: Services.Sizes.fsInput
@@ -390,6 +398,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             // Ordering mistakes are easy to make and impossible to see
             visible: Services.Prefs.idleSuspendSecs > 0
                 && Services.Prefs.idleLockSecs > Services.Prefs.idleSuspendSecs

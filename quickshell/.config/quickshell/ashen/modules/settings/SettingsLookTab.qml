@@ -48,6 +48,7 @@ Item {
 
 
     Text {
+        textFormat: Text.PlainText
         visible: false   // the drawer header carries the section name
         text: Services.I18n.t("settings.look.theme")
         color: Services.Colors.snow
@@ -69,6 +70,7 @@ Item {
             spacing: 10
 
             Text {
+                textFormat: Text.PlainText
                 text: Services.I18n.t("settings.look.remember")
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsInput
@@ -87,6 +89,7 @@ Item {
             spacing: 10
 
             Text {
+                textFormat: Text.PlainText
                 text: Services.I18n.t("settings.look.default")
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsInput
@@ -148,6 +151,7 @@ Item {
                     spacing: 12
 
                     Text {
+                        textFormat: Text.PlainText
                         text: ""
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 18
@@ -155,8 +159,8 @@ Item {
                     }
                     ColumnLayout {
                         spacing: 1
-                        Text { text: Services.I18n.t("settings.look.dynamic"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
-                        Text { text: Services.I18n.t("settings.look.fromWallpaper"); color: dynHover.containsMouse ? Services.Colors.snow : Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.look.dynamic"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.look.fromWallpaper"); color: dynHover.containsMouse ? Services.Colors.snow : Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
                     }
                     Item { Layout.fillWidth: true }
 
@@ -189,6 +193,7 @@ Item {
                             color: Services.Colors.ghost
                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: ""
                                 font.family: "Material Symbols Rounded"
@@ -247,6 +252,7 @@ Item {
                             spacing: 10
 
                             Text {
+                                textFormat: Text.PlainText
                                 text: schemeRow.modelData.label
                                 color: Services.Colors.snow
                                 font.pixelSize: Services.Sizes.fsBody
@@ -281,6 +287,7 @@ Item {
                                     color: Services.Colors.ghost
                                     gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.centerIn: parent
                                         text: ""
                                         font.family: "Material Symbols Rounded"
@@ -323,10 +330,11 @@ Item {
 
                     RowLayout {
                         spacing: 8
-                        Text { text: "\ue65f"; font.family: "Material Symbols Rounded"; font.pixelSize: 15; color: Services.Colors.ghost }
-                        Text { text: Services.I18n.t("settings.look.dynStyle"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: "\ue65f"; font.family: "Material Symbols Rounded"; font.pixelSize: 15; color: Services.Colors.ghost }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.look.dynStyle"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         // Only the half that says why the chips are inert; the
                         // other half only described them.
                         visible: !schemeSection.dynamicActive
@@ -380,8 +388,8 @@ Item {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
-                    Text { text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 15; color: Services.Colors.ghost }
-                    Text { text: Services.I18n.t("settings.look.gradients"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { textFormat: Text.PlainText; text: ""; font.family: "Material Symbols Rounded"; font.pixelSize: 15; color: Services.Colors.ghost }
+                    Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.look.gradients"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsBody; font.bold: true; font.family: "JetBrainsMono NF" }
                     Item { Layout.fillWidth: true }
                     Toggle {
                         checked: Services.Prefs.useGradients
@@ -426,6 +434,7 @@ Item {
             spacing: 12
             RowGlyph { glyph: "\ue3c6" }        // border_outer
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.layout.outline")
                 color: Services.Colors.snow

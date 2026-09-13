@@ -60,6 +60,7 @@ DesktopWidget {
                 visible: status === Image.Ready
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 visible: shot.status !== Image.Ready
                 text: ln.entry && ln.entry.appName ? ln.entry.appName.charAt(0).toUpperCase() : "?"
@@ -79,6 +80,7 @@ DesktopWidget {
             spacing: 1
 
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: ln.entry ? (ln.entry.summary || ln.entry.appName || "") : ""
                 color: Services.Colors.snow
@@ -88,6 +90,7 @@ DesktopWidget {
                 elide: Text.ElideRight
             }
             Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: ln.entry ? (ln.entry.body || ln.entry.appName || "") : ""
                 color: Services.Colors.mist
@@ -101,6 +104,7 @@ DesktopWidget {
         }
 
         Text {
+            textFormat: Text.PlainText
             id: age
             anchors.right: parent.right
             anchors.top: parent.top
@@ -128,6 +132,7 @@ DesktopWidget {
             anchors.centerIn: parent
             spacing: 8
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: "\ue86c"
                 color: Services.Colors.ghost
@@ -135,6 +140,7 @@ DesktopWidget {
                 font.family: "Material Symbols Rounded"
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.quietLine
                 color: Services.Colors.mist
@@ -164,6 +170,7 @@ DesktopWidget {
     component Count: Column {
         spacing: -6
         Text {
+            textFormat: Text.PlainText
             text: root.log.length
             color: Services.Colors.snow
             font.pixelSize: 72
@@ -171,6 +178,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.I18n.t(root.log.length === 1 ? "widget.notification" : "widget.notifications")
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsCaption

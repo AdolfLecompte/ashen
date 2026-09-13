@@ -65,6 +65,7 @@ Rectangle {
         spacing: 8
 
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: root.glyph
             color: Services.Colors.ghost
@@ -72,6 +73,7 @@ Rectangle {
             font.family: "Material Symbols Rounded"
         }
         Text {
+            textFormat: Text.PlainText
             id: nameText
             // On a side bar there is no room for a name, and the glyph already
             // says which program it is. `icon` says the same thing on purpose.

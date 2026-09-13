@@ -350,6 +350,7 @@ Item {
                 visible: status === Image.Ready
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 // Only when there is genuinely no cover, never while one decodes.
                 visible: root.shownArtUrl === ""
@@ -377,6 +378,7 @@ Item {
                 spacing: 4
 
                 Text {
+                    textFormat: Text.PlainText
                     id: titleT
                     opacity: root.sharedOpacity * trackSwap.fade
                     transform: Translate { x: trackSwap.offX }
@@ -389,6 +391,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     opacity: root.beat(0) * trackSwap.fade
                     transform: Translate { x: trackSwap.offX }
                     visible: root.shownArtist !== ""
@@ -400,6 +403,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     opacity: root.beat(0) * trackSwap.fade
                     transform: Translate { x: trackSwap.offX }
                     visible: root.shownAlbum !== ""
@@ -459,6 +463,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width
                         text: (verse.shown >= 0 && verse.shown < Services.Lyrics.lines.length)
@@ -643,6 +648,7 @@ Item {
                         height: 14
 
                         Text {
+                            textFormat: Text.PlainText
                             id: posT
                             opacity: root.sharedOpacity
                             anchors.left: parent.left
@@ -653,6 +659,7 @@ Item {
                             font.family: "JetBrainsMono NF"
                         }
                         Text {
+                            textFormat: Text.PlainText
                             id: lenT
                             opacity: root.sharedOpacity
                             anchors.right: parent.right

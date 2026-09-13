@@ -247,6 +247,7 @@ PanelWindow {
                                 // never hands one over -- the app is still most
                                 // of what a tile is for.
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.centerIn: parent
                                     visible: !shot.hasContent
                                     text: Services.Windows.iconForClass(tile.io ? tile.io["class"] : "")
@@ -257,6 +258,7 @@ PanelWindow {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.top: frame.bottom
                                 anchors.topMargin: 7
                                 anchors.horizontalCenter: parent.horizontalCenter
@@ -276,6 +278,7 @@ PanelWindow {
 
                 // Nothing to switch to is a state, not an empty card.
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     visible: root.wins.length === 0
                     opacity: host.contentAmt

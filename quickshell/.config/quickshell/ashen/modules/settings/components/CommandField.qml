@@ -67,6 +67,7 @@ RowLayout {
         spacing: 2
 
         Text {
+            textFormat: Text.PlainText
             text: root.title
             color: Services.Colors.snow
             font.pixelSize: Services.Sizes.fsInput
@@ -80,6 +81,7 @@ RowLayout {
             Behavior on implicitHeight { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             Text {
+                textFormat: Text.PlainText
                 id: shown
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -130,6 +132,7 @@ RowLayout {
     // it may be a command that only exists on the machine this profile is
     // headed for.
     Text {
+        textFormat: Text.PlainText
         visible: root.missing && !root.editing
         text: Services.I18n.t("settings.apps.notInstalled")
         color: Services.Colors.error_

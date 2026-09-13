@@ -369,6 +369,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         spacing: 6
                                         Text {
+                                            textFormat: Text.PlainText
                                             text: modelData.icon
                                             color: parent.parent.on ? Services.Colors.accentText : Services.Colors.snow
                                             font.pixelSize: 16
@@ -377,6 +378,7 @@ PanelWindow {
                                             Behavior on color { Widgets.ColorAnim {} }
                                         }
                                         Text {
+                                            textFormat: Text.PlainText
                                             text: modelData.label
                                             color: parent.parent.on ? Services.Colors.accentText : Services.Colors.snow
                                             font.pixelSize: 13
@@ -426,6 +428,7 @@ PanelWindow {
                             RowLayout {
                                 width: parent.width
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: Services.I18n.t("settings.wifi.radio")
                                     color: Services.Colors.mist
                                     font.pixelSize: 11
@@ -609,6 +612,7 @@ PanelWindow {
                                     spacing: 8
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: Services.I18n.t("net.passwordFor", { n: root.connectingTo })
                                         color: Services.Colors.mist
                                         font.pixelSize: 11
@@ -639,6 +643,7 @@ PanelWindow {
                                                     Layout.fillWidth: true
                                                     height: 26
                                                     Text {
+                                                        textFormat: Text.PlainText
                                                         anchors.verticalCenter: parent.verticalCenter
                                                         text: Services.I18n.t("settings.wifi.password")
                                                         color: Services.Colors.ash
@@ -664,6 +669,7 @@ PanelWindow {
                                                     }
                                                 }
                                                 Text {
+                                                    textFormat: Text.PlainText
                                                     text: root.showPassword ? "\ue8f5" : "\ue8f4"
                                                     color: Services.Colors.mist
                                                     font.pixelSize: 16
@@ -685,6 +691,7 @@ PanelWindow {
                                             scale: Services.Sizes.hoverScale(cancelMouse.containsMouse, cancelMouse.pressed)
                                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 anchors.centerIn: parent
                                                 text: Services.I18n.t("common.cancel")
                                                 color: cancelMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
@@ -709,6 +716,7 @@ PanelWindow {
                                             scale: Services.Sizes.hoverScale(joinMouse.containsMouse, joinMouse.pressed)
                                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 anchors.centerIn: parent
                                                 text: Services.I18n.t("net.join")
                                                 color: Services.Colors.accentText
@@ -748,6 +756,7 @@ PanelWindow {
                                 width: parent.width
                                 height: 28
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: Services.I18n.t("net.wired")
                                     color: Services.Colors.mist
                                     font.pixelSize: 11
@@ -755,6 +764,7 @@ PanelWindow {
                                     Layout.fillWidth: true
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: root.ethPorts.length === 0
                                         ? Services.I18n.t("net.noPort")
                                         : Services.I18n.t(root.ethPorts.length === 1 ? "net.port" : "net.ports", { n: root.ethPorts.length })

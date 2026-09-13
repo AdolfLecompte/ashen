@@ -190,6 +190,7 @@ PanelWindow {
                                 border.color: Services.Colors.ghostAlpha(0.25)
                                 border.width: 1
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.centerIn: parent
                                     text: Services.Windows.iconForClass(
                                         parent.parent.io ? parent.parent.io["class"] : "")
@@ -204,6 +205,7 @@ PanelWindow {
                     // An empty workspace never opens a preview, but a workspace
                     // can go empty while one is open.
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: root.wins.length === 0
                         opacity: card.contentAmt
@@ -228,6 +230,7 @@ PanelWindow {
                     height: root.labelH
 
                     Text {
+                        textFormat: Text.PlainText
                         id: labelSlot
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
@@ -243,6 +246,7 @@ PanelWindow {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         opacity: card.contentAmt

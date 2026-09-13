@@ -95,6 +95,7 @@ Section {
                 spacing: 6
 
                 Text {
+                    textFormat: Text.PlainText
                     id: gly
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Pills.glyph(slot.pillId)
@@ -103,6 +104,7 @@ Section {
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     id: lab
                     anchors.verticalCenter: parent.verticalCenter
                     // The icon never elides -- it is what identifies the pill
@@ -180,6 +182,7 @@ Section {
         z: (tab.draggingId !== "" && zone.ids.indexOf(tab.draggingId) !== -1) ? 10 : 0
 
         Text {
+            textFormat: Text.PlainText
             text: zone.caption
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
@@ -289,6 +292,7 @@ Section {
             }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 visible: zone.ids.length === 0
                 text: Services.I18n.t("settings.layout.drop")
@@ -435,12 +439,14 @@ Section {
                             Layout.fillWidth: true
                             spacing: 8
                             Text {
+                                textFormat: Text.PlainText
                                 text: Services.Pills.glyph(lookCard.modelData)
                                 color: Services.Colors.ghost
                                 font.pixelSize: 15
                                 font.family: "Material Symbols Rounded"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: Services.Pills.label(lookCard.modelData)
                                 color: Services.Colors.snow
@@ -488,6 +494,7 @@ Section {
                             visible: lookCard.modelData === "workspaces"
                             spacing: 8
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 text: Services.I18n.t("settings.layout.wsCount")
                                 color: Services.Colors.ash
@@ -500,6 +507,7 @@ Section {
                                     Math.max(2, Services.Prefs.workspaceCount - 1)
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.preferredWidth: 22
                                 horizontalAlignment: Text.AlignHCenter
                                 text: Services.Prefs.workspaceCount
@@ -524,6 +532,7 @@ Section {
         Item { Layout.preferredHeight: 2 }
 
         Text {
+            textFormat: Text.PlainText
             text: Services.I18n.t("settings.layout.reset")
             color: resetHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta

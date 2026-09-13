@@ -91,6 +91,7 @@ Item {
                     spacing: root.stacked ? 3 : 7
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: cell.hasIcon
                         text: cell.hasIcon ? cell.modelData.icon : ""
                         font.family: "Material Symbols Rounded"
@@ -99,6 +100,7 @@ Item {
                         Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         visible: cell.hasLabel
                         text: cell.hasLabel ? cell.modelData.label : ""
                         font.pixelSize: root.labelSize

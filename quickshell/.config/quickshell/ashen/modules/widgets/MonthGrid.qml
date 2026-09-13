@@ -53,6 +53,7 @@ Grid {
             Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: parent.isValid ? parent.day : ""
                 color: parent.isToday ? Services.Colors.accentText

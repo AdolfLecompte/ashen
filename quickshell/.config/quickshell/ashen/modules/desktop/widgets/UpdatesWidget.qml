@@ -41,6 +41,7 @@ DesktopWidget {
         implicitHeight: 20
 
         Text {
+            textFormat: Text.PlainText
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width * 0.52
@@ -53,6 +54,7 @@ DesktopWidget {
         // Only where it is going. Where it came from is the version you have,
         // and nobody upgrades because of that number.
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: rw.pkg ? rw.pkg.to : ""
@@ -79,6 +81,7 @@ DesktopWidget {
             Row_ { required property int index; pkg: Services.Updates.list[index] }
         }
         Text {
+            textFormat: Text.PlainText
             visible: root.n > 6
             text: "+" + (root.n - 6) + " more"
             color: Services.Colors.ash
@@ -98,6 +101,7 @@ DesktopWidget {
     component Count: Column {
         spacing: -6
         Text {
+            textFormat: Text.PlainText
             text: Services.Updates.checkedAt === 0 ? "--" : root.n
             color: Services.Colors.snow
             font.pixelSize: 72
@@ -105,6 +109,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.I18n.t(root.n === 1 ? "widget.update" : "widget.updates")
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsCaption

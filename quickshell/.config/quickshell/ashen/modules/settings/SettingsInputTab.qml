@@ -57,6 +57,7 @@ Section {
                         anchors.centerIn: parent
                         spacing: 4
                         Text {
+                            textFormat: Text.PlainText
                             text: "\ue312"
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 20
@@ -64,6 +65,7 @@ Section {
                             Layout.alignment: Qt.AlignHCenter
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: kbCard.modelData.toUpperCase()
                             font.pixelSize: Services.Sizes.fsMeta
                             font.family: "JetBrainsMono NF"
@@ -88,6 +90,7 @@ Section {
                         radius: Services.Sizes.innerR
                         color: Services.Colors.fillSunken
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             scale: Services.Sizes.hoverScale(rmArea.containsMouse, rmArea.pressed)
                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
@@ -125,6 +128,7 @@ Section {
                         ? Services.Sizes.hoverScale(addArea.containsMouse, addArea.pressed) : 1.0
                     Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                     Text {
+                        textFormat: Text.PlainText
                         text: "\ue145"
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 20
@@ -132,6 +136,7 @@ Section {
                         Layout.alignment: Qt.AlignHCenter
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: Services.I18n.t("common.add")
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
@@ -159,6 +164,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: !Services.Keyboard.canAdd
             text: Services.I18n.t("settings.input.max")
             color: Services.Colors.ash
@@ -198,6 +204,7 @@ Section {
                         anchors.rightMargin: 10
                         spacing: 8
                         Text {
+                            textFormat: Text.PlainText
                             text: "\ue8e2"
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 15
@@ -221,6 +228,7 @@ Section {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: tab.filteredLayouts.length === 0
                     text: tab.missLine
                     color: Services.Colors.ash
@@ -252,6 +260,7 @@ Section {
                             anchors.rightMargin: 8
                             spacing: 10
                             Text {
+                                textFormat: Text.PlainText
                                 text: modelData.code
                                 color: Services.Colors.ghost
                                 font.pixelSize: Services.Sizes.fsBody
@@ -260,6 +269,7 @@ Section {
                                 Layout.preferredWidth: 52
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 text: modelData.name
                                 color: parent.parent.already ? Services.Colors.ash
                                      : rowArea.containsMouse ? Services.Colors.snow
@@ -271,6 +281,7 @@ Section {
                                 Layout.fillWidth: true
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 visible: parent.parent.already
                                 text: Services.I18n.t("settings.input.inUse")
                                 color: Services.Colors.ash
@@ -295,6 +306,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             text: Services.Keyboard.keymap
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
@@ -307,6 +319,7 @@ Section {
         title: Services.I18n.t("settings.input.shortcuts")
 
         Text {
+            textFormat: Text.PlainText
             text: Services.I18n.t("settings.input.rebind")
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
@@ -344,6 +357,7 @@ Section {
                             plain: modelData.keys
                         }
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: modelData.action
                             color: Services.Colors.mist
@@ -353,6 +367,7 @@ Section {
                         }
                         // Only where it is no longer what the file shipped.
                         Text {
+                            textFormat: Text.PlainText
                             visible: modelData.id !== ""
                                      && Services.Shortcuts.changed(modelData.id)
                             text: Services.I18n.t("settings.input.changed")
@@ -366,6 +381,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: Services.Keybinds.binds.length === 0
             text: Services.I18n.t("settings.input.noShortcuts")
             color: Services.Colors.ash

@@ -616,6 +616,7 @@ Item {
             opacity: root.hubTravels ? 1 - root.swapAmt * 1.6 : 1
             visible: !root.hubTravels || root.swapAmt < 0.62
             Text {
+                textFormat: Text.PlainText
                 id: hubGlyphText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: root.shownGlyph
@@ -627,6 +628,7 @@ Item {
                 opacity: root.handOverGlyph ? 0 : 1
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 // The circle is round: a label as wide as the diameter runs out
                 // over the curve at both ends, which is what was eating it.
@@ -642,6 +644,7 @@ Item {
                 elide: Text.ElideRight
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: root.shownSub !== ""
                 text: root.shownSub
@@ -664,6 +667,7 @@ Item {
             visible: root.hubTravels && root.swapAmt > 0.45
 
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.shownGlyph
                 color: root.hubFilled ? Services.Colors.accentText : Services.Colors.ghost
@@ -674,6 +678,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 1
                 Text {
+                    textFormat: Text.PlainText
                     text: root.shownLabel
                     color: root.hubFilled ? Services.Colors.accentText : Services.Colors.snow
                     font.pixelSize: 12
@@ -683,6 +688,7 @@ Item {
                     width: Math.min(implicitWidth, 118)
                 }
                 Text {
+                    textFormat: Text.PlainText
                     visible: root.shownSub !== ""
                     text: root.shownSub
                     color: root.hubFilled ? Services.Colors.accentText : Services.Colors.ash
@@ -803,6 +809,7 @@ Item {
                 visible: node.amt < 0.6
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: node.empty ? "" : node.modelData.glyph
                     color: node.dark ? Services.Colors.accentText : Services.Colors.ghost
@@ -813,6 +820,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 1
                     Text {
+                        textFormat: Text.PlainText
                         id: labelT
                         text: node.empty ? "" : node.modelData.label
                         color: node.dark ? Services.Colors.accentText : Services.Colors.snow
@@ -823,6 +831,7 @@ Item {
                         width: Math.min(implicitWidth, 118)
                     }
                     Text {
+                        textFormat: Text.PlainText
                         id: subT
                         visible: text !== ""
                         // Armed, the node stops saying how strong it is and
@@ -849,6 +858,7 @@ Item {
                 visible: node.amt > 0.45
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: node.empty ? "" : node.modelData.glyph
                     color: Services.Colors.accentText
@@ -856,6 +866,7 @@ Item {
                     font.pixelSize: 30
                 }
                 Text {
+                    textFormat: Text.PlainText
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: root.hubR * 1.72
                     horizontalAlignment: Text.AlignHCenter
@@ -867,6 +878,7 @@ Item {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: node.isScan ? (root.scanSub !== "" ? root.scanSub : "Scanning\u2026")
                                       : "Connecting\u2026"

@@ -26,6 +26,7 @@ DesktopWidget {
         implicitHeight: 34
 
         Text {
+            textFormat: Text.PlainText
             id: name
             anchors.left: parent.left
             anchors.top: parent.top
@@ -36,6 +37,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.top: parent.top
             text: br.mount

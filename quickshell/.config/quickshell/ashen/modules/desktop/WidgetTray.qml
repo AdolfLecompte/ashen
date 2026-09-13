@@ -88,6 +88,7 @@ Item {
             spacing: 1
 
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: !tile.shows
                 text: tile.glyph
@@ -99,6 +100,7 @@ Item {
                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -116,6 +118,7 @@ Item {
                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter

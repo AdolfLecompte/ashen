@@ -50,6 +50,7 @@ Rectangle {
         spacing: 10
 
         Text {
+            textFormat: Text.PlainText
             text: row.deviceGlyph(row.device)
             color: row.device.connected ? Services.Colors.ghost : Services.Colors.mist
             font.pixelSize: 20
@@ -59,6 +60,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 2
             Text {
+                textFormat: Text.PlainText
                 text: Services.BtLink.displayName(row.device)
                 color: (row.device.connected || rowMouse.containsMouse)
                     ? Services.Colors.snow : Services.Colors.mist
@@ -70,6 +72,7 @@ Rectangle {
                 width: parent.width
             }
             Text {
+                textFormat: Text.PlainText
                 // A link in flight says so: the row used to read "Paired" for
                 // the whole of a connect that takes seconds.
                 text: Services.BtLink.busyText(row.device) !== "" ? Services.BtLink.busyText(row.device)
@@ -83,6 +86,7 @@ Rectangle {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: row.device.connected
             text: ""
             color: Services.Colors.ghost

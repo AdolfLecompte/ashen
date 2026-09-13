@@ -38,6 +38,7 @@ DesktopWidget {
         spacing: 5
 
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: st.glyph
             color: Services.Colors.ghost
@@ -45,6 +46,7 @@ DesktopWidget {
             font.family: "Material Symbols Rounded"
         }
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: st.value
             color: Services.Colors.ash
@@ -57,6 +59,7 @@ DesktopWidget {
         spacing: 4
 
         Text {
+            textFormat: Text.PlainText
             text: root.lightLeft + (root.daytime ? " OF LIGHT LEFT" : " UNTIL SUNRISE")
             visible: root.lightLeft !== ""
             color: Services.Colors.mist

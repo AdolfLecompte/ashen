@@ -326,6 +326,7 @@ Scope {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         spacing: 0
                                         Text {
+                                            textFormat: Text.PlainText
                                             text: surface.currentTime.split(" ")[0].split(":").slice(0, 2).join(":")
                                             color: Services.Colors.snow
                                             font.pixelSize: 104
@@ -339,6 +340,7 @@ Scope {
                                             spacing: 2
                                             leftPadding: 8
                                             Text {
+                                                textFormat: Text.PlainText
                                                 text: surface.currentSecs
                                                 color: Services.Colors.snowAlpha(0.4)
                                                 font.pixelSize: 28
@@ -346,6 +348,7 @@ Scope {
                                                 font.weight: Font.Bold
                                             }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 text: surface.currentTime.split(" ")[1]
                                                 color: Services.Colors.snowAlpha(0.4)
                                                 font.pixelSize: 14
@@ -357,6 +360,7 @@ Scope {
                                     // Only the date: the weather, the charge and
                                     // the music are cards in the columns now.
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         topPadding: 6
                                         text: surface.currentDay + "  ·  " + surface.currentDate
@@ -548,6 +552,7 @@ Scope {
                                 visible: faceImg.status === Image.Ready
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: "\uF0D3"
                                 color: Services.Colors.ghost
@@ -573,6 +578,7 @@ Scope {
                                 opacity: authGroup.stage(1)
                                 transform: Translate { y: (1 - authGroup.stage(1)) * 16 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: surface.userOnly
                                     color: Services.Colors.snow
                                     font.pixelSize: 24
@@ -581,6 +587,7 @@ Scope {
                                     font.letterSpacing: 1
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: surface.hostOnly
                                     visible: text !== ""
                                     color: Services.Colors.mist
@@ -630,6 +637,7 @@ Scope {
                                 // middle: content centred inside what is left over
                                 // after a left-hand icon is not centred in the field.
                                 Text {
+                                    textFormat: Text.PlainText
                                     id: lockGlyph
                                     anchors.left: parent.left
                                     anchors.leftMargin: 18
@@ -659,6 +667,7 @@ Scope {
                                         readonly property int filled: Math.min(surface.password.length, maxDots)
 
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Services.I18n.t("lock.enterPassword")
                                             color: Services.Colors.ash
@@ -769,6 +778,7 @@ Scope {
                                 // Was the last cell of a row; now that the field
                                 // centres its contents it holds the right edge itself.
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.right: parent.right
                                     anchors.rightMargin: 18
                                     anchors.verticalCenter: parent.verticalCenter
@@ -839,6 +849,7 @@ Scope {
                             radius: Services.Sizes.innerR
                             color: Services.Colors.surfacePill
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: "\uF8C7"
                                 color: surface.showPower || powerPillHover.containsMouse
@@ -892,6 +903,7 @@ Scope {
                                     color: Services.Colors.surfacePill
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.centerIn: parent
                                         text: powerItem.modelData.icon
                                         color: powerHover.containsMouse ? Services.Colors.snow
@@ -918,6 +930,7 @@ Scope {
                                         visible: opacity > 0.01
                                         Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                                         Text {
+                                            textFormat: Text.PlainText
                                             id: tipText
                                             anchors.centerIn: parent
                                             text: powerItem.modelData.label
@@ -983,6 +996,7 @@ Scope {
                         border.width: 2
 
                         Text {
+                            textFormat: Text.PlainText
                             id: introGlyph
                             anchors.centerIn: parent
                             text: surface.lockShut ? surface.glyphLock : surface.glyphLockOpen

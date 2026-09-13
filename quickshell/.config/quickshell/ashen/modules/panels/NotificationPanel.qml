@@ -224,6 +224,7 @@ Scope {
                 transform: Translate { y: arrive.riseOf(0) }
 
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.tab.notifications")
                     color: Services.Colors.snow
                     font.pixelSize: 15
@@ -241,6 +242,7 @@ Scope {
                     color: Services.Colors.ghost
                     gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                     Text {
+                        textFormat: Text.PlainText
                         id: unreadTxt
                         anchors.centerIn: parent
                         text: Services.Notifications.unreadCount
@@ -290,6 +292,7 @@ Scope {
                     spacing: 10
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.horizontalCenter: parent.horizontalCenter
                         // done_all: nothing left, everything seen.
                         text: "\ue877"
@@ -298,6 +301,7 @@ Scope {
                         color: Services.Colors.fillRest
                     }
                     Text {
+                        textFormat: Text.PlainText
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: win.emptyLine
                         color: Services.Colors.mist
@@ -381,6 +385,7 @@ Scope {
                         Behavior on opacity { Widgets.Anim {} }
 
                         Text {
+                            textFormat: Text.PlainText
                             id: groupName
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
@@ -404,6 +409,7 @@ Scope {
                             color: Services.Colors.ghostAlpha(group.modelData.unread > 0 ? 0.4 : 0.16)
                             Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                             Text {
+                                textFormat: Text.PlainText
                                 id: countTxt
                                 anchors.centerIn: parent
                                 text: group.alive.length
@@ -608,12 +614,14 @@ Scope {
                 spacing: 8
 
                 Text {
+                    textFormat: Text.PlainText
                     text: row.entry.summary || ""
                     color: Services.Colors.mist
                     font.pixelSize: 11
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: row.entry.body || ""
                     color: Services.Colors.ash
                     font.pixelSize: 11
@@ -621,6 +629,7 @@ Scope {
                     Layout.fillWidth: true
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.Notifications.relTime(row.entry.timestamp, Services.Notifications.clockTick)
                     color: Services.Colors.ash
                     font.pixelSize: 9
@@ -657,6 +666,7 @@ Scope {
                         visible: status === Image.Ready
                     }
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: appIconImg.status !== Image.Ready
                         text: ""
@@ -678,6 +688,7 @@ Scope {
                         width: parent.width
                         spacing: 6
                         Text {
+                            textFormat: Text.PlainText
                             width: Math.min(implicitWidth, parent.width - 60)
                             text: (row.entry.appName || Services.I18n.t("notify.unknownApp")).toUpperCase()
                             color: Services.Colors.ash
@@ -692,6 +703,7 @@ Scope {
                             color: Services.Colors.ash
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: Services.Notifications.relTime(row.entry.timestamp, Services.Notifications.clockTick)
                             color: Services.Colors.ash
                             font.pixelSize: 8
@@ -699,6 +711,7 @@ Scope {
                         }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         text: row.entry.summary || row.entry.appName || ""
                         color: Services.Colors.snow
@@ -709,6 +722,7 @@ Scope {
                         topPadding: 1
                     }
                     Text {
+                        textFormat: Text.PlainText
                         id: bodyText
                         width: parent.width
                         visible: (row.entry.body || "") !== ""
@@ -772,6 +786,7 @@ Scope {
                         Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                         Text {
+                            textFormat: Text.PlainText
                             id: rowActLabel
                             anchors.centerIn: parent
                             text: modelData.text || modelData.id

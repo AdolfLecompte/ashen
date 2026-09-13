@@ -205,6 +205,7 @@ PanelWindow {
                                 asynchronous: true
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 visible: !sysShot.visible
                                 text: card.modelData.glyph || ""
@@ -223,6 +224,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 3
                             Text {
+                                textFormat: Text.PlainText
                                 text: card.modelData.summary || Services.I18n.t("notify.systemAlert")
                                 color: Services.Colors.ash
                                 font.pixelSize: 8
@@ -230,6 +232,7 @@ PanelWindow {
                                 font.letterSpacing: 1.2
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 width: parent.width
                                 text: card.modelData.body || ""
                                 color: Services.Colors.snow
@@ -273,6 +276,7 @@ PanelWindow {
                                 visible: status === Image.Ready
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 visible: toastIconImg.status !== Image.Ready
                                 text: "\uf727"
@@ -293,6 +297,7 @@ PanelWindow {
                                 width: parent.width
                                 spacing: 6
                                 Text {
+                                    textFormat: Text.PlainText
                                     width: Math.min(implicitWidth, parent.width - 74)
                                     text: (card.modelData.appName || Services.I18n.t("notify.unknownApp")).toUpperCase()
                                     color: Services.Colors.ash
@@ -307,6 +312,7 @@ PanelWindow {
                                     color: Services.Colors.ash
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: Services.Notifications.relTime(card.modelData.timestamp, Services.Notifications.clockTick)
                                     color: Services.Colors.ash
                                     font.pixelSize: 8
@@ -315,6 +321,7 @@ PanelWindow {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 width: parent.width - 20
                                 text: card.modelData.summary || card.modelData.appName || ""
                                 color: Services.Colors.snow
@@ -325,6 +332,7 @@ PanelWindow {
                                 topPadding: 2
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 id: bodyTxt
                                 width: parent.width
                                 visible: (card.modelData.body || "") !== ""
@@ -378,6 +386,7 @@ PanelWindow {
                                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     id: actLabel
                                     anchors.centerIn: parent
                                     text: modelData.text || modelData.id
@@ -422,6 +431,7 @@ PanelWindow {
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: "+" + Services.Notifications.hiddenPopupCount
                     color: countHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
@@ -452,6 +462,7 @@ PanelWindow {
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     // The same glyph the rail uses for the same idea: these
                     // have been seen. One action, one icon.

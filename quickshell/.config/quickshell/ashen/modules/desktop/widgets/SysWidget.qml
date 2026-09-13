@@ -48,6 +48,7 @@ DesktopWidget {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
             Text {
+                textFormat: Text.PlainText
                 visible: lv.glyph !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 text: lv.glyph
@@ -56,6 +57,7 @@ DesktopWidget {
                 font.family: "Material Symbols Rounded"
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: lv.reading
                 color: Services.Colors.snow
@@ -86,6 +88,7 @@ DesktopWidget {
         property color tone: Services.Colors.ghost
 
         Text {
+            textFormat: Text.PlainText
             id: psReading
             anchors.right: parent.right
             anchors.top: parent.top
@@ -132,6 +135,7 @@ DesktopWidget {
                     note: ""
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: Math.round(Services.SysMon.cpuPercent) + "%"
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsHero

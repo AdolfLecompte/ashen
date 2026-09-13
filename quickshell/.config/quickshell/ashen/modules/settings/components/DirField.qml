@@ -82,6 +82,7 @@ RowLayout {
         spacing: 2
 
         Text {
+            textFormat: Text.PlainText
             text: root.title
             color: Services.Colors.snow
             font.pixelSize: Services.Sizes.fsInput
@@ -97,6 +98,7 @@ RowLayout {
             Behavior on implicitHeight { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
             Text {
+                textFormat: Text.PlainText
                 id: shownPath
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -146,6 +148,7 @@ RowLayout {
         }
 
         Text {
+            textFormat: Text.PlainText
             visible: root.badPath
             text: Services.I18n.t("settings.dir.missing")
             color: Services.Colors.error_
@@ -159,6 +162,7 @@ RowLayout {
         radius: Services.Sizes.innerR
         color: Services.Colors.fillRest
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             scale: Services.Sizes.hoverScale(btnHover.containsMouse, btnHover.pressed)
             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }

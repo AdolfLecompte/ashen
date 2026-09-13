@@ -126,8 +126,13 @@ Singleton {
 
     // Markdown leaves **bold** in the text; the panel draws rich text, so the
     // stars become tags rather than being read out loud.
+    //
+    // Escaped FIRST: this is the one piece of text in the shell drawn as rich
+    // text, and a `<tag>` written in the changelog would otherwise be parsed --
+    // an <img> in rich text is how a clipboard entry took the whole shell down.
     function rich(s) {
-        return String(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                        .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
                         .replace(/`(.+?)`/g, "<font face='JetBrainsMono NF'>$1</font>")
     }
 

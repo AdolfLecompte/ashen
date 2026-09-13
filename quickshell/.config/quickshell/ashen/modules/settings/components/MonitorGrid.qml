@@ -154,6 +154,7 @@ FocusScope {
                 // The centre says it is the middle even while it is empty, so
                 // the board reads as a place before anything is on it.
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     visible: cell.empty
                     text: cell.isCentre ? "" : ""
@@ -191,6 +192,7 @@ FocusScope {
         visible: grid.loose.length > 0
 
         Text {
+            textFormat: Text.PlainText
             text: Services.I18n.t("settings.display.notPlaced")
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsMeta
@@ -264,6 +266,7 @@ FocusScope {
                 width: face.width - 8
                 spacing: 1
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
@@ -276,6 +279,7 @@ FocusScope {
                     Behavior on color { Widgets.ColorAnim {} }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight

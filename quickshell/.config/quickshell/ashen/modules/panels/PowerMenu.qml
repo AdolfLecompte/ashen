@@ -295,6 +295,7 @@ PanelWindow {
                             // name arrives, so nothing on the tile ever moves
                             // except at the one instant you are looking at it.
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: tile.active ? -14 : 0
@@ -315,6 +316,7 @@ PanelWindow {
                             // about to press is a question about THIS tile, and
                             // the answer belongs where you are looking.
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 22

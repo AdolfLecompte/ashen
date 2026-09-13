@@ -31,6 +31,7 @@ DesktopWidget {
         implicitHeight: fc.tracked ? 88 : 76
 
         Text {
+            textFormat: Text.PlainText
             id: cap
             anchors.left: parent.left
             anchors.top: parent.top
@@ -44,6 +45,7 @@ DesktopWidget {
         }
 
         Text {
+            textFormat: Text.PlainText
             id: figureText
             anchors.left: parent.left
             anchors.top: cap.bottom

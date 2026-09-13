@@ -20,6 +20,7 @@ Rectangle {
         anchors.margins: 16
         spacing: 12
         Text {
+            textFormat: Text.PlainText
             text: cardRoot.title
             visible: cardRoot.title !== ""
             color: Services.Colors.mist

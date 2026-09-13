@@ -13,6 +13,7 @@ DesktopWidget {
     readonly property int monthIndex: root.now.getFullYear() * 12 + root.now.getMonth()
 
     component Head: Text {
+        textFormat: Text.PlainText
         text: Services.Time.fmt("MMMM yyyy").toUpperCase()
         color: Services.Colors.mist
         font.pixelSize: Services.Sizes.fsCaption
@@ -28,6 +29,7 @@ DesktopWidget {
         Repeater {
             model: 7
             delegate: Text {
+                textFormat: Text.PlainText
                 required property int index
                 width: parent.cell
                 horizontalAlignment: Text.AlignHCenter
@@ -81,6 +83,7 @@ DesktopWidget {
                         spacing: 4
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: Services.Time.fmtOf(day.date, "ddd").toUpperCase()
                             color: Services.Colors.ash
@@ -96,6 +99,7 @@ DesktopWidget {
                                 ? Services.Colors.accentGradientV : null
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: day.date.getDate()
                                 color: day.isToday ? Services.Colors.accentText : Services.Colors.snow

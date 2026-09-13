@@ -519,6 +519,7 @@ Scope {
                                 spacing: 9
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: "\ue8b6"
                                     font.family: "Material Symbols Rounded"
@@ -533,6 +534,7 @@ Scope {
                                     color: win.query === "" ? Services.Colors.mist : Services.Colors.snow
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     id: queryText
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: Math.min(implicitWidth, searchZone.width - 60)
@@ -628,6 +630,7 @@ Scope {
                                     spacing: 6
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: parent.parent.modelData.icon
                                         color: parent.parent.active ? Services.Colors.accentText
                                              : tabHover.containsMouse ? Services.Colors.snow
@@ -637,6 +640,7 @@ Scope {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: parent.parent.modelData.label + "  " + parent.parent.count
                                         color: parent.parent.active ? Services.Colors.accentText
                                              : tabHover.containsMouse ? Services.Colors.snow
@@ -709,6 +713,7 @@ Scope {
 
                     // Message shown when the category is empty
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: band
                         z: 20
                         visible: win.scanned && win.wallpapers.length === 0
@@ -972,6 +977,7 @@ Scope {
                                         visible: opacity > 0.02
 
                                         Text {
+                                            textFormat: Text.PlainText
                                             id: nameText
                                             anchors.centerIn: parent
                                             width: parent.width - 14
@@ -1008,6 +1014,7 @@ Scope {
                                             spacing: 4
 
                                             Text {
+                                                textFormat: Text.PlainText
                                                 text: ""
                                                 color: Services.Colors.snow
                                                 font.pixelSize: 11
@@ -1015,6 +1022,7 @@ Scope {
                                                 anchors.verticalCenter: parent.verticalCenter
                                             }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 text: win.wallpapers.length > index && win.isVideo(win.wallpapers[index]) ? "VIDEO" : "GIF"
                                                 color: Services.Colors.snow
                                                 font.pixelSize: 9

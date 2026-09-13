@@ -158,6 +158,7 @@ PanelWindow {
                         y: cd.inset
                         spacing: 8
                         Text {
+                            textFormat: Text.PlainText
                             anchors.verticalCenter: parent.verticalCenter
                             text: cd.glyph
                             color: Services.Colors.mist
@@ -168,6 +169,7 @@ PanelWindow {
                         // rest of the captions it left six cards of bare numbers,
                         // and a percentage with no word over it is a guess.
                         Text {
+                            textFormat: Text.PlainText
                             anchors.verticalCenter: parent.verticalCenter
                             text: cd.name
                             color: Services.Colors.mist
@@ -178,6 +180,7 @@ PanelWindow {
                         }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         anchors.right: parent.right
                         anchors.rightMargin: cd.inset
                         anchors.verticalCenter: cdHead.verticalCenter
@@ -222,6 +225,7 @@ PanelWindow {
                         anchors.fill: parent
 
                         Text {
+                            textFormat: Text.PlainText
                             x: 12
                             anchors.top: parent.top
                             anchors.topMargin: 10
@@ -232,6 +236,7 @@ PanelWindow {
                             font.family: "JetBrainsMono NF"
                         }
                         Text {
+                            textFormat: Text.PlainText
                             anchors.right: parent.right
                             anchors.rightMargin: 12
                             anchors.top: parent.top
@@ -267,6 +272,7 @@ PanelWindow {
                             anchors.fill: parent
 
                             Text {
+                                textFormat: Text.PlainText
                                 id: cpuNum
                                 x: cpuCard.inset
                                 y: cpuCard.headH
@@ -310,6 +316,7 @@ PanelWindow {
                             anchors.fill: parent
 
                             Text {
+                                textFormat: Text.PlainText
                                 id: ramNum
                                 x: ramCard.inset
                                 y: ramCard.headH - 4
@@ -322,6 +329,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.left: ramNum.right
                                 anchors.leftMargin: 10
                                 anchors.baseline: ramNum.baseline
@@ -404,6 +412,7 @@ PanelWindow {
                             anchors.fill: parent
 
                             Text {
+                                textFormat: Text.PlainText
                                 id: gpuNum
                                 x: gpuCard.inset
                                 y: gpuCard.headH - 4
@@ -414,6 +423,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.left: gpuNum.right
                                 anchors.leftMargin: 10
                                 anchors.baseline: gpuNum.baseline
@@ -454,6 +464,7 @@ PanelWindow {
                             anchors.fill: parent
 
                             Text {
+                                textFormat: Text.PlainText
                                 id: netNum
                                 x: netCard.inset
                                 y: netCard.headH - 4
@@ -468,6 +479,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 x: netCard.inset
                                 anchors.top: netNum.bottom
                                 anchors.topMargin: 1
@@ -511,6 +523,7 @@ PanelWindow {
                             anchors.fill: parent
 
                             Text {
+                                textFormat: Text.PlainText
                                 id: diskNum
                                 x: diskCard.inset
                                 y: diskCard.headH - 4
@@ -521,6 +534,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.left: diskNum.right
                                 anchors.leftMargin: 10
                                 anchors.baseline: diskNum.baseline

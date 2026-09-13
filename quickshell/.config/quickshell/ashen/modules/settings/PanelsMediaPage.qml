@@ -21,7 +21,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.media.visualizer"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.media.visualizer"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -39,7 +39,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.media.lyrics"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }            }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.media.lyrics"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }            }
             Item { Layout.fillWidth: true }
             Toggle {
                 checked: Services.Prefs.mediaLyrics

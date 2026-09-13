@@ -76,6 +76,7 @@ PanelWindow {
             spacing: 16
 
             Text {
+                textFormat: Text.PlainText
                 id: refDate
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Time.fmtOf(panelRef.now, "ddd, MMM d")
@@ -97,6 +98,7 @@ PanelWindow {
                 spacing: 4
                 anchors.verticalCenter: parent.verticalCenter
                 Text {
+                    textFormat: Text.PlainText
                     id: refIcon
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Weather.icon
@@ -104,6 +106,7 @@ PanelWindow {
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     id: refTemp
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Weather.temp
@@ -153,6 +156,7 @@ PanelWindow {
         // 15 -> 13 px: two integer steps, small enough to move the font size
         // directly without the scaling dance.
         Text {
+            textFormat: Text.PlainText
             id: flyDate
             text: card.morph < 0.5
                 ? Services.Time.fmtOf(panelRef.now, "ddd, MMM d")
@@ -171,6 +175,7 @@ PanelWindow {
         }
 
         Text {
+            textFormat: Text.PlainText
             id: flyIcon
             readonly property real s: card.lerp(22 / 48, 1, card.morph)
             // The card's own reading, not the service's: a day picked in the
@@ -198,6 +203,7 @@ PanelWindow {
         }
 
         Text {
+            textFormat: Text.PlainText
             id: flyTemp
             readonly property real s: card.lerp(13 / 30, 1, card.morph)
             text: panelRef.wxTemp

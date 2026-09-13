@@ -90,6 +90,7 @@ DesktopWidget {
             cache: false
         }
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: img.status !== Image.Ready
             text: ""
@@ -136,6 +137,7 @@ DesktopWidget {
                 width: 220
 
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: root.title !== "" ? root.title : root.idleLine
                     color: Services.Colors.snow
@@ -145,6 +147,7 @@ DesktopWidget {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: root.artist
                     color: Services.Colors.mist
@@ -193,6 +196,7 @@ DesktopWidget {
                     spacing: 1
                     width: 380
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         text: root.title !== "" ? root.title : root.idleLine
                         color: Services.Colors.snow
@@ -202,6 +206,7 @@ DesktopWidget {
                         elide: Text.ElideRight
                     }
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         text: root.artist
                         color: Services.Colors.mist
@@ -243,6 +248,7 @@ DesktopWidget {
                     width: 360
                     spacing: 1
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         text: root.title !== "" ? root.title : root.idleLine
                         color: Services.Colors.snow
@@ -252,6 +258,7 @@ DesktopWidget {
                         elide: Text.ElideRight
                     }
                     Text {
+                        textFormat: Text.PlainText
                         width: parent.width
                         // The artist keeps its place: the phrase below says
                         // the rest.
@@ -322,6 +329,7 @@ DesktopWidget {
                 }
 
                 Text {
+                    textFormat: Text.PlainText
                     id: prevLine
                     width: parent.width
                     height: 18
@@ -334,6 +342,7 @@ DesktopWidget {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     // Two lines of room and no more: a long one is cut rather
                     // than allowed to grow the box.
                     anchors.top: prevLine.bottom
@@ -352,6 +361,7 @@ DesktopWidget {
                     elide: Text.ElideRight
                 }
                 Text {
+                    textFormat: Text.PlainText
                     anchors.bottom: parent.bottom
                     width: parent.width
                     height: 18

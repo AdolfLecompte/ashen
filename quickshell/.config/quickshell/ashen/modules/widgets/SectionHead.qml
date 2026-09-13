@@ -28,6 +28,7 @@ RowLayout {
         radius: 13
         color: Services.Colors.fillLine
         Text {
+            textFormat: Text.PlainText
             id: shGlyph
             anchors.centerIn: parent
             text: sh.glyph
@@ -42,6 +43,7 @@ RowLayout {
         spacing: 0
         Layout.fillWidth: true
         Text {
+            textFormat: Text.PlainText
             text: sh.title
             color: Services.Colors.snow
             font.pixelSize: 17
@@ -49,6 +51,7 @@ RowLayout {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: sh.detail
             color: Services.Colors.ash
             font.pixelSize: 9

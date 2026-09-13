@@ -63,6 +63,7 @@ Item {
             spacing: 6
 
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: rd.glyph
                 color: Services.Colors.ghost
@@ -78,6 +79,7 @@ Item {
                 implicitHeight: digits.implicitHeight
 
                 Text {
+                    textFormat: Text.PlainText
                     id: digits
                     text: rd.value
                     color: (rd.live || reach.containsMouse) ? Services.Colors.snow

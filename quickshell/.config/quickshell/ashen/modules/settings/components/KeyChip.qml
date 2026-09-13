@@ -51,6 +51,7 @@ Rectangle {
     // The box holds still and the word grows: a chip that swells inside a row
     // of shortcuts shoves its neighbours' rhythm around.
     Text {
+        textFormat: Text.PlainText
         id: label
         anchors.centerIn: parent
         scale: chip.editable

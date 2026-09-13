@@ -61,6 +61,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Text {
+                textFormat: Text.PlainText
                 visible: false   // the drawer header carries the section name
                 text: Services.I18n.t("settings.tab.bluetooth")
                 color: Services.Colors.snow
@@ -95,14 +96,14 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 12
                 spacing: 10
-                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
                 Column {
                     Layout.fillWidth: true
                     spacing: 2
-                    Text { text: Services.Network.btDevice; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
-                    Text { text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
+                    Text { textFormat: Text.PlainText; text: Services.Network.btDevice; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
+                    Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                 }
-                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
             }
         }
 
@@ -111,6 +112,7 @@ Item {
             spacing: 4
             visible: tab.knownDevices.length > 0
             Text {
+                textFormat: Text.PlainText
                 text: Services.I18n.t("settings.bt.known")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
@@ -133,6 +135,7 @@ Item {
             spacing: 4
             visible: tab.newDevices.length > 0
             Text {
+                textFormat: Text.PlainText
                 text: tab.adapter && tab.adapter.discovering ? Services.I18n.t("common.scanning") : Services.I18n.t("settings.bt.available")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
@@ -160,12 +163,14 @@ Item {
                 anchors.margins: 12
                 spacing: 10
                 Text {
+                    textFormat: Text.PlainText
                     text: tab.adapter && tab.adapter.discovering ? "" : ""
                     color: Services.Colors.ash
                     font.pixelSize: 22
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: tab.adapter && tab.adapter.discovering ? Services.I18n.t("common.scanning") : (tab.adapter ? Services.I18n.t("settings.bt.noDevices") : Services.I18n.t("settings.bt.noAdapter"))
                     color: Services.Colors.ash
                     font.pixelSize: Services.Sizes.fsInput

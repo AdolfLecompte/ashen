@@ -2,7 +2,7 @@
 # Every probe, in order. The one thing to run before touching the installer.
 cd "$(dirname "$0")"
 fail=0; total=0
-for p in logo tui pkgs zsh dots run boot sddm keys coords; do
+for p in logo tui pkgs zsh dots run boot sddm keys coords text; do
     out=$("./$p-probe.sh" 2>&1); rc=$?
     n=$(printf '%s' "$out" | grep -c '^ok')
     total=$((total + n))

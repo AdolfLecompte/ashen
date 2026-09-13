@@ -72,6 +72,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.sound.capture")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput

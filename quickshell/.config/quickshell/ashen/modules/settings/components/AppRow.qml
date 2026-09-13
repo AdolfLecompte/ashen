@@ -42,6 +42,7 @@ ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
             Text {
+                textFormat: Text.PlainText
                 text: root.title
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsInput
@@ -49,6 +50,7 @@ ColumnLayout {
                 font.family: "JetBrainsMono NF"
             }
             Text {
+                textFormat: Text.PlainText
                 // The program's own name when we know it, the command when it
                 // was typed, and what happens by itself when neither.
                 text: root.app ? root.app.name
@@ -102,6 +104,7 @@ ColumnLayout {
             Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.left: parent.left
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
@@ -152,6 +155,7 @@ ColumnLayout {
                         visible: source !== ""
                     }
                     Text {
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         text: modelData.name
                         color: rowHover.containsMouse || modelData.exec === root.command
@@ -161,6 +165,7 @@ ColumnLayout {
                         elide: Text.ElideRight
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: modelData.exec
                         color: Services.Colors.ash
                         font.pixelSize: Services.Sizes.fsMeta

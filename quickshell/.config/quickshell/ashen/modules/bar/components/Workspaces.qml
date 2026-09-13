@@ -307,6 +307,7 @@ Item {
                         ? Services.Windows.workspaceIcon(wsId) : ""
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: !root.dots
                         anchors.centerIn: parent
                         text: parent.appIcon !== "" ? parent.appIcon : wsId
@@ -378,6 +379,7 @@ Item {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         text: root.specialIcon(parent.shortName)
                         color: parent.isShown

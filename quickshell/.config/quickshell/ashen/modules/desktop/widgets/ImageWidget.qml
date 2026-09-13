@@ -103,6 +103,7 @@ DesktopWidget {
             opacity: root.editing ? 1 : 0.6
 
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "\ue3f4"
                 font.family: "Material Symbols Rounded"
@@ -110,6 +111,7 @@ DesktopWidget {
                 color: Services.Colors.ghost
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: img.status === Image.Error ? Services.I18n.t("widget.pictureGone")
                     : root.editing ? Services.I18n.t("widget.pickPicture") : Services.I18n.t("widget.noPicture")

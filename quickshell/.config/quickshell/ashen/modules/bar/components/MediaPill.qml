@@ -359,6 +359,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
         visible: pillArt.status === Image.Ready
     }
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         // Only when there is genuinely no cover, never while one decodes.
         visible: root.shownArtUrl === ""
@@ -388,6 +389,7 @@ Component.onCompleted: { activePlayer = livePlayer; updateArt() }
                 }
                 
     Text {
+        textFormat: Text.PlainText
         width: parent.width
         visible: root.hasPlayer
         text: root.hasPlayer ? (root.formatTime(root.activePlayer.position) + "/" + root.formatTime(root.activePlayer.length)) : ""

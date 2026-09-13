@@ -53,6 +53,7 @@ DesktopWidget {
                 spacing: 10
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.glyph
                     color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.snow
@@ -60,6 +61,7 @@ DesktopWidget {
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: Services.Battery.level + "%"
                     color: Services.Colors.snow
@@ -101,6 +103,7 @@ DesktopWidget {
             Row {
                 spacing: 10
                 Text {
+                    textFormat: Text.PlainText
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.glyph
                     color: Services.Colors.ghost
@@ -108,6 +111,7 @@ DesktopWidget {
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.Battery.level + "%"
                     color: Services.Colors.snow
                     font.pixelSize: 44
@@ -116,6 +120,7 @@ DesktopWidget {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 text: root.untilFull
                 visible: root.untilFull !== ""
                 color: Services.Colors.mist

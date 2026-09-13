@@ -118,6 +118,7 @@ Item {
         visible: !tab.showConnectDialog
 
         Text {
+            textFormat: Text.PlainText
             visible: false   // the drawer header carries the section name
             text: Services.I18n.t("settings.tab.wifi")
             color: Services.Colors.snow
@@ -129,6 +130,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Text {
+                textFormat: Text.PlainText
                 text: Services.I18n.t("settings.wifi.radio")
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsBody
@@ -171,12 +173,12 @@ Item {
                 anchors.fill: parent
                 anchors.margins: 12
                 spacing: 10
-                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
                 Column {
                     Layout.fillWidth: true
                     spacing: 2
-                    Text { text: Services.Network.wifiSsid; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
-                    Text { text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
+                    Text { textFormat: Text.PlainText; text: Services.Network.wifiSsid; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
+                    Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
                 }
                 // Forget the current network
                 Widgets.IconButton {
@@ -186,7 +188,7 @@ Item {
                     Layout.preferredHeight: 32
                     onActivated: tab.forgetSsid(Services.Network.wifiSsid)
                 }
-                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
             }
         }
 
@@ -194,7 +196,7 @@ Item {
             Layout.fillWidth: true
             spacing: 4
             visible: tab.knownRows.length > 0
-            Text { text: Services.I18n.t("settings.wifi.known"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
+            Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.wifi.known"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Math.min(knownList.contentHeight, 3 * 54)
@@ -223,7 +225,7 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 4
-            Text { text: Services.I18n.t("settings.wifi.available"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
+            Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.wifi.available"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"; leftPadding: 4 }
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -272,12 +274,12 @@ Item {
 
             RowLayout {
                 width: parent.width
-                Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
                 Column {
                     Layout.fillWidth: true
                     spacing: 2
-                    Text { text: Services.I18n.t("settings.wifi.connectTo"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
-                    Text { text: tab.connectingTo; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
+                    Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.wifi.connectTo"); color: Services.Colors.mist; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
+                    Text { textFormat: Text.PlainText; text: tab.connectingTo; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
                 }
                 Widgets.IconButton {
                     size: 28
@@ -299,11 +301,12 @@ Item {
                     anchors.leftMargin: 12
                     anchors.rightMargin: 8
                     spacing: 8
-                    Text { text: ""; color: Services.Colors.ghost; font.pixelSize: 16; font.family: "Material Symbols Rounded" }
+                    Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 16; font.family: "Material Symbols Rounded" }
                     Item {
                         Layout.fillWidth: true
                         height: 30
                         Text {
+                            textFormat: Text.PlainText
                             anchors.verticalCenter: parent.verticalCenter
                             text: Services.I18n.t("settings.wifi.password")
                             color: Services.Colors.ash

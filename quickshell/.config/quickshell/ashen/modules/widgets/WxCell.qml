@@ -18,6 +18,7 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 5
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: cell.glyph
             color: Services.Colors.ghost
@@ -25,6 +26,7 @@ Column {
             font.family: "Material Symbols Rounded"
         }
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: cell.value
             color: Services.Colors.snow

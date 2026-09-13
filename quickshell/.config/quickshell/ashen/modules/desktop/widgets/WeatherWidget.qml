@@ -46,6 +46,7 @@ DesktopWidget {
         spacing: 14
 
         Text {
+            textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
             text: Services.Weather.icon
             font.family: "Material Symbols Rounded"
@@ -57,6 +58,7 @@ DesktopWidget {
             spacing: 2
 
             Text {
+                textFormat: Text.PlainText
                 text: Services.Weather.temp
                 color: Services.Colors.snow
                 font.pixelSize: rd.tempSize
@@ -64,12 +66,14 @@ DesktopWidget {
                 font.family: "JetBrainsMono NF"
             }
             Text {
+                textFormat: Text.PlainText
                 text: Services.Weather.condition
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsBody
                 font.family: "JetBrainsMono NF"
             }
             Text {
+                textFormat: Text.PlainText
                 text: (rd.showCity ? Services.Weather.city + " · " : "")
                     + Services.I18n.t("weather.feels", { t: Services.Weather.feels })
                 color: Services.Colors.ash
@@ -129,6 +133,7 @@ DesktopWidget {
                 readonly property real cy: line.y + line.yOf(pin.modelData.t - root.lo)
 
                 Text {
+                    textFormat: Text.PlainText
                     x: Math.max(0, Math.min(cv.width - width, pin.cx - width / 2))
                     y: pin.cy - height - (pin.modelData.mark ? 10 : 6)
                     text: Services.Weather.degrees(pin.modelData.t)
@@ -162,6 +167,7 @@ DesktopWidget {
             Repeater {
                 model: [0, 6, 12, 18]
                 Text {
+                    textFormat: Text.PlainText
                     required property int modelData
                     width: cv.width / 4
                     visible: modelData < cv.hours.length

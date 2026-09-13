@@ -178,6 +178,7 @@ PanelWindow {
                             Behavior on opacity { Widgets.Anim {} }
 
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.alignment: Qt.AlignHCenter
                                 text: Services.I18n.t("app.tagline")
                                 color: Services.Colors.mist
@@ -185,6 +186,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.alignment: Qt.AlignHCenter
                                 text: "by Adolf"
                                 color: Services.Colors.ash
@@ -229,6 +231,7 @@ PanelWindow {
                                         radius: Services.Sizes.innerR
                                         color: Services.Colors.fillLine
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.centerIn: parent
                                             text: modelData.keys
                                             color: Services.Colors.ghost
@@ -238,6 +241,7 @@ PanelWindow {
                                         }
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         Layout.preferredWidth: 150
                                         text: modelData.what
                                         color: Services.Colors.snow
@@ -290,6 +294,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             spacing: 0
                             Text {
+                                textFormat: Text.PlainText
                                 text: Services.I18n.t("intro.news.title")
                                 color: Services.Colors.snow
                                 font.pixelSize: Services.Sizes.fsSectionTitle
@@ -298,6 +303,7 @@ PanelWindow {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 text: Services.I18n.t("intro.news.version", { v: Services.Release.version })
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsMeta
@@ -352,6 +358,7 @@ PanelWindow {
                             // An update whose changelog section is empty: say
                             // so rather than opening an empty card.
                             Text {
+                                textFormat: Text.PlainText
                                 Layout.fillWidth: true
                                 visible: Services.Release.notes.length === 0
                                 text: Services.I18n.t("intro.news.empty")
@@ -366,6 +373,7 @@ PanelWindow {
                         Layout.fillWidth: true
                         spacing: 10
                         Text {
+                            textFormat: Text.PlainText
                             Layout.fillWidth: true
                             text: Services.I18n.t("intro.news.changelog")
                             color: Services.Colors.ash

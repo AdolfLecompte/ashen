@@ -147,6 +147,7 @@ DesktopWidget {
                 visible: status === Image.Ready
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 visible: root.art === ""
                 text: "\ue019"

@@ -39,6 +39,7 @@ Item {
         x: 0
 
         Text {
+            textFormat: Text.PlainText
             id: label
             text: root.text
             color: root.color
@@ -55,6 +56,7 @@ Item {
         // The copy that comes round behind it. Only alive while running, so a
         // pill at rest is one Text and nothing else.
         Text {
+            textFormat: Text.PlainText
             visible: root.runs
             text: root.text
             color: root.color

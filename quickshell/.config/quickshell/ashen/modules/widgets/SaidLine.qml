@@ -11,6 +11,7 @@ import "root:/services" as Services
 // watching a sentence be typed every time a drawer opens gets old by the third
 // time.
 Text {
+    textFormat: Text.PlainText
     id: root
 
     // What to say. Empty means silence, and silence is a valid thing to say.

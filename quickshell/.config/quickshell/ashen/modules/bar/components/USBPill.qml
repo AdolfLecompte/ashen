@@ -69,6 +69,7 @@ Rectangle {
     Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     Text {
+        textFormat: Text.PlainText
         id: icon
         anchors.centerIn: parent
         text: "\ue1e0"

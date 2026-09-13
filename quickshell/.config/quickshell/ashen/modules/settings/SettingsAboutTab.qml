@@ -57,6 +57,7 @@ Section {
     RowLayout {
         Layout.fillWidth: true
         Text {
+            textFormat: Text.PlainText
             visible: false   // the drawer header carries the section name
             text: Services.I18n.t("settings.tab.about")
             color: Services.Colors.snow
@@ -77,12 +78,14 @@ Section {
                 anchors.centerIn: parent
                 spacing: 6
                 Text {
+                    textFormat: Text.PlainText
                     text: tab.copied ? "" : ""
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 14
                     color: tab.copied ? Services.Colors.accentText : Services.Colors.ghost
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: tab.copied ? Services.I18n.t("settings.about.copied") : Services.I18n.t("settings.about.copy")
                     color: tab.copied ? Services.Colors.accentText : Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsBody
@@ -118,6 +121,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 10
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.Release.version === "" ? "—" : Services.Release.version
                     color: Services.Colors.ghost
                     font.pixelSize: Services.Sizes.fsInput
@@ -125,6 +129,7 @@ Section {
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: Services.I18n.t("app.tagline")
                     color: Services.Colors.ash
@@ -151,6 +156,7 @@ Section {
                     // label; a 30-character address grew past the 12 px its box
                     // leaves on each side and the letters were cut at the edges.
                     Text {
+                        textFormat: Text.PlainText
                         text: "\ue157"
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 15
@@ -158,6 +164,7 @@ Section {
                         Behavior on color { Widgets.ColorAnim {} }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: "github.com/AdolfLecompte/ashen"
                         color: linkHover.containsMouse ? Services.Colors.snow : Services.Colors.surfaceText
                         font.pixelSize: Services.Sizes.fsBody
@@ -165,6 +172,7 @@ Section {
                         Behavior on color { Widgets.ColorAnim {} }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: "\ue89e"
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 13
@@ -191,12 +199,14 @@ Section {
                 Layout.fillWidth: true
                 spacing: 1
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.about.whatsNew")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.Voice.pick("about.notes")
                     color: Services.Colors.ash
                     elide: Text.ElideRight
@@ -224,6 +234,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 1
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.about.updates")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
@@ -235,6 +246,7 @@ Section {
                 // phrase bank -- a remark, not a label -- except when there is
                 // a version to name, which is information and cannot be a joke.
                 Text {
+                    textFormat: Text.PlainText
                     // fillWidth or the column shrinks to the phrase and the
                     // button walks left, out of line with the row above it.
                     Layout.fillWidth: true
@@ -296,6 +308,7 @@ Section {
                     Layout.fillWidth: true
                     spacing: 10
                     Text {
+                        textFormat: Text.PlainText
                         text: modelData.label
                         color: Services.Colors.mist
                         font.pixelSize: Services.Sizes.fsBody
@@ -303,6 +316,7 @@ Section {
                         Layout.preferredWidth: 80
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: modelData.value
                         color: Services.Colors.snow
                         font.pixelSize: Services.Sizes.fsBody

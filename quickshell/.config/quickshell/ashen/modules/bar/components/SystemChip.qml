@@ -254,6 +254,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 4
             Text {
+                textFormat: Text.PlainText
                 visible: chip.label !== ""
                 text: chip.label
                 color: Services.Colors.snow
@@ -262,6 +263,7 @@ Rectangle {
                 font.family: "JetBrainsMono NF"
             }
             Text {
+                textFormat: Text.PlainText
                 visible: chip.dual && chip.altLabel !== ""
                 text: chip.altLabel
                 color: Services.Colors.snow
@@ -276,6 +278,7 @@ Rectangle {
     // changes between headphones and speaker often enough to notice. Inline
     // components cannot see the ids around them, so colour and size come in.
     component Face: Text {
+        textFormat: Text.PlainText
         id: face
         property color col: "white"
         color: face.col
@@ -299,6 +302,7 @@ Rectangle {
 
     // The words next to a face. Only the first reading takes the width band.
     component Reading: Text {
+        textFormat: Text.PlainText
         id: read
         property color col: "white"
         property bool vert: false

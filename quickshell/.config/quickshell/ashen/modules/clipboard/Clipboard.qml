@@ -229,6 +229,7 @@ Scope {
                     anchors.rightMargin: 12
                     spacing: 10
                     Text {
+                        textFormat: Text.PlainText
                         text: tab.glyph
                         color: tab.fg
                         font.pixelSize: 16
@@ -236,6 +237,7 @@ Scope {
                         Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: tab.label
                         color: tab.fg
                         font.pixelSize: Services.Sizes.fsBody
@@ -244,6 +246,7 @@ Scope {
                         Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: tab.count
                         color: tab.fg
                         opacity: 0.7
@@ -345,6 +348,7 @@ Scope {
                                     anchors.rightMargin: 14
                                     spacing: 10
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: "\ue8b6"
                                         color: Services.Colors.ghost
                                         font.pixelSize: 16
@@ -354,6 +358,7 @@ Scope {
                                         Layout.fillWidth: true
                                         height: 26
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: win.onImages ? Services.I18n.t("clipboard.searchImages") : Services.I18n.t("clipboard.searchText")
                                             color: Services.Colors.ash
@@ -381,6 +386,7 @@ Scope {
                                         }
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: Services.I18n.t(win.filtered.length === 1 ? "clipboard.item" : "clipboard.items", { n: win.filtered.length })
                                         color: Services.Colors.ash
                                         font.pixelSize: 10
@@ -401,6 +407,7 @@ Scope {
                                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.centerIn: parent
                                     text: "\ue0b8"
                                     color: wipeHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
@@ -421,6 +428,7 @@ Scope {
                             // Nothing to show: say so rather than leaving a hole where
                             // the list would be.
                             Text {
+                                textFormat: Text.PlainText
                                 visible: win.filtered.length === 0
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
@@ -465,6 +473,7 @@ Scope {
                                         Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msInstant } }
 
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.fill: parent
                                             anchors.margins: 12
                                             anchors.rightMargin: 14
@@ -554,6 +563,7 @@ Scope {
                                                 cache: false
                                             }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 anchors.centerIn: parent
                                                 text: "\ue3f4"
                                                 color: Services.Colors.ghost

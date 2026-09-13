@@ -86,6 +86,7 @@ Column {
             spacing: 8
 
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: picker.glyph
                 font.family: "Material Symbols Rounded"
@@ -93,6 +94,7 @@ Column {
                 color: Services.Colors.mist
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - 26
                 text: picker.currentDesc()
@@ -105,6 +107,7 @@ Column {
         }
 
         Text {
+            textFormat: Text.PlainText
             id: chevron
             anchors.right: parent.right
             anchors.rightMargin: 8
@@ -172,6 +175,7 @@ Column {
                         Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.left: parent.left
                             anchors.leftMargin: 8
                             anchors.right: mark.left
@@ -187,6 +191,7 @@ Column {
                             font.bold: active
                         }
                         Text {
+                            textFormat: Text.PlainText
                             id: mark
                             anchors.right: parent.right
                             anchors.rightMargin: 8

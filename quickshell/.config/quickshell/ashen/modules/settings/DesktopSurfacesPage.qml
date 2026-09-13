@@ -27,12 +27,14 @@ Section {
             ColumnLayout {
                 spacing: 0
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.desktop.widgets")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     // Read off the live layout, so it follows a wallpaper
                     // profile arriving as much as your own switches.
                     text: {
@@ -70,6 +72,7 @@ Section {
             spacing: 12
             RowGlyph { glyph: "\ue3c6" }        // border_outer
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.layout.outline")
                 color: Services.Colors.snow
@@ -99,6 +102,7 @@ Section {
             spacing: 12
             RowGlyph { glyph: "\ue5d3" }        // apps
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.dock.enable")
                 color: Services.Colors.snow
@@ -131,6 +135,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: Services.I18n.t("settings.dock.barEdge")
             color: Services.Colors.ash
@@ -145,6 +150,7 @@ Section {
             spacing: 12
             RowGlyph { glyph: "\ue8f5" }        // visibility_off
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.bar.autohide")
                 color: Services.Colors.snow
@@ -162,6 +168,7 @@ Section {
             spacing: 12
             RowGlyph { glyph: "\ue3f4" }        // image
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.dock.outline")
                 color: Services.Colors.snow
@@ -179,6 +186,7 @@ Section {
             spacing: 12
             RowGlyph { glyph: "\ue8e8" }        // format_size
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 text: Services.I18n.t("settings.dock.size")
                 color: Services.Colors.snow
@@ -190,6 +198,7 @@ Section {
                 onClicked: Services.Prefs.dockIconSize = Math.max(28, Services.Prefs.dockIconSize - 4)
             }
             Text {
+                textFormat: Text.PlainText
                 Layout.preferredWidth: 34
                 horizontalAlignment: Text.AlignHCenter
                 text: Services.Prefs.dockIconSize
@@ -239,6 +248,7 @@ Section {
                     }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: pinRow.entry ? pinRow.entry.name : pinRow.modelData
                     color: pinRow.entry ? Services.Colors.snow : Services.Colors.ash
@@ -268,6 +278,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             visible: Services.Prefs.dockPinList.length === 0
             text: Services.Voice.pick("dock.empty")
@@ -326,6 +337,7 @@ Section {
                     }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     text: hit.modelData.name
                     color: hitArea.hovered ? Services.Colors.snow : Services.Colors.mist
@@ -349,6 +361,7 @@ Section {
         }
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: Services.I18n.t("settings.dock.hint")
             color: Services.Colors.ash

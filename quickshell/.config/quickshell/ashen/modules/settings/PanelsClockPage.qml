@@ -24,7 +24,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.clock.format"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.clock.format"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Segmented {
                 options: [
@@ -43,7 +43,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.clock.seconds"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.clock.seconds"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Item { Layout.fillWidth: true }
             Toggle {
@@ -60,7 +60,7 @@ Section {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 2
-                Text { text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
+                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
             }
             Segmented {
                 options: [
@@ -110,12 +110,14 @@ Section {
                         anchors.rightMargin: 8
                         spacing: 6
                         Text {
+                            textFormat: Text.PlainText
                             text: "\uf1db"                 // location_on
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 15
                             color: cityCard.active ? Services.Colors.accentText : Services.Colors.ghost
                         }
                         Text {
+                            textFormat: Text.PlainText
                             id: cityName
                             text: cityCard.modelData.city
                             color: cityCard.active ? Services.Colors.accentText : Services.Colors.snow
@@ -139,6 +141,7 @@ Section {
                         width: 18; height: 18; radius: Services.Sizes.innerR
                         color: Services.Colors.fillSunken
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             scale: Services.Sizes.hoverScale(rmCityArea.containsMouse, rmCityArea.pressed)
                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
@@ -174,12 +177,14 @@ Section {
                     scale: Services.Sizes.hoverScale(addCityArea.containsMouse, addCityArea.pressed)
                     Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
                     Text {
+                        textFormat: Text.PlainText
                         text: "\ue145"                    // add
                         font.family: "Material Symbols Rounded"
                         font.pixelSize: 18
                         color: Services.Colors.ghost
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: Services.I18n.t("common.add")
                         font.pixelSize: Services.Sizes.fsMeta
                         font.family: "JetBrainsMono NF"
@@ -233,6 +238,7 @@ Section {
                         anchors.rightMargin: 10
                         spacing: 8
                         Text {
+                            textFormat: Text.PlainText
                             text: "\ue8e2"               // search
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 15
@@ -278,6 +284,7 @@ Section {
                             anchors.rightMargin: 12
                             spacing: 10
                             Text {
+                                textFormat: Text.PlainText
                                 text: "\uf1db"            // location_on
                                 font.family: "Material Symbols Rounded"
                                 font.pixelSize: 14
@@ -287,6 +294,7 @@ Section {
                                 Layout.fillWidth: true
                                 spacing: 0
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: modelData.label
                                     color: sugArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
                                     Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
@@ -296,6 +304,7 @@ Section {
                                     Layout.fillWidth: true
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     text: modelData.detail
                                     visible: text !== ""
                                     color: Services.Colors.ash

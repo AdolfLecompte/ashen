@@ -73,6 +73,7 @@ Item {
                         Component.onCompleted: if (active) modes.activeItem = mode
 
                         Text {
+                            textFormat: Text.PlainText
                             id: modeText
                             anchors.centerIn: parent
                             text: mode.modelData.label
@@ -129,6 +130,7 @@ Item {
                     spacing: 6
 
                     Text {
+                        textFormat: Text.PlainText
                         text: "\ue1bd"
                         color: tray.open ? Services.Colors.accentText
                              : trayHover.containsMouse ? Services.Colors.snow
@@ -139,6 +141,7 @@ Item {
                         Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: Services.I18n.t("widget.widgets")
                         color: tray.open ? Services.Colors.accentText
                              : trayHover.containsMouse ? Services.Colors.snow
@@ -163,6 +166,7 @@ Item {
             }
 
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.I18n.t("widget.escapeDone")
                 color: Services.Colors.ash
@@ -182,6 +186,7 @@ Item {
                     color: Services.Colors.fillRest
                 }
                 Text {
+                    textFormat: Text.PlainText
                     id: doneText
                     anchors.centerIn: parent
                     text: Services.I18n.t("common.done")

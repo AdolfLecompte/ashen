@@ -146,6 +146,7 @@ PanelWindow {
                             spacing: 8
 
                             Text {
+                                textFormat: Text.PlainText
                                 id: volGlyph
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: win.catGlyph
@@ -155,6 +156,7 @@ PanelWindow {
                                 font.family: "Material Symbols Rounded"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 id: volLabel
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: Math.round(levelBar.shown * 100) + "%"
@@ -229,6 +231,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         spacing: 5
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: tab.modelData.glyph
                                             color: tab.fg
@@ -237,6 +240,7 @@ PanelWindow {
                                             Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: tab.modelData.label
                                             color: tab.fg
@@ -300,6 +304,7 @@ PanelWindow {
                             spacing: 8
 
                             Text {
+                                textFormat: Text.PlainText
                                 visible: Services.Audio.streams.length === 0
                                 width: parent.width
                                 horizontalAlignment: Text.AlignHCenter
@@ -336,6 +341,7 @@ PanelWindow {
                                             spacing: 6
 
                                             Text {
+                                                textFormat: Text.PlainText
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: streamRow.sMuted ? "\ue04f" : "\ue050"
                                                 color: streamRow.sMuted ? Services.Colors.mist
@@ -350,6 +356,7 @@ PanelWindow {
                                                 }
                                             }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 width: parent.width - 60
                                                 text: Services.Audio.streamLabel(modelData)
@@ -360,6 +367,7 @@ PanelWindow {
                                                 elide: Text.ElideRight
                                             }
                                             Text {
+                                                textFormat: Text.PlainText
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: streamRow.sVol + "%"
                                                 color: Services.Colors.mist

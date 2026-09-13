@@ -57,6 +57,7 @@ Rectangle {
 
     // Nothing chosen yet.
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         text: "\ue1bc"
         color: Services.Colors.ghost
@@ -99,6 +100,7 @@ Rectangle {
             spacing: 4
 
             Text {
+                textFormat: Text.PlainText
                 text: "\ue02c"
                 color: Services.Colors.snow
                 font.pixelSize: 11
@@ -106,6 +108,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
             Text {
+                textFormat: Text.PlainText
                 text: hero.video ? "VIDEO" : "GIF"
                 color: Services.Colors.snow
                 font.pixelSize: 9
@@ -137,6 +140,7 @@ Rectangle {
             spacing: 2
 
             Text {
+                textFormat: Text.PlainText
                 text: hero.fileName === "" ? "No wallpaper yet" : hero.fileName
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsCardTitle
@@ -146,6 +150,7 @@ Rectangle {
                 Layout.fillWidth: true
             }
             Text {
+                textFormat: Text.PlainText
                 text: hero.folder
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta

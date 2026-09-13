@@ -28,6 +28,7 @@ DesktopWidget {
             color_: Services.Colors.snow
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.Time.fmt("dddd, d MMMM").toUpperCase()
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsInput
@@ -41,6 +42,7 @@ DesktopWidget {
         spacing: -14
 
         Text {
+            textFormat: Text.PlainText
             text: Services.Time.fmt(root.hourFmt)
             color: Services.Colors.snow
             font.pixelSize: 96
@@ -48,6 +50,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.Time.fmt("mm")
             color: Services.Colors.ghost
             font.pixelSize: 96
@@ -55,6 +58,7 @@ DesktopWidget {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             text: Services.Time.fmt("ddd d MMM").toUpperCase()
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsBody

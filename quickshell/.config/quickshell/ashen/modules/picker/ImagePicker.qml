@@ -111,6 +111,7 @@ PanelWindow {
                         spacing: 1
 
                         Text {
+                            textFormat: Text.PlainText
                             width: parent.width
                             text: Services.Picker.purpose === "profile"
                                   ? Services.I18n.t("picker.profile")
@@ -124,6 +125,7 @@ PanelWindow {
                             elide: Text.ElideRight
                         }
                         Text {
+                            textFormat: Text.PlainText
                             width: parent.width
                             text: Services.Picker.dir
                             color: Services.Colors.ash
@@ -200,6 +202,7 @@ PanelWindow {
                             Component.onCompleted: if (here) placesWrap.hereRow = placeRow
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
@@ -318,6 +321,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     spacing: 4
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "\ue2c7"
                                         font.family: "Material Symbols Rounded"
@@ -326,6 +330,7 @@ PanelWindow {
                                                                       : Services.Colors.ghost
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         width: grid.cellW - 20
                                         horizontalAlignment: Text.AlignHCenter
                                         text: Services.Picker.nameOf(modelData)
@@ -431,6 +436,7 @@ PanelWindow {
                                         Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.fill: parent
                                             anchors.leftMargin: 6
                                             anchors.rightMargin: 6
@@ -460,6 +466,7 @@ PanelWindow {
                     // an empty grid and a folder with no pictures in it look
                     // exactly the same, and only one of them is an answer.
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         // Only over an empty grid: over the last folder it flashed
                         // for the moment the next one took to read.

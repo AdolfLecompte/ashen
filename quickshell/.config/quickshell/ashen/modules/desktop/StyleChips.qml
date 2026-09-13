@@ -95,6 +95,7 @@ Item {
                     Component.onCompleted: if (active) strip.activeItem = chip
 
                     Text {
+                        textFormat: Text.PlainText
                         id: label
                         anchors.centerIn: parent
                         text: chip.modelData.label

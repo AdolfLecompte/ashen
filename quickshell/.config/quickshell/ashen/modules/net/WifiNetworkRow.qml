@@ -29,6 +29,7 @@ Rectangle {
         spacing: 10
 
         Text {
+            textFormat: Text.PlainText
             text: row.net.signal >= 75 ? "" : row.net.signal >= 50 ? "" : row.net.signal >= 25 ? "" : ""
             color: Services.Colors.mist
             font.pixelSize: 20
@@ -38,6 +39,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 2
             Text {
+                textFormat: Text.PlainText
                 text: row.net.ssid
                 color: rowMouse.containsMouse ? Services.Colors.snow : Services.Colors.mist
                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
@@ -47,6 +49,7 @@ Rectangle {
                 width: parent.width
             }
             Text {
+                textFormat: Text.PlainText
                 text: row.net.signal + "% signal"
                 color: Services.Colors.ash
                 font.pixelSize: 10
@@ -54,6 +57,7 @@ Rectangle {
             }
         }
         Text {
+            textFormat: Text.PlainText
             visible: row.net.secure
             text: ""
             color: Services.Colors.ash

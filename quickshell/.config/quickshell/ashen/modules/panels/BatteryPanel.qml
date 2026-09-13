@@ -47,6 +47,7 @@ PanelWindow {
         property string value: ""
         spacing: 6
         Text {
+            textFormat: Text.PlainText
             text: parent.glyph
             color: Services.Colors.ash
             font.pixelSize: 16
@@ -54,6 +55,7 @@ PanelWindow {
             Layout.alignment: Qt.AlignVCenter
         }
         Text {
+            textFormat: Text.PlainText
             text: parent.value
             color: Services.Colors.snow
             font.pixelSize: 17
@@ -157,6 +159,7 @@ PanelWindow {
                         spacing: 12
 
                         Text {
+                            textFormat: Text.PlainText
                             id: battGlyph
                             Layout.alignment: Qt.AlignVCenter
                             text: Services.AppState.pillGlyph("battery")
@@ -168,6 +171,7 @@ PanelWindow {
                             Behavior on color { Widgets.ColorAnim {} }
                         }
                         Text {
+                            textFormat: Text.PlainText
                             id: battLabel
                             Layout.alignment: Qt.AlignVCenter
                             text: Services.Battery.level + "%"
@@ -184,6 +188,7 @@ PanelWindow {
                         // that was until full or until empty, and that is the one
                         // reading on this card you actually plan around.
                         Text {
+                            textFormat: Text.PlainText
                             Layout.alignment: Qt.AlignVCenter
                             visible: text !== ""
                             text: Services.Battery.timeShort === "" ? ""
@@ -332,6 +337,7 @@ PanelWindow {
                                             : Services.Colors.mist
 
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: modelData.icon
                                             font.family: "Material Symbols Rounded"
@@ -378,6 +384,7 @@ PanelWindow {
                         Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.centerIn: parent
                             text: "\uf135"
                             font.family: "Material Symbols Rounded"

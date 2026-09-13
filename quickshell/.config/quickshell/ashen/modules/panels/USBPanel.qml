@@ -82,6 +82,7 @@ PanelWindow {
                     RowLayout {
                         width: parent.width
                         Text {
+                            textFormat: Text.PlainText
                             id: hdrGlyph
                             opacity: card.morphingGlyph ? 0 : 1
                             text: "\ue1e0"
@@ -90,6 +91,7 @@ PanelWindow {
                             font.family: "Material Symbols Rounded"
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: Services.I18n.t("usb.title")
                             color: Services.Colors.snow
                             font.pixelSize: 14
@@ -101,6 +103,7 @@ PanelWindow {
                     }
 
                     Text {
+                        textFormat: Text.PlainText
                         visible: Services.USB.devices.length === 0
                         text: root.emptyLine
                         color: Services.Colors.ash
@@ -130,6 +133,7 @@ PanelWindow {
                                     radius: 9
                                     color: Services.Colors.fillLine
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.centerIn: parent
                                         text: "\ue1e0"
                                         color: Services.Colors.ghost
@@ -142,6 +146,7 @@ PanelWindow {
                                     Layout.fillWidth: true
                                     spacing: 2
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: modelData.label
                                         color: Services.Colors.snow
                                         font.pixelSize: 13
@@ -151,6 +156,7 @@ PanelWindow {
                                         width: parent.width
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: modelData.size + (modelData.mountpoint ? " · " + modelData.mountpoint : " · Not mounted")
                                         color: Services.Colors.mist
                                         font.pixelSize: 10
@@ -166,6 +172,7 @@ PanelWindow {
                                     radius: 8
                                     color: modelData.mountpoint ? Services.Colors.fillLine : Services.Colors.ghost
                                     Text {
+                                        textFormat: Text.PlainText
                                         id: mountLabel
                                         anchors.centerIn: parent
                                         text: modelData.mountpoint ? Services.I18n.t("usb.unmount") : Services.I18n.t("usb.mount")

@@ -48,6 +48,7 @@ Item {
     // it means the digits are as large as they can ever be, and changing the
     // format moves nothing — a shorter string just sits in the same box.
     Text {
+        textFormat: Text.PlainText
         id: probe
         visible: false
         text: "00:00:00 AM"
@@ -334,6 +335,7 @@ Item {
                 height: wheel.rowH
                 readonly property bool sel: index === view.currentIndex
                 Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: (parent.index < 10 ? "0" : "") + parent.index
                     color: parent.sel ? Services.Colors.snow : Services.Colors.ash
@@ -349,6 +351,7 @@ Item {
     }
 
     component WheelColon: Text {
+        textFormat: Text.PlainText
         width: 14
         height: 114
         horizontalAlignment: Text.AlignHCenter
@@ -409,6 +412,7 @@ Item {
                 spacing: 2
 
                 Text {
+                    textFormat: Text.PlainText
                     id: dateT
                     opacity: root.sharedOpacity
                     width: parent.width
@@ -490,6 +494,7 @@ Item {
                                     spacing: 5
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: parent.parent.modelData.icon
                                         color: parent.parent.active ? Services.Colors.accentText
                                              : tabHover.containsMouse ? Services.Colors.snow
@@ -499,6 +504,7 @@ Item {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: parent.parent.modelData.label
                                         color: parent.parent.active ? Services.Colors.accentText
                                              : tabHover.containsMouse ? Services.Colors.snow
@@ -552,6 +558,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             spacing: 8
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.baseline: sunCap.baseline
                                 text: root.daylightLeft
                                 color: Services.Colors.snow
@@ -560,6 +567,7 @@ Item {
                                 font.family: "JetBrainsMono NF"
                             }
                             Text {
+                                textFormat: Text.PlainText
                                 id: sunCap
                                 text: root.daylightCaption
                                 color: Services.Colors.mist
@@ -652,6 +660,7 @@ Item {
                         spacing: 20
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: Services.Stopwatch.display
                             color: Services.Colors.snow
@@ -706,6 +715,7 @@ Item {
                                         anchors.centerIn: parent
                                         spacing: 0
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: "#" + modelData.index
                                             color: parent.parent.best ? Services.Colors.accentBody : Services.Colors.ash
@@ -713,6 +723,7 @@ Item {
                                             font.family: "JetBrainsMono NF"
                                         }
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.horizontalCenter: parent.horizontalCenter
                                             text: Services.Stopwatch.format(modelData.split)
                                             color: parent.parent.best ? Services.Colors.accentText : Services.Colors.snow
@@ -758,6 +769,7 @@ Item {
                             }
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.centerIn: parent
                                 text: Services.Countdown.display
                                 color: Services.Countdown.running ? Services.Colors.snow : Services.Colors.mist
@@ -787,6 +799,7 @@ Item {
                                         ? Services.Colors.accentGradient : null
                                     Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.centerIn: parent
                                         text: modelData + "m"
                                         color: parent.picked ? Services.Colors.accentText : Services.Colors.snow
@@ -850,6 +863,7 @@ Item {
                     // reads off `shownIndex`, so it changed at the commit --
                     // correct, but as a cut, next to a grid that travels.
                     Text {
+                        textFormat: Text.PlainText
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         // Caps, like every other title on this card -- the
@@ -911,6 +925,7 @@ Item {
                     Repeater {
                         model: 7
                         Text {
+                            textFormat: Text.PlainText
                             required property int index
                             width: calStack.width / 7
                             horizontalAlignment: Text.AlignHCenter
@@ -950,6 +965,7 @@ Item {
             // The title. It does NOT ride the day sweep -- the city is the same
             // city on every day of the strip.
             Text {
+                textFormat: Text.PlainText
                 id: wxCity
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -991,6 +1007,7 @@ Item {
                     height: 26
                     anchors.verticalCenter: parent.verticalCenter
                     Text {
+                        textFormat: Text.PlainText
                         anchors.centerIn: parent
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
@@ -1035,6 +1052,7 @@ Item {
                     wIcon.width + 12 + wTemp.width + 10 + wRange.width
 
                 Text {
+                    textFormat: Text.PlainText
                     id: wIcon
                     opacity: root.sharedOpacity
                     x: Math.max(0, (wxNow.width - wxNow.heroW) / 2)
@@ -1045,6 +1063,7 @@ Item {
                     font.family: "Material Symbols Rounded"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     id: wTemp
                     opacity: root.sharedOpacity
                     anchors.left: wIcon.right
@@ -1061,6 +1080,7 @@ Item {
                 // flying piece -- the bar pill has no room for it -- so it
                 // arrives with the rest of the extras.
                 Text {
+                    textFormat: Text.PlainText
                     id: wRange
                     anchors.left: wTemp.right
                     anchors.leftMargin: 10
@@ -1078,6 +1098,7 @@ Item {
                     spacing: 1
                     opacity: root.beat(5)
                     Text {
+                        textFormat: Text.PlainText
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.wxCondition
                         color: Services.Colors.mist
@@ -1085,6 +1106,7 @@ Item {
                         font.family: "JetBrainsMono NF"
                     }
                     Text {
+                        textFormat: Text.PlainText
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.wxSub
                         color: Services.Colors.ash
@@ -1137,6 +1159,7 @@ Item {
                 Repeater {
                     model: root.curveMarks
                     delegate: Text {
+                        textFormat: Text.PlainText
                         required property var modelData
                         // Slots, not points: the plateau's own middle.
                         readonly property int slots: Math.max(1, root.hourSteps.length)
@@ -1160,6 +1183,7 @@ Item {
                 Repeater {
                     model: root.marks6h
                     delegate: Text {
+                        textFormat: Text.PlainText
                         required property var modelData
                         readonly property int slots: Math.max(1, root.hourSteps.length)
                         x: Math.max(0, Math.min(hourly.width - width,

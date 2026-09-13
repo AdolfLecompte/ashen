@@ -213,6 +213,7 @@ Scope {
                         spacing: 12
 
                         Text {
+                            textFormat: Text.PlainText
                             text: "\ue8b6"
                             color: Services.Colors.ghost
                             font.pixelSize: 22
@@ -224,6 +225,7 @@ Scope {
                             height: 30
 
                             Text {
+                                textFormat: Text.PlainText
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: win.idleLine
                                 color: Services.Colors.ash
@@ -300,6 +302,7 @@ Scope {
                                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
 
                                 Text {
+                                    textFormat: Text.PlainText
                                     anchors.fill: parent
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -344,6 +347,7 @@ Scope {
                         Behavior on opacity { Widgets.Anim {} }
 
                         Text {
+                            textFormat: Text.PlainText
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "\ue8b6"
                             color: Services.Colors.ghost
@@ -351,6 +355,7 @@ Scope {
                             font.family: "Material Symbols Rounded"
                         }
                         Text {
+                            textFormat: Text.PlainText
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: win.missLine
                             color: Services.Colors.mist
@@ -419,6 +424,7 @@ Scope {
                                     }
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         anchors.centerIn: parent
                                         text: "\ue5c3"
                                         color: Services.Colors.ghost
@@ -433,6 +439,7 @@ Scope {
                                     spacing: 3
 
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: modelData.name
                                         color: Services.Colors.snow
                                         font.pixelSize: Services.Sizes.fsCardTitle
@@ -442,6 +449,7 @@ Scope {
                                         width: parent.width
                                     }
                                     Text {
+                                        textFormat: Text.PlainText
                                         text: modelData.comment
                                         color: Services.Colors.mist
                                         font.pixelSize: Services.Sizes.fsBody

@@ -356,6 +356,7 @@ Item {
         // Drawn at their final size and scaled down: stepping font.pixelSize
         // reflows in integer jumps. Positioned by centre, so scale never drags.
         Text {
+            textFormat: Text.PlainText
             id: flyGlyph
             visible: root.morphingGlyph
             text: root.pillGlyph
@@ -389,6 +390,7 @@ Item {
         }
 
         Text {
+            textFormat: Text.PlainText
             id: flyLabel
             visible: root.morphingLabel
             text: root.pillLabel

@@ -89,6 +89,7 @@ Scope {
                 spacing: 10
 
                 Text {
+                    textFormat: Text.PlainText
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: win.drawIcon
                     font.family: "Material Symbols Rounded"
@@ -118,6 +119,7 @@ Scope {
                     }
                 }
                 Text {
+                    textFormat: Text.PlainText
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Math.round(win.drawLevel * 100) + "%"
                     font.family: "JetBrainsMono NF"

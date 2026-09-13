@@ -28,6 +28,7 @@ Rectangle {
     Behavior on color { Widgets.ColorAnim {} }
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         text: "\uE8B6"
         // Dark only on the accent fill; on the hover plate, which is a surface

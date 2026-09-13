@@ -73,6 +73,7 @@ Rectangle {
                 }
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: card.fallbackGlyph
                 color: Services.Colors.ghost
@@ -86,6 +87,7 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 3
             Text {
+                textFormat: Text.PlainText
                 text: card.title
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsCardTitle
@@ -94,6 +96,7 @@ Rectangle {
                 Layout.alignment: Qt.AlignLeft
             }
             Text {
+                textFormat: Text.PlainText
                 text: card.subtitle
                 color: Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsMeta
@@ -114,6 +117,7 @@ Rectangle {
             opacity: card.busy ? 0.55 : 1
             Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: card.action
                 color: Services.Colors.accentText

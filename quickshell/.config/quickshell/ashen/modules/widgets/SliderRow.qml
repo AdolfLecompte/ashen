@@ -40,6 +40,7 @@ ColumnLayout {
     // The glyph. No plate that appears under the pointer: hover is that it
     // grows and its glyph lifts to snow, the same as everywhere else.
     component Glyph: Text {
+        textFormat: Text.PlainText
         text: sliderRow.glyph
         font.family: "Material Symbols Rounded"
         font.pixelSize: sliderRow.glyphSize
@@ -64,6 +65,7 @@ ColumnLayout {
     }
 
     component Value: Text {
+        textFormat: Text.PlainText
         text: sliderRow.valueText
         color: Services.Colors.mist
         font.pixelSize: sliderRow.valueSize
@@ -79,6 +81,7 @@ ColumnLayout {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter }
         Text {
+            textFormat: Text.PlainText
             text: sliderRow.label
             color: Services.Colors.snow
             font.pixelSize: Services.Sizes.fsInput

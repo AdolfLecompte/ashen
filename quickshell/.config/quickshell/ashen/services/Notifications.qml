@@ -542,6 +542,16 @@ Singleton {
         return Time.fmtOf(new Date(ts), "MMM d")
     }
 
+    // What an app sends is shown as text, never parsed: every Text in the shell
+    // is plain, so markup some apps put in a notification (<b>, <a>, <img>) is
+    // taken out here rather than printed with its angle brackets, and the few
+    // entities that come with it are turned back into their characters.
+    function plain(s) {
+        return String(s).replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "")
+            .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"")
+            .replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&")
+    }
+
     // `opts` is optional: { title: "BATTERY 20%", image: "/path.png",
     // actions: [{ id, text, run }] }. `run` is a shell
     // line -- a system toast has no D-Bus notification behind it to invoke.
@@ -731,8 +741,8 @@ Singleton {
             notification.tracked = true
             root.addEntry({
                 appName: notification.appName || "Unknown",
-                summary: notification.summary || "",
-                body: notification.body || "",
+                summary: root.plain(notification.summary || ""),
+                body: root.plain(notification.body || ""),
                 icon: root.resolveIcon(notification.appName, notification.appIcon),
                 // The image hint is the notification's own art (a contact's
                 // avatar, album cover) and beats a generic app icon when it is

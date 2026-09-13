@@ -224,6 +224,7 @@ PanelWindow {
                                         anchors.verticalCenter: parent.verticalCenter
                                         spacing: 10
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: railItem.modelData.icon
                                             color: railItem.fg
@@ -232,6 +233,7 @@ PanelWindow {
                                             Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                                         }
                                         Text {
+                                            textFormat: Text.PlainText
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: railItem.modelData.label
                                             color: railItem.fg

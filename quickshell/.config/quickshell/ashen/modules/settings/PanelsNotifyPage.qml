@@ -19,6 +19,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.notify.silence")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
@@ -78,6 +79,7 @@ Section {
                 Layout.fillWidth: true
                 spacing: 2
                 Text {
+                    textFormat: Text.PlainText
                     text: Services.I18n.t("settings.notify.play")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
@@ -103,6 +105,7 @@ Section {
                     Layout.fillWidth: true
                     spacing: 2
                     Text {
+                        textFormat: Text.PlainText
                         text: Services.I18n.t("settings.notify.critical")
                         color: Services.Colors.snow
                         font.pixelSize: Services.Sizes.fsInput

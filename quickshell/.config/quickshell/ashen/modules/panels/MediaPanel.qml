@@ -107,6 +107,7 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Text {
+                    textFormat: Text.PlainText
                     id: refTitle
                     width: parent.width
                     text: panelRef.titleText
@@ -122,18 +123,21 @@ PanelWindow {
                     id: refTimes
                     spacing: 0
                     Text {
+                        textFormat: Text.PlainText
                         id: refPos
                         text: panelRef.posText
                         font.pixelSize: 10; font.bold: true
                         font.family: "JetBrainsMono NF"
                     }
                     Text {
+                        textFormat: Text.PlainText
                         id: refSep
                         text: "/"
                         font.pixelSize: 10; font.bold: true
                         font.family: "JetBrainsMono NF"
                     }
                     Text {
+                        textFormat: Text.PlainText
                         id: refLen
                         text: panelRef.lenText
                         font.pixelSize: 10; font.bold: true
@@ -204,6 +208,7 @@ PanelWindow {
                 visible: status === Image.Ready
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 // Only when there is genuinely no cover, never while one decodes.
                 visible: panelRef.shownArtUrl === ""
@@ -219,6 +224,7 @@ PanelWindow {
         // Laid out at the big size and shrunk, so the elide width has to be
         // divided back out to keep the visible width honest.
         Text {
+            textFormat: Text.PlainText
             id: flyTitle
             readonly property real s: card.lerp(11 / 18, 1, card.morph)
             readonly property real visW: card.lerp(refCol.width, panelRef.titleW, card.morph)
@@ -248,6 +254,7 @@ PanelWindow {
         // the pill they are welded either side of a slash, in the card they
         // stand at opposite ends of the wave.
         Text {
+            textFormat: Text.PlainText
             id: flyPos
             text: panelRef.posText
             color: Services.Colors.mist
@@ -261,6 +268,7 @@ PanelWindow {
         // The slash has nowhere to go once the numbers separate, so it is the
         // one shared piece that does fade — quickly, before the gap opens.
         Text {
+            textFormat: Text.PlainText
             id: flySep
             text: "/"
             color: Services.Colors.mist
@@ -272,6 +280,7 @@ PanelWindow {
             y: flyPos.y
         }
         Text {
+            textFormat: Text.PlainText
             id: flyLen
             text: panelRef.lenText
             color: Services.Colors.mist

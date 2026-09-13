@@ -79,6 +79,7 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 6
         Text {
+            textFormat: Text.PlainText
             id: dot
             text: "\uf679"
             // Dark only on the solid accent fill; over the hover tint it lifts.
@@ -117,6 +118,7 @@ Rectangle {
             }
         }
         Text {
+            textFormat: Text.PlainText
             // No room for a timer on a side bar. `visible` alone collapses it
             // in the Row; binding width to implicitWidth is a loop, because a
             // Text recomputes implicitWidth from the width it was given.

@@ -125,6 +125,7 @@ Rectangle {
         // it and keep the date and the weather, so the option did nothing on
         // the one edge where room is tightest.
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.content === "full"
             text: root.vertDay
@@ -134,6 +135,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.content === "full"
             text: root.vertDayNum
@@ -145,6 +147,7 @@ Rectangle {
         Item { width: 1; height: 3; visible: root.content === "full" }
 
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.vertHour
             color: Services.Colors.snow
@@ -153,6 +156,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.vertMinute
             color: Services.Colors.snow
@@ -161,6 +165,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.vertSecond !== ""
             text: root.vertSecond
@@ -170,6 +175,7 @@ Rectangle {
             font.bold: true
         }
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.vertSuffix !== ""
             text: root.vertSuffix
@@ -183,6 +189,7 @@ Rectangle {
         // number, not beside it.
         Item { width: 1; height: 3; visible: root.content === "full" }
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.content === "full"
             text: Services.Weather.icon
@@ -191,6 +198,7 @@ Rectangle {
             color: Services.Colors.neutral
         }
         Text {
+            textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.content === "full"
             text: Services.Weather.temp
@@ -210,6 +218,7 @@ Rectangle {
         // Date, hour, weather: the hour holds the middle and the other two
         // fall either side of it, which is what the bar pivots on.
         Text {
+            textFormat: Text.PlainText
             // Compact is the hour and nothing else: the date and the weather are
             // exactly what a clock asked to be small is giving up.
             visible: root.content === "full"
@@ -236,6 +245,7 @@ Rectangle {
             spacing: 4
             Layout.alignment: Qt.AlignVCenter
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Weather.icon
                 font.pixelSize: 22
@@ -243,6 +253,7 @@ Rectangle {
                 color: Services.Colors.neutral
             }
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 text: Services.Weather.temp
                 font.pixelSize: 13

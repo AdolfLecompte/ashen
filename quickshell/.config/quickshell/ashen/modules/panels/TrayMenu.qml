@@ -98,6 +98,7 @@ PanelWindow {
                 spacing: 2
 
                 Text {
+                    textFormat: Text.PlainText
                     visible: opener.children.values.length === 0
                     // Picked once with the menu, not on every evaluation.
                     readonly property string noMenuLine: Services.Voice.pick("tray.noMenu")
@@ -217,6 +218,7 @@ PanelWindow {
             // check/radio state lives in its own Text: the glyph needs the
             // symbols font, the label needs the mono one
             Text {
+                textFormat: Text.PlainText
                 anchors.verticalCenter: parent.verticalCenter
                 visible: mrow.entry !== null && mrow.entry.buttonType !== QsMenuButtonType.None
                 width: visible ? 16 : 0
@@ -234,6 +236,7 @@ PanelWindow {
             }
 
             Text {
+                textFormat: Text.PlainText
                 id: label
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - (parent.spacing * 2) - 40
@@ -252,6 +255,7 @@ PanelWindow {
 
         // Which way a submenu is about to go
         Text {
+            textFormat: Text.PlainText
             anchors.right: parent.right
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter

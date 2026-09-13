@@ -58,6 +58,7 @@ TabPage {
     // A field's name, above the control instead of beside it: the column is
     // half the card wide and a label in front of a Segmented would eat it.
     component FieldLabel: Text {
+        textFormat: Text.PlainText
         property bool dim: false
         Layout.fillWidth: true
         Layout.topMargin: 2
@@ -212,6 +213,7 @@ TabPage {
                                 width: screen.width - 12
                                 spacing: 2
                                 Text {
+                                    textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignHCenter
                                     elide: Text.ElideRight
@@ -233,6 +235,7 @@ TabPage {
                                     Behavior on scale { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
                                 }
                                 Text {
+                                    textFormat: Text.PlainText
                                     Layout.fillWidth: true
                                     horizontalAlignment: Text.AlignHCenter
                                     elide: Text.ElideRight
@@ -248,6 +251,7 @@ TabPage {
 
 
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
@@ -258,6 +262,7 @@ TabPage {
                     font.family: "JetBrainsMono NF"
                 }
                 Text {
+                    textFormat: Text.PlainText
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     text: tab.selEnt
@@ -278,6 +283,7 @@ TabPage {
         title: tab.selMon ? tab.selMon.name : Services.I18n.t("settings.display.selected")
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             text: tab.sel
             color: Services.Colors.ash
@@ -399,11 +405,13 @@ TabPage {
                     Layout.fillWidth: true
                     spacing: 2
                     Text {
+                        textFormat: Text.PlainText
                         text: Services.I18n.t("settings.display.enabled")
                         color: Services.Colors.snow
                         font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"
                     }
                     Text {
+                        textFormat: Text.PlainText
                         text: tab.onlyOneLeft ? Services.I18n.t("settings.display.onlyOne") : Services.I18n.t("settings.display.turnOff")
                         color: Services.Colors.ash
                         font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"
@@ -428,6 +436,7 @@ TabPage {
             spacing: 10
 
             Text {
+                textFormat: Text.PlainText
                 Layout.fillWidth: true
                 // Only when it is worth saying: with nothing pending, the
                 // grid on screen already IS the answer.
@@ -462,6 +471,7 @@ TabPage {
         title: Services.I18n.t("settings.display.workspaces")
 
         Text {
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             visible: text !== ""
             text: tab.selEnt && tab.selEnt.ws.length > 0 && tab.selMon
@@ -544,6 +554,7 @@ TabPage {
         }
 
         Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             text: chip.n
             color: chip.isDefault ? Services.Colors.accentText
@@ -588,6 +599,7 @@ TabPage {
                 Layout.fillWidth: true
                 spacing: 12
                 Text {
+                    textFormat: Text.PlainText
                     text: ""
                     font.family: "Material Symbols Rounded"
                     font.pixelSize: 20
@@ -596,7 +608,7 @@ TabPage {
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 2
-                    Text { text: Services.I18n.t("settings.display.nightLight"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                    Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.display.nightLight"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                 }
                 Item { Layout.fillWidth: true }
                 Toggle {
@@ -618,8 +630,9 @@ TabPage {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
-                        Text { text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.clock.temperature"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Text {
+                            textFormat: Text.PlainText
                             text: Services.NightLight.temperature + "K · " + (Services.NightLight.temperature <= 3500 ? Services.I18n.t("settings.display.warmer") : Services.NightLight.temperature >= 5000 ? Services.I18n.t("settings.display.subtle") : Services.I18n.t("settings.display.balancedTemp"))
                             color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF"
                         }
@@ -643,8 +656,8 @@ TabPage {
                     ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 2
-                        Text { text: Services.I18n.t("settings.display.schedule"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
-                        Text { text: Services.NightLight.scheduled ? "On between the times below" : "On constantly while enabled"; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.display.schedule"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.NightLight.scheduled ? "On between the times below" : "On constantly while enabled"; color: Services.Colors.ash; font.pixelSize: Services.Sizes.fsMeta; font.family: "JetBrainsMono NF" }
                     }
                     Item { Layout.fillWidth: true }
                     Toggle {
@@ -661,8 +674,8 @@ TabPage {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
-                        Text { text: Services.I18n.t("settings.display.from"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
-                        Text { text: Services.NightLight.fromTime; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.display.from"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
+                        Text { textFormat: Text.PlainText; text: Services.NightLight.fromTime; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Item { Layout.fillWidth: true }
                         StepBtn {
                             glyph: ""
@@ -677,8 +690,8 @@ TabPage {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
-                        Text { text: Services.I18n.t("settings.display.to"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
-                        Text { text: Services.NightLight.toTime; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
+                        Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.display.to"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF"; Layout.preferredWidth: 40 }
+                        Text { textFormat: Text.PlainText; text: Services.NightLight.toTime; color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsInput; font.bold: true; font.family: "JetBrainsMono NF" }
                         Item { Layout.fillWidth: true }
                         StepBtn {
                             glyph: ""

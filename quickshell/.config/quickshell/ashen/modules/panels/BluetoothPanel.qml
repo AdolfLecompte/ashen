@@ -129,12 +129,14 @@ PanelWindow {
                         width: parent.width
 
                         Text {
+                            textFormat: Text.PlainText
                             text: ""
                             color: Services.Colors.ghost
                             font.pixelSize: 20
                             font.family: "Material Symbols Rounded"
                         }
                         Text {
+                            textFormat: Text.PlainText
                             text: Services.I18n.t("settings.tab.bluetooth")
                             color: Services.Colors.snow
                             font.pixelSize: 14

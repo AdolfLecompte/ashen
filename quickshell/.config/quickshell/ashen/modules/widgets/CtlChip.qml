@@ -50,6 +50,7 @@ Rectangle {
     Behavior on scale { Anim { speed: Services.Sizes.msMicro } }
 
     Text {
+        textFormat: Text.PlainText
         anchors.centerIn: parent
         text: chip.glyph
         // On the accent fill, whichever of black and white can be read on it;

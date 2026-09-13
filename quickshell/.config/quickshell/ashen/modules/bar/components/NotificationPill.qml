@@ -31,6 +31,7 @@ Rectangle {
     PillCenter { key: "notification" }
 
     Text {
+        textFormat: Text.PlainText
         id: bell
         anchors.centerIn: parent
         // Bell while normal, notifications_off glyph while Do Not Disturb.
@@ -75,6 +76,7 @@ Rectangle {
         gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
 
         Text {
+            textFormat: Text.PlainText
             id: badgeTxt
             anchors.centerIn: parent
             text: badge.count > 9 ? "9+" : badge.count

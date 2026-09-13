@@ -172,6 +172,7 @@ Item {
         height: glyphH + labelH + capH
 
         Text {
+            textFormat: Text.PlainText
             id: glyphText
             width: parent.width
             height: stack.glyphH
@@ -186,6 +187,7 @@ Item {
             Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
         }
         Text {
+            textFormat: Text.PlainText
             id: labelText
             y: stack.glyphH
             width: parent.width
@@ -200,6 +202,7 @@ Item {
             font.family: "JetBrainsMono NF"
         }
         Text {
+            textFormat: Text.PlainText
             y: stack.glyphH + stack.labelH
             width: parent.width
             height: stack.capH
