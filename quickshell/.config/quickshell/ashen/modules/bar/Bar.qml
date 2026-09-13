@@ -335,10 +335,16 @@ Scope {
                 // says -- but a pill taken OFF the bar can still be the only
                 // thing able to report a state that is running, so it claims a
                 // slot while that lasts and gives it back, the way USB does.
+                //
+                // The recording pill is listed whether or not a recording runs,
+                // and makes itself nothing while none does. Adding it only when
+                // one started handed the Repeater a new array, which destroys and
+                // rebuilds every pill in the section: the row came back already
+                // in its new place with nothing sliding, and the capsule arrived
+                // at full size on a frame of half-built pills. See RecordingPill.
                 function pillsIn(section) {
                     const base = Services.Prefs.barPills(section)
                     if (section !== "left") return base
-                    if (!Services.AppState.recording) return base
                     if (Services.Prefs.barSectionOf("recording") !== "") return base
                     // FIRST on the bar, always: the start of the left section,
                     // which is the top one on a side bar. A recording running is
@@ -386,8 +392,7 @@ Scope {
                     id: sweepSeen
                     interval: 0
                     onTriggered: content.seen = content.seen.filter(
-                        id => Services.Prefs.barSectionOf(id) !== ""
-                              || (id === "recording" && Services.AppState.recording))
+                        id => Services.Prefs.barSectionOf(id) !== "" || id === "recording")
                 }
 
                 // A pill arriving swells into place instead of blinking in; a
