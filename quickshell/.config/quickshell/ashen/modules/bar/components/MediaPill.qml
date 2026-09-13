@@ -41,7 +41,6 @@ Item {
         interval: 5000
         onTriggered: if (root.livePlayer === null) {
             root.activePlayer = null
-            root.stableArtUrl = ""
         }
     }
     function formatTime(seconds) {
@@ -50,7 +49,6 @@ Item {
         let s = Math.floor(seconds % 60)
         return m + ":" + (s < 10 ? "0" : "") + s
     }
-    property string stableArtUrl: ""
     // Artist and album are held the same way the URL is, and for the same
     // reason: MPRIS empties every field for a few frames between tracks, and
     // the cover is asked for during exactly that gap. Read live -- which is
@@ -68,13 +66,11 @@ Item {
         // both of these threw "Cannot read property 'trackArtUrl' of null" on
         // every single track change.
         if (!root.activePlayer) {
-            root.stableArtUrl = ""
             root.stableArtist = ""
             root.stableAlbum = ""
             root.stableTitle = ""
             return
         }
-        if (root.activePlayer.trackArtUrl !== "") root.stableArtUrl = root.activePlayer.trackArtUrl
         if (root.activePlayer.trackArtist !== "") root.stableArtist = root.activePlayer.trackArtist
         if (root.activePlayer.trackAlbum !== "")  root.stableAlbum  = root.activePlayer.trackAlbum
         if (root.activePlayer.trackTitle !== "")  root.stableTitle  = root.activePlayer.trackTitle
@@ -121,64 +117,9 @@ Item {
     }
 
     property string shownTitle: ""
-    property string shownArtUrl: ""
-    // The cover was not decoded yet when the sweep committed: swap it in the
-    // moment it is, rather than showing a hole.
-    property bool artWaiting: false
-    // The player also flashes its OWN icon as the cover for a frame or two on
-    // the way between tracks, while the old title is still up -- so a cover is
-    // only believed once it has held still. One that lasts a frame is the gap.
-    property string settledArt: ""
-    // The cover as a file of our own: the player's temp file is deleted and
-    // its name reused, and Spotify's is an https URL that has to be fetched.
-    property string cachedArt: ""
-    Timer {
-        id: artSettle
-        interval: 250
-        onTriggered: {
-            root.settledArt = root.stableArtUrl
-            root.cachedArt = Services.MediaArt.local(root.settledArt)
-            root.artWaiting = true
-            Services.MediaArt.request(root.settledArt)
-        }
-    }
-    onStableArtUrlChanged: artSettle.restart()
-    Connections {
-        target: Services.MediaArt
-        function onReady(url) {
-            if (url !== root.settledArt) return
-            root.cachedArt = Services.MediaArt.local(url)
-            // The album this cover came with -- the only thing that can prove
-            // it is the player's icon rather than artwork.
-            Services.MediaArt.note(url, root.artTag)
-            // Same file as before means no reload and so no statusChanged to
-            // wait for: the cover is already up, take it now.
-            if (root.artWaiting && artProbe.status === Image.Ready) {
-                root.artWaiting = false
-                root.shownArtUrl = root.coverOrNothing()
-            }
-        }
-        // It just worked out that what we are showing is the player's logo:
-        // drop it, and let the same call go and ask for a real one.
-        function onDecoysChanged() {
-            if (Services.MediaArt.isDecoy(root.settledArt)) root.shownArtUrl = root.coverOrNothing()
-        }
-        // The web answered. It is only ours if it is the track we are on.
-        function onWebReady(key) {
-            if (key === Services.MediaArt.webKey(root.artArtist, root.artTitle))
-                root.shownArtUrl = root.coverOrNothing()
-        }
-    }
-    readonly property string artTag: root.stableAlbum || root.stableArtist || ""
-    // One door: the player's own file while it is real, and the web's answer
-    // when the player gives nothing or gives its own logo. The service owns
-    // that decision -- this surface only draws it.
-    function coverOrNothing() {
-        return Services.MediaArt.coverFor(root.settledArt, root.artArtist, root.artTitle)
-    }
-    readonly property string artArtist: root.stableArtist
-    readonly property string artTitle: root.stableTitle
-
+    // The one cover every surface draws: the player's own art, held across
+    // the gap between tracks by Services.Media.
+    readonly property string shownArtUrl: Services.Media.art
     Widgets.SlideSwap {
         id: trackSwap
         travel: 12
@@ -187,32 +128,7 @@ Item {
         onCommit: {
             root.shownTitle = root.settledKey !== "" ? root.settledKey
                             : (root.hasPlayer ? Services.I18n.t("media.untitled") : "")
-            if (root.cachedArt !== "" && artProbe.status === Image.Ready) {
-                root.artWaiting = false
-                root.shownArtUrl = root.coverOrNothing()
-            } else if (root.stableArtUrl === "") {
-                root.artWaiting = false
-                root.shownArtUrl = ""
-            } else {
-                // Still being fetched or decoded: hold the old cover and let
-                // the probe hand the new one over the moment it is up.
-                root.artWaiting = true
-            }
             Services.AppState.mediaDir = 1
-        }
-    }
-
-    // Decodes the next cover out of sight. Same source and no sourceSize on
-    // either, so the visible Image hits Qt's cache and is up on the first frame.
-    Image {
-        id: artProbe
-        source: root.cachedArt
-        asynchronous: true
-        visible: false
-        width: 1; height: 1
-        onStatusChanged: if (status === Image.Ready && root.artWaiting) {
-            root.artWaiting = false
-            root.shownArtUrl = root.coverOrNothing()
         }
     }
 

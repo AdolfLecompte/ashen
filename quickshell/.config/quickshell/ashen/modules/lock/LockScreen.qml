@@ -450,17 +450,13 @@ Scope {
                         visible: rightCol.enter > 0.001
                         transform: Translate { x: (1 - rightCol.enter) * 24 }
 
-                        // The board's own vocabulary -- a past as a curve, a
-                        // level as water. No rings: the shell stopped saying a
+                        // The board.s own vocabulary -- a past and a level,
+                        // both as ticks. No rings: the shell stopped saying a
                         // level with a dial everywhere but brightness.
                         DeskWidgets.SysWidget {
                             managed: false
                             live: true
                             styleOverride: "medium"
-                            // Pinned like the shape: with no skin of its own
-                            // the card read off the desktop record, so changing
-                            // the wallpaper widget changed the lock screen too.
-                            skinOverride: "chart"
                             width: rightCol.colW
                             visible: Services.Prefs.lockShowSystem
                         }

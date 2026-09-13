@@ -3,10 +3,7 @@ import Quickshell
 import Quickshell.Services.Mpris
 import QtQuick
 
-// Transport, for whoever is not holding a player already. The pill and the
-// card each keep their own sticky player (they have to: it drops to null for a
-// few ms between tracks, and their whole layout would collapse), so this is
-// for the media keys, which have nothing.
+// Transport for the media keys, and the one cover every surface draws.
 Singleton {
     id: root
 
@@ -16,6 +13,19 @@ Singleton {
         const playing = live.find(p => p.isPlaying)
         return playing !== undefined ? playing : live[0]
     }
+
+    // The cover, held on the last player through the few ms MPRIS drops to
+    // nothing between tracks, so no surface ever blinks empty. Straight from
+    // the player: the lyrics widget always read it this way and was the one
+    // surface that never showed a wrong cover.
+    property var held: null
+    onPlayerChanged: {
+        if (root.player !== null) { drop.stop(); root.held = root.player }
+        else drop.restart()
+    }
+    Component.onCompleted: root.held = root.player
+    Timer { id: drop; interval: 400; onTriggered: root.held = null }
+    readonly property string art: root.held ? (root.held.trackArtUrl || "") : ""
 
     // Saying which way it goes before jumping is the whole point of routing the
     // keys through here: the sweep reads the same flag the buttons set.

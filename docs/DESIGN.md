@@ -745,11 +745,12 @@ not the box.
 
 ### A cover, and the words
 
-`MediaArt` decides what a surface draws, and the surfaces only draw it: the
-player's own file while it is real, and iTunes' answer when the player gives
-nothing or gives its own logo -- which the service already recognises by the
-cover turning up under two unrelated albums. A good cover is never overruled;
-the card and the pill stopped each keeping their own copy of that reasoning.
+Every surface draws **one cover**, `Media.art`: the player's own art, held on
+the last player through the few ms MPRIS drops to nothing between tracks. The
+pill, the panel and the lyrics widget read the same property. A cache with a web
+fallback and a logo detector used to sit in between, in two copies, and it was
+the one path that showed a wrong cover; the widget that read the player straight
+never did.
 
 The lyrics are a **column of the card**, not a drawer under it. A drawer made
 the words something you had to ask for twice, and what a card is about should

@@ -17,10 +17,11 @@ DesktopWidget {
 
     // Sampling is refcounted in the service: the Process panel opening and
     // closing must not switch the desktop's numbers off. The claim is keyed by
-    // WHO, so the lock's copy claims under its own name -- sharing the key,
-    // the one that went away would switch the other one's numbers off. A full
-    // claim, so SysMon keeps the histories the ticks draw.
-    readonly property string claimant: root.managed ? "desktop" : "lock"
+    // this very copy: the lock draws one per output and the desktop one per
+    // screen, and with a shared "lock" key the first surface to go took the
+    // sampling from the rest -- the lock's ticks froze. A full claim, so
+    // SysMon keeps the histories the ticks draw.
+    readonly property string claimant: "sys@" + String(root)
     Component.onCompleted: Services.SysMon.claim(root.claimant, root.live)
     Component.onDestruction: Services.SysMon.claim(root.claimant, false)
     onLiveChanged: Services.SysMon.claim(root.claimant, root.live)

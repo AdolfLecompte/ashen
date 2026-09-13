@@ -19,7 +19,7 @@ PKGS_OFFICIAL=(
     # is where the whole colour scheme comes from.
     awww matugen
     nemo fastfetch cava xdg-utils libnotify
-    #   curl            <- cover art and lyrics (services/MediaArt, services/Lyrics)
+    #   curl            <- lyrics (services/Lyrics)
     #   imagemagick     <- wallpaper thumbnails (scripts/ashen-wallpaper-thumbs.sh)
     #   pacman-contrib  <- `checkupdates` for the updates readout (services/Updates)
     #   python          <- the cover-art picker, scripts/ashen-cover-pick.py

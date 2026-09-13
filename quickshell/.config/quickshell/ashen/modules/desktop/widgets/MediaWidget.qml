@@ -75,7 +75,7 @@ DesktopWidget {
 
     readonly property string title: root.player ? (root.player.trackTitle || "") : ""
     readonly property string artist: root.player ? (root.player.trackArtist || "") : ""
-    readonly property string art: root.player ? (root.player.trackArtUrl || "") : ""
+    readonly property string art: Services.Media.art
 
     component Cover: ClippingRectangle {
         property alias source: img.source
