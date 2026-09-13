@@ -34,6 +34,11 @@
   battery light up to their level; CPU, GPU and traffic draw each recent sample
   as its own tick, so a card shows the last minute instead of one number. The
   liquid that used to fill those cards is gone.
+- **A wallpaper follows its own look by default.** A new one keeps the look you
+  are wearing and remembers it; one you tell not to follow wears a standard look
+  -- your saved default, or the shell as it ships. The dock is part of the look.
+- **The desktop clock picks its own format**: like the bar, 12h or 24h, with or
+  without seconds.
 
 ### Changed
 - **The shell idles at under half what it did.** cava kept sending sixty lines a
@@ -59,6 +64,8 @@
   bar styles run from least to most: Pills, Island, Solid, Framed.
 - **The picture picker is fast.** Thumbnails are cached and made in parallel,
   so a folder opened before shows at once.
+- **Panels without a capsule come from the top** when the bar is at the bottom,
+  instead of sliding in from the side.
 
 ### Fixed
 - **An unplugged monitor stayed in the display board.** Hyprland keeps a pulled
@@ -87,6 +94,14 @@
   their section. Wide things no longer grow under the pointer.
 - **Settings rows had their buttons out of line** and some cards left dead
   space between sections.
+- **The shell could crash on something you copied.** Text from outside -- the
+  clipboard, notifications, track titles -- was left for Qt to guess whether it
+  was HTML, and a copied `<img>` tag brought the whole shell down. Everything is
+  plain text now, and notifications have their markup stripped.
+- **A side bar went blank after being moved a few times**, leaving a wide empty
+  plate where the capsules should be.
+- **The machine widget still drew curves** for CPU and GPU; it draws ticks, and
+  the option for the old look is gone.
 
 ## 3.0.0
 

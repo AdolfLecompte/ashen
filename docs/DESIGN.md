@@ -571,6 +571,30 @@ is on; its saved position is untouched, so moving the bar back puts the widget
 back. Arranged under a top bar and moved to a side, widgets used to sit right
 under the pills.
 
+### Text is text
+
+**Every `Text` declares `textFormat: Text.PlainText`.** Left to AutoText, Qt
+decides by itself whether a string is HTML, and a great deal of what the shell
+shows comes from outside it: the clipboard, notifications, track titles, network
+names. A copied `<img>` tag was parsed as rich text and crashed the shell.
+
+- The release notes are the one rich-text surface (`StyledText`), and
+  `Release.rich()` escapes `& < >` before it turns markdown into tags.
+- A notification's summary and body have their markup stripped on the way in.
+- `docs/probes/text-probe.sh` fails the suite on a `Text` without a format.
+
+### A wallpaper follows its own look
+
+Following is the default: a wallpaper nobody decided about keeps the look on
+screen and starts remembering it. Not following is a stored decision, and such a
+wallpaper wears the standard look — the saved default, or the whole shipped bar.
+The toggle lives at the top of the Look tab, under the wallpaper it belongs to.
+
+### A panel with no capsule
+
+It arrives from the bottom edge, or from the top when the bar is at the bottom —
+never from a side, where a centred panel reads as sliding in from somewhere else.
+
 ### Where it comes from is not where it goes
 
 Two separate questions, and conflating them is why the launcher was wrong twice.
@@ -869,6 +893,7 @@ Ordered by how much each buys.
 - [ ] Sliders at 16 px; a set that can grow is a list, not a `Segmented` row
 - [ ] Nothing full-width grows on hover
 - [ ] The card is as tall as its content
+- [ ] Every `Text` declares `textFormat` (the text probe checks it)
 - [ ] Every box is a rounded rectangle or a circle — nothing else
 - [ ] Nothing destructive is red
 - [ ] `Esc` closes it; click-off closes it; the exit animation is visible
