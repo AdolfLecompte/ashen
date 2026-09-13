@@ -134,11 +134,11 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
 
 - **Bar** — launcher, notifications, workspaces (incl. special workspaces), media,
   clock, tray, USB, screen recording, active window, keyboard layout, network,
-  bluetooth, sound, battery, power. Every capsule can be dragged to either end or
-  the centre of any of the four edges, and each one chooses how much it says:
-  `full`, `compact` or `icon`. Four shapes for the bar itself — pills, solid,
-  framed, island — and an outline switch that draws the plate of whichever shape
-  is in use instead of filling it.
+  bluetooth, sound, battery, CPU and memory, power. Every capsule can be dragged
+  to either end or the centre of any of the four edges, and each one chooses how
+  much it says — `full`, `compact` or `icon`, offered only where they differ.
+  Four shapes for the bar itself — pills, island, solid, framed — and an outline
+  switch that draws the plate of whichever shape is in use instead of filling it.
 - **Dock** — pinned and open applications on an edge of your choosing. A click
   launches, focuses, or hides to a special workspace, in that order; a
   right-click pins or unpins, and Settings has the list with a search.
@@ -150,7 +150,14 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
 - **Login screen** — an SDDM theme drawn with the shell's own bar and mark.
 - **Desktop widgets** — clock, weather, updates, media, calendar, machine, placed
   by dragging them where you want them. Outline switch of their own too.
-- **Launcher, clipboard, emoji picker, glyph picker, settings, wallpaper picker.**
+- **Game mode** — one key flattens the compositor (no animations, blur, shadows,
+  rounding or gaps) and quiets the shell, then puts everything back exactly as it
+  was, your screen layout included.
+- **Wallpapers** — a picker you can search, video or still, and a different
+  wallpaper on each screen when more than one is plugged in.
+- **Process monitor** — CPU, GPU and traffic drawn as the last minute of samples,
+  memory, drives and temperatures as levels.
+- **Launcher, clipboard, emoji picker, glyph picker, settings.**
 - **Four languages** — English, Spanish, Russian and German, switched on the spot.
 - **Dynamic theming** — the wallpaper picker runs `matugen` over the image you
   choose and the whole shell re-colours from `~/.cache/ashen_scheme.json`.
@@ -217,17 +224,17 @@ and not only on a distro that happens to source it for you.
 | `udisksctl` / `lsblk` | USB pill: mount, unmount, eject |
 | `cliphist` + `wl-copy` / `wl-paste` | clipboard history panel |
 | `grimblast` | screenshots |
-| `wf-recorder` + `ffmpeg` | screen recording pill |
+| `wf-recorder` + `ffmpeg` | screen recording |
 | `cava` | audio visualiser (bar background, media panel, lock screen) |
-| `awww` / `mpvpaper` / `matugen` | wallpapers and dynamic colour scheme |
+| `awww` / `mpvpaper` / `matugen` | wallpapers (one per screen) and dynamic colour scheme |
 | `hypridle` | idle → lock |
 | `sddm` | the login screen — **optional and never installed for you**: switching a display manager is not the installer's call. Already have it? The theme is installed and pointed at. |
 | `wlsunset` | night light (blue-light filter), manual and scheduled |
 | `lm_sensors` | temperatures in the process panel |
 | `curl` | cover art and lyrics for the playing track |
-| `magick` (imagemagick) | wallpaper thumbnails in the picker |
+| `magick` (imagemagick) | thumbnails in the wallpaper and picture pickers |
 | `checkupdates` (pacman-contrib) | pending-updates readout and its widget |
-| `python` | reads `hyprctl monitors -j` when setting a wallpaper |
+| `python` | the cover-art picker |
 | `gtk-launch` (gtk3) | opening the app behind a notification action |
 | `qt6ct` | Qt apps follow the palette (`QT_QPA_PLATFORMTHEME`) |
 | `nvidia-utils` (`nvidia-smi`) | dGPU stats — **only** read when the GPU is already awake |
@@ -275,6 +282,17 @@ Two things to expect on that first run:
 | `SUPER + SHIFT + W` | wallpaper picker (drives dynamic theming) |
 | `SUPER + I` | settings |
 | `SUPER + T` | terminal |
+| `SUPER + N` | notifications |
+| `SUPER + SHIFT + V` | clipboard |
+| `SUPER + SHIFT + S` | screenshot |
+| `SUPER + SHIFT + R` | start / stop screen recording |
+| `SUPER + SHIFT + G` | game mode |
+| `SUPER + SHIFT + P` | process monitor |
+| `SUPER + SHIFT + D` | arrange desktop widgets |
+| `SUPER + L` | lock |
+| `SUPER + Escape` | power menu |
+
+Every one of these can be changed from **Settings → Input**.
 
 The keyboard layout pill in the bar is **read-only**. Layouts are declared in
 `hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`) and switched from
@@ -303,7 +321,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.0.0
+3.1.0
 
 ## License
 
