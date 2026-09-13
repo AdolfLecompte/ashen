@@ -305,13 +305,6 @@ Scope {
                         font.bold: true
                         font.family: "JetBrainsMono NF"
                     }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: Services.I18n.t("notify.empty")
-                        color: Services.Colors.ash
-                        font.pixelSize: 10
-                        font.family: "JetBrainsMono NF"
-                    }
                 }
             }
 

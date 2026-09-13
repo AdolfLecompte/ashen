@@ -2,7 +2,8 @@ import QtQuick
 
 import "root:/services" as Services
 
-// One of the day's figures: a glyph, the reading, and what it is. No plate --
+// One of the day's figures: a glyph and the reading. No caption: a raindrop
+// beside 67% is humidity without the word under it. No plate --
 // four of these on a line ARE the row. Shared by the clock panel and the
 // desktop weather widget so the same four numbers read the same in both.
 Column {
@@ -10,7 +11,6 @@ Column {
 
     property string glyph: ""
     property string value: ""
-    property string caption: ""
 
     spacing: 3
 
@@ -32,18 +32,5 @@ Column {
             font.bold: true
             font.family: "JetBrainsMono NF"
         }
-    }
-    // The caption never grows past its cell: four of them share a row, and a
-    // translated word is wider than the English one this was drawn with.
-    Text {
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: cell.width > 0 ? cell.width : implicitWidth
-        horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
-        text: cell.caption
-        color: Services.Colors.ash
-        font.pixelSize: 8
-        font.letterSpacing: 1
-        font.family: "JetBrainsMono NF"
     }
 }

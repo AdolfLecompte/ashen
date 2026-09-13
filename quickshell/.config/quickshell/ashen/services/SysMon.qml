@@ -33,7 +33,6 @@ Singleton {
     }
 
     property real cpuPercent: 0
-    property string cpuModel: "..."
     property real cpuTemp: 0
     property real prevCpuTotal: 0
     property real prevCpuIdle: 0
@@ -69,7 +68,6 @@ Singleton {
     // The one-off reads and the expensive ones wait for somebody who shows them.
     onDeepChanged: if (deep) {
         // the static bits only need one read, ever
-        if (cpuModel === "...") cpuModelProc.running = true
         if (gpuInfo === "...") gpuProc.running = true
         // rates need two samples, so drop the stale baseline
         prevRxBytes = -1
@@ -105,12 +103,6 @@ Singleton {
         onTriggered: diskProc.running = true
     }
 
-    Process {
-        id: cpuModelProc
-        command: ["sh", "-c", "grep -m1 'model name' /proc/cpuinfo | cut -d: -f2"]
-        running: false
-        stdout: StdioCollector { onStreamFinished: root.cpuModel = text.trim() }
-    }
 
     // Read in-process: this comment used to say these two cost nothing worth
     // counting while each one was a shell and a grep.

@@ -360,47 +360,6 @@ Item {
         font.family: "JetBrainsMono NF"
     }
 
-    // One fact, in a small card: icon and value on a line, its name under it.
-    component Stat: Rectangle {
-        id: stat
-        property string glyph: ""
-        property string value: ""
-        property string caption: ""
-        radius: Services.Sizes.cardR
-        color: Services.Colors.fillInset
-
-        Column {
-            anchors.centerIn: parent
-            spacing: 2
-
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 5
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: stat.glyph
-                    color: Services.Colors.ghost
-                    font.pixelSize: 15
-                    font.family: "Material Symbols Rounded"
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: stat.value
-                    color: Services.Colors.snow
-                    font.pixelSize: 15
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-            }
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: stat.caption
-                color: Services.Colors.mist
-                font.pixelSize: 8
-                font.family: "JetBrainsMono NF"
-            }
-        }
-    }
 
     // Tools slide aside in the direction you moved along the tabs.
     SlideSwap {
@@ -649,7 +608,6 @@ Item {
                                 width: parent.width / 4
                                 glyph: "\ue1c6"
                                 value: Services.Weather.sunrise || "\u2014"
-                                caption: Services.I18n.t("weather.sunrise")
                             }
                             WxCell {
                                 width: parent.width / 4
@@ -661,24 +619,22 @@ Item {
                                     let jan4 = new Date(d.getFullYear(), 0, 4)
                                     let n = 1 + Math.round(((d - jan4) / 86400000
                                             - 3 + ((jan4.getDay() + 6) % 7)) / 7)
-                                    return String(n)
+                                    return Services.I18n.t("clock.weekShort", { n: n })
                                 }
-                                caption: Services.I18n.t("clock.week")
                             }
                             WxCell {
                                 width: parent.width / 4
                                 glyph: "\ue88b"
                                 value: {
                                     let start = new Date(root.now.getFullYear(), 0, 0)
-                                    return String(Math.floor((root.now - start) / 86400000))
+                                    return Math.floor((root.now - start) / 86400000)
+                                        + "/" + (root.isLeap ? 366 : 365)
                                 }
-                                caption: Services.I18n.t("clock.dayOf", { n: root.isLeap ? 366 : 365 })
                             }
                             WxCell {
                                 width: parent.width / 4
                                 glyph: "\ue1f9"
                                 value: Services.Weather.sunset || "\u2014"
-                                caption: Services.I18n.t("weather.sunset")
                             }
                         }
                     }
@@ -1236,7 +1192,6 @@ Item {
                     width: wxGrid.width / 4
                     glyph: "\ue798"
                     value: root.wxHumidity + "%"
-                    caption: Services.I18n.t("weather.humidity")
                 }
                 // The bearing as an arrow instead of two letters to decode: the
                 // glyph points where the wind comes FROM, which is what the
@@ -1245,19 +1200,16 @@ Item {
                     width: wxGrid.width / 4
                     glyph: Services.Weather.windGlyph(root.wxWindDir)
                     value: root.wxWindKph + " km/h"
-                    caption: Services.I18n.t("weather.wind")
                 }
                 WxCell {
                     width: wxGrid.width / 4
                     glyph: "\uf157"
                     value: Services.I18n.t("weather.uv", { n: root.wxUv })
-                    caption: Services.I18n.t("weather.uvIndex")
                 }
                 WxCell {
                     width: wxGrid.width / 4
                     glyph: "\uf176"
                     value: root.wxRain + "%"
-                    caption: Services.I18n.t("weather.rain")
                 }
             }
         }

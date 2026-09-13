@@ -37,12 +37,6 @@ PanelWindow {
     onCatChanged: if (!win.shown) win.shownCat = win.cat
 
     readonly property bool isOut: win.cat !== "input"
-    // The device in use on the side you are looking at.
-    readonly property string deviceName: win.isOut
-        ? (Services.Audio.activeSinkName || "Output")
-        : (Services.Audio.activeSourceName || "Input")
-    readonly property string deviceKind: Services.Audio.deviceKind(
-        win.isOut ? Services.Audio.defaultSink : Services.Audio.defaultSource)
     readonly property int level: win.isOut ? Services.Audio.volume : Services.Audio.micVolume
     readonly property bool muted: win.isOut ? Services.Audio.muted : Services.Audio.micMuted
     // The output glyph is read off the bar chip, never rebuilt here: that set
@@ -127,7 +121,7 @@ PanelWindow {
                     Widgets.LiquidPane {
                         id: dial
                         width: parent.width
-                        height: 148
+                        height: 118
                         dimmed: win.muted
                         fillColor: win.muted ? Services.Colors.mist : Services.Colors.ghost
                         value: levelBar.shown
@@ -137,45 +131,12 @@ PanelWindow {
                         readonly property Item glyphItem: volGlyph
                         readonly property Item labelItem: volLabel
 
-                        // What is actually playing this, and how it is plugged
-                        // in: "the Bluetooth ones" is what you think in, not the
-                        // model of the chip.
+                        // No device line above the number: the picker right under this
+                        // card names it, and naming it twice was the panel reading
+                        // itself out.
                         Row {
                             x: 18
-                            y: 16
-                            width: parent.width - 36
-                            spacing: 6
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Services.Audio.kindGlyph(win.deviceKind)
-                                color: Services.Colors.snow
-                                font.pixelSize: 15
-                                font.family: "Material Symbols Rounded"
-                            }
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: parent.width - 90
-                                text: win.deviceName
-                                color: Services.Colors.snow
-                                font.pixelSize: Services.Sizes.fsBody
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                                elide: Text.ElideRight
-                            }
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: win.muted ? Services.I18n.t("common.muted")
-                                     : Services.Audio.kindLabel(win.deviceKind)
-                                color: Services.Colors.mist
-                                font.pixelSize: Services.Sizes.fsMeta
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
-
-                        Row {
-                            x: 18
-                            y: 48
+                            y: 18
                             spacing: 8
 
                             Text {

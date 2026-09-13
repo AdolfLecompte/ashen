@@ -501,7 +501,7 @@ PanelWindow {
                                 scanGlyph: "\ue8b6"
                                 scanLabel: Services.I18n.t("bt.scan")
                                 scanSub: graph.scanMode
-                                    ? Services.I18n.t("bt.nearbyCount", { n: root.strangersAll.length }) : Services.I18n.t("bt.nearby")
+                                    ? Services.I18n.t("bt.nearbyCount", { n: root.strangersAll.length }) : ""
                                 // Slots owned across scans -- see root.scanSlots. Picking the
                                 // six strongest every sweep meant the ring swapped members
                                 // while you were looking at it.

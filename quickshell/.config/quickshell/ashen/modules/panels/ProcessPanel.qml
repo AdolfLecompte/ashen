@@ -128,14 +128,13 @@ PanelWindow {
                 component Card: Rectangle {
                     id: cd
                     property string glyph: ""
-                    property string name: ""
                     property int index: 0
                     property int col: 0
                     property int row: 0
                     property int cw: 1
                     property int ch: 1
-                    // What a card puts in its top-right: a part number, a
-                    // percentage, whatever it is the name does not say.
+                    // What a card puts in its top-right: a figure its glyph does
+                    // not already say. No names: the glyph IS the name.
                     property string note: ""
                     // Where a card's own content can start.
                     readonly property int headH: 40
@@ -165,15 +164,6 @@ PanelWindow {
                             color: Services.Colors.mist
                             font.pixelSize: 16
                             font.family: "Material Symbols Rounded"
-                        }
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: cd.name
-                            color: Services.Colors.mist
-                            font.pixelSize: Services.Sizes.fsCaption
-                            font.bold: true
-                            font.letterSpacing: 1.4
-                            font.family: "JetBrainsMono NF"
                         }
                     }
                     Text {
@@ -316,8 +306,6 @@ PanelWindow {
                         index: 0
                         col: 0; row: 0; cw: 4; ch: 2
                         glyph: ""
-                        name: Services.I18n.t("proc.cpu")
-                        note: Services.SysMon.cpuModel
 
                         readonly property color tone: bodyRoot.toneAt(0)
 
@@ -351,17 +339,6 @@ PanelWindow {
                                 font.bold: true
                                 font.family: "JetBrainsMono NF"
                             }
-                            Text {
-                                anchors.left: cpuNum.right
-                                anchors.leftMargin: 12
-                                anchors.baseline: cpuNum.baseline
-                                text: Services.SysMon.cpuTemp > 0
-                                    ? Services.SysMon.cpuTemp.toFixed(0) + "° now"
-                                    : ""
-                                color: Services.Colors.ash
-                                font.pixelSize: Services.Sizes.fsMeta
-                                font.family: "JetBrainsMono NF"
-                            }
                         }
 
                         Widgets.Submerged {
@@ -377,7 +354,6 @@ PanelWindow {
                         index: 1
                         col: 4; row: 0; cw: 4; ch: 1
                         glyph: ""
-                        name: Services.I18n.t("proc.memory")
                         id: ramCard
 
                         readonly property color tone: bodyRoot.toneAt(1)
@@ -424,16 +400,6 @@ PanelWindow {
                                 font.pixelSize: Services.Sizes.fsMeta
                                 font.family: "JetBrainsMono NF"
                             }
-                            Text {
-                                x: ramCard.inset
-                                anchors.bottom: parent.bottom
-                                anchors.bottomMargin: 12
-                                text: Services.I18n.t("proc.inUse")
-                                color: Services.Colors.ash
-                                font.pixelSize: Services.Sizes.fsCaption
-                                font.letterSpacing: 1.2
-                                font.family: "JetBrainsMono NF"
-                            }
                         }
 
                         Widgets.Submerged {
@@ -451,7 +417,6 @@ PanelWindow {
                         index: 2
                         col: 4; row: 1; cw: 4; ch: 1
                         glyph: ""
-                        name: Services.I18n.t("proc.thermals")
                         id: thermCard
 
                         readonly property color tone: bodyRoot.toneAt(2)
@@ -492,7 +457,6 @@ PanelWindow {
                         index: 3
                         col: 0; row: 2; cw: 3; ch: 1
                         glyph: ""
-                        name: Services.I18n.t("proc.gpuShort")
                         id: gpuCard
 
                         readonly property color tone: bodyRoot.toneAt(3)
@@ -535,18 +499,6 @@ PanelWindow {
                                 font.pixelSize: Services.Sizes.fsMeta
                                 font.family: "JetBrainsMono NF"
                             }
-                            Text {
-                                x: gpuCard.inset
-                                anchors.bottom: parent.bottom
-                                anchors.bottomMargin: 12
-                                text: Services.SysMon.igpuFreq > 0
-                                    ? Services.I18n.t("proc.clock", { n: Math.round(Services.SysMon.igpuFreq) })
-                                    : ""
-                                color: Services.Colors.ash
-                                font.pixelSize: Services.Sizes.fsCaption
-                                font.letterSpacing: 1.2
-                                font.family: "JetBrainsMono NF"
-                            }
                         }
 
                         // The words the liquid has reached, re-inked.
@@ -563,7 +515,6 @@ PanelWindow {
                         index: 4
                         col: 3; row: 2; cw: 2; ch: 1
                         glyph: ""
-                        name: Services.I18n.t("proc.network")
                         id: netCard
 
                         readonly property color tone: bodyRoot.toneAt(4)
@@ -632,7 +583,6 @@ PanelWindow {
                         index: 5
                         col: 5; row: 2; cw: 3; ch: 1
                         glyph: ""
-                        name: Services.I18n.t("proc.storage")
                         note: Services.SysMon.diskPercent + "%"
                         id: diskCard
 
@@ -676,16 +626,6 @@ PanelWindow {
                                 text: Services.I18n.t("proc.ofTotal", { n: Math.round(Services.SysMon.diskTotalGB) })
                                 color: Services.Colors.mist
                                 font.pixelSize: Services.Sizes.fsMeta
-                                font.family: "JetBrainsMono NF"
-                            }
-                            Text {
-                                x: diskCard.inset
-                                anchors.bottom: parent.bottom
-                                anchors.bottomMargin: 12
-                                text: Services.I18n.t("proc.root")
-                                color: Services.Colors.ash
-                                font.pixelSize: Services.Sizes.fsCaption
-                                font.letterSpacing: 1.2
                                 font.family: "JetBrainsMono NF"
                             }
                         }

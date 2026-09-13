@@ -189,19 +189,16 @@ DesktopWidget {
             width: ex.cellW
             glyph: "\uf176"
             value: Services.Weather.rainProb + "%"
-            caption: Services.I18n.t("weather.rain")
         }
         Widgets.WxCell {
             width: ex.cellW
             glyph: "\uf157"
             value: Services.I18n.t("weather.uv", { n: Services.Weather.uvMax })
-            caption: Services.I18n.t("weather.uvIndex")
         }
         Widgets.WxCell {
             width: ex.cellW
             glyph: "\ue798"
             value: Services.Weather.humidity + "%"
-            caption: Services.I18n.t("weather.humidity")
         }
         // The bearing as an arrow instead of two letters to decode: the glyph
         // points where the wind comes FROM, which is what the reading means.
@@ -209,7 +206,6 @@ DesktopWidget {
             width: ex.cellW
             glyph: Services.Weather.windGlyph(Services.Weather.windDir)
             value: Services.Weather.windKph + " km/h"
-            caption: Services.I18n.t("weather.wind")
         }
     }
 

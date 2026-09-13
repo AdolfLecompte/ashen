@@ -98,31 +98,6 @@ Singleton {
             "for i in $(pactl list short source-outputs | cut -f1); do pactl move-source-output $i '" + name + "'; done"])
     }
 
-    // What kind of thing the sound is coming out of, read off the node name
-    // PipeWire gives it: how it is connected is what you actually want to know
-    // ("the Bluetooth ones" or "the jack"), not the model of the chip.
-    function deviceKind(name) {
-        const n = String(name).toLowerCase()
-        if (n.indexOf("bluez") !== -1) return "bluetooth"
-        if (n.indexOf("hdmi") !== -1) return "hdmi"
-        if (n.indexOf("usb") !== -1) return "usb"
-        if (n.indexOf("headphone") !== -1 || n.indexOf("headset") !== -1) return "headphones"
-        return "speakers"
-    }
-    function kindGlyph(kind) {
-        if (kind === "bluetooth") return ""
-        if (kind === "hdmi") return ""
-        if (kind === "usb") return ""
-        if (kind === "headphones") return ""
-        return ""
-    }
-    function kindLabel(kind) {
-        if (kind === "bluetooth") return "Bluetooth"
-        if (kind === "hdmi") return "HDMI"
-        if (kind === "usb") return "USB"
-        if (kind === "headphones") return "Wired"
-        return "Built-in"
-    }
     function descOf(list, name) {
         for (const d of list) if (d.name === name) return root.shortName(d.desc)
         return ""

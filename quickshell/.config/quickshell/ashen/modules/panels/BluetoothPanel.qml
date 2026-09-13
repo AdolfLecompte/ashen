@@ -237,7 +237,7 @@ PanelWindow {
                         scanSub: graph.scanMode
                             ? (root.adapter && root.adapter.discovering
                                 ? Services.I18n.t("net.scanningDots") : Services.I18n.t("bt.nearbyCount", { n: graph.strangers.length }))
-                            : Services.I18n.t("bt.nearby")
+                            : ""
                         // The exact complement of `known`: the two lists used to
                         // disagree about `trusted`, so a device that had been
                         // marked trusted and then failed to pair was in neither
@@ -270,7 +270,9 @@ PanelWindow {
                             id: d.address,
                             glyph: "\ue1a8",
                             label: Services.BtLink.displayName(d),
-                            sub: Services.BtLink.busyText(d) || (d.paired || d.bonded ? Services.I18n.t("bt.paired") : ""),
+                            // Everything on this ring is paired; saying so under each
+                            // name was the ring describing itself.
+                            sub: Services.BtLink.busyText(d),
                             active: false
                         }))
 
