@@ -17,7 +17,7 @@ local function K(id, default)
     return v
 end
 
--- Wallpaper, notifications, settings center
+-- Shell
 hl.bind(K("wallpaper", mod .. " + SHIFT + W"), hl.dsp.exec_cmd("qs ipc -c ashen call wallpaper toggle"))
 hl.bind(K("notifications", mod .. " + N"),         hl.dsp.exec_cmd("qs ipc -c ashen call notifications toggle"))
 hl.bind(K("settings", mod .. " + I"),         hl.dsp.exec_cmd("qs ipc -c ashen call settings toggle"))
@@ -31,7 +31,7 @@ hl.bind(K("game", mod .. " + SHIFT + G"), hl.dsp.exec_cmd("qs ipc -c ashen call 
 hl.bind(K("record", mod .. " + SHIFT + R"), hl.dsp.exec_cmd("qs ipc -c ashen call record toggle"))
 
 
--- Move/resize floating windows with the mouse (SUPER + drag)
+-- Mouse
 hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
@@ -82,6 +82,14 @@ hl.bind(K("spMusic", mod .. " + M"), hl.dsp.workspace.toggle_special("music"))
 hl.bind(K("spDiscord", mod .. " + D"), hl.dsp.workspace.toggle_special("discord"))
 hl.bind(K("spNotes", mod .. " + O"), hl.dsp.workspace.toggle_special("notes"))
 hl.bind(K("spFav", mod .. " + X"), hl.dsp.workspace.toggle_special("fav"))
+
+-- Send to a special workspace
+-- ALT sends, the way it does for the numbered workspaces. Silent: the window
+-- goes away and you stay where you are; its key brings it back.
+hl.bind(K("toMusic", mod .. " + ALT + M"),   hl.dsp.window.move({ workspace = "special:music",   silent = true }))
+hl.bind(K("toDiscord", mod .. " + ALT + D"), hl.dsp.window.move({ workspace = "special:discord", silent = true }))
+hl.bind(K("toNotes", mod .. " + ALT + O"),   hl.dsp.window.move({ workspace = "special:notes",   silent = true }))
+hl.bind(K("toFav", mod .. " + ALT + X"),     hl.dsp.window.move({ workspace = "special:fav",     silent = true }))
 
 -- Window switcher: the same call opens it and steps through it
 hl.bind(K("switcherNext", "ALT + Tab"),         hl.dsp.exec_cmd("qs ipc -c ashen call switcher next"), { repeating = true })

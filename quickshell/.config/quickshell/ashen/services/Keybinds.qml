@@ -60,6 +60,7 @@ Singleton {
             }
         }
         return out.replace(/\s+/g, " ").trim()
+            .replace("mouse:272", "left drag").replace("mouse:273", "right drag")
     }
 
     // The shell's own IPC calls are the ones worth naming properly.
@@ -88,6 +89,7 @@ Singleton {
         }
         if (fn === "toggle") return label
         if (target === "lockscreen") return label
+        if (target === "widgets" && fn === "edit") return "Arrange desktop widgets"
         if (target === "notifications" && fn === "screenshot") return "Screenshot (area)"
         return label + " — " + fn
     }
@@ -115,6 +117,10 @@ Singleton {
         if (expr.indexOf("window.drag") !== -1) return "Move window with the mouse"
         if (expr.indexOf("window.resize") !== -1) return "Resize window with the mouse"
 
+        m = expr.match(/^app\(\s*"(\w+)"\s*\)$/)
+        if (m) return "Open " + m[1]
+        m = expr.match(/window\.move\(\s*\{\s*workspace\s*=\s*"special:(\w+)"/)
+        if (m) return "Send window to special workspace: " + m[1]
         m = expr.match(/window\.move\(\s*\{\s*workspace\s*=\s*"?([\w+-]+)"?/)
         if (m) return "Move window to " + root.workspaceLabel(m[1])
         m = expr.match(/focus\(\s*\{\s*workspace\s*=\s*"?([\w+-]+)"?/)
@@ -137,20 +143,30 @@ Singleton {
     function parse(text) {
         const lines = text.split("\n")
         let mod = "SUPER", section = "General", out = []
+        // A heading is the FIRST comment after a blank line; the comment lines
+        // under it explain. Taking every comment as a heading named sections
+        // "two-step autostart.lua uses. A session d" and "and -d prints the size
+        // while you drag" -- whatever line of explanation came last.
+        let afterBlank = true
+        // The capture submap binds Escape for the shell's own use: not a
+        // shortcut anyone presses on purpose.
+        let inSubmap = false
 
         for (let raw of lines) {
             const line = raw.trim()
+            const wasBlank = afterBlank
+            afterBlank = line === ""
 
             const modMatch = line.match(/^local\s+mod\s*=\s*"(\w+)"/)
             if (modMatch) { mod = modMatch[1]; continue }
 
-            // Section headers are the plain comments; the banner rules are not
+            if (line.startsWith("hl.define_submap")) { inSubmap = true; continue }
+            if (inSubmap) { if (line.startsWith("end)")) inSubmap = false; continue }
+
             if (line.startsWith("--")) {
-                const body = line.replace(/^--+/, "").trim()
-                if (body !== "" && body.indexOf("═") === -1 && body.indexOf("Ashen") === -1) {
-                    // Comments explain; headings label. Drop the explanation.
+                const body = line.replace(/^--+/, "").replace(/─+/g, "").trim()
+                if (wasBlank && body !== "" && body.indexOf("═") === -1 && body.indexOf("Ashen") === -1)
                     section = body.split(":")[0].replace(/\s*\(.*\)\s*$/, "").trim()
-                }
                 continue
             }
 
@@ -166,6 +182,8 @@ Singleton {
             const k = expr.match(/^K\(\s*"([A-Za-z]+)"\s*,([\s\S]*)\)$/)
             if (k) { id = k[1]; expr = k[2].trim() }
 
+            // A lid, not a key: it locks, but nobody looks it up to press it.
+            if (expr.indexOf("switch:") !== -1) continue
             const fallback = root.keysOf(expr, mod)
             out.push({
                 section: section,

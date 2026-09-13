@@ -304,6 +304,8 @@ Two things to expect on that first run:
 | `SUPER + SHIFT + D` | arrange desktop widgets |
 | `SUPER + L` | lock |
 | `SUPER + Escape` | power menu |
+| `SUPER + M / D / O / X` | show or hide the music, discord, notes and fav special workspaces |
+| `SUPER + ALT + M / D / O / X` | send the focused window to that special workspace |
 
 Every one of these can be changed from **Settings → Input**.
 
