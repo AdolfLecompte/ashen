@@ -39,6 +39,10 @@
   -- your saved default, or the shell as it ships. The dock is part of the look.
 - **The desktop clock picks its own format**: like the bar, 12h or 24h, with or
   without seconds.
+- **Send a window to a special workspace.** `SUPER + ALT + M / D / O / X` sends
+  the focused window to music, discord, notes or fav, the way `SUPER + ALT` and
+  a number sends it to a workspace. You stay where you are; the special's own
+  key brings it back. Rebindable like every other shortcut.
 
 ### Changed
 - **The shell idles at under half what it did.** cava kept sending sixty lines a
@@ -66,6 +70,17 @@
   so a folder opened before shows at once.
 - **Panels without a capsule come from the top** when the bar is at the bottom,
   instead of sliding in from the side.
+- **On a side bar a pill's name waits for you.** It shows once the pointer has
+  rested on the pill, never on a pass over the bar, and never after a click or
+  while its panel is open.
+- **On a solid, island or framed bar the icons sit close.** The gap sized for
+  separate capsules read as holes in a single plate.
+- **A list that would spill past its card opens upward**, like the notification
+  sound at the bottom of Settings.
+- **The shortcut list in Settings reads as a list.** Its sections are named
+  Shell, Mouse, Apps and so on instead of a line of whatever comment came last,
+  app shortcuts say what they open, and the lid switch is no longer listed as a
+  key.
 
 ### Fixed
 - **An unplugged monitor stayed in the display board.** Hyprland keeps a pulled
@@ -102,6 +117,22 @@
   plate where the capsules should be.
 - **The machine widget still drew curves** for CPU and GPU; it draws ticks, and
   the option for the old look is gone.
+- **The pill and the media panel showed the wrong cover**, or none. They ran the
+  art through a cache and a web lookup that the lyrics widget never needed, and
+  kept serving an old picture under the file name the player reuses. All three
+  now read the same cover straight from the player.
+- **The machine widget on the lock screen stood still.** Each screen's copy
+  claimed the readings under one shared name, so the first one to go switched
+  them off for the rest.
+- **Panels opened from the wrong place.** With the bar on the right every panel
+  flew in from past the edge of the screen; after a pill changed mode its
+  neighbours' panels opened where they used to be and slid; and the clock and
+  media panels flew out of a spot on no bar when their pill was off it.
+- **The network and volume panels opened differently the first time** on a side
+  bar, growing and sliding while they arrived.
+- **The media pill broke in compact and icon.** Changing mode eased the box while
+  its contents had already jumped, and the panel flew the title and buttons out
+  of places a compact or icon pill does not have.
 
 ## 3.0.0
 

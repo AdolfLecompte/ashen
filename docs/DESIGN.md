@@ -595,6 +595,52 @@ The toggle lives at the top of the Look tab, under the wallpaper it belongs to.
 It arrives from the bottom edge, or from the top when the bar is at the bottom —
 never from a side, where a centred panel reads as sliding in from somewhere else.
 
+### A pill's mode is one change
+
+A pill switching between full, compact and icon takes its new size on the same
+frame as its new contents. Easing the box while the contents had already jumped
+drew the transport past the plate: two motions for one change. Appearing,
+disappearing and changing edge still animate.
+
+A panel that flies pieces out of its pill flies them out of the pill **as it is
+drawn right now** -- same cells, same axis, same gaps. A piece the pill does not
+have (the title of a compact pill, the transport of an icon one) does not fly
+from nowhere: it waits in its card place and comes in with the contents.
+
+### A side bar names a pill only when asked
+
+The name beside a side-bar pill shows after the pointer has **rested** on it
+(900 ms), never on a pass over the bar. A click asks for the panel, not the
+name, so it hides the name until the pointer leaves, and an open panel keeps it
+hidden.
+
+### On a plate, icons stand close
+
+`pills` spaces separate capsules. On `solid`, `island` and `framed` the bar is
+one plate and the pills are bare icons on it, so the gap is 2 px: capsule air on
+a single surface reads as holes in it.
+
+### A list opens toward the room
+
+A floating list (`DevicePicker` with `overlay`) opens downward unless it would
+spill past the nearest clipping ancestor and there is more room above. The side
+is chosen once, as it opens: a list that changed sides while the page scrolled
+would be a second motion.
+
+### A panel opens from where its pill is
+
+A pill reports its centre whenever it OR anything holding it moves: a pill does
+not move inside its group when the group slides. A pill that is not on the bar
+reports nothing, and its panel then arrives as a window, centred -- never out of
+a remembered spot on no bar.
+
+### The shortcut list is the Lua
+
+Settings > Input reads `hypr/conf/keybinds.lua`; there is no second table. In
+that file a **heading is the first comment after a blank line**, and the comment
+lines under it explain. A bind that is not a key someone presses (a lid switch,
+the capture submap) is not listed.
+
 ### Where it comes from is not where it goes
 
 Two separate questions, and conflating them is why the launcher was wrong twice.
@@ -895,6 +941,8 @@ Ordered by how much each buys.
 - [ ] Nothing full-width grows on hover
 - [ ] The card is as tall as its content
 - [ ] Every `Text` declares `textFormat` (the text probe checks it)
+- [ ] A change of mode or content snaps the size; only arriving and leaving animate
+- [ ] A floating list checks which side has room before it opens
 - [ ] Every box is a rounded rectangle or a circle — nothing else
 - [ ] Nothing destructive is red
 - [ ] `Esc` closes it; click-off closes it; the exit animation is visible
