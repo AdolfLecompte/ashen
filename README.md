@@ -30,16 +30,14 @@ A monochrome Hyprland + Quickshell rice for Arch.
 
 ## Previews
 
-<table>
-  <tr>
-    <td width="50%"><img src="previews/preview1.png" alt="Preview 1" width="100%"></td>
-    <td width="50%"><img src="previews/preview2.png" alt="Preview 2" width="100%"></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="previews/preview3.png" alt="Preview 3" width="100%"></td>
-    <td width="50%"><img src="previews/preview4.png" alt="Preview 4" width="100%"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="previews/preview1.jpg" alt="Desktop widgets and the battery panel on a teal manga wallpaper" width="49%">
+  <img src="previews/preview2.jpg" alt="Network panel from a side bar, with the machine, lyrics and calendar widgets" width="49%">
+</p>
+<p align="center">
+  <img src="previews/preview3.jpg" alt="Media panel with lyrics and the cava visualiser" width="49%">
+  <img src="previews/preview4.jpg" alt="The machine widget, every reading drawn as ticks" width="49%">
+</p>
 
 ---
 
