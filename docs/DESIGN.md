@@ -585,10 +585,24 @@ names. A copied `<img>` tag was parsed as rich text and crashed the shell.
 
 ### A wallpaper follows its own look
 
-Following is the default: a wallpaper nobody decided about keeps the look on
-screen and starts remembering it. Not following is a stored decision, and such a
-wallpaper wears the standard look — the saved default, or the whole shipped bar.
-The toggle lives at the top of the Look tab, under the wallpaper it belongs to.
+Following is the default. A wallpaper nobody has designed for wears the
+**standard look** — the saved default, or the shell as it ships, every key of it
+— and starts remembering that. It never inherits the previous wallpaper's bar:
+that is a look nobody chose for it. Not following is a stored decision, and such
+a wallpaper wears the standard look every time. The toggle lives at the top of
+the Look tab, under the wallpaper it belongs to.
+
+**Everything about how the shell looks is part of it**: the bar (edge, style,
+length, layout, outline, auto-hide, each pill's full/compact/icon, the workspace
+style and count), the dock (on, edge, auto-hide, glass, icon size), the panel
+and widget outlines, the panel style, the visualiser and the desktop widgets.
+What is about the person and not the picture — pinned apps, language, idle
+times — is not.
+
+**A look changes in one movement.** The bar and the widgets leave together,
+everything lands while they are away, and they come back already in place. A
+look landing setting by setting on a visible bar rebuilt the pills in front of
+you. `Sizes.held` keeps the bar away until `Looks` lets it back.
 
 ### A panel with no capsule
 
@@ -851,11 +865,11 @@ bar) until someone saves one. Without it, putting on a plain wallpaper left the
 last one's widgets and bar sitting there, and the whole feature read as not
 remembering anything.
 
-What a wallpaper remembers includes the bar's length, outline, workspace style
-and per-pill readings. A profile saved before those joined the list has no word
-on them: moving to it puts the length back as shipped and leaves the rest as
-they are, and only on a real change of wallpaper — never when the shell starts,
-where filling reset the look already on screen.
+A profile saved before a key joined `Looks.keys` has no word on it. It takes
+that key, once, from the settings in force when it is first read
+(`Looks.migrate`) — the best guess at what it was worn with. Filling it from the
+shipped look instead reset three workspaces to five the first time you came back
+to a wallpaper. `Looks.shipped` mirrors Prefs' defaults and is the standard look.
 
 The order matters: `ashen-wallpaper.sh` runs matugen itself and reads the mode
 and the style off disk, so the picker stages the profile **before** it starts

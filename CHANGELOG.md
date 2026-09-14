@@ -1,5 +1,25 @@
 # Changelog
 
+## 3.1.1
+
+### Fixed
+- **A wallpaper forgot part of its look.** The workspace count, the bar's
+  auto-hide, the dock's auto-hide, glass and icon size, and the panel and widget
+  outlines are now remembered with it, like the bar's style and each pill's mode
+  already were. Wallpapers you had already set up keep the values you are using
+  now.
+- **A new wallpaper kept the last one's bar.** One nobody has designed for wears
+  the standard look -- your saved default, or the shell as it ships, all of it --
+  and remembers that.
+- **Changing wallpaper made the bar and the widgets flicker.** The bar was rebuilt
+  on screen one setting at a time while the widgets were already coming back. Now
+  both leave together, the new look lands while they are away, and they return
+  already in place.
+- **Auto-hide took the visualiser away with the bar.** The wave stays at the
+  screen edge while the bar slides out.
+- **A list stayed open after closing Settings**, and after changing tab or
+  scrolling its row away, floating over whatever was underneath.
+
 ## 3.1.0
 
 ### Added

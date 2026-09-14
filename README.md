@@ -332,7 +332,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.1.0
+3.1.1
 
 ## License
 
