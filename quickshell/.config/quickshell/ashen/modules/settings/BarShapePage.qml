@@ -41,6 +41,37 @@ Section {
             onPicked: id => Services.Prefs.barStyle = id
         }
 
+        // Not for the framed style: there the bar IS the screen's border, and a
+        // border that stops short of the corners is not one.
+        Widgets.SliderRow {
+            visible: !Services.Sizes.barFramed
+            Layout.topMargin: 4
+            glyph: "\uf69b"
+            label: Services.I18n.t("settings.bar.length")
+            value: Services.Prefs.barLength
+            valueText: shownPct + "%"
+            onMoved: pct => Services.Prefs.barLength = Math.max(50, pct)
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            spacing: 12
+            RowGlyph { glyph: "\ue8f5" }        // visibility_off
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: Services.I18n.t("settings.bar.autohide")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+            }
+            Toggle {
+                checked: Services.Prefs.barAutohide
+                onToggled: Services.Prefs.barAutohide = !Services.Prefs.barAutohide
+            }
+        }
+
         // One switch for every capsule on the bar. It lived on each of the
         // fifteen cards in Layout, which meant fifteen ways to end up with a
         // bar that is half glass and half plate.
@@ -60,34 +91,6 @@ Section {
             Toggle {
                 checked: Services.Prefs.barOutline
                 onToggled: Services.Prefs.barOutline = !Services.Prefs.barOutline
-            }
-        }
-
-        // Not for the framed style: there the bar IS the screen's border, and a
-        // border that stops short of the corners is not one.
-        Widgets.SliderRow {
-            visible: !Services.Sizes.barFramed
-            glyph: "\uf69b"
-            label: Services.I18n.t("settings.bar.length")
-            value: Services.Prefs.barLength
-            valueText: shownPct + "%"
-            onMoved: pct => Services.Prefs.barLength = Math.max(50, pct)
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 12
-            RowGlyph { glyph: "\ue8f5" }        // visibility_off
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
-                Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.bar.autohide"); color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsInput; font.family: "JetBrainsMono NF" }
-            }
-            Item { Layout.fillWidth: true }
-            Toggle {
-                checked: Services.Prefs.barAutohide
-                onToggled: Services.Prefs.barAutohide = !Services.Prefs.barAutohide
             }
         }
     }
