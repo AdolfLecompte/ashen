@@ -53,8 +53,32 @@ Column {
         const above = top - 4
         picker.openUp = below < optsCol.implicitHeight + 8 && above > below
     }
+    // A floating list lives on the window, not in its row, so nothing that
+    // takes the row away takes the list with it: closing Settings, another
+    // tab, or the row scrolling out of sight all left it open on its own.
+    onVisibleChanged: if (!picker.visible) picker.expanded = false
+    Connections {
+        target: picker.Window.window
+        ignoreUnknownSignals: true
+        function onVisibleChanged() { picker.expanded = false }
+    }
+    // …and the panel's window outlives its closing animation, so the list
+    // goes the moment the panel is told to close, not when it has finished.
+    Connections {
+        target: Services.AppState
+        function onSettingsVisibleChanged() { if (!Services.AppState.settingsVisible) picker.expanded = false }
+        function onWallpaperVisibleChanged() { if (!Services.AppState.wallpaperVisible) picker.expanded = false }
+    }
     function place() {
         if (!picker.overlay || !picker.overlayRoot) return
+        // The row has scrolled out of its page: close rather than float over
+        // whatever took its place.
+        for (let c = picker.parent; c; c = c.parent) {
+            if (!c.clip) continue
+            const y = head.mapToItem(c, 0, 0).y
+            if (y + head.height < 0 || y > c.height) { picker.expanded = false; return }
+            break
+        }
         const p = head.mapToItem(picker.overlayRoot, 0,
             picker.openUp ? -(4 + optsCol.implicitHeight) : head.height + 4)
         picker.popX = p.x
