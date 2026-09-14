@@ -192,6 +192,24 @@ Scope {
                 HoverHandler { id: peekHover }
             }
 
+            // The wave, UNDER the strip and outside what auto-hide slides away:
+            // it grows out of the screen edge, and riding the strip's Translate
+            // took it off screen with the bar. Same box as `content`, and before
+            // it in the tree, so the plate still covers all but the tips. In the
+            // framed style the plate is the ring, another window, so the wave is
+            // drawn there.
+            Item {
+                x: content.x
+                y: content.y
+                width: content.width
+                height: content.height
+                // Nothing to hide behind in the island style: the wave would
+                // climb the screen edge in the gaps between the plates.
+                visible: !Services.Sizes.barFramed && !Services.Sizes.barIsland
+                opacity: content.opacity
+                CavaBackground {}
+            }
+
             Item {
                 id: content
                 // Bar-sized strip pinned to the docked edge of a window that may
@@ -297,18 +315,6 @@ Scope {
                     border.color: Services.Colors.fillOutline
                 }
 
-                // Full bar window, never the strip: the wave grows out of the
-                // screen edge, and boxing it into the strip cut it off from the
-                // edge it is supposed to be climbing out of. It sits UNDER the
-                // plate (z -3 against the plate's -2), so only the tips that
-                // clear the plate show. In the framed style the plate is the
-                // ring, another window entirely, so the wave is drawn there.
-                CavaBackground {
-                    z: -3
-                    // Nothing to hide behind in the island style: the wave would
-                    // climb the screen edge in the gaps between the plates.
-                    visible: !Services.Sizes.barFramed && !Services.Sizes.barIsland
-                }
                 // ── Layout ──────────────────────────────────────────────
                 // Which pill goes where is Prefs.barLayout's business: each id maps to
                 // the thing that builds it, and nothing here knows what a clock is.
