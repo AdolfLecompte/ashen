@@ -199,7 +199,13 @@ Singleton {
     // invisible, so the pills swap their two axes in one frame instead of
     // sliding from the old edge's number to the new one -- which is what left
     // a 298 px media pill inside a 56 px column.
-    property bool hidden: false
+    readonly property bool hidden: root.swapHidden || root.held
+    property bool swapHidden: false
+    // Held away by someone changing more than the edge at once: a wallpaper's
+    // look lands its layout, length, modes and count while the bar is gone,
+    // and only then lets it back. Each of those landing on a visible bar
+    // rebuilt the pills in front of you, one setting at a time.
+    property bool held: false
 
     // Both are still BINDINGS until something assigns them, so the first change
     // of the session skipped the fade. Assigning here cuts them loose.
@@ -217,12 +223,12 @@ Singleton {
     property string appliedStyle: Prefs.barStyle
 
     onWantedStyleChanged: if (wantedStyle !== appliedStyle) {
-        hidden = true
+        swapHidden = true
         swapTimer.restart()
     }
 
     onWantedChanged: if (wanted !== applied) {
-        hidden = true
+        swapHidden = true
         swapTimer.restart()
     }
 
@@ -241,7 +247,7 @@ Singleton {
         // Hyprland animates the layer when its geometry changes; coming back
         // during that jump reads as a pop-in.
         interval: 320
-        onTriggered: root.hidden = false
+        onTriggered: root.swapHidden = false
     }
 
     readonly property string barPosition: applied

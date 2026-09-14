@@ -19,20 +19,26 @@ Singleton {
         "barStyle", "barPosition", "barLayout", "useGradients", "visualizer",
         "panelStyle", "themeMode", "desktopLayout",
         "barLength", "barOutline", "workspaceStyle", "barContent",
-        "dockEnabled", "dockEdge"
+        "dockEnabled", "dockEdge",
+        "workspaceCount", "barAutohide", "panelOutline", "widgetOutline",
+        "dockAutohide", "dockGlass", "dockIconSize"
     ]
 
-    // The last four joined the list after profiles already existed, so a
-    // profile saved before then has no word on them -- and a missing key is
-    // skipped, which made the bar keep whatever length the PREVIOUS wallpaper
-    // had left it at while everything else about the look changed. Moving to a
-    // remembered wallpaper that predates them puts the LENGTH back as the
-    // shell ships it. Only the length: filling the workspace style too swapped
-    // somebody's numbers for icons on every old profile, which is a new
-    // surprise rather than a fix. The other three carry over until that
-    // wallpaper learns its own. Only for real profiles: the classic look for an
-    // unremembered wallpaper stays the two keys it has always been.
-    readonly property var shipped: ({ barLength: 100 })
+    // Every key as the shell ships it: Prefs' own defaults, written once more
+    // here because a Prefs property cannot be asked what it started as. The
+    // standard look is exactly this, and a profile saved before a key joined
+    // the list takes that key from here. Carrying it over from the PREVIOUS
+    // wallpaper instead is what made the bar keep the last one's length, count
+    // and dock. Theme mode is not in it: switching somebody's light mode off
+    // because a wallpaper is new would be going too far.
+    readonly property var shipped: ({
+        barStyle: "pills", barPosition: "top", barLayout: "", useGradients: false,
+        visualizer: true, panelStyle: "morph", desktopLayout: "",
+        barLength: 100, barOutline: false, workspaceStyle: "icons", barContent: "",
+        dockEnabled: true, dockEdge: "bottom",
+        workspaceCount: 5, barAutohide: false, panelOutline: false, widgetOutline: false,
+        dockAutohide: true, dockGlass: false, dockIconSize: 44
+    })
 
     // What the shell looks like right now. Every key is read straight out of
     // its service: a binding only re-runs for what it can see, so this cannot
@@ -52,6 +58,13 @@ Singleton {
         barContent: Prefs.barContent,
         dockEnabled: Prefs.dockEnabled,
         dockEdge: Prefs.dockEdge,
+        workspaceCount: Prefs.workspaceCount,
+        barAutohide: Prefs.barAutohide,
+        panelOutline: Prefs.panelOutline,
+        widgetOutline: Prefs.widgetOutline,
+        dockAutohide: Prefs.dockAutohide,
+        dockGlass: Prefs.dockGlass,
+        dockIconSize: Prefs.dockIconSize,
         scheme: Theme.schemeId,
         dynamicType: Theme.dynamicType
     })
@@ -63,16 +76,11 @@ Singleton {
     // plain wallpaper left the last one's widgets and bar sitting there, and
     // the whole thing read as "it does not remember anything".
     property var baseline: ({})
-    // Until one is saved: the shell as it ships -- no widgets on the desktop and
-    // the whole bar as it comes out of the box, edge, shape, layout, length and
-    // all. It used to reset only the shape, so a wallpaper that did not follow
-    // its own look wore whatever bar the last one had left behind, which is no
-    // standard at all. The theme is deliberately not in it: turning somebody's
-    // light mode off because they never saved a default would be going too far.
-    readonly property var classic: ({
-        desktopLayout: "", barStyle: "pills", barPosition: "top", barLayout: "",
-        barLength: 100, barOutline: false, barContent: ""
-    })
+    // Until one is saved: the shell as it ships, every key of it. It used to be
+    // seven keys, so everything else -- the dock, the workspace count, the
+    // outlines -- stayed as the last wallpaper had left it, which is no
+    // standard at all.
+    readonly property var classic: root.shipped
     readonly property var defaultLook: (root.baseline && root.baseline.keys)
         ? root.baseline : { on: true, keys: root.classic, theme: {} }
 
@@ -155,7 +163,7 @@ Singleton {
         }
         // barLayout is a packed string; the sections the bar actually reads are
         // rebuilt from it, and nothing else does that for us.
-        if (k.barLayout !== undefined) Prefs.syncBarLayout()
+        if (k.barLayout !== undefined || fillMissing) Prefs.syncBarLayout()
     }
 
     // The half that has to be on disk BEFORE the wallpaper script starts: it
@@ -209,23 +217,37 @@ Singleton {
     property bool asked: false
 
     function swap(path, repaint) {
-        // Never decided about: it keeps the look you are wearing and starts
-        // remembering it. The standard look is for a wallpaper told NOT to
-        // follow its own -- resetting the bar on every new picture would be a
-        // punishment for trying one.
-        const look = root.profiles[path] === undefined ? null : root.lookFor(path)
-        root.pendingFills = root.has(path) && root.dressedFor !== "" && root.dressedFor !== path
+        // Its own look if it has one; otherwise the standard -- a wallpaper
+        // nobody has designed for wears the shell as it ships (or the saved
+        // default) and starts remembering THAT, not the last wallpaper's bar.
+        const look = root.lookFor(path)
+        root.pendingFills = root.dressedFor !== "" && root.dressedFor !== path
         root.pendingPath = path
         root.adoptPath = path
         root.applying = true
         Desktop.hushed = true
+        // The bar goes with the widgets, but only if the look changes it: a
+        // wallpaper wearing the same bar has nothing to hide it for.
+        if (root.changesSomething(look)) { reveal.stop(); Sizes.held = true }
         root.wearTheme(look, repaint)
         root.pending = look
         root.waitingFor = path
         ceiling.restart()
     }
 
-    // The picture is there: dress the desktop and let it back in.
+    // Would wearing `look` change anything on screen?
+    function changesSomething(look) {
+        if (!look || !look.keys) return false
+        for (const name of root.keys) {
+            let v = look.keys[name]
+            if (v === undefined) v = root.shipped[name]
+            if (v !== undefined && v !== root.live[name]) return true
+        }
+        return false
+    }
+
+    // The picture is there: dress the desktop while it is still away, and let
+    // the bar and the widgets back in together once the new layout has landed.
     function dressUp() {
         ceiling.stop()
         afterCross.stop()
@@ -236,7 +258,19 @@ Singleton {
         if (root.pending) root.wearKeys(root.pending)
         else { root.dressedFor = root.pendingPath; settle.restart() }
         root.pending = null
-        Desktop.hushed = false
+        reveal.restart()
+    }
+
+    // Long enough for an edge or style swap the look set off to finish its own
+    // fade (240 + 320 in Sizes) and for the pills and widgets to be rebuilt,
+    // so they come back already in their new places instead of moving there.
+    Timer {
+        id: reveal
+        interval: 620
+        onTriggered: {
+            Sizes.held = false
+            Desktop.hushed = false
+        }
     }
 
     // What the transition itself takes once the file says the switch is done.
@@ -362,6 +396,7 @@ Singleton {
             root.profiles = ({})
         }
         root.loaded = true
+        root.migrate()
         // Whatever is already on screen at login was put there by the restore
         // script, which knows nothing about profiles.
         if (Wallpaper.path === "") return
@@ -371,6 +406,44 @@ Singleton {
         // NOT the default at startup: the shell has just read its own prefs,
         // and wearing the classic here would undo the desktop somebody left set
         // up on a wallpaper they simply never asked to remember.
+    }
+
+    // A profile saved before a key joined the list takes that key from what
+    // you have NOW, once, when it is read: the best guess at what that
+    // wallpaper was worn with. Filling it from the shipped look instead would
+    // have reset somebody's three workspaces to five the first time they came
+    // back to a wallpaper. Needs Prefs on disk first, or `live` is defaults.
+    function migrate() {
+        if (!root.loaded || !Prefs.loaded) return
+        let changed = false
+        const next = Object.assign({}, root.profiles)
+        for (const path in next) {
+            const p = next[path]
+            if (!p || p.on !== true || !p.keys) continue
+            const missing = root.keys.filter(k => p.keys[k] === undefined && k !== "themeMode")
+            if (missing.length === 0) continue
+            const keys = Object.assign({}, p.keys)
+            for (const k of missing) keys[k] = root.live[k]
+            next[path] = Object.assign({}, p, { keys: keys })
+            changed = true
+        }
+        if (root.baseline && root.baseline.keys) {
+            const b = root.baseline
+            const missing = root.keys.filter(k => b.keys[k] === undefined && k !== "themeMode")
+            if (missing.length > 0) {
+                const keys = Object.assign({}, b.keys)
+                for (const k of missing) keys[k] = root.shipped[k]
+                root.baseline = Object.assign({}, b, { keys: keys })
+                changed = true
+            }
+        }
+        if (!changed) return
+        root.profiles = next
+        root.save()
+    }
+    Connections {
+        target: Prefs
+        function onLoadedChanged() { root.migrate() }
     }
 
     // Nothing builds a singleton until someone reads it, and no panel reads
