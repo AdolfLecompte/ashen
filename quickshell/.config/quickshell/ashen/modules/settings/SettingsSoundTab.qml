@@ -96,7 +96,7 @@ Section {
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
-                RowGlyph { glyph: "\ue645" }        // priority_high
+                RowGlyph { glyph: "\uf654" }
                 Text {
                     textFormat: Text.PlainText
                     Layout.fillWidth: true
