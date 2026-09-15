@@ -111,22 +111,23 @@ PanelWindow {
         pillGlyph: Services.AppState.pillGlyph("usage")
         pillLabel: Services.AppState.pillLabel("usage")
 
-        // Plain cards on the panel, sized by what they hold. The shell's own
-        // pieces, not a second vocabulary: the storage bar for a share, a slider
-        // track stood on end for a day, the clock's calendar for the month.
+        // The day leads: its total and its hours on the left, the applications
+        // that filled it on the right, and the week and the month underneath to
+        // walk to another day. The shell's own pieces throughout -- the clock
+        // panel's hourly curve, a slider track stood on end for each day of the
+        // week, the clock's calendar, the storage bar.
         readonly property int gap: 12
         readonly property int pad: 22
         readonly property int headH: 36
-        readonly property int innerW: 816
-        readonly property int statH: 100
-        readonly property int chartH: 256
+        readonly property int innerW: 1040
+        readonly property int dayW: 600
+        readonly property int topH: 300
+        readonly property int bottomH: 250
+        readonly property int monthW: 392
         readonly property int appRowH: 44
-        // As tall as what it holds: six rows at most, one for the remark when
-        // nothing was counted.
         readonly property int appRows: 6
-        readonly property int appsH: Math.max(1, Math.min(appRows, win.dayData.apps.length)) * appRowH + 28
         openW: innerW + pad * 2
-        openH: headH + gap + statH + gap + chartH + gap + appsH + pad * 2
+        openH: headH + gap + topH + gap + bottomH + pad * 2
         cardRadius: 22
 
         body: Component {
@@ -149,63 +150,6 @@ PanelWindow {
                     clip: true
                     opacity: board.stage(index)
                     transform: Translate { y: (1 - board.stage(pl.index)) * 12 }
-                }
-
-                // A number with a word over it and, maybe, a line under it.
-                component Stat: Plate {
-                    id: st
-                    property string label: ""
-                    property string value: ""
-                    property string foot: ""
-                    property string glyph: ""
-                    property color glyphColor: Services.Colors.mist
-                    property int valueSize: Services.Sizes.fsReadout
-                    readonly property alias valueItem: stValue
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 4
-                        Text {
-                            textFormat: Text.PlainText
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: st.label !== ""
-                            text: st.label
-                            color: Services.Colors.mist
-                            font.pixelSize: Services.Sizes.fsBody
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 6
-                            Text {
-                                textFormat: Text.PlainText
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: st.glyph !== ""
-                                text: st.glyph
-                                color: st.glyphColor
-                                font.pixelSize: st.valueSize
-                                font.family: "Material Symbols Rounded"
-                            }
-                            Text {
-                                textFormat: Text.PlainText
-                                id: stValue
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: st.value
-                                color: Services.Colors.snow
-                                font.pixelSize: st.valueSize
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            visible: st.foot !== ""
-                            text: st.foot
-                            color: Services.Colors.ash
-                            font.pixelSize: Services.Sizes.fsMeta
-                            font.family: "JetBrainsMono NF"
-                        }
-                    }
                 }
 
                 // ── The day you are looking at ───────────────────────────
@@ -244,159 +188,137 @@ PanelWindow {
                     x: card.pad
                     y: card.pad + card.headH + card.gap
                     width: card.innerW
-                    height: card.openH - y - card.pad
+                    height: card.topH + card.gap + card.bottomH
 
-                    // ── Three numbers ────────────────────────────────────
-                    Stat {
-                        index: 1
-                        x: 0; y: 0
-                        width: 240; height: card.statH
-                        label: Services.I18n.t("usage.average")
-                        value: Services.Usage.span(win.average)
-                        foot: win.week.length
-                            ? Services.I18n.locale.toString(win.week[0].date, "d MMM") + " – "
-                              + Services.I18n.locale.toString(win.week[6].date, "d MMM")
-                            : ""
-                    }
-                    Stat {
-                        id: hero
-                        index: 2
-                        x: 240 + card.gap; y: 0
-                        width: card.innerW - 480 - card.gap * 2; height: card.statH
-                        value: Services.Usage.span(win.dayData.total)
-                        valueSize: 36
-                    }
-                    Stat {
-                        index: 3
-                        x: card.innerW - 240; y: 0
-                        width: 240; height: card.statH
-                        label: Services.I18n.t("usage.vsAverage")
-                        glyph: Math.abs(win.delta) < 60 ? "" : (win.delta > 0 ? "" : "")
-                        glyphColor: win.delta > 0 ? Services.Colors.ghost : Services.Colors.mist
-                        value: Math.abs(win.delta) < 60 ? "=" : Services.Usage.span(Math.abs(win.delta))
-                    }
-
-                    // ── The week, as bars ────────────────────────────────
-                    // Each day is a track stood on end with its share filled
-                    // from the foot -- the slider's own shape. The day on the
-                    // board in the accent; press a bar to look at that day.
+                    // ── The day: its total and its hours ─────────────────
                     Plate {
-                        id: weekPlate
-                        index: 4
-                        x: 0; y: card.statH + card.gap
-                        width: 468; height: card.chartH
-                        Row {
-                            id: bars
-                            anchors.fill: parent
-                            anchors.margins: 18
-                            Repeater {
-                                model: win.week
-                                delegate: Item {
-                                    required property var modelData
-                                    readonly property bool on: modelData.key === win.day
-                                    width: bars.width / 7
-                                    height: bars.height
+                        id: dayPlate
+                        index: 1
+                        width: card.dayW
+                        height: card.topH
 
-                                    Rectangle {
-                                        id: barTrack
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.top: parent.top
-                                        anchors.bottom: dayLabel.top
-                                        anchors.bottomMargin: 10
-                                        width: 30
-                                        radius: 8
-                                        color: Services.Colors.fillLine
-                                        opacity: modelData.future ? 0.4 : 1
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.bottom: parent.bottom
-                                            height: modelData.total < 60 ? 0
-                                                : Math.max(parent.radius * 2, parent.height * modelData.total / win.weekMax)
-                                            radius: parent.radius
-                                            color: parent.parent.on ? Services.Colors.ghost
-                                                : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.45)
-                                            gradient: Services.Prefs.useGradients && parent.parent.on
-                                                ? Services.Colors.accentGradientV : null
-                                            Behavior on height { Widgets.Anim {} }
-                                        }
-                                    }
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        id: dayLabel
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.bottom: parent.bottom
-                                        text: Services.I18n.locale.dayName(modelData.date.getDay(), Locale.ShortFormat)
-                                        color: parent.on ? Services.Colors.snow : Services.Colors.mist
-                                        font.pixelSize: Services.Sizes.fsBody
-                                        font.bold: parent.on
-                                        font.family: "JetBrainsMono NF"
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: !modelData.future
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: win.selected = modelData.key
-                                    }
+                        Text {
+                            textFormat: Text.PlainText
+                            id: dayGlyph
+                            x: 22
+                            anchors.verticalCenter: dayTotal.verticalCenter
+                            text: ""
+                            color: Services.Colors.ghost
+                            font.pixelSize: 34
+                            font.family: "Material Symbols Rounded"
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            id: dayTotal
+                            anchors.left: dayGlyph.right
+                            anchors.leftMargin: 10
+                            y: 18
+                            text: Services.Usage.span(win.dayData.total)
+                            color: Services.Colors.snow
+                            font.pixelSize: 44
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+                        // Against the week's average: the arrow says which way,
+                        // the number how far.
+                        Row {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 22
+                            anchors.verticalCenter: dayTotal.verticalCenter
+                            spacing: 4
+                            visible: win.average >= 60
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: Math.abs(win.delta) >= 60
+                                text: win.delta > 0 ? "" : ""
+                                color: win.delta > 0 ? Services.Colors.ghost : Services.Colors.mist
+                                font.pixelSize: 22
+                                font.family: "Material Symbols Rounded"
+                            }
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: Math.abs(win.delta) < 60 ? "=" : Services.Usage.span(Math.abs(win.delta))
+                                color: Services.Colors.snow
+                                font.pixelSize: Services.Sizes.fsSectionTitle
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            x: 22
+                            anchors.top: dayTotal.bottom
+                            text: Services.I18n.t("usage.average") + "  " + Services.Usage.span(win.average)
+                                + "   ·   "
+                                + (win.week.length
+                                   ? Services.I18n.locale.toString(win.week[0].date, "d MMM") + " – "
+                                     + Services.I18n.locale.toString(win.week[6].date, "d MMM")
+                                   : "")
+                            color: Services.Colors.ash
+                            font.pixelSize: Services.Sizes.fsBody
+                            font.family: "JetBrainsMono NF"
+                        }
+
+                        // The hours of the day, stepped: each hour holds its own
+                        // level, the way the clock panel draws the weather. An
+                        // hour never had more than sixty minutes in it.
+                        Item {
+                            id: hoursBox
+                            x: 22
+                            width: parent.width - 44
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 16
+                            height: 150
+                            readonly property var hours: {
+                                const h = win.dayData.hours || []
+                                return h.length === 24 ? h : new Array(24).fill(0)
+                            }
+                            Widgets.Trend {
+                                id: hoursCurve
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                height: 124
+                                stepped: true
+                                values: hoursBox.hours.map(s => s / 60)
+                                maxValue: 60
+                            }
+                            Repeater {
+                                model: [0, 6, 12, 18]
+                                delegate: Text {
+                                    textFormat: Text.PlainText
+                                    required property int modelData
+                                    x: Math.max(0, Math.min(hoursBox.width - width,
+                                                            hoursBox.width * (modelData + 0.5) / 24 - width / 2))
+                                    anchors.top: hoursCurve.bottom
+                                    anchors.topMargin: 6
+                                    text: Services.Prefs.clock24h
+                                        ? (modelData < 10 ? "0" : "") + modelData + ":00"
+                                        : (modelData % 12 === 0 ? 12 : modelData % 12) + (modelData < 12 ? " am" : " pm")
+                                    color: Services.Colors.ash
+                                    font.pixelSize: Services.Sizes.fsMeta
+                                    font.family: "JetBrainsMono NF"
                                 }
                             }
                         }
                     }
 
-                    // ── The month, as the clock's calendar ───────────────
-                    Plate {
-                        id: monthPlate
-                        index: 5
-                        x: 468 + card.gap; y: card.statH + card.gap
-                        width: card.innerW - x; height: card.chartH
-                        readonly property date shownDate: win.dateOf(win.day)
-                        Text {
-                            textFormat: Text.PlainText
-                            id: monthTitle
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            y: 14
-                            text: Services.I18n.locale.toString(monthPlate.shownDate, "MMMM")
-                            color: Services.Colors.mist
-                            font.pixelSize: Services.Sizes.fsBody
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Widgets.MonthGrid {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.top: monthTitle.bottom
-                            anchors.topMargin: 10
-                            reserveRows: true
-                            cellW: Math.floor((monthPlate.width - 28) / 7) - 3
-                            cellSize: 30
-                            monthIndex: monthPlate.shownDate.getFullYear() * 12 + monthPlate.shownDate.getMonth()
-                            shownIndex: monthIndex
-                            selectedDay: monthPlate.shownDate.getDate()
-                            levelOf: function(day) {
-                                const d = monthPlate.shownDate
-                                const k = win.keyOf(new Date(d.getFullYear(), d.getMonth(), day))
-                                if (k > win.todayKey) return -1
-                                const t = win.totalOf(k)
-                                return t < 60 ? 0 : t / win.monthMax
-                            }
-                            onPicked: day => {
-                                const d = monthPlate.shownDate
-                                win.selected = win.keyOf(new Date(d.getFullYear(), d.getMonth(), day))
-                            }
-                        }
-                    }
-
-                    // ── The applications that had you ────────────────────
+                    // ── What filled it ───────────────────────────────────
                     Plate {
                         id: appsPlate
-                        index: 6
-                        x: 0; y: card.statH + card.gap + card.chartH + card.gap
-                        width: card.innerW; height: card.appsH
+                        index: 2
+                        x: card.dayW + card.gap
+                        width: card.innerW - x
+                        height: card.topH
                         readonly property real most: win.dayData.apps.length ? win.dayData.apps[0].secs : 1
 
                         Column {
                             anchors.fill: parent
-                            anchors.margins: 14
-                            anchors.leftMargin: 18
-                            anchors.rightMargin: 18
+                            anchors.margins: 16
+                            anchors.leftMargin: 20
+                            anchors.rightMargin: 20
                             visible: win.dayData.apps.length > 0
                             Repeater {
                                 model: win.dayData.apps.slice(0, card.appRows)
@@ -459,9 +381,9 @@ PanelWindow {
                                     // The storage bar: a track and its share.
                                     Rectangle {
                                         anchors.left: parent.left
+                                        anchors.right: parent.right
                                         anchors.top: appIcon.bottom
                                         anchors.topMargin: 8
-                                        width: parent.width * 0.62
                                         height: 6
                                         radius: 3
                                         color: Services.Colors.fillLine
@@ -485,6 +407,131 @@ PanelWindow {
                             color: Services.Colors.mist
                             font.pixelSize: Services.Sizes.fsInput
                             font.family: "JetBrainsMono NF"
+                        }
+                    }
+
+                    // ── The week, as bars ────────────────────────────────
+                    // Each day is a track stood on end with its share filled
+                    // from the foot -- the slider's own shape. The day on the
+                    // board in the accent; press a bar to look at that day.
+                    Plate {
+                        id: weekPlate
+                        index: 3
+                        y: card.topH + card.gap
+                        width: card.innerW - card.monthW - card.gap
+                        height: card.bottomH
+                        Row {
+                            id: bars
+                            anchors.fill: parent
+                            anchors.margins: 18
+                            Repeater {
+                                model: win.week
+                                delegate: Item {
+                                    required property var modelData
+                                    readonly property bool on: modelData.key === win.day
+                                    width: bars.width / 7
+                                    height: bars.height
+
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        id: barValue
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        anchors.top: parent.top
+                                        visible: !modelData.future && modelData.total >= 60
+                                        text: Math.floor(modelData.total / 3600) > 0
+                                            ? Math.floor(modelData.total / 3600) + "h"
+                                            : Math.floor(modelData.total / 60) + "m"
+                                        color: parent.on ? Services.Colors.snow : Services.Colors.ash
+                                        font.pixelSize: Services.Sizes.fsMeta
+                                        font.bold: parent.on
+                                        font.family: "JetBrainsMono NF"
+                                    }
+                                    Rectangle {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        anchors.top: barValue.bottom
+                                        anchors.topMargin: 6
+                                        anchors.bottom: dayLabel.top
+                                        anchors.bottomMargin: 10
+                                        width: 34
+                                        radius: 9
+                                        color: Services.Colors.fillLine
+                                        opacity: modelData.future ? 0.4 : 1
+                                        Rectangle {
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.bottom: parent.bottom
+                                            height: modelData.total < 60 ? 0
+                                                : Math.max(parent.radius * 2, parent.height * modelData.total / win.weekMax)
+                                            radius: parent.radius
+                                            color: parent.parent.on ? Services.Colors.ghost
+                                                : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.45)
+                                            gradient: Services.Prefs.useGradients && parent.parent.on
+                                                ? Services.Colors.accentGradientV : null
+                                            Behavior on height { Widgets.Anim {} }
+                                        }
+                                    }
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        id: dayLabel
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        anchors.bottom: parent.bottom
+                                        text: Services.I18n.locale.dayName(modelData.date.getDay(), Locale.ShortFormat)
+                                        color: parent.on ? Services.Colors.snow : Services.Colors.mist
+                                        font.pixelSize: Services.Sizes.fsBody
+                                        font.bold: parent.on
+                                        font.family: "JetBrainsMono NF"
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        enabled: !modelData.future
+                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                        onClicked: win.selected = modelData.key
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ── The month, as the clock's calendar ───────────────
+                    Plate {
+                        id: monthPlate
+                        index: 4
+                        x: card.innerW - card.monthW
+                        y: card.topH + card.gap
+                        width: card.monthW
+                        height: card.bottomH
+                        readonly property date shownDate: win.dateOf(win.day)
+                        Text {
+                            textFormat: Text.PlainText
+                            id: monthTitle
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            y: 14
+                            text: Services.I18n.locale.toString(monthPlate.shownDate, "MMMM")
+                            color: Services.Colors.mist
+                            font.pixelSize: Services.Sizes.fsBody
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Widgets.MonthGrid {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: monthTitle.bottom
+                            anchors.topMargin: 10
+                            reserveRows: true
+                            cellW: Math.floor((monthPlate.width - 28) / 7) - 3
+                            cellSize: 30
+                            monthIndex: monthPlate.shownDate.getFullYear() * 12 + monthPlate.shownDate.getMonth()
+                            shownIndex: monthIndex
+                            selectedDay: monthPlate.shownDate.getDate()
+                            levelOf: function(day) {
+                                const d = monthPlate.shownDate
+                                const k = win.keyOf(new Date(d.getFullYear(), d.getMonth(), day))
+                                if (k > win.todayKey) return -1
+                                const t = win.totalOf(k)
+                                return t < 60 ? 0 : t / win.monthMax
+                            }
+                            onPicked: day => {
+                                const d = monthPlate.shownDate
+                                win.selected = win.keyOf(new Date(d.getFullYear(), d.getMonth(), day))
+                            }
                         }
                     }
                 }
