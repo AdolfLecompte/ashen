@@ -19,6 +19,14 @@ Grid {
     // Six rows always: a five-week month must not shorten the column.
     property bool reserveRows: true
     property bool interactive: true
+    // Optional, for a calendar that is also a map: each day's share (0..1) of
+    // whatever is being counted, tinting its cell -- screen time uses it. Left
+    // null, the calendar is the clock's, bare.
+    property var levelOf: null
+    // A day that is being looked at, outlined; 0 for none. Pressing a day that
+    // has happened says so through `picked`.
+    property int selectedDay: 0
+    signal picked(int day)
 
     columns: 7
     spacing: 3
@@ -46,11 +54,17 @@ Grid {
             radius: 8
             // Today takes the accent; every other day is bare and answers the
             // pointer by brightening its number.
-            color: isToday ? Services.Colors.ghost : "transparent"
+            readonly property real level: (root.levelOf && isValid) ? root.levelOf(day) : -1
+            readonly property bool isSelected: isValid && day === root.selectedDay
+            color: isToday ? Services.Colors.ghost
+                 : level > 0 ? Services.Colors.tint(Services.Colors.fillInset, Services.Colors.ghost, 0.12 + 0.5 * level)
+                 : "transparent"
             // Vertical: the cell is a square block, not a wide pill, so the
             // light reads down it -- lit top, dark foot.
             gradient: Services.Prefs.useGradients && isToday ? Services.Colors.accentGradientV : null
             Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
+            border.width: isSelected && !isToday ? 2 : 0
+            border.color: Services.Colors.snow
 
             Text {
                 textFormat: Text.PlainText
@@ -70,6 +84,7 @@ Grid {
                 anchors.fill: parent
                 hoverEnabled: root.interactive && parent.isValid
                 cursorShape: Qt.PointingHandCursor
+                onClicked: if (root.interactive && parent.isValid && parent.level >= 0) root.picked(parent.day)
             }
         }
     }

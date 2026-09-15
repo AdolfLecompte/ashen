@@ -111,87 +111,100 @@ PanelWindow {
         pillGlyph: Services.AppState.pillGlyph("usage")
         pillLabel: Services.AppState.pillLabel("usage")
 
-        // The process monitor's grid: 126 px cells, 12 px apart.
-        readonly property int cell: 126
+        // Plain cards on the panel, sized by what they hold. The shell's own
+        // pieces, not a second vocabulary: the storage bar for a share, a slider
+        // track stood on end for a day, the clock's calendar for the month.
         readonly property int gap: 12
         readonly property int pad: 22
         readonly property int headH: 36
-        function span(n) { return n * cell + (n - 1) * gap }
-        openW: span(6) + pad * 2
-        openH: headH + gap + span(5) + pad * 2
+        readonly property int innerW: 816
+        readonly property int statH: 100
+        readonly property int chartH: 256
+        readonly property int appRowH: 44
+        // As tall as what it holds: six rows at most, one for the remark when
+        // nothing was counted.
+        readonly property int appRows: 6
+        readonly property int appsH: Math.max(1, Math.min(appRows, win.dayData.apps.length)) * appRowH + 28
+        openW: innerW + pad * 2
+        openH: headH + gap + statH + gap + chartH + gap + appsH + pad * 2
         cardRadius: 22
 
         body: Component {
             Item {
                 id: board
 
-                readonly property Item glyphTarget: win.isToday ? heroGlyph : null
-                readonly property Item labelTarget: win.isToday ? heroNum : null
+                readonly property Item glyphTarget: null
+                readonly property Item labelTarget: null
 
                 function stage(i) {
                     const start = Math.min(0.5, i * 0.09)
                     return Math.max(0, Math.min(1, (card.contentAmt - start) / (1 - start)))
                 }
 
-                // Every card on the board: its place on the grid, its name in
-                // the corner, and its own beat in the arrival.
-                component Card: Rectangle {
-                    id: cd
-                    property string glyph: ""
-                    property string name: ""
-                    property string note: ""
+                component Plate: Rectangle {
+                    id: pl
                     property int index: 0
-                    property int col: 0
-                    property int row: 0
-                    property int cw: 1
-                    property int ch: 1
-                    readonly property int headH: 40
-                    readonly property int inset: 14
-
-                    x: col * (card.cell + card.gap)
-                    y: row * (card.cell + card.gap)
-                    width: card.span(cw)
-                    height: card.span(ch)
                     radius: Services.Sizes.cardLgR
                     color: Services.Colors.tint(Services.Colors.surface, Services.Colors.ghost, 0.07)
                     clip: true
                     opacity: board.stage(index)
-                    transform: Translate { y: (1 - board.stage(cd.index)) * 12 }
+                    transform: Translate { y: (1 - board.stage(pl.index)) * 12 }
+                }
 
-                    Row {
-                        id: cdHead
-                        x: cd.inset
-                        y: cd.inset
-                        spacing: 8
+                // A number with a word over it and, maybe, a line under it.
+                component Stat: Plate {
+                    id: st
+                    property string label: ""
+                    property string value: ""
+                    property string foot: ""
+                    property string glyph: ""
+                    property color glyphColor: Services.Colors.mist
+                    property int valueSize: Services.Sizes.fsReadout
+                    readonly property alias valueItem: stValue
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 4
                         Text {
                             textFormat: Text.PlainText
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: cd.glyph
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: st.label !== ""
+                            text: st.label
                             color: Services.Colors.mist
-                            font.pixelSize: 16
-                            font.family: "Material Symbols Rounded"
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: cd.name
-                            color: Services.Colors.mist
-                            font.pixelSize: Services.Sizes.fsCaption
-                            font.bold: true
-                            font.letterSpacing: 1.4
+                            font.pixelSize: Services.Sizes.fsBody
                             font.family: "JetBrainsMono NF"
                         }
-                    }
-                    Text {
-                        textFormat: Text.PlainText
-                        anchors.right: parent.right
-                        anchors.rightMargin: cd.inset
-                        anchors.verticalCenter: cdHead.verticalCenter
-                        text: cd.note
-                        visible: cd.note !== ""
-                        color: Services.Colors.ash
-                        font.pixelSize: Services.Sizes.fsMeta
-                        font.family: "JetBrainsMono NF"
+                        Row {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            spacing: 6
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: st.glyph !== ""
+                                text: st.glyph
+                                color: st.glyphColor
+                                font.pixelSize: st.valueSize
+                                font.family: "Material Symbols Rounded"
+                            }
+                            Text {
+                                textFormat: Text.PlainText
+                                id: stValue
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: st.value
+                                color: Services.Colors.snow
+                                font.pixelSize: st.valueSize
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: st.foot !== ""
+                            text: st.foot
+                            color: Services.Colors.ash
+                            font.pixelSize: Services.Sizes.fsMeta
+                            font.family: "JetBrainsMono NF"
+                        }
                     }
                 }
 
@@ -199,14 +212,14 @@ PanelWindow {
                 Item {
                     x: card.pad
                     y: card.pad
-                    width: card.span(6)
+                    width: card.innerW
                     height: card.headH
                     opacity: board.stage(0)
 
                     Widgets.IconButton {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        glyph: ""
+                        glyph: ""
                         onActivated: win.selected = win.shift(win.day, -1)
                     }
                     Text {
@@ -221,7 +234,7 @@ PanelWindow {
                     Widgets.IconButton {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        glyph: ""
+                        glyph: ""
                         available: !win.isToday
                         onActivated: if (!win.isToday) win.selected = win.shift(win.day, 1)
                     }
@@ -230,163 +243,94 @@ PanelWindow {
                 Item {
                     x: card.pad
                     y: card.pad + card.headH + card.gap
-                    width: card.span(6)
-                    height: card.span(5)
+                    width: card.innerW
+                    height: card.openH - y - card.pad
 
-                    // ── Average of the week ──────────────────────────────
-                    Card {
+                    // ── Three numbers ────────────────────────────────────
+                    Stat {
                         index: 1
-                        col: 0; row: 0; cw: 2; ch: 1
-                        glyph: ""
-                        name: Services.I18n.t("usage.average")
-                        Text {
-                            textFormat: Text.PlainText
-                            x: parent.inset
-                            y: parent.headH - 2
-                            text: Services.Usage.span(win.average)
-                            color: Services.Colors.snow
-                            font.pixelSize: Services.Sizes.fsReadout
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            x: parent.inset
-                            anchors.bottom: parent.bottom
-                            anchors.bottomMargin: parent.inset
-                            text: win.week.length
-                                ? Services.I18n.locale.toString(win.week[0].date, "d MMM") + " – "
-                                  + Services.I18n.locale.toString(win.week[6].date, "d MMM")
-                                : ""
-                            color: Services.Colors.ash
-                            font.pixelSize: Services.Sizes.fsMeta
-                            font.family: "JetBrainsMono NF"
-                        }
+                        x: 0; y: 0
+                        width: 240; height: card.statH
+                        label: Services.I18n.t("usage.average")
+                        value: Services.Usage.span(win.average)
+                        foot: win.week.length
+                            ? Services.I18n.locale.toString(win.week[0].date, "d MMM") + " – "
+                              + Services.I18n.locale.toString(win.week[6].date, "d MMM")
+                            : ""
                     }
-
-                    // ── The day itself ───────────────────────────────────
-                    Card {
+                    Stat {
+                        id: hero
                         index: 2
-                        col: 2; row: 0; cw: 2; ch: 1
-                        Text {
-                            textFormat: Text.PlainText
-                            id: heroGlyph
-                            x: parent.inset
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: ""
-                            visible: !card.morphingGlyph
-                            color: Services.Colors.ghost
-                            font.pixelSize: 30
-                            font.family: "Material Symbols Rounded"
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            id: heroNum
-                            anchors.left: heroGlyph.right
-                            anchors.leftMargin: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Services.Usage.span(win.dayData.total)
-                            visible: !card.morphingLabel
-                            color: Services.Colors.snow
-                            font.pixelSize: 34
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                        }
+                        x: 240 + card.gap; y: 0
+                        width: card.innerW - 480 - card.gap * 2; height: card.statH
+                        value: Services.Usage.span(win.dayData.total)
+                        valueSize: 36
                     }
-
-                    // ── Against the average ──────────────────────────────
-                    Card {
+                    Stat {
                         index: 3
-                        col: 4; row: 0; cw: 2; ch: 1
-                        glyph: ""
-                        name: Services.I18n.t("usage.vsAverage")
-                        Row {
-                            x: parent.inset
-                            y: parent.headH - 2
-                            spacing: 6
-                            Text {
-                                textFormat: Text.PlainText
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: Math.abs(win.delta) >= 60
-                                text: win.delta > 0 ? "" : ""
-                                color: win.delta > 0 ? Services.Colors.ghost : Services.Colors.mist
-                                font.pixelSize: 24
-                                font.family: "Material Symbols Rounded"
-                            }
-                            Text {
-                                textFormat: Text.PlainText
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Math.abs(win.delta) < 60 ? "=" : Services.Usage.span(Math.abs(win.delta))
-                                color: Services.Colors.snow
-                                font.pixelSize: Services.Sizes.fsReadout
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
+                        x: card.innerW - 240; y: 0
+                        width: 240; height: card.statH
+                        label: Services.I18n.t("usage.vsAverage")
+                        glyph: Math.abs(win.delta) < 60 ? "" : (win.delta > 0 ? "" : "")
+                        glyphColor: win.delta > 0 ? Services.Colors.ghost : Services.Colors.mist
+                        value: Math.abs(win.delta) < 60 ? "=" : Services.Usage.span(Math.abs(win.delta))
                     }
 
-                    // ── The week ─────────────────────────────────────────
-                    // Seven columns of ticks lit up to each day's share of the
-                    // busiest (never less than an hour). The day on the board is
-                    // the accent; press a column to look at that day.
-                    Card {
-                        id: weekCard
+                    // ── The week, as bars ────────────────────────────────
+                    // Each day is a track stood on end with its share filled
+                    // from the foot -- the slider's own shape. The day on the
+                    // board in the accent; press a bar to look at that day.
+                    Plate {
+                        id: weekPlate
                         index: 4
-                        col: 0; row: 1; cw: 3; ch: 2
-                        glyph: ""
-                        name: Services.I18n.t("usage.week")
+                        x: 0; y: card.statH + card.gap
+                        width: 468; height: card.chartH
                         Row {
-                            id: weekCols
-                            x: weekCard.inset
-                            y: weekCard.headH + 4
-                            width: weekCard.width - weekCard.inset * 2
-                            height: weekCard.height - y - weekCard.inset
+                            id: bars
+                            anchors.fill: parent
+                            anchors.margins: 18
                             Repeater {
                                 model: win.week
                                 delegate: Item {
                                     required property var modelData
                                     readonly property bool on: modelData.key === win.day
-                                    width: weekCols.width / 7
-                                    height: weekCols.height
+                                    width: bars.width / 7
+                                    height: bars.height
 
-                                    Widgets.TickMeter {
-                                        width: parent.height - 34
-                                        height: 18
-                                        rotation: -90
+                                    Rectangle {
+                                        id: barTrack
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         anchors.top: parent.top
-                                        anchors.topMargin: (parent.height - 34 - 18) / 2
-                                        mode: "level"
-                                        tickW: 4
-                                        gap: 3
-                                        value: modelData.total / win.weekMax
-                                        color_: parent.on ? Services.Colors.ghost : Services.Colors.mist
-                                        opacity: modelData.future ? 0.35 : 1
+                                        anchors.bottom: dayLabel.top
+                                        anchors.bottomMargin: 10
+                                        width: 30
+                                        radius: 8
+                                        color: Services.Colors.fillLine
+                                        opacity: modelData.future ? 0.4 : 1
+                                        Rectangle {
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.bottom: parent.bottom
+                                            height: modelData.total < 60 ? 0
+                                                : Math.max(parent.radius * 2, parent.height * modelData.total / win.weekMax)
+                                            radius: parent.radius
+                                            color: parent.parent.on ? Services.Colors.ghost
+                                                : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.45)
+                                            gradient: Services.Prefs.useGradients && parent.parent.on
+                                                ? Services.Colors.accentGradientV : null
+                                            Behavior on height { Widgets.Anim {} }
+                                        }
                                     }
-                                    Column {
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        id: dayLabel
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         anchors.bottom: parent.bottom
-                                        spacing: 1
-                                        Text {
-                                            textFormat: Text.PlainText
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            text: Services.I18n.locale.dayName(modelData.date.getDay(), Locale.ShortFormat)
-                                            color: parent.parent.on ? Services.Colors.snow : Services.Colors.ash
-                                            font.pixelSize: Services.Sizes.fsMeta
-                                            font.bold: parent.parent.on
-                                            font.family: "JetBrainsMono NF"
-                                        }
-                                        Text {
-                                            textFormat: Text.PlainText
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            text: modelData.future || modelData.total < 60 ? "·"
-                                                : Math.floor(modelData.total / 3600) > 0
-                                                    ? Math.floor(modelData.total / 3600) + "h"
-                                                    : Math.floor(modelData.total / 60) + "m"
-                                            color: Services.Colors.ash
-                                            font.pixelSize: Services.Sizes.fsCaption
-                                            font.family: "JetBrainsMono NF"
-                                        }
+                                        text: Services.I18n.locale.dayName(modelData.date.getDay(), Locale.ShortFormat)
+                                        color: parent.on ? Services.Colors.snow : Services.Colors.mist
+                                        font.pixelSize: Services.Sizes.fsBody
+                                        font.bold: parent.on
+                                        font.family: "JetBrainsMono NF"
                                     }
                                     MouseArea {
                                         anchors.fill: parent
@@ -399,94 +343,73 @@ PanelWindow {
                         }
                     }
 
-                    // ── The month ────────────────────────────────────────
-                    // A square a day, filled by how much of it was screen time
-                    // against the month's busiest. Press one to look at it.
-                    Card {
-                        id: monthCard
+                    // ── The month, as the clock's calendar ───────────────
+                    Plate {
+                        id: monthPlate
                         index: 5
-                        col: 3; row: 1; cw: 3; ch: 2
-                        glyph: ""
-                        name: Services.I18n.locale.toString(win.dateOf(win.day), "MMMM").toUpperCase()
-                        Grid {
-                            id: monthGrid
-                            readonly property int cellSize: Math.floor((monthCard.width - monthCard.inset * 2 - 6 * spacing) / 7)
-                            readonly property int rowsNeeded: Math.ceil(win.month.length / 7)
+                        x: 468 + card.gap; y: card.statH + card.gap
+                        width: card.innerW - x; height: card.chartH
+                        readonly property date shownDate: win.dateOf(win.day)
+                        Text {
+                            textFormat: Text.PlainText
+                            id: monthTitle
                             anchors.horizontalCenter: parent.horizontalCenter
-                            y: monthCard.headH + 4
-                            columns: 7
-                            spacing: 6
-                            Repeater {
-                                model: win.month
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    readonly property bool on: modelData !== null && modelData.key === win.day
-                                    readonly property real share: modelData ? modelData.total / win.monthMax : 0
-                                    width: monthGrid.cellSize
-                                    height: Math.min(monthGrid.cellSize,
-                                        Math.floor((monthCard.height - monthCard.headH - 4 - monthCard.inset
-                                                    - (monthGrid.rowsNeeded - 1) * monthGrid.spacing) / monthGrid.rowsNeeded))
-                                    radius: 6
-                                    // A blank before the 1st keeps its cell: a Grid
-                                    // skips invisible children, which moved every
-                                    // day to the first column.
-                                    opacity: modelData !== null ? 1 : 0
-                                    color: !modelData ? "transparent"
-                                        : modelData.future ? Services.Colors.fillInset
-                                        : Services.Colors.tint(Services.Colors.fillInset, Services.Colors.ghost,
-                                                               modelData.total < 60 ? 0 : 0.2 + 0.8 * share)
-                                    border.width: on ? 2 : (modelData && modelData.key === win.todayKey ? 1 : 0)
-                                    border.color: on ? Services.Colors.snow : Services.Colors.mist
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        anchors.centerIn: parent
-                                        text: modelData ? modelData.n : ""
-                                        color: parent.share > 0.55 ? Services.Colors.onColor(Services.Colors.ghost)
-                                                                   : Services.Colors.ash
-                                        font.pixelSize: Services.Sizes.fsCaption
-                                        font.family: "JetBrainsMono NF"
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: modelData !== null && !modelData.future
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: win.selected = modelData.key
-                                    }
-                                }
+                            y: 14
+                            text: Services.I18n.locale.toString(monthPlate.shownDate, "MMMM")
+                            color: Services.Colors.mist
+                            font.pixelSize: Services.Sizes.fsBody
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Widgets.MonthGrid {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: monthTitle.bottom
+                            anchors.topMargin: 10
+                            reserveRows: true
+                            cellW: Math.floor((monthPlate.width - 28) / 7) - 3
+                            cellSize: 30
+                            monthIndex: monthPlate.shownDate.getFullYear() * 12 + monthPlate.shownDate.getMonth()
+                            shownIndex: monthIndex
+                            selectedDay: monthPlate.shownDate.getDate()
+                            levelOf: function(day) {
+                                const d = monthPlate.shownDate
+                                const k = win.keyOf(new Date(d.getFullYear(), d.getMonth(), day))
+                                if (k > win.todayKey) return -1
+                                const t = win.totalOf(k)
+                                return t < 60 ? 0 : t / win.monthMax
+                            }
+                            onPicked: day => {
+                                const d = monthPlate.shownDate
+                                win.selected = win.keyOf(new Date(d.getFullYear(), d.getMonth(), day))
                             }
                         }
                     }
 
                     // ── The applications that had you ────────────────────
-                    Card {
-                        id: appsCard
+                    Plate {
+                        id: appsPlate
                         index: 6
-                        col: 0; row: 3; cw: 6; ch: 2
-                        glyph: ""
-                        name: Services.I18n.t("usage.apps")
-                        note: win.dayData.apps.length > 8 ? "+" + (win.dayData.apps.length - 8) : ""
+                        x: 0; y: card.statH + card.gap + card.chartH + card.gap
+                        width: card.innerW; height: card.appsH
+                        readonly property real most: win.dayData.apps.length ? win.dayData.apps[0].secs : 1
 
-                        Grid {
-                            id: appGrid
-                            x: appsCard.inset
-                            y: appsCard.headH
-                            width: appsCard.width - appsCard.inset * 2
-                            columns: 2
-                            columnSpacing: 28
-                            rowSpacing: 8
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 14
+                            anchors.leftMargin: 18
+                            anchors.rightMargin: 18
                             visible: win.dayData.apps.length > 0
-                            readonly property real most: win.dayData.apps.length ? win.dayData.apps[0].secs : 1
                             Repeater {
-                                model: win.dayData.apps.slice(0, 8)
+                                model: win.dayData.apps.slice(0, card.appRows)
                                 delegate: Item {
                                     required property var modelData
                                     readonly property var app: Services.Usage.appOf(modelData.key)
-                                    width: (appGrid.width - appGrid.columnSpacing) / 2
-                                    height: 44
+                                    width: parent.width
+                                    height: card.appRowH
 
                                     Item {
                                         id: appIcon
-                                        width: 20; height: 20
+                                        y: 4
+                                        width: 18; height: 18
                                         Image {
                                             anchors.fill: parent
                                             visible: parent.parent.app !== null && parent.parent.app.icon !== ""
@@ -496,8 +419,8 @@ PanelWindow {
                                                 return a.icon.startsWith("/") ? ("file://" + a.icon)
                                                     : Quickshell.iconPath(a.icon, "application-x-executable")
                                             }
-                                            sourceSize.width: 40
-                                            sourceSize.height: 40
+                                            sourceSize.width: 36
+                                            sourceSize.height: 36
                                             fillMode: Image.PreserveAspectFit
                                         }
                                         Text {
@@ -530,20 +453,26 @@ PanelWindow {
                                         anchors.verticalCenter: appIcon.verticalCenter
                                         text: Services.Usage.span(modelData.secs)
                                         color: Services.Colors.mist
-                                        font.pixelSize: Services.Sizes.fsInput
-                                        font.bold: true
+                                        font.pixelSize: Services.Sizes.fsBody
                                         font.family: "JetBrainsMono NF"
                                     }
-                                    Widgets.TickMeter {
+                                    // The storage bar: a track and its share.
+                                    Rectangle {
                                         anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.bottom: parent.bottom
-                                        height: 14
-                                        mode: "level"
-                                        tickW: 3
-                                        gap: 2
-                                        value: modelData.secs / appGrid.most
-                                        color_: Services.Colors.ghost
+                                        anchors.top: appIcon.bottom
+                                        anchors.topMargin: 8
+                                        width: parent.width * 0.62
+                                        height: 6
+                                        radius: 3
+                                        color: Services.Colors.fillLine
+                                        Rectangle {
+                                            width: Math.max(parent.height, parent.width * modelData.secs / appsPlate.most)
+                                            height: parent.height
+                                            radius: parent.radius
+                                            color: Services.Colors.ghost
+                                            gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
+                                            Behavior on width { Widgets.Anim {} }
+                                        }
                                     }
                                 }
                             }

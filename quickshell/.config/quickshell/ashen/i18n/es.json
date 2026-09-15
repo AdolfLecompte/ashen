@@ -365,8 +365,8 @@
   "usage.underMinute": "<1m",
   "usage.today": "Hoy",
   "usage.yesterday": "Ayer",
-  "usage.average": "PROMEDIO DIARIO",
-  "usage.vsAverage": "FRENTE AL PROMEDIO",
-  "usage.week": "SEMANA",
-  "usage.apps": "APPS"
+  "usage.average": "Promedio diario",
+  "usage.vsAverage": "Frente al promedio",
+  "usage.week": "Semana",
+  "usage.apps": "Apps"
 }
