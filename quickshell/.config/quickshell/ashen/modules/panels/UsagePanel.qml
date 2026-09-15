@@ -436,7 +436,9 @@ PanelWindow {
                                         textFormat: Text.PlainText
                                         id: barValue
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.top: parent.top
+                                        // Just over the top tick, so it rises with it.
+                                        y: stackBox.y + stackBox.height
+                                           - stackBox.lit * (stackBox.tickH + stackBox.tickGap) - height - 2
                                         visible: !modelData.future && modelData.total >= 60
                                         text: Math.floor(modelData.total / 3600) > 0
                                             ? Math.floor(modelData.total / 3600) + "h"
@@ -446,28 +448,37 @@ PanelWindow {
                                         font.bold: parent.on
                                         font.family: "JetBrainsMono NF"
                                     }
-                                    Rectangle {
+                                    // A stack of thick ticks, only as many as the
+                                    // day earned: no track behind them, which read
+                                    // as a tank waiting to be filled. A day with
+                                    // nothing keeps one faint tick at its foot so
+                                    // the row does not look broken.
+                                    Item {
+                                        id: stackBox
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.top: barValue.bottom
-                                        anchors.topMargin: 6
+                                        anchors.top: parent.top
+                                        anchors.topMargin: 18
                                         anchors.bottom: dayLabel.top
                                         anchors.bottomMargin: 10
                                         width: 34
-                                        radius: 9
-                                        color: Services.Colors.fillLine
-                                        opacity: modelData.future ? 0.4 : 1
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.bottom: parent.bottom
-                                            height: modelData.total < 60 ? 0
-                                                : Math.max(parent.radius * 2, parent.height * modelData.total / win.weekMax)
-                                            radius: parent.radius
-                                            color: parent.parent.on ? Services.Colors.ghost
-                                                : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.45)
-                                            gradient: Services.Prefs.useGradients && parent.parent.on
-                                                ? Services.Colors.accentGradientV : null
-                                            Behavior on height { Widgets.Anim {} }
+                                        readonly property int tickH: 7
+                                        readonly property int tickGap: 4
+                                        readonly property int slots: Math.max(1, Math.floor((height + tickGap) / (tickH + tickGap)))
+                                        readonly property int lit: modelData.total < 60 ? 0
+                                            : Math.max(1, Math.round(slots * modelData.total / win.weekMax))
+                                        Repeater {
+                                            model: Math.max(1, stackBox.lit)
+                                            delegate: Rectangle {
+                                                required property int index
+                                                width: stackBox.width
+                                                height: stackBox.tickH
+                                                radius: height / 2
+                                                y: stackBox.height - (index + 1) * stackBox.tickH - index * stackBox.tickGap
+                                                color: stackBox.lit === 0 ? Services.Colors.fillLine
+                                                     : stackBox.parent.on ? Services.Colors.ghost
+                                                     : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.5)
+                                                opacity: modelData.future ? 0.35 : 1
+                                            }
                                         }
                                     }
                                     Text {
