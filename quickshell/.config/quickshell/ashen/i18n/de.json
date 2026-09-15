@@ -362,5 +362,11 @@
   "toast.numOn": "NUM AN",
   "toast.numOff": "NUM AUS",
   "toast.profile": "PROFIL: {p}",
-  "usage.underMinute": "unter einer Minute"
+  "usage.underMinute": "<1m",
+  "usage.today": "Heute",
+  "usage.yesterday": "Gestern",
+  "usage.average": "TAGESSCHNITT",
+  "usage.vsAverage": "ZUM SCHNITT",
+  "usage.week": "WOCHE",
+  "usage.apps": "APPS"
 }

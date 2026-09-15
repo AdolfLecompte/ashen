@@ -362,5 +362,11 @@
   "toast.numOn": "NUM LOCK ON",
   "toast.numOff": "NUM LOCK OFF",
   "toast.profile": "PROFILE: {p}",
-  "usage.underMinute": "under a minute"
+  "usage.underMinute": "<1m",
+  "usage.today": "Today",
+  "usage.yesterday": "Yesterday",
+  "usage.average": "DAILY AVERAGE",
+  "usage.vsAverage": "VS AVERAGE",
+  "usage.week": "WEEK",
+  "usage.apps": "APPS"
 }

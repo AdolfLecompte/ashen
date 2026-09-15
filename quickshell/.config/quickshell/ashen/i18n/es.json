@@ -362,5 +362,11 @@
   "toast.numOn": "BLOQ NUM",
   "toast.numOff": "BLOQ NUM FUERA",
   "toast.profile": "PERFIL: {p}",
-  "usage.underMinute": "menos de un minuto"
+  "usage.underMinute": "<1m",
+  "usage.today": "Hoy",
+  "usage.yesterday": "Ayer",
+  "usage.average": "PROMEDIO DIARIO",
+  "usage.vsAverage": "FRENTE AL PROMEDIO",
+  "usage.week": "SEMANA",
+  "usage.apps": "APPS"
 }

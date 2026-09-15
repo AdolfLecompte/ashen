@@ -3,8 +3,9 @@
 ## 3.2.0
 
 ### Added
-- **Screen time.** How long each application had you today, and the week as
-  seven columns. Only time in front of the machine counts: the clock stops after
+- **Screen time.** A board like the process monitor's: a day you can walk back
+  through, its total against the week's average, the week as columns and the
+  month as a calendar you can press, and the applications that had you that day. Only time in front of the machine counts: the clock stops after
   two idle minutes and on the lock screen, but a film playing full screen keeps
   it running. Everything stays in `~/.config/ashen/usage.json`, five weeks of
   it. It has a panel of its own, a pill you can drag onto the bar from Settings

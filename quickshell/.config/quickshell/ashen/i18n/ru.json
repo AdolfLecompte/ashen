@@ -362,5 +362,11 @@
   "toast.numOn": "NUM LOCK ВКЛ",
   "toast.numOff": "NUM LOCK ВЫКЛ",
   "toast.profile": "ПРОФИЛЬ: {p}",
-  "usage.underMinute": "меньше минуты"
+  "usage.underMinute": "<1m",
+  "usage.today": "Сегодня",
+  "usage.yesterday": "Вчера",
+  "usage.average": "В СРЕДНЕМ ЗА ДЕНЬ",
+  "usage.vsAverage": "К СРЕДНЕМУ",
+  "usage.week": "НЕДЕЛЯ",
+  "usage.apps": "ПРИЛОЖЕНИЯ"
 }
