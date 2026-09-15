@@ -71,7 +71,7 @@ Singleton {
         "notificationsVisible", "settingsVisible", "powerMenuVisible", "calendarVisible",
         "networkVisible", "bluetoothVisible", "usbVisible", "processVisible",
         "clipboardVisible", "launcherVisible", "wallpaperVisible",
-        "trayMenuVisible", "switcherVisible"]
+        "trayMenuVisible", "switcherVisible", "usageVisible"]
     // Which screens have their auto-hiding bar out right now. The frame reads it
     // to hand that side over to the bar, so framed looks the same either way.
     property var barRevealed: ({})
@@ -128,6 +128,9 @@ Singleton {
     // does not have to shell out to `qs ipc call lockscreen lock`. The lock
     // surface listens; nothing else needs to know it exists.
     signal lockRequested()
+    // Is the lock screen up? Published by it, for what has to stop while nobody
+    // is at the machine -- screen time does not count the lock screen.
+    property bool sessionLocked: false
 
     property bool recording: false
     property real recordingStartTime: 0
@@ -223,6 +226,8 @@ Singleton {
     // Vertical twins, used when the bar sits on a side edge
     property real volumePillCenterY: 60
     property real batteryPillCenterY: 60
+    property real usagePillCenterX: 960
+    property real usagePillCenterY: 60
     property real mediaPillCenterY: 60
     property real networkPillCenterY: 60
     property real bluetoothPillCenterY: 60
@@ -232,6 +237,7 @@ Singleton {
     property real notificationPillCenterX: 80
     property bool volumeVisible: false
     property bool batteryVisible: false
+    property bool usageVisible: false
     property real mediaPillCenterX: 200
     // Media pill footprint, published by the pill itself: MediaPanel morphs out
     // of this exact rect instead of just scaling from its centre point.
@@ -305,6 +311,8 @@ Singleton {
     property real volumePillH: 32
     property real batteryPillW: 44
     property real batteryPillH: 32
+    property real usagePillW: 44
+    property real usagePillH: 32
     property real usbPillW: 44
     property real usbPillH: 32
     property real networkPillW: 44
@@ -346,6 +354,7 @@ Singleton {
         else if (key === "clock")     { root.clockPillW = w;     root.clockPillH = h }
         else if (key === "volume")     { root.volumePillW = w;     root.volumePillH = h }
         else if (key === "battery")    { root.batteryPillW = w;    root.batteryPillH = h }
+        else if (key === "usage")      { root.usagePillW = w;      root.usagePillH = h }
         else if (key === "usb")        { root.usbPillW = w;        root.usbPillH = h }
         else if (key === "power")      { root.powerPillW = w;      root.powerPillH = h }
         else if (key === "process")    { root.processPillW = w;    root.processPillH = h }
@@ -360,6 +369,7 @@ Singleton {
     function setPillCenter(key, x, y) {
         if (key === "volume")            { root.volumePillCenterX = x;        root.volumePillCenterY = y }
         else if (key === "battery")      { root.batteryPillCenterX = x;       root.batteryPillCenterY = y }
+        else if (key === "usage")        { root.usagePillCenterX = x;         root.usagePillCenterY = y }
         else if (key === "media")        { root.mediaPillCenterX = x;         root.mediaPillCenterY = y }
         else if (key === "network")      { root.networkPillCenterX = x;       root.networkPillCenterY = y }
         else if (key === "bluetooth")    { root.bluetoothPillCenterX = x;     root.bluetoothPillCenterY = y }

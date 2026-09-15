@@ -415,5 +415,12 @@
     "el shell vuelve a respirar",
     "efectos devueltos",
     "¿esa fue la última partida?"
+  ],
+  "usage.empty": [
+    "aún no hay nada contado",
+    "el día aún no empieza aquí",
+    "sin tiempo de pantalla por ahora",
+    "la cuenta está en blanco",
+    "el reloj te espera"
   ]
 }

@@ -361,5 +361,6 @@
   "toast.capsOff": "MAYÚSCULAS FUERA",
   "toast.numOn": "BLOQ NUM",
   "toast.numOff": "BLOQ NUM FUERA",
-  "toast.profile": "PERFIL: {p}"
+  "toast.profile": "PERFIL: {p}",
+  "usage.underMinute": "menos de un minuto"
 }

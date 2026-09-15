@@ -88,6 +88,7 @@ PanelWindow {
         Hole { wid: "calendar" }
         Hole { wid: "sun" }
         Hole { wid: "timer" }
+        Hole { wid: "usage" }
         Hole { wid: "notify" }
         Hole { wid: "updates" }
         Hole { wid: "disks" }
@@ -120,6 +121,7 @@ PanelWindow {
         WidgetSlot { wid: "calendar"; live: desk.awake; source: Component { CalendarWidget {} } }
         WidgetSlot { wid: "sun";      live: desk.awake; source: Component { SunWidget {} } }
         WidgetSlot { wid: "timer";    live: desk.awake; source: Component { TimerWidget {} } }
+        WidgetSlot { wid: "usage";    live: desk.awake; source: Component { UsageWidget {} } }
         WidgetSlot { wid: "notify";   live: desk.awake; source: Component { NotifyWidget {} } }
         WidgetSlot { wid: "updates";  live: desk.awake; source: Component { UpdatesWidget {} } }
         WidgetSlot { wid: "disks";    live: desk.awake; source: Component { DisksWidget {} } }

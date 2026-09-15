@@ -27,6 +27,7 @@ Scope {
 
     WlSessionLock {
         id: sessionLock
+        onLockedChanged: Services.AppState.sessionLocked = sessionLock.locked
 
 
         WlSessionLockSurface {

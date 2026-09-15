@@ -35,6 +35,7 @@ Singleton {
         sys:           { label: "System",        glyph: "\ue322", opens: "processVisible" },
         window:        { label: "Active window", glyph: "\ue8f5", opens: "" },
         power:         { label: "Power",         glyph: "", opens: "powerMenuVisible" },
+        usage:         { label: "Screen time",   glyph: "\uea5b", opens: "usageVisible" },
 
     })
 
@@ -43,7 +44,7 @@ Singleton {
     readonly property var arrangeable: [
         "launcher", "notifications", "workspaces", "media", "clock",
         "usb", "recording", "tray", "network", "bluetooth", "volume",
-        "battery", "keyboard", "sys", "window", "power"
+        "battery", "keyboard", "sys", "window", "power", "usage"
     ]
 
     // Has this panel got a capsule on screen to come out of?
@@ -134,7 +135,7 @@ Singleton {
     // all -- the glyph is the whole pill there -- so for those two icon only
     // means something on a top or bottom bar.
     readonly property var iconable: {
-        let out = ["media", "network", "bluetooth", "volume", "battery", "keyboard", "sys"]
+        let out = ["media", "network", "bluetooth", "volume", "battery", "keyboard", "sys", "usage"]
         if (!Sizes.barVertical) out.push("recording", "window")
         return out
     }

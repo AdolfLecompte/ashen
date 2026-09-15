@@ -361,5 +361,6 @@
   "toast.capsOff": "CAPS LOCK OFF",
   "toast.numOn": "NUM LOCK ON",
   "toast.numOff": "NUM LOCK OFF",
-  "toast.profile": "PROFILE: {p}"
+  "toast.profile": "PROFILE: {p}",
+  "usage.underMinute": "under a minute"
 }

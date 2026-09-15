@@ -361,5 +361,6 @@
   "toast.capsOff": "CAPS LOCK ВЫКЛ",
   "toast.numOn": "NUM LOCK ВКЛ",
   "toast.numOff": "NUM LOCK ВЫКЛ",
-  "toast.profile": "ПРОФИЛЬ: {p}"
+  "toast.profile": "ПРОФИЛЬ: {p}",
+  "usage.underMinute": "меньше минуты"
 }

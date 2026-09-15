@@ -417,6 +417,15 @@ ShellRoot {
     }
     // Recording used to start only from its bar capsule -- take the capsule off
     // the bar and there was no way to record at all.
+    // Screen time, for a script or a status line: today's apps and the week, as
+    // JSON in seconds.
+    IpcHandler {
+        target: "usage"
+        function toggle() { Services.AppState.togglePanel("usageVisible") }
+        function today(): string { return JSON.stringify(Services.Usage.today()) }
+        function week(): string { return JSON.stringify(Services.Usage.week().map(d => ({ day: d.key, total: Math.round(d.total) }))) }
+        function current(): string { return (Services.Usage.focused || "-") + (Services.Usage.away ? " (away)" : "") }
+    }
     IpcHandler {
         target: "record"
         function toggle() { Services.AppState.toggleRecording() }
@@ -476,6 +485,7 @@ ShellRoot {
     Widgets.LazyPanel { preloadMs: 2520; shown: Services.AppState.usbVisible;           panel: Component { USBPanel {} } }
     Widgets.LazyPanel { preloadMs: 2640; shown: Services.AppState.trayMenuVisible;      panel: Component { TrayMenu {} } }
     Widgets.LazyPanel { preloadMs: 2760; shown: Services.AppState.processVisible;       panel: Component { ProcessPanel {} } }
+    Widgets.LazyPanel { preloadMs: 3480; shown: Services.AppState.usageVisible;         panel: Component { UsagePanel {} } }
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.switcherVisible;     panel: Component { Switcher {} } }
     Widgets.LazyPanel { preloadMs: 3000; shown: Services.AppState.introVisible;        panel: Component { IntroPanel {} } }
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.launcherVisible;      panel: Component { Launcher {} } }

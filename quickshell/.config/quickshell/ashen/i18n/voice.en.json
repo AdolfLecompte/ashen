@@ -415,5 +415,12 @@
     "the shell can breathe again",
     "effects returned",
     "that was the last round?"
+  ],
+  "usage.empty": [
+    "nothing counted yet",
+    "the day has not started here",
+    "no screen time so far",
+    "a clean slate",
+    "the clock is waiting for you"
   ]
 }

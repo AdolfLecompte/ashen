@@ -415,5 +415,12 @@
     "die shell darf wieder atmen",
     "effekte sind zurück",
     "war das die letzte runde?"
+  ],
+  "usage.empty": [
+    "noch nichts gezählt",
+    "der tag hat hier noch nicht begonnen",
+    "bisher keine bildschirmzeit",
+    "ein leeres blatt",
+    "die uhr wartet auf dich"
   ]
 }

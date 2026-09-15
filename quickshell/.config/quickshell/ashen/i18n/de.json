@@ -361,5 +361,6 @@
   "toast.capsOff": "FESTSTELLTASTE AUS",
   "toast.numOn": "NUM AN",
   "toast.numOff": "NUM AUS",
-  "toast.profile": "PROFIL: {p}"
+  "toast.profile": "PROFIL: {p}",
+  "usage.underMinute": "unter einer Minute"
 }
