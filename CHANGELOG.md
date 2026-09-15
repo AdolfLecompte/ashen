@@ -3,14 +3,16 @@
 ## 3.2.0
 
 ### Added
-- **Screen time.** A board like the process monitor's: a day you can walk back
-  through, its total against the week's average, the week as columns and the
-  month as a calendar you can press, and the applications that had you that day. Only time in front of the machine counts: the clock stops after
-  two idle minutes and on the lock screen, but a film playing full screen keeps
-  it running. Everything stays in `~/.config/ashen/usage.json`, five weeks of
-  it. It has a panel of its own, a pill you can drag onto the bar from Settings
-  > Bar > Layout, a desktop widget (the day's apps, its hours, or the week), and
-  `qs ipc call usage today|week|toggle`.
+- **Screen time.** How long each application had you, and when. A panel of its
+  own on `SUPER + SHIFT + U`: the day's total against the week's average with
+  its hours drawn as a curve, the applications that filled it, the week as a
+  bar chart and the month as the clock's calendar -- press a bar or a date, or
+  walk back with the arrows, to look at another day. Only time in front of the
+  machine counts: the clock stops after two idle minutes and on the lock
+  screen, but a film playing full screen keeps it running. Everything stays in
+  `~/.config/ashen/usage.json`, five weeks of it. There is also a pill to drag
+  onto the bar from Settings > Bar > Layout, a desktop widget (the day's apps,
+  its hours, or the week), and `qs ipc call usage today|week|toggle`.
 
 ### Changed
 - **The lyric widget fills its box.** With nothing to sing, the song takes the
@@ -18,6 +20,10 @@
   two lines; with words, the cover becomes a header and the lines take the room.
   Every track arrives large and types whether it has lyrics before stepping
   aside for them, and a change of track is one sweep instead of two blinks.
+- **A notification's sound lives under Sound**, in Settings, next to the rest of
+  what the machine plays, instead of under Panels.
+- **The bar's shape card reads in order**: its length, then auto-hide, then the
+  outline.
 
 ### Fixed
 - **A wallpaper forgot part of its look.** The workspace count, the bar's

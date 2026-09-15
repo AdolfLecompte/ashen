@@ -357,7 +357,11 @@ For a toast, the label stays the headline and the remark goes underneath:
 | A column heading | `widgets/SectionHead` | A bare `Text` at 18–20 px |
 | A square icon button | **`widgets/IconButton`** | A private `component XBtn` |
 | A transport / utility chip | `widgets/CtlChip` | — |
-| A level, or a recent past | `widgets/TickMeter` (`level` / `history`) | Liquid, a dial, a Canvas that repaints every frame |
+| A machine's level, or its recent past | `widgets/TickMeter` (`level` / `history`) | Liquid, a dial, a Canvas that repaints every frame |
+| A share of a total | the storage bar (`fillLine` track, accent fill) | Ticks |
+| A value per day of a week | a plain bar chart | A track behind each bar |
+| Days of a month | `widgets/MonthGrid` with `levelOf` | A grid of unlabelled squares |
+| A value over the hours of a day | `widgets/Trend`, stepped | Ticks |
 | A choice from a set that can grow | `widgets/DevicePicker` with `overlay: true` | A `Segmented` row that squeezes every new option |
 | A value you drag | `widgets/SliderRow` / `SliderTrack` at their 16 px default | A thinner track |
 | A line that may not fit its slot | `widgets/MarqueeText` | `elide` alone, or text that scrolls unprompted |
@@ -443,11 +447,23 @@ know what you opened, because you opened it.
 `widgets/SectionHead` is kept for a surface that genuinely has to name itself
 to a stranger, and nothing in the shell currently does.
 
-### A reading is a row of ticks
+### A reading is a row of ticks — for the machine
 
-**A level or a recent past is drawn as a row of thin rounded ticks**
-(`widgets/TickMeter`) — the language the workspace dots and the visualiser
-already speak. The liquid that used to fill these cards is gone: it repainted a
+**A level or a recent past of the MACHINE is drawn as a row of thin rounded
+ticks** (`widgets/TickMeter`) — the language the workspace dots and the
+visualiser already speak. Ticks are not the answer to every number: a panel
+filled with them, under captions in capitals, read as tiring. What is not a
+hardware reading uses the shell's other pieces:
+
+- **A share of a total** (an application's part of the day, a drive's use) —
+  the storage bar: a `fillLine` track and its accent fill, rounded ends.
+- **A value per day across a week** — a plain bar chart: a bar per day, its
+  name under it, nothing behind it. A track behind each bar reads as a tank.
+- **Days across a month** — `widgets/MonthGrid`, the clock's own calendar, with
+  `levelOf` tinting each day.
+- **A value across the hours of a day** — `widgets/Trend`, stepped.
+
+The ticks themselves: The liquid that used to fill these cards is gone: it repainted a
 wave every frame the panel was open and read as decoration.
 
 - **`level`** — every tick full height, lit up to the value. For things with a
@@ -961,7 +977,7 @@ Ordered by how much each buys.
 - [ ] Icons from §5, rendered and checked before committing
 - [ ] Durations and curves from §6; hover via `Sizes.hoverScale`
 - [ ] Buttons reuse `IconButton` / `CtlChip`
-- [ ] A level or a recent past is a `TickMeter`; a slider is already a level
+- [ ] A machine's level or recent past is a `TickMeter`; anything else reuses the storage bar, a bar chart, `MonthGrid` or `Trend` -- look in `modules/widgets` before drawing something new
 - [ ] No word beside a glyph that already names the thing; no caption twice
 - [ ] Sliders at 16 px; a set that can grow is a list, not a `Segmented` row
 - [ ] Nothing full-width grows on hover
