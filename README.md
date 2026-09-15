@@ -22,8 +22,6 @@ A monochrome Hyprland + Quickshell rice for Arch.
 <img alt="repo size" src="https://img.shields.io/github/repo-size/AdolfLecompte/ashen?style=for-the-badge&label=repo%20size&labelColor=0e1415&color=252b2c">
 <img alt="license" src="https://img.shields.io/github/license/AdolfLecompte/ashen?style=for-the-badge&label=license&labelColor=0e1415&color=81d3de">
 
-`Hyprland` · `Quickshell` · `Kitty` · `Zsh + Powerlevel10k` · `PipeWire` · `matugen`
-
 </div>
 
 ---
