@@ -1,6 +1,15 @@
 # Changelog
 
-## 3.1.1
+## 3.2.0
+
+### Added
+- **Screen time.** How long each application had you today, and the week as
+  seven columns. Only time in front of the machine counts: the clock stops after
+  two idle minutes and on the lock screen, but a film playing full screen keeps
+  it running. Everything stays in `~/.config/ashen/usage.json`, five weeks of
+  it. It has a panel of its own, a pill you can drag onto the bar from Settings
+  > Bar > Layout, a desktop widget (today or the week), and
+  `qs ipc call usage today|week|toggle`.
 
 ### Changed
 - **The lyric widget fills its box.** With nothing to sing, the song takes the

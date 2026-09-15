@@ -655,6 +655,18 @@ that file a **heading is the first comment after a blank line**, and the comment
 lines under it explain. A bind that is not a key someone presses (a lid switch,
 the capture submap) is not listed.
 
+### Screen time counts presence, not windows
+
+`Services.Usage` books time from one change to the next -- focus moving, going
+idle, the lock screen, midnight -- and never polls. What it counts is time in
+front of the machine: two idle minutes (inhibitors respected, so a film still
+counts) or the lock screen stop the clock, and a gap longer than three flushes
+is a suspend, not use. The focused window is ASKED of Hyprland after any event
+that can move focus; the event stream alone left a stale empty class at login.
+
+It is its own panel, not a tab of the process monitor: that one is the
+machine's hardware, this is how the machine is used.
+
 ### Where it comes from is not where it goes
 
 Two separate questions, and conflating them is why the launcher was wrong twice.

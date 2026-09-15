@@ -160,6 +160,9 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
 - **Login screen** — an SDDM theme drawn with the shell's own bar and mark.
 - **Desktop widgets** — clock, weather, updates, media, calendar, machine, placed
   by dragging them where you want them. Outline switch of their own too.
+- **Screen time** — how long each application had you today and across the
+  week, counted only while you are at the machine. A panel, an optional pill and
+  a desktop widget; the numbers never leave `~/.config/ashen`.
 - **Game mode** — one key flattens the compositor (no animations, blur, shadows,
   rounding or gaps) and quiets the shell, then puts everything back exactly as it
   was, your screen layout included.
@@ -332,7 +335,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.1.1
+3.2.0
 
 ## License
 
