@@ -23,6 +23,8 @@ hl.bind(K("notifications", mod .. " + N"),         hl.dsp.exec_cmd("qs ipc -c as
 hl.bind(K("settings", mod .. " + I"),         hl.dsp.exec_cmd("qs ipc -c ashen call settings toggle"))
 hl.bind(K("clipboard", "SUPER + SHIFT + V"), hl.dsp.exec_cmd("sh -c 'qs ipc -c ashen call clipboard toggle'"), { locked = true })
 hl.bind(K("processes", mod .. " + SHIFT + P"), hl.dsp.exec_cmd("qs ipc -c ashen call process toggle"), { locked = true })
+-- Where the day went: screen time per app, today and across the week.
+hl.bind(K("usage", mod .. " + SHIFT + U"), hl.dsp.exec_cmd("qs ipc -c ashen call usage toggle"))
 -- Arrange the desktop widgets. Off, the desktop takes no clicks at all.
 hl.bind(K("widgets", mod .. " + SHIFT + D"), hl.dsp.exec_cmd("qs ipc -c ashen call widgets edit"))
 -- Flat compositor, quiet shell. By hand only -- it never turns itself on.

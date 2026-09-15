@@ -300,6 +300,7 @@ Two things to expect on that first run:
 | `SUPER + SHIFT + R` | start / stop screen recording |
 | `SUPER + SHIFT + G` | game mode |
 | `SUPER + SHIFT + P` | process monitor |
+| `SUPER + SHIFT + U` | screen time |
 | `SUPER + SHIFT + D` | arrange desktop widgets |
 | `SUPER + L` | lock |
 | `SUPER + Escape` | power menu |
