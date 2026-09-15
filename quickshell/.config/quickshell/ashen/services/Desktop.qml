@@ -58,6 +58,7 @@ Singleton {
         // Where the day went: the same numbers as the screen-time panel.
         { id: "usage", group: "time", label: "Screen time", glyph: "\uea5b", x: 700, y: 880, styles: [
             { id: "today", label: "Today" },
+            { id: "hours", label: "Hours" },
             { id: "week", label: "Week" }] },
         { id: "timer", group: "time", label: "Timer", glyph: "\ue425", x: 460, y: 880, styles: [
             { id: "timer", label: "Timer" },

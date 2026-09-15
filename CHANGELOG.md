@@ -9,7 +9,7 @@
   two idle minutes and on the lock screen, but a film playing full screen keeps
   it running. Everything stays in `~/.config/ashen/usage.json`, five weeks of
   it. It has a panel of its own, a pill you can drag onto the bar from Settings
-  > Bar > Layout, a desktop widget (today or the week), and
+  > Bar > Layout, a desktop widget (the day's apps, its hours, or the week), and
   `qs ipc call usage today|week|toggle`.
 
 ### Changed
