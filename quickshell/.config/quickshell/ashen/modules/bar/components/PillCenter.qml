@@ -23,19 +23,9 @@ Item {
 
     // mapToGlobal on a layer surface returns coordinates in the LAYOUT, not in
     // the window: on a second monitor at x=1920 a pill 1681 px along its own bar
-    // comes back as 3601. The panel that reads this number lives in a window
-    // 1920 wide, so it clamped every panel on that screen against its right
-    // edge -- which is why panels opened displaced on a second monitor, and why
-    // it looked fine on the primary one, where the two happen to be equal.
-    //
+    // comes back as 3601, so report() takes the screen's own place off, and
+    // Sizes adds back the bar-edge correction the workspace preview shares.
     // Measured, not assumed: [PILL] volume screen HEADLESS-1 g.x 3601 => cx 3669.
-    readonly property real screenX: root.barScreen ? root.barScreen.x : 0
-    readonly property real screenY: root.barScreen ? root.barScreen.y : 0
-
-    // Sizes owns the bar-edge correction, since the workspace preview reports
-    // its geometry the same way and needs the same sum.
-    readonly property real originX: Services.Sizes.barOriginX(root.barScreen)
-    readonly property real originY: Services.Sizes.barOriginY(root.barScreen)
 
     // AppState holds ONE set of numbers per pill, and every panel opens on the
     // focused monitor -- so only the bar on that monitor has anything true to
@@ -50,12 +40,18 @@ Item {
     readonly property bool speaks: !!root.barScreen
         && root.barScreen.name === Services.Screens.activeName
 
+    // Everything worked out from the screen HERE, not read off the bindings
+    // above: report() runs from onBarScreenChanged, which fires before those
+    // bindings on `barScreen` re-evaluate, so it saw the previous screen --
+    // said nothing, or placed the pill with the old monitor's offset until
+    // the two-second backstop corrected it.
     function report() {
-        if (!pill || !key || !root.speaks) return
+        const s = QsWindow.window ? QsWindow.window.screen : null
+        if (!pill || !key || !s || s.name !== Services.Screens.activeName) return
         const g = pill.mapToGlobal(0, 0)
         Services.AppState.setPillCenter(key,
-            root.originX + g.x - root.screenX + pill.width / 2,
-            root.originY + g.y - root.screenY + pill.height / 2)
+            Services.Sizes.barOriginX(s) + g.x - s.x + pill.width / 2,
+            Services.Sizes.barOriginY(s) + g.y - s.y + pill.height / 2)
         // Size as well: the drop that falls out of a pill has to start the
         // size of that pill, and the neck has to be as wide as it is.
         Services.AppState.setPillSize(key, pill.width, pill.height)

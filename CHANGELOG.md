@@ -21,6 +21,9 @@
   the idle rules of the one picked before it, so *nothing sleeps* still locked
   the session and *off* never turned the screen off or suspended. Each mode now
   writes its own.
+- **On a second monitor a panel could open to one side** until a couple of
+  seconds had passed. The pill reported its place against the screen it had
+  been on a moment before; it now measures against the one it is on.
 - **A list stayed open after closing Settings**, and after changing tab or
   scrolling its row away, floating over whatever was underneath.
 
