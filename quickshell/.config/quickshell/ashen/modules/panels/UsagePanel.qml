@@ -432,54 +432,19 @@ PanelWindow {
                                     width: bars.width / 7
                                     height: bars.height
 
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        id: barValue
+                                    // A plain bar chart: each day a bar as tall as its
+                                    // share of the busiest day, and nothing else.
+                                    Rectangle {
                                         anchors.horizontalCenter: parent.horizontalCenter
-                                        // Just over the top tick, so it rises with it.
-                                        y: stackBox.y + stackBox.height
-                                           - stackBox.lit * (stackBox.tickH + stackBox.tickGap) - height - 2
-                                        visible: !modelData.future && modelData.total >= 60
-                                        text: Math.floor(modelData.total / 3600) > 0
-                                            ? Math.floor(modelData.total / 3600) + "h"
-                                            : Math.floor(modelData.total / 60) + "m"
-                                        color: parent.on ? Services.Colors.snow : Services.Colors.ash
-                                        font.pixelSize: Services.Sizes.fsMeta
-                                        font.bold: parent.on
-                                        font.family: "JetBrainsMono NF"
-                                    }
-                                    // A stack of thick ticks, only as many as the
-                                    // day earned: no track behind them, which read
-                                    // as a tank waiting to be filled. A day with
-                                    // nothing keeps one faint tick at its foot so
-                                    // the row does not look broken.
-                                    Item {
-                                        id: stackBox
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.top: parent.top
-                                        anchors.topMargin: 18
                                         anchors.bottom: dayLabel.top
                                         anchors.bottomMargin: 10
-                                        width: 34
-                                        readonly property int tickH: 7
-                                        readonly property int tickGap: 4
-                                        readonly property int slots: Math.max(1, Math.floor((height + tickGap) / (tickH + tickGap)))
-                                        readonly property int lit: modelData.total < 60 ? 0
-                                            : Math.max(1, Math.round(slots * modelData.total / win.weekMax))
-                                        Repeater {
-                                            model: Math.max(1, stackBox.lit)
-                                            delegate: Rectangle {
-                                                required property int index
-                                                width: stackBox.width
-                                                height: stackBox.tickH
-                                                radius: height / 2
-                                                y: stackBox.height - (index + 1) * stackBox.tickH - index * stackBox.tickGap
-                                                color: stackBox.lit === 0 ? Services.Colors.fillLine
-                                                     : stackBox.parent.on ? Services.Colors.ghost
-                                                     : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.5)
-                                                opacity: modelData.future ? 0.35 : 1
-                                            }
-                                        }
+                                        readonly property real room: parent.height - dayLabel.height - 10
+                                        width: Math.min(44, parent.width - 16)
+                                        height: modelData.total < 60 ? 0 : Math.max(4, room * modelData.total / win.weekMax)
+                                        radius: 6
+                                        color: parent.on ? Services.Colors.ghost
+                                             : Services.Colors.tint(Services.Colors.fillLine, Services.Colors.ghost, 0.45)
+                                        Behavior on height { Widgets.Anim {} }
                                     }
                                     Text {
                                         textFormat: Text.PlainText
