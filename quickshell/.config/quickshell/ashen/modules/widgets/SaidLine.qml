@@ -28,6 +28,8 @@ Text {
     property bool armed: true
 
     property int typed: 0
+    // The whole line is out. For a surface that moves on once it has been said.
+    readonly property bool done: root.line !== "" && root.typed >= root.line.length
 
     text: root.line.substring(0, root.typed)
     color: root.isError ? Services.Colors.error_ : Services.Colors.mist

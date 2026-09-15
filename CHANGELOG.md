@@ -2,6 +2,13 @@
 
 ## 3.1.1
 
+### Changed
+- **The lyric widget fills its box.** With nothing to sing, the song takes the
+  whole widget -- a cover the height of the box and a large name that wraps to
+  two lines; with words, the cover becomes a header and the lines take the room.
+  Every track arrives large and types whether it has lyrics before stepping
+  aside for them, and a change of track is one sweep instead of two blinks.
+
 ### Fixed
 - **A wallpaper forgot part of its look.** The workspace count, the bar's
   auto-hide, the dock's auto-hide, glass and icon size, and the panel and widget

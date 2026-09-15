@@ -47,27 +47,6 @@ DesktopWidget {
         }
     }
 
-    // What the words box says when there are none. Picked on the change, never
-    // per frame, or it would shuffle under your eyes -- same as the empty
-    // notification history.
-    property string quietLine: Services.Voice.pick("lyrics.none")
-    function reQuiet() { root.quietLine = Services.Voice.pick("lyrics.none") }
-    // What it says while the words are still being fetched. A wait, so this one
-    // is typed where the quiet line is printed.
-    property string lookLine: Services.Voice.pick("lyrics.looking")
-    Connections {
-        target: Services.Lyrics
-        // A new search starting, or one that came back empty: either way the
-        // line is about to be read again.
-        function onHasChanged() { if (!Services.Lyrics.has) root.reQuiet() }
-        function onLoadingChanged() {
-            if (Services.Lyrics.loading) {
-                root.reQuiet()
-                root.lookLine = Services.Voice.pick("lyrics.looking")
-            }
-        }
-    }
-
     // Nothing playing at all, said rather than labelled -- picked on the drop,
     // not per frame.
     property string idleLine: Services.Voice.pick("media.quiet")
@@ -228,168 +207,367 @@ DesktopWidget {
 
 
     // The line that is being sung, with the one before and the one after kept
-    // dim around it. No lyrics for this track is the normal case, and then this
-    // shape says the title instead of an empty box.
+    // dim around it. Two arrangements in one box that never changes size:
+    // nothing to sing -- no lyrics for this track, the quiet before the first
+    // line, nothing playing -- and the song fills the box, a large cover and
+    // its name; with a line to sing, the cover steps up into a header and the
+    // words take the room it left.
+    //
+    // One movement per change. A new track sweeps the WHOLE widget out and back
+    // in, and it waits to leave until it knows whether the new track has words,
+    // so it comes back already in its final arrangement. What is on screen is a
+    // snapshot taken at that commit: reading the services live, the header
+    // changed before the sweep, the old words were cleared mid-sweep, the cover
+    // grew while the lyrics were looked up and shrank when they came -- two
+    // blinks for one song.
     Component {
         id: lyricsShape
-        Column {
-            spacing: 10
-            width: 420
+        Item {
+            id: lyr
+            // Fixed, both ways: on this desktop a box that resized would also
+            // move everything magnetised to it. Sized for the 48 grid the plate
+            // snaps to -- 440 x 152 plus its padding lands on 480 x 192, which
+            // leaves the same 20 px on all four sides.
+            width: 440
+            height: 152
 
-            Row {
-                spacing: 12
-                Cover {
-                    width: 48; height: 48
-                    source: root.art
-                    anchors.verticalCenter: parent.verticalCenter
+            // ── What is on screen ────────────────────────────────────────
+            property string shownTitle: ""
+            property string shownArtist: ""
+            property string shownArt: ""
+            property var shownLines: []
+            property bool shownPlaying: false
+            // ── What the widget says about the track ────────────────────
+            // A new track always arrives large, and a line from the phrase bank
+            // types itself under its name: that it has words, or that it has
+            // none. Only once that is said does a track with words step aside
+            // for them -- so a song with lyrics visibly announces it has them.
+            property string phrase: ""
+            // True from the sweep until the line has been read.
+            property bool intro: false
+            // What was last said about the track on screen: "", "found", "none".
+            property string said: ""
+            function say() {
+                if (!lyr.shownPlaying) { lyr.phrase = ""; lyr.said = ""; lyr.intro = false; return }
+                const known = Services.Lyrics.wanted === lyr.swapKey && !Services.Lyrics.loading
+                if (!known) { lyr.phrase = ""; lyr.said = ""; lyr.intro = true; return }
+                const now = lyr.shownLines.length > 0 ? "found" : "none"
+                if (now === lyr.said) return
+                lyr.said = now
+                lyr.intro = true
+                lyr.phrase = Services.Voice.pick("lyrics." + now)
+            }
+            // Read, then a breath, then the words take the room.
+            Timer {
+                id: readHold
+                interval: 700
+                onTriggered: { lyr.intro = false; lyr.aim() }
+            }
+            // Where in the song on screen we are. Frozen while a change waits:
+            // the player's position already belongs to the NEXT track, and read
+            // against the old words it put the widget before their first line
+            // -- the lines emptied and the cover started to grow mid-wait.
+            property real pos: 0
+            Connections {
+                target: root
+                function onPositionChanged() { if (lyr.swapKey === lyr.liveKey) lyr.pos = root.position }
+            }
+            function indexIn(lines, pos) {
+                let idx = -1
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].at <= pos) idx = i
+                    else break
                 }
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 360
-                    spacing: 1
-                    Text {
-                        textFormat: Text.PlainText
-                        width: parent.width
-                        text: root.title !== "" ? root.title : root.idleLine
-                        color: Services.Colors.snow
-                        font.pixelSize: Services.Sizes.fsInput
-                        font.bold: true
-                        font.family: "JetBrainsMono NF"
-                        elide: Text.ElideRight
-                    }
-                    Text {
-                        textFormat: Text.PlainText
-                        width: parent.width
-                        // The artist keeps its place: the phrase below says
-                        // the rest.
-                        text: root.artist
-                        color: Services.Colors.mist
-                        font.pixelSize: Services.Sizes.fsMeta
-                        font.family: "JetBrainsMono NF"
-                        elide: Text.ElideRight
-                    }
-                }
+                return idx
             }
 
-            // The words move the way the song does: the line that arrives
-            // comes up from under the one it replaces. The body reads the
-            // COMMITTED index, never the live one, or the new line would both
-            // leave and arrive -- which reads as two sweeps.
-            Widgets.SlideSwap {
-                id: verseSlide
-                index: Services.Lyrics.indexAt(root.position)
-                axis: "vertical"
-                travel: 18
-                onCommit: verse.shownAt = verseSlide.index
+            // ── When a track change may be shown ─────────────────────────
+            // The live track, and whether the lyrics service has finished with
+            // THAT track -- found words or found none.
+            readonly property string liveKey: root.player ? root.artist + "|" + root.title : ""
+            readonly property bool settled: lyr.liveKey !== ""
+                && !Services.Lyrics.loading && Services.Lyrics.wanted === lyr.liveKey
+            // What the sweep is keyed on. Moves to the live track once its words
+            // are known, or when the wait runs out.
+            property string swapKey: ""
+            function release() { if (lyr.swapKey !== lyr.liveKey) lyr.swapKey = lyr.liveKey }
+            // Deferred: a handler for liveKey reads `settled`, which is a
+            // binding on the same change and is not re-evaluated yet.
+            //
+            // A gap is not a change. Between two songs Brave reports no title
+            // for about a second, or no player at all, and treating that as a
+            // track swept the widget to "nothing playing" under Brave's own
+            // icon and straight back to the next song: two sweeps. Silence is
+            // only shown once it has lasted; an untitled track is waited out.
+            onLiveKeyChanged: Qt.callLater(function() {
+                if (lyr.liveKey === "") { waitWords.stop(); waitGone.restart(); return }
+                waitGone.stop()
+                if (root.title === "") { waitWords.restart(); return }
+                if (lyr.settled) { waitWords.stop(); lyr.release() }
+                else waitWords.restart()
+            })
+            onSettledChanged: if (lyr.settled && root.title !== "") {
+                waitWords.stop()
+                // Looked up after the wait ran out: the track already on screen
+                // learns what it has.
+                if (lyr.swapKey === lyr.liveKey) {
+                    lyr.shownLines = Services.Lyrics.lines
+                    lyr.say()
+                }
+                lyr.release()
             }
+            Timer { id: waitGone; interval: 1200; onTriggered: if (lyr.liveKey === "") lyr.release() }
+            // A lookup is 0.9 s of waiting for the artist plus a network call;
+            // past this the track is shown without words and they arrive later.
+            Timer { id: waitWords; interval: 2500; onTriggered: lyr.release() }
 
-            // A new track is not a new line: the words go out sideways, the way
-            // the card itself sweeps, and whatever the next song has -- its
-            // lyrics or the remark that it has none -- comes in behind them.
-            // Vertical is reserved for advancing WITHIN a song.
             Widgets.SlideSwap {
                 id: trackSwap
-                key: root.title + " " + root.artist
+                key: lyr.swapKey
                 keyDir: Services.AppState.mediaDir
                 travel: 22
-                onCommit: {
-                    verse.shownAt = verseSlide.index
-                    root.reQuiet()
+                onCommit: lyr.take()
+            }
+
+            // Everything the new track brings, put on while nothing is legible.
+            function take() {
+                lyr.shownTitle = root.title !== "" ? root.title : root.idleLine
+                lyr.shownArtist = root.artist
+                lyr.shownArt = root.art
+                lyr.shownPlaying = root.player !== null
+                lyr.shownLines = lyr.settled ? Services.Lyrics.lines : []
+                lyr.pos = root.position
+                verse.shownAt = lyr.indexIn(lyr.shownLines, lyr.pos)
+                // Always large on arrival; the words come after it is said.
+                readHold.stop()
+                lyr.said = ""
+                lyr.snap = true
+                lyr.words = 0
+                lyr.snap = false
+                lyr.say()
+            }
+            Component.onCompleted: { lyr.swapKey = lyr.liveKey; lyr.take() }
+
+            // Within the track on screen: the cover still changes, and words
+            // that were looked up too slowly for the sweep still arrive.
+            // Brave swaps the cover BEFORE the title, so the cover changing
+            // while the title has not is usually the next song arriving, not
+            // this one's art: it emptied the old header while the widget waited.
+            // Taken only once it has held still, is not empty, and still
+            // belongs to the track on screen.
+            Connections {
+                target: Services.Media
+                function onArtChanged() { artHold.restart() }
+            }
+            Timer {
+                id: artHold
+                interval: 700
+                onTriggered: if (lyr.swapKey === lyr.liveKey && root.art !== "") lyr.shownArt = root.art
+            }
+            Connections {
+                target: Services.Lyrics
+                function onLinesChanged() {
+                    if (lyr.swapKey === lyr.liveKey && Services.Lyrics.wanted === lyr.swapKey) {
+                        lyr.shownLines = Services.Lyrics.lines
+                        lyr.say()
+                    }
                 }
             }
 
-            // Fixed height, always. A line that wraps -- or no lyrics at all
-            // -- would otherwise resize the whole widget under the pointer,
-            // and on this desktop that also moves everything magnetised to it.
-            // Same rule as the dial's centre: reserved slots, never a column
-            // that packs to its content.
+            // ── The arrangement ──────────────────────────────────────────
+            readonly property int liveIndex: lyr.indexIn(lyr.shownLines, lyr.pos)
+            function target() { return lyr.shownPlaying && lyr.shownLines.length > 0 && verse.shownAt >= 0 }
+            // 0 = the song fills the box, 1 = header and words. Set, never
+            // bound: a sweep snaps it while the widget is out of sight, and
+            // only a change inside a track (the first line, words arriving
+            // late, the last line ending) animates it.
+            property real words: 0
+            property bool snap: false
+            Behavior on words {
+                enabled: !lyr.snap
+                Widgets.Anim { speed: Services.Sizes.msPanel }
+            }
+            function aim() {
+                if (trackSwap.fade < 1 || lyr.intro) return
+                const t = lyr.target() ? 1 : 0
+                if (lyr.words !== t) lyr.words = t
+            }
+            onShownLinesChanged: Qt.callLater(lyr.aim)
+            // Whatever changed while the sweep was still coming in is looked at
+            // once it has landed.
+            Connections {
+                target: trackSwap
+                function onFadeChanged() { if (trackSwap.fade >= 1) Qt.callLater(lyr.aim) }
+            }
+            onLiveIndexChanged: Qt.callLater(lyr.aim)
+            function lerp(a, b) { return a + (b - a) * lyr.words }
+
+            // ── Drawn ────────────────────────────────────────────────────
             Item {
-                id: verse
-                width: parent.width
-                height: 96
+                id: stage
+                anchors.fill: parent
+                opacity: trackSwap.fade
+                transform: Translate { x: trackSwap.offX }
 
-                property int shownAt: -1
-                Component.onCompleted: verse.shownAt = verseSlide.index
-
-                // Not `visible`: an invisible child still holds its slot, and
-                // the box has to measure the same with words or without.
-                // Never empty: with words it slides them, without it says so.
-                // Two fades multiplied, neither of them animated here: the line
-                // change and the track change each own their own curve, and a
-                // Behavior over the product would smooth them a second time.
-                opacity: (Services.Lyrics.has ? verseSlide.fade : 1) * trackSwap.fade
-                transform: [
-                    Translate { y: verseSlide.offY },
-                    Translate { x: trackSwap.offX }
-                ]
-
-                function lineAt(i) {
-                    return (i >= 0 && i < Services.Lyrics.lines.length)
-                        ? Services.Lyrics.lines[i].text : ""
+                Cover {
+                    id: cover
+                    source: lyr.shownArt
+                    width: lyr.lerp(lyr.height, 56)
+                    height: width
                 }
 
-                Text {
-                    textFormat: Text.PlainText
-                    id: prevLine
+                // Laid out at the large size and scaled down, never re-sized:
+                // stepping font.pixelSize reflows the glyphs in integer jumps
+                // and reads as a stutter. The elide width is divided back out
+                // so the visible width stays honest.
+                Column {
+                    id: names
+                    readonly property real s: lyr.lerp(1, 17 / 21)
+                    x: cover.width + 16
+                    y: (cover.height - names.height * names.s) / 2
+                    width: (lyr.width - x) / names.s
+                    spacing: 3
+                    transform: Scale { xScale: names.s; yScale: names.s }
+
+                    // A long name gets two lines while the song fills the box, and
+                    // one, cut, once the words have the room: there the name is
+                    // the header and the words are what you read. Two copies
+                    // crossfading, because a text that re-flows from two lines to
+                    // one jumps.
+                    Item {
+                        width: parent.width
+                        height: lyr.lerp(fullTitle.height, oneTitle.height)
+                        Text {
+                            textFormat: Text.PlainText
+                            id: fullTitle
+                            width: parent.width
+                            opacity: 1 - lyr.words
+                            text: lyr.shownTitle
+                            color: Services.Colors.snow
+                            font.pixelSize: 21
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            id: oneTitle
+                            width: parent.width
+                            opacity: lyr.words
+                            text: lyr.shownTitle
+                            color: Services.Colors.snow
+                            font.pixelSize: 21
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                            elide: Text.ElideRight
+                        }
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        width: parent.width
+                        visible: text !== ""
+                        text: lyr.shownArtist
+                        color: Services.Colors.mist
+                        font.pixelSize: 15
+                        font.family: "JetBrainsMono NF"
+                        elide: Text.ElideRight
+                    }
+                    // What the widget says about the track, typed: a moment, not
+                    // an empty state (docs/DESIGN.md §6b). Armed only once the
+                    // sweep has landed, so it is written where it can be read.
+                    Widgets.SaidLine {
+                        id: saidLine
+                        width: parent.width
+                        visible: lyr.phrase !== ""
+                        opacity: 1 - lyr.words
+                        topPadding: 6
+                        line: lyr.phrase
+                        armed: root.live && trackSwap.fade >= 1
+                        color: Services.Colors.ash
+                        font.pixelSize: Services.Sizes.fsInput
+                        onDoneChanged: if (saidLine.done && lyr.said !== "") {
+                            if (lyr.said === "found") readHold.restart()
+                            else lyr.intro = false
+                        }
+                    }
+                }
+
+                // The words move the way the song does: the line that arrives
+                // comes up from under the one it replaces. The body reads the
+                // COMMITTED index, never the live one, or the new line would
+                // both leave and arrive -- which reads as two sweeps. Only while
+                // the words are fully in: the first line arriving is the
+                // header's movement, not a second one on top of it.
+                Widgets.SlideSwap {
+                    id: verseSlide
+                    index: lyr.liveIndex
+                    axis: "vertical"
+                    travel: 18
+                    animate: lyr.words >= 1 && trackSwap.fade >= 1
+                    onCommit: verse.shownAt = verseSlide.index
+                }
+
+                // Reserved slots, never a column that packs to its content: a
+                // line that wraps must not move the next one.
+                Item {
+                    id: verse
+                    y: 56 + 12
                     width: parent.width
-                    height: 18
-                    visible: Services.Lyrics.has
-                    verticalAlignment: Text.AlignVCenter
-                    text: verse.lineAt(verse.shownAt - 1)
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsBody
-                    font.family: "JetBrainsMono NF"
-                    elide: Text.ElideRight
-                }
-                Text {
-                    textFormat: Text.PlainText
+                    height: lyr.height - y
+
+                    property int shownAt: -1
+
+                    opacity: lyr.words * verseSlide.fade
+                    visible: opacity > 0.01
+                    transform: Translate { y: verseSlide.offY + (1 - lyr.words) * 14 }
+
+                    function lineAt(i) {
+                        return (i >= 0 && i < lyr.shownLines.length) ? lyr.shownLines[i].text : ""
+                    }
+
+                    Text {
+                        textFormat: Text.PlainText
+                        id: prevLine
+                        width: parent.width
+                        height: 18
+                        verticalAlignment: Text.AlignVCenter
+                        text: verse.lineAt(verse.shownAt - 1)
+                        color: Services.Colors.ash
+                        font.pixelSize: Services.Sizes.fsInput
+                        font.family: "JetBrainsMono NF"
+                        elide: Text.ElideRight
+                    }
                     // Two lines of room and no more: a long one is cut rather
                     // than allowed to grow the box.
-                    anchors.top: prevLine.bottom
-                    anchors.topMargin: 6
-                    width: parent.width
-                    height: 48
-                    visible: Services.Lyrics.has
-                    verticalAlignment: Text.AlignVCenter
-                    text: verse.lineAt(verse.shownAt)
-                    color: Services.Colors.snow
-                    font.pixelSize: Services.Sizes.fsSectionTitle
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                    wrapMode: Text.WordWrap
-                    maximumLineCount: 2
-                    elide: Text.ElideRight
-                }
-                Text {
-                    textFormat: Text.PlainText
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    height: 18
-                    visible: Services.Lyrics.has
-                    verticalAlignment: Text.AlignVCenter
-                    text: verse.lineAt(verse.shownAt + 1)
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsBody
-                    font.family: "JetBrainsMono NF"
-                    elide: Text.ElideRight
-                }
-
-                // Nothing found. Half of what plays is not in any lyric
-                // database, so this is a normal state and deserves a voice
-                // rather than an empty box.
-                Widgets.SaidLine {
-                    anchors.centerIn: parent
-                    width: parent.width
-                    visible: !Services.Lyrics.has
-                    horizontalAlignment: Text.AlignHCenter
-                    // Looking for them is a wait, so it types itself; having
-                    // none is a hole, so it prints whole (docs/DESIGN.md §6b).
-                    line: (Services.Lyrics.loading && root.player !== null)
-                        ? root.lookLine : root.quietLine
-                    msPerChar: (Services.Lyrics.loading && root.player !== null) ? 26 : 0
-                    armed: root.live
-                    color: Services.Colors.mist
-                    font.pixelSize: Services.Sizes.fsInput
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.top: prevLine.bottom
+                        width: parent.width
+                        height: 48
+                        verticalAlignment: Text.AlignVCenter
+                        text: verse.lineAt(verse.shownAt)
+                        color: Services.Colors.snow
+                        font.pixelSize: Services.Sizes.fsSectionTitle
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.bottom: parent.bottom
+                        width: parent.width
+                        height: 18
+                        verticalAlignment: Text.AlignVCenter
+                        text: verse.lineAt(verse.shownAt + 1)
+                        color: Services.Colors.ash
+                        font.pixelSize: Services.Sizes.fsInput
+                        font.family: "JetBrainsMono NF"
+                        elide: Text.ElideRight
+                    }
                 }
             }
         }

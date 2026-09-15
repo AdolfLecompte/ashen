@@ -61,12 +61,14 @@
     "kam ohne drehbuch",
     "niemand hat es aufgeschrieben"
   ],
-  "lyrics.looking": [
-    "suche die Worte…",
-    "frage, wer das geschrieben hat…",
-    "lese voraus…",
-    "suche den text…",
-    "irgendwer muss das notiert haben…"
+  "lyrics.found": [
+    "der text ist dabei",
+    "sing mit",
+    "text gefunden",
+    "lies mit",
+    "die hier hat text",
+    "die worte sind da",
+    "jede zeile da"
   ],
   "media.quiet": [
     "nichts läuft",

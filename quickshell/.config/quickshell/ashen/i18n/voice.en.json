@@ -61,12 +61,14 @@
     "it came without a script",
     "nobody transcribed it"
   ],
-  "lyrics.looking": [
-    "looking for the words…",
-    "asking who wrote this…",
-    "reading ahead…",
-    "digging for the words…",
-    "somebody must have written this down…"
+  "lyrics.found": [
+    "the words came with it",
+    "sing along",
+    "lyrics found",
+    "read along",
+    "it has words",
+    "the words are in",
+    "every line accounted for"
   ],
   "media.quiet": [
     "nothing playing",

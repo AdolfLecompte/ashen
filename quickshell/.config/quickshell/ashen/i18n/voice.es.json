@@ -60,11 +60,14 @@
     "sin letra",
     "vino sin guion"
   ],
-  "lyrics.looking": [
-    "buscando la letra…",
-    "preguntando quién la escribió…",
-    "leyendo por delante…",
-    "alguien tuvo que escribirla…"
+  "lyrics.found": [
+    "la letra vino incluida",
+    "canta conmigo",
+    "letra encontrada",
+    "a leer se ha dicho",
+    "esta sí tiene letra",
+    "aquí está la letra",
+    "cada línea en su sitio"
   ],
   "media.quiet": [
     "no suena nada",
