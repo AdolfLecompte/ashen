@@ -44,6 +44,10 @@
   the idle rules of the one picked before it, so *nothing sleeps* still locked
   the session and *off* never turned the screen off or suspended. Each mode now
   writes its own.
+- **A screen plugged in a second time ignored your arrangement.** The saved
+  layout was applied at login and on a config reload, never when a monitor
+  arrived, so Hyprland placed it however it liked -- mirrored, stacked or off
+  to one side.
 - **On a second monitor a panel could open to one side** until a couple of
   seconds had passed. The pill reported its place against the screen it had
   been on a moment before; it now measures against the one it is on.
