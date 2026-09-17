@@ -43,13 +43,34 @@ Singleton {
                         const k = root.keyOf(m)
                         return lit[k] === true || root.record(k).disabled === true
                     })
+                    // A screen that was not here a moment ago is handed the
+                    // layout it was saved with. Hyprland places a new monitor
+                    // by its own rules, and the shell only ever applied the
+                    // saved one at login and on a config reload: plug the same
+                    // screen in a second time and it landed wherever Hyprland
+                    // felt like -- mirrored, stacked, or off to one side.
+                    // Cannot feed itself: the next probe finds nothing new.
+                    let fresh = false
+                    for (const k in lit) if (!root.seen[k]) fresh = true
+                    root.seen = lit
                     root.probed = true
+                    if (root.ready && fresh) hotplug.restart()
                 } catch (e) {
                     // A half-written socket read is not worth clearing the list
                     // for: the next event asks again.
                 }
             }
         }
+    }
+
+    // The screens the last probe found lit, so the next one can tell a monitor
+    // that has just arrived from one that was already there.
+    property var seen: ({})
+    Timer {
+        id: hotplug
+        // Hyprland is still settling the new output when it says so.
+        interval: 500
+        onTriggered: root.applyAll()
     }
 
     // Monitors come and go while the shell is up. The Hyprland singleton talks
