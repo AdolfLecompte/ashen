@@ -38,8 +38,10 @@ DesktopWidget {
     // MPRIS only pushes position on a seek, so it is asked for -- but only by
     // the shape that needs it, and only while the desktop is being looked at.
     property real position: 0
+    // Every quarter second: at half a second the line changed up to that much
+    // after it had started being sung.
     Timer {
-        interval: 500
+        interval: 250
         repeat: true
         running: root.live && root.style === "lyrics" && root.player !== null
         onTriggered: {
@@ -351,7 +353,7 @@ DesktopWidget {
                 lyr.shownPlaying = root.player !== null
                 lyr.shownLines = lyr.settled ? Services.Lyrics.lines : []
                 lyr.pos = root.position
-                verse.shownAt = lyr.indexIn(lyr.shownLines, lyr.pos)
+                verse.shownAt = lyr.indexIn(lyr.shownLines, lyr.pos + lyr.lead)
                 // Always large on arrival; the words come after it is said.
                 readHold.stop()
                 lyr.said = ""
@@ -396,7 +398,11 @@ DesktopWidget {
             }
 
             // ── The arrangement ──────────────────────────────────────────
-            readonly property int liveIndex: lyr.indexIn(lyr.shownLines, lyr.pos)
+            // A line is shown a little BEFORE its time stamp: the position is a
+            // quarter-second sample and the line slides in over another tenth,
+            // so read on the stamp it landed after the singer had started it.
+            readonly property real lead: 0.35
+            readonly property int liveIndex: lyr.indexIn(lyr.shownLines, lyr.pos + lyr.lead)
             function target() { return lyr.shownPlaying && lyr.shownLines.length > 0 && verse.shownAt >= 0 }
             // 0 = the song fills the box, 1 = header and words. Set, never
             // bound: a sweep snaps it while the widget is out of sight, and

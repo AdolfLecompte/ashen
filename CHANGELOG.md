@@ -54,6 +54,10 @@
 - **The music widget said nothing when nothing was playing.** Its line was
   picked once, before the phrase bank had loaded at login, and never asked for
   again. Now the widget types it, as its headline, every time the music stops.
+- **The lyrics ran half a second behind the song.** The position was asked for
+  every half second and a new line slid in after that, so each line arrived
+  once it was already being sung. It is asked four times a second now, and a
+  line shows a third of a second before its stamp.
 - **A list stayed open after closing Settings**, and after changing tab or
   scrolling its row away, floating over whatever was underneath.
 
