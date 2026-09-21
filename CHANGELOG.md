@@ -51,6 +51,9 @@
 - **On a second monitor a panel could open to one side** until a couple of
   seconds had passed. The pill reported its place against the screen it had
   been on a moment before; it now measures against the one it is on.
+- **The music widget said nothing when nothing was playing.** Its line was
+  picked once, before the phrase bank had loaded at login, and never asked for
+  again. Now the widget types it, as its headline, every time the music stops.
 - **A list stayed open after closing Settings**, and after changing tab or
   scrolling its row away, floating over whatever was underneath.
 

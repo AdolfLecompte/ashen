@@ -51,6 +51,14 @@ DesktopWidget {
     // not per frame.
     property string idleLine: Services.Voice.pick("media.quiet")
     onPlayerChanged: if (root.player === null) root.idleLine = Services.Voice.pick("media.quiet")
+    // Picked at creation, it came back empty whenever the phrase bank loaded
+    // after the widget did -- which it does at login -- and was only asked
+    // again when a player went away.
+    Connections {
+        target: Services.Voice
+        function onBaseChanged() { if (root.idleLine === "") root.idleLine = Services.Voice.pick("media.quiet") }
+        function onBankChanged() { if (root.idleLine === "") root.idleLine = Services.Voice.pick("media.quiet") }
+    }
 
     readonly property string title: root.player ? (root.player.trackTitle || "") : ""
     readonly property string artist: root.player ? (root.player.trackArtist || "") : ""
@@ -248,7 +256,13 @@ DesktopWidget {
             // What was last said about the track on screen: "", "found", "none".
             property string said: ""
             function say() {
-                if (!lyr.shownPlaying) { lyr.phrase = ""; lyr.said = ""; lyr.intro = false; return }
+                // Nothing playing: the widget says so, typed, as its headline.
+                if (!lyr.shownPlaying) {
+                    lyr.said = "quiet"
+                    lyr.intro = false
+                    lyr.phrase = Services.Voice.pick("media.quiet")
+                    return
+                }
                 const known = Services.Lyrics.wanted === lyr.swapKey && !Services.Lyrics.loading
                 if (!known) { lyr.phrase = ""; lyr.said = ""; lyr.intro = true; return }
                 const now = lyr.shownLines.length > 0 ? "found" : "none"
@@ -331,7 +345,7 @@ DesktopWidget {
 
             // Everything the new track brings, put on while nothing is legible.
             function take() {
-                lyr.shownTitle = root.title !== "" ? root.title : root.idleLine
+                lyr.shownTitle = root.title
                 lyr.shownArtist = root.artist
                 lyr.shownArt = root.art
                 lyr.shownPlaying = root.player !== null
@@ -347,6 +361,13 @@ DesktopWidget {
                 lyr.say()
             }
             Component.onCompleted: { lyr.swapKey = lyr.liveKey; lyr.take() }
+            // The phrase bank loads after the shell does: a line asked for
+            // before it arrived came back empty and was never asked for again.
+            Connections {
+                target: Services.Voice
+                function onBaseChanged() { if (lyr.phrase === "" && !lyr.shownPlaying) lyr.say() }
+                function onBankChanged() { if (lyr.phrase === "" && !lyr.shownPlaying) lyr.say() }
+            }
 
             // Within the track on screen: the cover still changes, and words
             // that were looked up too slowly for the sweep still arrive.
@@ -436,6 +457,7 @@ DesktopWidget {
                     // one jumps.
                     Item {
                         width: parent.width
+                        visible: lyr.shownTitle !== ""
                         height: lyr.lerp(fullTitle.height, oneTitle.height)
                         Text {
                             textFormat: Text.PlainText
@@ -482,11 +504,13 @@ DesktopWidget {
                         width: parent.width
                         visible: lyr.phrase !== ""
                         opacity: 1 - lyr.words
-                        topPadding: 6
+                        readonly property bool headline: !lyr.shownPlaying
+                        topPadding: headline ? 0 : 6
                         line: lyr.phrase
                         armed: root.live && trackSwap.fade >= 1
-                        color: Services.Colors.ash
-                        font.pixelSize: Services.Sizes.fsInput
+                        color: headline ? Services.Colors.snow : Services.Colors.ash
+                        font.pixelSize: headline ? 21 : Services.Sizes.fsInput
+                        font.bold: headline
                         onDoneChanged: if (saidLine.done && lyr.said !== "") {
                             if (lyr.said === "found") readHold.restart()
                             else lyr.intro = false
