@@ -92,6 +92,32 @@ Item {
         return (aw && aw.id > 0) ? aw.id : 1
     }
 
+    // With an automatic spread, this bar shows its own screen's workspaces only.
+    readonly property var ownIds: Services.Displays.autoSpread && root.barMonitor
+        ? Services.Displays.wsFor(Services.Displays.keyFor(root.barMonitor.name)) : []
+    readonly property bool owned: root.ownIds.length > 0
+    // The ids the chips stand for, in order.
+    readonly property var chipIds: {
+        // Paged by the chip count the user chose, around the active workspace.
+        if (root.owned) {
+            const at = Math.max(0, root.ownIds.indexOf(root.lastNormalId))
+            const start = Math.floor(at / root.shown) * root.shown
+            return root.ownIds.slice(start, start + root.shown)
+        }
+        const base = Math.floor((root.lastNormalId - 1) / root.shown) * root.shown
+        const out = []
+        for (let i = 1; i <= root.shown; i++) out.push(base + i)
+        return out
+    }
+
+    // Workspace ids that hold at least one window.
+    readonly property var occupied: Hyprland.toplevels.values
+        .map(t => t.workspace ? t.workspace.id : -1).filter(id => id > 0)
+    function chipShown(id) {
+        return !Services.Prefs.workspaceHideEmpty || id === root.lastNormalId
+            || root.occupied.indexOf(id) !== -1
+    }
+
     function specialIcon(name) {
         if (name === "music")   return ""
         if (name === "discord") return ""
@@ -200,8 +226,11 @@ Item {
             // would slide under them has nothing left to say.
             opacity: root.dots ? 0 : (pill.showSpecial ? 0 : pill.contentOpacity)
             readonly property real slot: {
-                let base = Math.floor((root.lastNormalId - 1) / root.shown) * root.shown
-                let idx = root.lastNormalId - base - 1
+                let idx = 0
+                for (const id of root.chipIds) {
+                    if (id === root.lastNormalId) break
+                    if (root.chipShown(id)) idx++
+                }
                 return root.pad + idx * (root.innerH + 4)
             }
             readonly property real centred: (root.pillH - root.innerH) / 2
@@ -222,14 +251,12 @@ Item {
             scale: 0.92 + 0.08 * pill.contentOpacity
 
             Repeater {
-                model: root.shown
+                model: root.chipIds.length
                 delegate: Item {
                     required property int index
-                    property int wsId: {
-                        let base = Math.floor((root.lastNormalId - 1) / root.shown) * root.shown
-                        return base + index + 1
-                    }
+                    property int wsId: root.chipIds[index] || 0
                     property bool isActive: root.lastNormalId === wsId
+                    visible: root.chipShown(wsId)
                     property bool hasWindows: Hyprland.workspaces.values.find(w => w.id === wsId) !== undefined
                     // Hyprland lists the workspace you are standing on even when
                     // it is empty, so `hasWindows` says yes for the one you are

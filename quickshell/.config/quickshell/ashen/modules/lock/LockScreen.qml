@@ -7,6 +7,7 @@ import QtQuick
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
 import "root:/modules/desktop/widgets" as DeskWidgets
+import "root:/modules/settings/components" as Parts
 
 Scope {
     id: root
@@ -45,6 +46,8 @@ Scope {
             readonly property string currentDate: Services.Time.fmt("MMMM d, yyyy")
             readonly property string currentDay: Services.Time.dayName(Services.Time.now.getDay())
             property string password: ""
+            // Typed characters shown instead of dots; switched in the power menu.
+            property bool reveal: false
             property string errorMsg: ""
             // The label split in two, so the name can be read louder than the
             // machine it is on. AppState keeps them joined for everywhere else.
@@ -82,7 +85,10 @@ Scope {
             Behavior on auth {
                 Widgets.Anim { speed: Services.Sizes.msPanel }
             }
-            onAuthingChanged: surface.auth = authing ? 1 : 0
+            onAuthingChanged: {
+                surface.auth = authing ? 1 : 0
+                surface.reveal = false
+            }
             // Typing is asking to log in, so the field never has to be found
             // first. It already holds focus, which is what makes this work.
             function beginAuth() {
@@ -134,7 +140,12 @@ Scope {
 
             color: Services.Colors.abyss
 
-            Component.onCompleted: introAnim.start()
+            Component.onCompleted: {
+                if (Services.Prefs.lockIntro === "padlock") { introAnim.start(); return }
+                surface.lockShut = true
+                surface.revealed = true
+                surface.introDone = true
+            }
 
             // The focus re-grab used to ride on this surface's clock Timer. It
             // still wants a once-a-second beat, so it rides the shared clock
@@ -289,8 +300,14 @@ Scope {
                 anchors.fill: parent
                 opacity: surface.unlocking ? 0.0 : (surface.revealed ? 1.0 : 0.0)
                 scale: surface.unlocking ? 1.04 : (surface.revealed ? 1.0 : 1.05)
-                Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
-                Behavior on scale { Widgets.Anim { speed: Services.Sizes.msPanel } }
+                Behavior on opacity {
+                    enabled: Services.Prefs.lockIntro !== "none" || surface.unlocking
+                    Widgets.Anim { speed: Services.Sizes.msEmphasis }
+                }
+                Behavior on scale {
+                    enabled: Services.Prefs.lockIntro !== "none" || surface.unlocking
+                    Widgets.Anim { speed: Services.Sizes.msPanel }
+                }
 
                 Item {
                     anchors.fill: parent
@@ -692,6 +709,7 @@ Scope {
                                             delegate: Item {
                                                 required property int index
                                                 readonly property bool on: index < dotRow.filled
+                                                visible: !surface.reveal
 
                                                 width: on ? 17 : 0
                                                 height: 11
@@ -728,6 +746,19 @@ Scope {
                                             }
                                         }
 
+                                        Text {
+                                            textFormat: Text.PlainText
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            visible: surface.reveal && surface.password.length > 0
+                                            width: Math.min(implicitWidth, 230)
+                                            elide: Text.ElideLeft
+                                            text: surface.password
+                                            color: Services.Colors.snow
+                                            font.pixelSize: 15
+                                            font.family: "JetBrainsMono NF"
+                                            font.bold: true
+                                        }
+
                                         Rectangle {
                                             id: blinkCursor
                                             width: 2; height: 16
@@ -745,6 +776,15 @@ Scope {
 
                                         TextInput {
                                             id: passInput
+                                            // At rest a key only wakes the field; it is not typed.
+                                        Keys.onPressed: e => {
+                                            if (!surface.authing) {
+                                                e.accepted = true
+                                                surface.beginAuth()
+                                                return
+                                            }
+                                            if (Services.Readline.handle(e, passInput)) e.accepted = true
+                                        }
                                             width: 1; height: 1
                                             x: -9999; y: -9999
                                             echoMode: TextInput.Password
@@ -882,6 +922,36 @@ Scope {
                                 y: surface.showPower ? 0 : 12
                                 Behavior on y { Widgets.Anim {} }
                             }
+                            // Show the password as typed: an eye and a real switch.
+                            Rectangle {
+                                anchors.right: parent.right
+                                width: eyeRow.implicitWidth + 24
+                                height: 44
+                                radius: Services.Sizes.innerR
+                                color: Services.Colors.surfacePill
+                                Row {
+                                    id: eyeRow
+                                    anchors.centerIn: parent
+                                    spacing: 10
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: surface.reveal ? "\ue8f4" : "\ue8f5"
+                                        color: surface.reveal ? Services.Colors.snow : Services.Colors.mist
+                                        font.pixelSize: 20
+                                        font.family: "Material Symbols Rounded"
+                                    }
+                                    Parts.Toggle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        checked: surface.reveal
+                                        onToggled: {
+                                            surface.reveal = !surface.reveal
+                                            passInput.forceActiveFocus()
+                                        }
+                                    }
+                                }
+                            }
+
                             Repeater {
                                 // Nothing here is red: error_ is for something
                                 // that went wrong, and shutting the machine down

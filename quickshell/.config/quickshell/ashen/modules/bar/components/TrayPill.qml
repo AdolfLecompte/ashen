@@ -22,8 +22,11 @@ Rectangle {
     // An empty tray still measures its 16 px of padding, and a slot kept for
     // that is a hole in the row. `wanted` and not `visible`: read back, an
     // item's `visible` reports its parent's state too.
-    readonly property bool wanted: SystemTray.items.values.filter(i => !isSystemItem(i.id)).length > 0
+    readonly property bool wanted: SystemTray.items.values.filter(i => root.shows(i)).length > 0
     visible: root.wanted
+
+    // Passive items are an app saying it has nothing to tell you right now.
+    function shows(item) { return !root.isSystemItem(item.id) && item.status !== Status.Passive }
 
     function isSystemItem(id) {
         let excluded = ["blueman", "nm-applet", "networkmanager", "bluetooth", "pulseaudio", "pipewire"]
@@ -41,7 +44,7 @@ Rectangle {
                 required property SystemTrayItem modelData
                 width: visible ? 26 : 0
                 height: 26
-                visible: !root.isSystemItem(modelData.id)
+                visible: root.shows(modelData)
 
                 // A tray icon is somebody else's artwork: keep its own colours.
                 // Flattening it to one colour destroyed multi-tone icons (Discord

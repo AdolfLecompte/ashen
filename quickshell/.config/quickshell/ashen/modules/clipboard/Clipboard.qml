@@ -368,6 +368,7 @@ Scope {
                                         }
                                         TextInput {
                                             id: searchField
+                                            Keys.onPressed: e => { if (Services.Readline.handle(e, searchField)) e.accepted = true }
                                             anchors.fill: parent
                                             color: Services.Colors.snow
                                             font.pixelSize: 13

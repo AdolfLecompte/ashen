@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 import QtQuick
 
 import "root:/services" as Services
@@ -37,7 +38,17 @@ Scope {
 
             // Out of the way, or not. The zone is the whole difference: at 0 the
             // windows own the edge and the dock floats over them when asked.
+            // Smart: hidden only while windows share this monitor's workspace.
+            // Looked up by name: monitorFor() inside the Variants touches the list
+            // its own model is built from, which loops.
+            readonly property var monitor: dock.screen
+                ? Hyprland.monitors.values.find(m => m.name === dock.screen.name) || null : null
+            readonly property int activeWs: dock.monitor && dock.monitor.activeWorkspace
+                ? dock.monitor.activeWorkspace.id : -1
+            readonly property bool occupied: Hyprland.toplevels.values.some(
+                t => t.workspace && t.workspace.id === dock.activeWs)
             readonly property bool peeking: Services.Prefs.dockAutohide
+                && (!Services.Prefs.dockSmart || dock.occupied)
             readonly property bool revealed: Services.AppState.dockWanted
             // A minimum stay, copied from Bar.qml's `stayOut`: giving the room
             // back reflows the windows, and a reflow under the pointer can cost
@@ -59,8 +70,8 @@ Scope {
 
             color: "transparent"
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: dock.peeking ? 0 : dock.thick
-            WlrLayershell.layer: dock.peeking ? WlrLayer.Overlay : WlrLayer.Top
+            exclusiveZone: Services.Prefs.dockAutohide ? 0 : dock.thick
+            WlrLayershell.layer: Services.Prefs.dockAutohide ? WlrLayer.Overlay : WlrLayer.Top
 
             Rectangle {
                 anchors.centerIn: parent

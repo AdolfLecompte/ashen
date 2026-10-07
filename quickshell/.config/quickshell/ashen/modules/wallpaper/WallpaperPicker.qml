@@ -496,7 +496,7 @@ Scope {
                             radius: 16
                             color: Services.Colors.surfacePanel
                             border.width: Services.Colors.panelEdgeW
-                            border.color: Services.Colors.fillOutline
+                            border.color: Services.Colors.panelEdgeColor
 
                         Row {
                             id: zones

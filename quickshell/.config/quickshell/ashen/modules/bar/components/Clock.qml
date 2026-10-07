@@ -179,8 +179,8 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.vertSuffix !== ""
             text: root.vertSuffix
-            color: Services.Colors.mist
-            font.pixelSize: 9
+            color: Services.Colors.snow
+            font.pixelSize: 15
             font.family: "JetBrainsMono NF"
             font.bold: true
         }

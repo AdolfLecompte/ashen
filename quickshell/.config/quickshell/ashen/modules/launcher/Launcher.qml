@@ -120,16 +120,6 @@ Scope {
             return apps.slice(0, 50)
         }
 
-        // The list itself lives in Services.Apps: Settings offers the same
-        // programs when you pick a browser or a terminal, and two scans would
-        // disagree the moment one went stale. Re-asked on every open, which is
-        // what picks up an install since last time.
-        Timer {
-            id: themeTimer
-            interval: 150
-            repeat: false
-            onTriggered: Services.AppState.wallpaperVisible = true
-        }
 
 
         MouseArea {
@@ -163,6 +153,7 @@ Scope {
             shown: win.shown
             // Comes up off the bottom, whichever end it rests at.
             rise: 48
+            from: win.srcEdge
         }
 
         Rectangle {
@@ -178,7 +169,7 @@ Scope {
             radius: Services.Sizes.panelR
             color: Services.Colors.surfacePanel
             border.width: Services.Colors.panelEdgeW
-            border.color: Services.Colors.fillOutline
+            border.color: Services.Colors.panelEdgeColor
             clip: true
             opacity: arrive.fade
             transform: Translate { y: arrive.offY }
@@ -189,8 +180,8 @@ Scope {
                 id: contentCol
                 // Sized to the card's final width, not anchored to it: while the
                 // pill grows, anchoring would re-wrap the whole list per frame.
-                x: 16
-                y: 16
+                x: 16 + arrive.innerX(card.fullW)
+                y: 16 + arrive.innerY(card.fullH)
                 width: card.fullW - 32
                 spacing: 12
 
@@ -236,6 +227,7 @@ Scope {
 
                             TextInput {
                                 id: searchField
+                                Keys.onPressed: e => { if (Services.Readline.handle(e, searchField)) e.accepted = true }
                                 anchors.fill: parent
                                 color: Services.Colors.snow
                                 font.pixelSize: Services.Sizes.fsSectionTitle
@@ -257,6 +249,20 @@ Scope {
                             glyph: "\ue5cd"
                             visible: searchField.text.length > 0
                             onActivated: searchField.text = ""
+                        }
+
+                        // Ways in that need no keybind: wallpaper and settings.
+                        Widgets.IconButton {
+                            size: 24
+                            glyph: "\ue1bc"      // wallpaper
+                            visible: searchField.text.length === 0
+                            onActivated: Services.AppState.togglePanel("wallpaperVisible")
+                        }
+                        Widgets.IconButton {
+                            size: 24
+                            glyph: "\ue8b8"      // settings
+                            visible: searchField.text.length === 0
+                            onActivated: Services.AppState.togglePanel("settingsVisible")
                         }
                     }
                 }

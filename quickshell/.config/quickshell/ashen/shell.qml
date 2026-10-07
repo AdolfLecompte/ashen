@@ -49,14 +49,19 @@ ShellRoot {
         target: "displays"
         function apply() { Services.Displays.applyAll() }
         function refresh() { Services.Displays.refresh() }
+        // manual | blocks | blocksRev | alt | altRev
+        function mode(m: string) { Services.Displays.setMode(m) }
         // A keybind has no Apply button in front of it, so every one of these
         // commits: the change is written down and put on screen at once.
         function place(monitor: string, cell: int) {
             Services.Displays.moveToCell(Services.Displays.keyFor(monitor), cell)
             Services.Displays.commit()
         }
+        // target "none" (or "off") stops mirroring: an empty argument does not survive the IPC.
         function mirror(monitor: string, target: string) {
-            Services.Displays.setEntry(Services.Displays.keyFor(monitor), { mirror: Services.Displays.keyFor(target) })
+            const off = target === "" || target === "none" || target === "off"
+            Services.Displays.setEntry(Services.Displays.keyFor(monitor),
+                                       { mirror: off ? "" : Services.Displays.keyFor(target) })
             Services.Displays.commit()
         }
         function assign(monitor: string, workspace: int, on: bool) {
@@ -136,6 +141,10 @@ ShellRoot {
     IpcHandler {
         target: "widgets"
         function edit() { Services.Desktop.editMode = !Services.Desktop.editMode }
+        // Open (or close) a widget's right-click menu.
+        // Send a widget to the next connected screen.
+        function screen(name: string) { Services.Desktop.moveToNextScreen(name) }
+        function menu(name: string) { Services.Desktop.menuFor = Services.Desktop.menuFor === name ? "" : name }
         // The tray of widgets inside arranging. Opening it puts you in the mode
         // that owns it: asking for the tray is asking to arrange.
         function tray() {
@@ -461,7 +470,11 @@ ShellRoot {
     Bar {}
     Dock {}
     BarFrame {}
-    DesktopLayer {}
+    // One desktop per screen; each draws the widgets that live on it.
+    Variants {
+        model: Services.Screens.barScreens
+        DesktopLayer {}
+    }
     OsdPanel {}
     NotificationToast {}
     LockScreen {}
