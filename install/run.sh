@@ -63,13 +63,21 @@ printf '\n'; ashen_logo; printf '\n'
 tui_steps "packages" "dotfiles" "login screen" "services" "folders"
 
 tui_step 0 run
+pkgs_sync
 pkgs_drop_pulseaudio
 pkgs_install "sudo pacman -S" "${PKGS_OFFICIAL[@]}"
 
-helper=$(pkgs_aur_helper) && pkgs_install "$helper" "${PKGS_AUR[@]}" || {
-    printf '  no AUR helper (paru/yay/pikaur/trizen); skipping:\n'
+# base-devel and git are in place now, which is what building a helper needs.
+pkgs_bootstrap_helper
+if helper=$(pkgs_aur_helper); then
+    pkgs_retry_from_aur "$helper"
+    pkgs_install "$helper" "${PKGS_AUR[@]}"
+elif [ "$ASHEN_DRY" -eq 1 ]; then
+    printf '  would install from the AUR: %s\n' "${PKGS_AUR[*]}"
+else
+    printf '  no AUR helper and yay-bin could not be built; skipping:\n'
     printf '    %s\n' "${PKGS_AUR[@]}"
-}
+fi
 
 tui_step 0 ok
 tui_step 1 run

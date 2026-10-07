@@ -126,6 +126,46 @@ pkgs_aur_helper() {
     return 1
 }
 
+# Bring the whole system up to date first. Installing against a stale package
+# database is how a fresh Arch hits 404s, and -Sy without -u is a partial
+# upgrade, which Arch does not support.
+pkgs_sync() {
+    if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
+        printf '  would run      sudo pacman -Syu\n'; return 0
+    fi
+    if ! sudo pacman -Syu --noconfirm >>"$ASHEN_LOG" 2>&1; then
+        declare -F tui_say >/dev/null \
+            && tui_say "${C_BAD:-}✗${RESET:-} system upgrade failed — see the log"
+    fi
+}
+
+# Vanilla Arch and Manjaro ship no AUR helper. yay-bin is a prebuilt binary,
+# so this is a download and a package build, not a Go compile.
+pkgs_bootstrap_helper() {
+    pkgs_aur_helper >/dev/null && return 0
+    if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
+        printf '  would build    yay-bin from the AUR\n'; return 0
+    fi
+    local dir
+    dir=$(mktemp -d) || return 1
+    {
+        git clone --depth=1 https://aur.archlinux.org/yay-bin.git "$dir/yay-bin" \
+            && (cd "$dir/yay-bin" && makepkg -si --noconfirm --needed)
+    } >>"$ASHEN_LOG" 2>&1
+    rm -rf "$dir"
+    pkgs_aur_helper >/dev/null
+}
+
+# What the official repos could not give -- a derivative whose repos lag behind
+# Arch's, Manjaro above all -- is asked of the AUR before calling it a failure.
+pkgs_retry_from_aur() {
+    local helper=$1
+    [ "${#PKG_FAILED[@]}" -eq 0 ] && return 0
+    local retry=("${PKG_FAILED[@]}")
+    PKG_FAILED=()
+    pkgs_install "$helper" "${retry[@]}"
+}
+
 pkgs_services() {
     local svc
     for svc in "${SERVICES[@]}"; do
