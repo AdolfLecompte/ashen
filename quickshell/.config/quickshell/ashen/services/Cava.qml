@@ -12,24 +12,27 @@ Singleton {
     // mid-game would otherwise leave the visualiser switched off for good.
     readonly property bool enabled: Prefs.visualizer && !Game.on
 
-    // Off, it goes deaf first and dies after, so the wave fades the way it does
-    // when the music stops. Killing it outright froze the last frame on screen.
-    property bool procAlive: root.enabled
-    onEnabledChanged: {
-        if (root.enabled) {
+    // Listens only while something plays. On stop it keeps reading long enough
+    // for cava's own fall to reach zero, then dies and leaves nothing behind.
+    readonly property bool wanted: root.enabled && Media.playing
+    property bool procAlive: root.wanted
+    onWantedChanged: {
+        if (root.wanted) {
             stopSoon.stop()
             root.procAlive = true
         } else {
-            root.isActive = false
             stopSoon.restart()
         }
     }
+    onEnabledChanged: if (!root.enabled) root.isActive = false
     Timer {
         id: stopSoon
-        interval: 1200
+        interval: 2500
         onTriggered: {
             root.procAlive = false
-            root.barValues = []
+            root.isActive = false
+            // Paused: bars rest at zero. Switched off: nothing is drawn.
+            root.barValues = root.enabled ? root.barValues.map(() => 0) : []
         }
     }
 
@@ -43,15 +46,11 @@ Singleton {
                 let parts = data.split(";").filter(s => s.length > 0).map(Number)
                 if (parts.length === 0) return
                 let maxV = Math.max.apply(null, parts)
-                // Silence is still sixty frames a second of zeros, and every one
-                // of them used to be published -- which woke a Canvas repaint in
-                // each wave on screen, all of them invisible by then. The frame
-                // that goes quiet IS published, so the bars fall to nothing
-                // rather than freezing tall behind the fade; after that nothing
-                // is until there is something to say again.
+                // Silence is published once, as true zeros, then not at all
+                // until there is sound again: idle repaints cost CPU.
                 const speaking = maxV > 2
-                if (speaking || root.isActive)
-                    root.barValues = parts
+                if (speaking) root.barValues = parts
+                else if (root.isActive) root.barValues = parts.map(() => 0)
                 root.isActive = speaking
             }
         }

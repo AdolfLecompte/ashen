@@ -175,7 +175,8 @@ Singleton {
     // look -- and it closes with the mode that owns it.
     property bool trayOpen: false
     onEditModeChanged: {
-        if (root.editMode) return
+        if (root.editMode) { root.menuFor = ""; return }
+        root.menuFor = ""
         root.trayOpen = false
         root.cropping = ""
     }
@@ -264,7 +265,8 @@ Singleton {
             h: e.h === undefined ? d.h : e.h,
             zoom: e.zoom === undefined ? d.zoom : e.zoom,
             ox: e.ox === undefined ? d.ox : e.ox,
-            oy: e.oy === undefined ? d.oy : e.oy
+            oy: e.oy === undefined ? d.oy : e.oy,
+            scr: e.scr === undefined ? "" : e.scr
         }
     }
 
@@ -279,6 +281,34 @@ Singleton {
 
     function setPos(id, x, y) { root.write(id, { x: Math.round(x), y: Math.round(y) }) }
     function setOn(id, on) { root.write(id, { on: on }) }
+
+    // ── Which screen ─────────────────────────────────────────────────────
+    // A widget lives on one screen, kept by its description. If that screen is
+    // not connected it shows on the main one until it comes back.
+    readonly property var screenKeys: Screens.barScreens.map(s => Displays.keyFor(s.name))
+    readonly property string primaryScreen: Screens.primary ? Displays.keyFor(Screens.primary.name)
+                                                            : (root.screenKeys[0] || "")
+    function screenOf(id) {
+        const want = root.entry(id).scr
+        return want !== "" && root.screenKeys.indexOf(want) >= 0 ? want : root.primaryScreen
+    }
+    function moveToNextScreen(id) {
+        root.menuFor = ""
+        const keys = root.screenKeys
+        if (keys.length < 2) return
+        const i = keys.indexOf(root.screenOf(id))
+        root.write(id, { scr: keys[(i + 1) % keys.length] })
+    }
+
+    // The widget whose right-click menu is open, "" for none.
+    property string menuFor: ""
+    // Off the desktop: copies are deleted, one-of-a-kind widgets switched off.
+    function takeAway(id) {
+        root.menuFor = ""
+        const w = root.widget(root.typeOf(id))
+        if (w && w.multi) root.remove(id)
+        else root.setOn(id, false)
+    }
     function toggle(id) { root.setOn(id, !root.entry(id).on) }
     function setSrc(id, path) { root.write(id, { src: path }) }
 

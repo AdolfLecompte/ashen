@@ -41,7 +41,10 @@ Singleton {
                     for (const m of j.live) lit[root.keyOf(m)] = true
                     root.monitors = j.all.filter(function (m) {
                         const k = root.keyOf(m)
-                        return lit[k] === true || root.record(k).disabled === true
+                        // A mirror is plugged in but not listed as live: without
+                        // this it vanished from the grid and could not be un-mirrored.
+                        const mirroring = m.mirrorOf !== undefined && m.mirrorOf !== "none" && m.mirrorOf !== ""
+                        return lit[k] === true || mirroring || root.record(k).disabled === true
                     })
                     // A screen that was not here a moment ago is handed the
                     // layout it was saved with. Hyprland places a new monitor
@@ -414,11 +417,53 @@ Singleton {
     }
 
     function ownerOf(n) {
-        for (const k of root.allKeys()) {
-            const e = root.entry(k)
-            if (e.ws && e.ws.indexOf(n) >= 0) return k
-        }
+        for (const k of root.allKeys())
+            if (root.wsFor(k).indexOf(n) >= 0) return k
         return ""
+    }
+
+    // ── Automatic spreads ────────────────────────────────────────────────
+    // Screens that can hold windows, main one first, the rest left to right.
+    readonly property var places: {
+        const out = root.monitors.filter(m => {
+            const e = root.entry(root.keyOf(m))
+            return e.mirror === "" && !e.disabled
+        })
+        out.sort((a, b) => {
+            const pa = root.keyOf(a) === root.primaryKey ? 0 : 1
+            const pb = root.keyOf(b) === root.primaryKey ? 0 : 1
+            return pa !== pb ? pa - pb : (a.x - b.x) || (a.y - b.y)
+        })
+        return out.map(m => root.keyOf(m))
+    }
+    readonly property bool autoSpread: Prefs.workspaceMode !== "manual" && root.places.length > 1
+    // The workspaces a screen holds: hand-picked, or worked out from the mode.
+    function wsFor(key) {
+        if (!root.autoSpread) return (root.entry(key).ws || []).slice()
+        const mode = Prefs.workspaceMode
+        let order = root.places.slice()
+        if (mode === "blocksRev" || mode === "altRev") order.reverse()
+        const i = order.indexOf(key)
+        if (i < 0) return []
+        const n = order.length
+        const out = []
+        if (mode === "blocks" || mode === "blocksRev") {
+            const per = Math.ceil(10 / n)
+            for (let w = i * per + 1; w <= Math.min(10, (i + 1) * per); w++) out.push(w)
+        } else {
+            // Evens first for the main screen: workspace w goes to (w % n).
+            for (let w = 1; w <= 10; w++) if (w % n === i) out.push(w)
+        }
+        return out
+    }
+    function defaultFor(key) {
+        if (!root.autoSpread) return root.entry(key).defaultWs || 0
+        const l = root.wsFor(key)
+        return l.length ? l[0] : 0
+    }
+    function setMode(m) {
+        Prefs.workspaceMode = m
+        root.applyAll()
     }
 
     // A rule says where a workspace is BORN, which is why an existing one does
@@ -448,13 +493,14 @@ Singleton {
             // that is switched off.
             if (e.mirror !== "" || e.disabled) continue
             const out = root.outputOf(m)
-            for (const w of (e.ws || [])) {
+            const dflt = root.defaultFor(k)
+            for (const w of root.wsFor(k)) {
                 claimed[w] = true
                 // Enabled by hand: a rule this shell switched off earlier in the
                 // session stays off, and the workspace would go on being born
                 // wherever the pointer is.
                 rules += 'do local r = hl.workspace_rule({workspace=' + root.q(w) + ', monitor=' + root.q(out)
-                       + (w === e.defaultWs ? ', default=true' : '') + '}); r:set_enabled(true); end;'
+                       + (w === dflt ? ', default=true' : '') + '}); r:set_enabled(true); end;'
                 if (root.occupied(w))
                     moves += 'hl.dispatch(hl.dsp.workspace.move({workspace=' + root.num(w, 1)
                            + ', monitor=' + root.q(out) + '}));'
@@ -567,6 +613,15 @@ Singleton {
     function arm() {
         if (root.ready || !Prefs.loaded || !root.probed) return
         root.ready = true
+        // Virtual outputs made for testing leave records nothing will plug back in.
+        const kept = {}
+        let pruned = false
+        for (const k in root.layout) {
+            // Port names are never keys when a description exists: those are strays.
+            if (k.indexOf("HEADLESS-") === 0 || /^(HDMI|DP|eDP|DVI|VGA|LVDS)-/.test(k)) pruned = true
+            else kept[k] = root.layout[k]
+        }
+        if (pruned) Prefs.displayLayout = JSON.stringify(kept)
         if (Prefs.displayLayout !== "") root.applyAll()
     }
     onProbedChanged: root.arm()

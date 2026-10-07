@@ -7,9 +7,14 @@ import "root:/services" as Services
 
 Singleton {
     id: root
-    property string condition: ""
+    // Two failed fetches in a row: say offline instead of showing a stale forecast.
+    property int failures: 0
+    readonly property bool offline: failures >= 2
+    property string liveCondition: ""
     property int tempC: 0
-    property string icon: ""
+    property string liveIcon: ""
+    readonly property string condition: offline ? Services.I18n.t("weather.offline") : liveCondition
+    readonly property string icon: offline ? "\ue2c1" : liveIcon
     property var forecast: []
 
     // Conditions beyond the headline number. All from the same single request.
@@ -84,7 +89,7 @@ Singleton {
     // Bare number + degree glyph, for the "24°/12°" forecast pairs
     function degrees(c) { return convert(c) + (Services.Prefs.tempUnit === "K" ? "" : "°") }
 
-    readonly property string temp: tempString(tempC)
+    readonly property string temp: offline ? "--" : tempString(tempC)
 
     // MANY saved locations now (like keyboard layouts). They live in Prefs as ONE
     // packed string (JsonAdapter drops sibling writes in the same tick, so the list
@@ -319,8 +324,8 @@ Singleton {
                     let cur = d.current
                     root.tempC = Math.round(cur.temperature_2m)
                     root.isDay = cur.is_day === 1
-                    root.condition = root.codeToText(cur.weather_code)
-                    root.icon = root.codeToIcon(cur.weather_code, root.isDay)
+                    root.liveCondition = root.codeToText(cur.weather_code)
+                    root.liveIcon = root.codeToIcon(cur.weather_code, root.isDay)
                     root.feelsC = Math.round(cur.apparent_temperature)
                     root.humidity = Math.round(cur.relative_humidity_2m)
                     root.windKph = Math.round(cur.wind_speed_10m)
@@ -386,7 +391,11 @@ Singleton {
                     root.sunset = days[0].sunset
                     root.sunriseMin = root.minutesOf(dy.sunrise[0])
                     root.sunsetMin = root.minutesOf(dy.sunset[0])
-                } catch (e) { console.warn("[Weather] forecast error:", e) }
+                    root.failures = 0
+                } catch (e) {
+                    root.failures++
+                    retry.restart()
+                }
             }
         }
     }
@@ -396,6 +405,13 @@ Singleton {
     Connections {
         target: Services.Prefs
         function onLoadedChanged() { if (Services.Prefs.loaded) root.start() }
+    }
+
+    // Sooner retry while the forecast is failing.
+    Timer {
+        id: retry
+        interval: 60000
+        onTriggered: root.refresh()
     }
 
     Timer {

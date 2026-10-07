@@ -42,3 +42,4 @@ singleton I18n 1.0 I18n.qml
 singleton Game 1.0 Game.qml
 SysFile 1.0 SysFile.qml
 singleton Usage 1.0 Usage.qml
+singleton Readline 1.0 Readline.qml

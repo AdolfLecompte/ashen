@@ -72,6 +72,8 @@ Singleton {
     // How panels open. "morph": they come out of the capsule you pressed and
     // transform into the panel. "plain": they simply appear, like a window.
     property string panelStyle: "morph"
+    // What a panel is made of: "solid" plate, or "blur" glass over a blurred backdrop.
+    property string surfaceStyle: "solid"
 
     // Subtle gradient on active/interactive accents (buttons, pills) when on.
     // Backgrounds never use it. See Colors.accentGradient.
@@ -153,6 +155,8 @@ Singleton {
     // How many workspace chips the bar shows at once. A quantity, not a way of
     // drawing itself, so it is not one of the pill's looks.
     property int workspaceCount: 5
+    // Drop chips of empty workspaces you are not standing on.
+    property bool workspaceHideEmpty: false
 
     // WHAT a pill shows, and HOW it is drawn, are two questions: a pill can be
     // compact and made of glass at the same time. Two packed strings, beside the
@@ -233,6 +237,8 @@ Singleton {
     property bool dockEnabled: true
     // Frosted rather than a solid plate, the same choice the bar's pills have.
     property bool dockGlass: false
+    // With autohide: stay out on an empty workspace, hide once windows arrive.
+    property bool dockSmart: false
     // The icon box. Clamped where it is read, so a hand-edited file cannot
     // produce a dock with no room for an icon.
     property int dockIconSize: 44
@@ -392,6 +398,16 @@ Singleton {
 
     property int toastSeconds: 6
     property int maxToasts: 5
+    // Toast card width, px, and how long the volume/brightness OSD stays up, ms.
+    property int toastWidth: 360
+    property int osdMs: 1400
+    // How the lock screen arrives: "padlock" intro, plain "fade", or "none".
+    property string lockIntro: "padlock"
+    // Which windows alt-tab offers: "all", this "output", or this "workspace".
+    property string switcherScope: "all"
+    // How workspaces 1-10 spread over the screens: "manual" (Settings > Display),
+    // "blocks" 1-5 / 6-10, "blocksRev", "alt" evens on the main screen, "altRev".
+    property string workspaceMode: "manual"
 
     // Active keyboard layout, by code ("latam"). switchxkblayout is runtime-only
     // and only the ORDER of kb_layout decides what login starts on. Storing the
@@ -415,13 +431,13 @@ Singleton {
     // raced and one of them was quietly lost. Nothing writes per change now.
     readonly property var keys: [
         "clockSeconds", "clock24h", "tempUnit", "weatherLoc", "weatherLocs",
-        "keyboardLayout", "useGradients", "panelStyle", "themeMode",
+        "keyboardLayout", "useGradients", "panelStyle", "surfaceStyle", "themeMode",
         "language", "doNotDisturb", "keepAwakeMode", "notifySound",
         "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
-        "toastSeconds", "maxToasts", "hiddenPills", "barLayout", "barContent",
+        "toastSeconds", "maxToasts", "toastWidth", "osdMs", "lockIntro", "switcherScope", "workspaceMode", "hiddenPills", "barLayout", "barContent",
         "barOutline", "panelOutline", "widgetOutline", "dockPins", "dockEdge",
-        "dockAutohide", "dockEnabled", "dockGlass", "dockIconSize",
-        "workspaceCount", "displayLayout", "desktopLayout", "appTerminal",
+        "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockIconSize",
+        "workspaceCount", "workspaceHideEmpty", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications",
@@ -489,6 +505,13 @@ Singleton {
         root.syncHiddenPills()
         root.syncBarLayout()
         root.loaded = true
+        // The legacy list is folded into the v2 layout once and then dropped,
+        // so an empty barLayout always means the factory arrangement.
+        if (root.hiddenPills !== "") {
+            if (root.barLayout === "") barWriteTimer.restart()
+            root.hiddenPills = ""
+            root.hiddenPillList = []
+        }
     }
 
     FileView {

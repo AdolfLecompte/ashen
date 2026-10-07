@@ -48,7 +48,42 @@ Singleton {
         root.recording = true
         root.recordingStartTime = startMs
     }
+    // A wf-recorder the shell did not start is adopted; one that died is dropped.
+    property bool recordingExternal: false
+    Timer {
+        interval: 5000
+        running: true
+        repeat: true
+        onTriggered: recordingSyncProc.running = true
+    }
+    Process {
+        id: recordingSyncProc
+        command: ["sh", "-c", "PID=$(cat \"$HOME\"/.cache/ashen_recording.pid 2>/dev/null); if [ -n \"$PID\" ] && kill -0 \"$PID\" 2>/dev/null; then echo own; elif P=$(pgrep -x -o wf-recorder); then echo \"ext $(ps -o etimes= -p $P | tr -d ' ')\"; else echo none; fi"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const t = text.trim()
+                if (t.startsWith("ext ")) {
+                    if (!root.recording) {
+                        root.recordingExternal = true
+                        root.recordingStartTime = Date.now() - parseInt(t.slice(4)) * 1000
+                        root.recording = true
+                    }
+                } else if (t === "none" && root.recording
+                           && Date.now() - root.recordingStartTime > 4000) {
+                    root.recording = false
+                    root.recordingExternal = false
+                }
+            }
+        }
+    }
+
     function stopRecording() {
+        if (root.recordingExternal) {
+            Quickshell.execDetached(["pkill", "-INT", "-x", "wf-recorder"])
+            root.recordingExternal = false
+            root.recording = false
+            return
+        }
         Quickshell.execDetached(["sh", "-c",
             "PID=$(cat \"$HOME\"/.cache/ashen_recording.pid 2>/dev/null); [ -n \"$PID\" ] && kill -INT \"$PID\"; rm -f \"$HOME\"/.cache/ashen_recording.pid \"$HOME\"/.cache/ashen_recording_start"
         ])

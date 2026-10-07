@@ -312,15 +312,23 @@ Singleton {
     // On a horizontal bar it tracks the pill across the screen and is pinned to
     // the bar's edge; on a vertical bar the two axes swap roles.
     function panelX(winW, cardW, pillX) {
-        if (!barVertical)
-            return Math.max(edgeGap, Math.min(winW - cardW - edgeGap, pillX - cardW / 2))
+        if (!barVertical) return root.alongBar(winW, cardW, pillX)
         return applied === "left" ? panelTop : winW - cardW - panelTop
     }
 
     function panelY(winH, cardH, pillY) {
-        if (barVertical)
-            return Math.max(edgeGap, Math.min(winH - cardH - edgeGap, pillY - cardH / 2))
+        if (barVertical) return root.alongBar(winH, cardH, pillY)
         return applied === "top" ? panelTop : winH - cardH - panelTop
+    }
+
+    // Along the bar, a panel stays within the bar's own span (it is centred
+    // on its edge at barLength %); one longer than the bar is centred on it.
+    function alongBar(total, size, pill) {
+        const inset = total * (100 - root.barLength) / 200
+        const lo = Math.max(edgeGap, inset)
+        const hi = Math.min(total - edgeGap, total - inset)
+        if (size >= hi - lo) return Math.max(edgeGap, lo + (hi - lo - size) / 2)
+        return Math.max(lo, Math.min(hi - size, pill - size / 2))
     }
 
     // Transform origin for the grow-out-of-its-pill open animation: the corner

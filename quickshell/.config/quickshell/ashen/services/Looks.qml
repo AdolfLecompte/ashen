@@ -20,8 +20,8 @@ Singleton {
         "panelStyle", "themeMode", "desktopLayout",
         "barLength", "barOutline", "workspaceStyle", "barContent",
         "dockEnabled", "dockEdge",
-        "workspaceCount", "barAutohide", "panelOutline", "widgetOutline",
-        "dockAutohide", "dockGlass", "dockIconSize"
+        "workspaceCount", "workspaceHideEmpty", "barAutohide", "panelOutline", "widgetOutline",
+        "dockAutohide", "dockSmart", "dockGlass", "dockIconSize"
     ]
 
     // Every key as the shell ships it: Prefs' own defaults, written once more
@@ -36,8 +36,8 @@ Singleton {
         visualizer: true, panelStyle: "morph", desktopLayout: "",
         barLength: 100, barOutline: false, workspaceStyle: "icons", barContent: "",
         dockEnabled: true, dockEdge: "bottom",
-        workspaceCount: 5, barAutohide: false, panelOutline: false, widgetOutline: false,
-        dockAutohide: true, dockGlass: false, dockIconSize: 44
+        workspaceCount: 5, workspaceHideEmpty: false, barAutohide: false, panelOutline: false, widgetOutline: false,
+        dockAutohide: true, dockSmart: false, dockGlass: false, dockIconSize: 44
     })
 
     // What the shell looks like right now. Every key is read straight out of
@@ -59,10 +59,12 @@ Singleton {
         dockEnabled: Prefs.dockEnabled,
         dockEdge: Prefs.dockEdge,
         workspaceCount: Prefs.workspaceCount,
+        workspaceHideEmpty: Prefs.workspaceHideEmpty,
         barAutohide: Prefs.barAutohide,
         panelOutline: Prefs.panelOutline,
         widgetOutline: Prefs.widgetOutline,
         dockAutohide: Prefs.dockAutohide,
+        dockSmart: Prefs.dockSmart,
         dockGlass: Prefs.dockGlass,
         dockIconSize: Prefs.dockIconSize,
         scheme: Theme.schemeId,

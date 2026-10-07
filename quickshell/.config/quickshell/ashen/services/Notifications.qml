@@ -431,9 +431,10 @@ Singleton {
         command: ["sh", "-c",
                   '[ -d "$1" ] && for f in "$1"/*.ogg "$1"/*.oga "$1"/*.wav "$1"/*.mp3 "$1"/*.flac "$1"/*.opus; do ' +
                   '  [ -f "$f" ] && printf "%s\\n" "$f"; done; ' +
-                  'for n in ' + soundList.themePicks.join(" ") + '; do ' +
-                  '  f="/usr/share/sounds/freedesktop/stereo/$n.oga"; ' +
-                  '  [ -f "$f" ] && printf "%s\\n" "$f"; done',
+                  'for t in "$HOME"/.local/share/sounds/*/stereo /usr/share/sounds/*/stereo; do ' +
+                  '  for n in ' + soundList.themePicks.join(" ") + '; do ' +
+                  '    for f in "$t/$n".oga "$t/$n".ogg "$t/$n".wav; do ' +
+                  '      [ -f "$f" ] && printf "%s\\n" "$f"; done; done; done',
                   "sh", Services.Paths.shellSounds]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -441,8 +442,13 @@ Singleton {
                 for (const line of text.split("\n")) {
                     const p = line.trim()
                     if (p === "") continue
-                    const base = p.split("/").pop().replace(/\.[^.]+$/, "")
-                    out.push({ path: p, name: base, mine: p.indexOf(Services.Paths.shellSounds) === 0 })
+                    const parts = p.split("/")
+                    const base = parts[parts.length - 1].replace(/\.[^.]+$/, "")
+                    // Any installed sound theme; named after it unless it is the default one.
+                    const theme = parts.length > 3 && parts[parts.length - 2] === "stereo"
+                        ? parts[parts.length - 3] : ""
+                    const name = theme !== "" && theme !== "freedesktop" ? base + " · " + theme : base
+                    out.push({ path: p, name: name, mine: p.indexOf(Services.Paths.shellSounds) === 0 })
                 }
                 root.soundChoices = out
             }

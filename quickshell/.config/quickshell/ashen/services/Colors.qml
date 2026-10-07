@@ -50,7 +50,12 @@ Singleton {
     // is a page. At 0.55 the Settings panel over a detailed wallpaper was a
     // sheet of text with a train showing through it. Outlined, a panel is
     // thinner than filled and still a surface you can read on.
-    readonly property color surfacePanel: Prefs.panelOutline
+    // Blur style: every shell surface is glass like the terminal -- its
+    // background at Hyprland's active_opacity, the compositor blur behind.
+    readonly property bool frosted: Prefs.surfaceStyle === "blur"
+    readonly property color frost: Qt.rgba(abyss.r, abyss.g, abyss.b, 0.60)
+    readonly property color surfacePanel: root.frosted ? root.frost
+        : Prefs.panelOutline
         ? Qt.rgba(surface.r, surface.g, surface.b, 0.88)
         : Qt.rgba(surface.r, surface.g, surface.b, 0.95)
     // The line that goes with it. Here for the same reason the fill is: a
@@ -58,14 +63,18 @@ Singleton {
     // spell out the preference is how half of them came to be thinner without
     // ever being outlined. `border.color` is always `fillOutline`; only the
     // width is a decision.
+    // Only the outline style draws a panel edge.
     readonly property int panelEdgeW: Prefs.panelOutline ? Sizes.outlineW : 0
-    readonly property color surfacePill:  Qt.rgba(surface.r, surface.g, surface.b, 0.82)
-    // Frosted: thin enough to read as glass, with the blur Hyprland already puts
-    // on the quickshell layer (windowrules.lua:28) doing the actual frosting.
-    // Fully transparent would be a hole, not glass.
-    readonly property color surfaceGlass: Qt.rgba(surface.r, surface.g, surface.b, 0.55)
+    readonly property color panelEdgeColor: Prefs.panelOutline ? root.fillOutline
+        : Qt.rgba(abyss.r, abyss.g, abyss.b, 0.92)
+    readonly property color surfacePill:  root.frosted ? root.frost : Qt.rgba(surface.r, surface.g, surface.b, 0.82)
+    // A card inside a panel: the surface leaning a little towards the accent.
+    readonly property color plate: root.frosted ? root.fillInset : root.tint(surface, ghost, 0.07)
+    // Outline style: thin enough to read as glass over the compositor blur.
+    readonly property color surfaceGlass: root.frosted ? Qt.rgba(abyss.r, abyss.g, abyss.b, 0.40)
+                                                       : Qt.rgba(surface.r, surface.g, surface.b, 0.55)
     // The bar's own plate. Denser than a capsule: it runs a whole screen edge.
-    readonly property color surfaceBar:   Qt.rgba(surface.r, surface.g, surface.b, 0.92)
+    readonly property color surfaceBar:   root.frosted ? root.frost : Qt.rgba(surface.r, surface.g, surface.b, 0.92)
     // What a BAR capsule paints itself with; nothing on a solid bar, which is
     // already the surface. Only the bar asks: lock screen and panels keep theirs.
     readonly property color pillPlate: Sizes.barSolid ? "transparent" : root.surfacePill
