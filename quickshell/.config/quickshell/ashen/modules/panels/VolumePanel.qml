@@ -84,7 +84,6 @@ PanelWindow {
         pillH: Services.AppState.volumePillH
         openW: 460
         openH: (card.bodyItem ? card.bodyItem.contentH : 0) + 32
-        cardRadius: 16
 
         pillKey: "volume"
         restSide: "right"
@@ -122,9 +121,7 @@ PanelWindow {
                         width: parent.width
                         height: 118
                         radius: Services.Sizes.cardLgR
-                        color: Services.Colors.fillInset
-                        border.width: 1
-                        border.color: Services.Colors.fillRest
+                        color: Services.Colors.plate
 
                         readonly property Item glyphItem: volGlyph
                         readonly property Item labelItem: volLabel
@@ -198,7 +195,7 @@ PanelWindow {
                         Rectangle {
                             width: tabs.slotW
                             height: parent.height
-                            radius: 8
+                            radius: Services.Sizes.innerR
                             x: (tabs.ids.indexOf(win.cat)) * (tabs.slotW + 4)
                             color: Services.Colors.ghost
                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
@@ -244,7 +241,7 @@ PanelWindow {
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: tab.modelData.label
                                             color: tab.fg
-                                            font.pixelSize: 10
+                                            font.pixelSize: Services.Sizes.fsMeta
                                             font.bold: true
                                             font.family: "JetBrainsMono NF"
                                             Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
@@ -263,10 +260,18 @@ PanelWindow {
                         }
                     }
 
-                    // ── The side you picked ───────────────────────────────
+                    // ── The side you picked, on its own plate ─────────────
+                    Rectangle {
+                        width: parent.width
+                        height: body.height + 24
+                        radius: Services.Sizes.cardLgR
+                        color: Services.Colors.plate
+
                     Item {
                         id: body
-                        width: parent.width
+                        x: 12
+                        y: 12
+                        width: parent.width - 24
                         height: shownItem ? shownItem.implicitHeight : 0
                         clip: true
                         opacity: swap.fade
@@ -329,15 +334,14 @@ PanelWindow {
                                     readonly property bool sMuted: modelData.audio ? modelData.audio.muted : false
                                     readonly property int sVol: modelData.audio ? Math.round(modelData.audio.volume * 100) : 0
                                     width: parent.width
-                                    height: 54
-                                    radius: Services.Sizes.cardR
-                                    color: Services.Colors.fillInset
+                                    height: 48
+                                    color: "transparent"
 
                                     Column {
                                         anchors.fill: parent
-                                        anchors.leftMargin: 12
-                                        anchors.rightMargin: 12
-                                        anchors.topMargin: 8
+                                        anchors.leftMargin: 2
+                                        anchors.rightMargin: 2
+                                        anchors.topMargin: 6
                                         spacing: 6
 
                                         Row {
@@ -365,7 +369,7 @@ PanelWindow {
                                                 width: parent.width - 60
                                                 text: Services.Audio.streamLabel(modelData)
                                                 color: Services.Colors.snow
-                                                font.pixelSize: 11
+                                                font.pixelSize: Services.Sizes.fsBody
                                                 font.bold: true
                                                 font.family: "JetBrainsMono NF"
                                                 elide: Text.ElideRight
@@ -375,7 +379,7 @@ PanelWindow {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: streamRow.sVol + "%"
                                                 color: Services.Colors.mist
-                                                font.pixelSize: 10
+                                                font.pixelSize: Services.Sizes.fsMeta
                                                 font.family: "JetBrainsMono NF"
                                             }
                                         }
@@ -394,21 +398,25 @@ PanelWindow {
                             }
                         }
                     }
+                    }
 
-                    // ── Brightness ────────────────────────────────────────
-                    // It had a card of its own once, for one number the keys
-                    // already change. Down here it is a line at the foot of the
-                    // panel you open to change a level anyway.
-                    Widgets.Divider { width: parent.width }
-
-                    // The same row Settings uses, laid out inline: one glyph,
-                    // one track, one number.
-                    Widgets.SliderRow {
+                    // ── Brightness: its own plate at the foot ─────────────
+                    Rectangle {
                         width: parent.width
-                        inline: true
-                        glyph: Services.Brightness.icon(Services.Brightness.level)
-                        value: Services.Brightness.level
-                        onMoved: pct => Services.Brightness.setLevel(pct)
+                        height: brightRow.implicitHeight + 28
+                        radius: Services.Sizes.cardLgR
+                        color: Services.Colors.plate
+
+                        Widgets.SliderRow {
+                            id: brightRow
+                            x: 14
+                            width: parent.width - 28
+                            anchors.verticalCenter: parent.verticalCenter
+                            inline: true
+                            glyph: Services.Brightness.icon(Services.Brightness.level)
+                            value: Services.Brightness.level
+                            onMoved: pct => Services.Brightness.setLevel(pct)
+                        }
                     }
                 }
             }

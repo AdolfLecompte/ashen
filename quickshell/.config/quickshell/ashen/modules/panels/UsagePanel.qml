@@ -146,7 +146,7 @@ PanelWindow {
                     id: pl
                     property int index: 0
                     radius: Services.Sizes.cardLgR
-                    color: Services.Colors.tint(Services.Colors.surface, Services.Colors.ghost, 0.07)
+                    color: Services.Colors.plate
                     clip: true
                     opacity: board.stage(index)
                     transform: Translate { y: (1 - board.stage(pl.index)) * 12 }

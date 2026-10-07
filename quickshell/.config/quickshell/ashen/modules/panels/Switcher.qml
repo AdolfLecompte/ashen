@@ -32,8 +32,13 @@ PanelWindow {
     function collect() {
         // A toplevel without a class or a workspace is not a window anyone can
         // switch to: the list carries more handles than `hyprctl clients` does.
+        const scope = Services.Prefs.switcherScope
+        const mon = Hyprland.focusedMonitor
+        const ws = mon && mon.activeWorkspace ? mon.activeWorkspace.id : -1
         const all = Hyprland.toplevels.values.filter(t =>
-            t.lastIpcObject && t.lastIpcObject["class"] && t.workspace)
+            t.lastIpcObject && t.lastIpcObject["class"] && t.workspace
+            && (scope !== "output" || (mon && t.lastIpcObject.monitor === mon.id))
+            && (scope !== "workspace" || t.workspace.id === ws))
         // Stable order, and the one a user can predict: by workspace, then by
         // where the window sits on it.
         return all.slice().sort((a, b) => {
@@ -81,6 +86,16 @@ PanelWindow {
     // Alt-tab without holding a key: it stays up until it is told to go.
     // Nothing closes it on its own -- Enter/Space or a click commit, Escape
     // and a click outside cancel.
+    readonly property var scopes: ["all", "output", "workspace"]
+    function setScope(s) {
+        Services.Prefs.switcherScope = s
+        root.arm()
+    }
+    function cycleScope(d) {
+        const i = root.scopes.indexOf(Services.Prefs.switcherScope)
+        root.setScope(root.scopes[((i < 0 ? 0 : i) + d + 3) % 3])
+    }
+
     function step(d) {
         if (root.wins.length === 0) return
         const n = root.wins.length
@@ -138,6 +153,8 @@ PanelWindow {
         Keys.onBacktabPressed: root.step(-1)
         Keys.onRightPressed: root.step(1)
         Keys.onLeftPressed: root.step(-1)
+        Keys.onUpPressed: root.cycleScope(-1)
+        Keys.onDownPressed: root.cycleScope(1)
         Keys.onReturnPressed: root.commit()
         Keys.onEnterPressed: root.commit()
         Keys.onSpacePressed: root.commit()
@@ -163,7 +180,8 @@ PanelWindow {
         readonly property int tileH: shotH + 26
 
         openW: host.count * tileW + (host.count - 1) * gap + pad * 2
-        openH: tileH + pad * 2
+        readonly property int scopeH: 30
+        openH: scopeH + 12 + tileH + pad * 2
         // Tiles standing on their own, like the power menu: no plate around
         // them and none under the chosen one. What marks it is that it grew.
         cardColor: "transparent"
@@ -179,9 +197,51 @@ PanelWindow {
                     return Math.max(0, Math.min(1, (host.contentAmt - start) / (1 - start)))
                 }
 
+                // All windows, this monitor's, or this workspace's (also ↑/↓).
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: host.pad
+                    spacing: 6
+                    opacity: card.stage(0)
+                    Repeater {
+                        model: [
+                            { id: "all", glyph: "\ue5c3" },
+                            { id: "output", glyph: "\uef5b" },
+                            { id: "workspace", glyph: "\ue6fa" }
+                        ]
+                        delegate: Rectangle {
+                            id: scopeChip
+                            required property var modelData
+                            readonly property bool on: Services.Prefs.switcherScope === modelData.id
+                            width: 40
+                            height: host.scopeH
+                            radius: Services.Sizes.pillR
+                            color: on ? Services.Colors.ghost : Services.Colors.surfacePill
+                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.centerIn: parent
+                                text: scopeChip.modelData.glyph
+                                color: scopeChip.on ? Services.Colors.accentText
+                                     : scopeHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                                font.pixelSize: 17
+                                font.family: "Material Symbols Rounded"
+                                scale: Services.Sizes.hoverScale(scopeHover.containsMouse, scopeHover.pressed)
+                            }
+                            MouseArea {
+                                id: scopeHover
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.setScope(scopeChip.modelData.id)
+                            }
+                        }
+                    }
+                }
+
                 Row {
                     x: host.pad
-                    y: host.pad
+                    y: host.pad + host.scopeH + 12
                     spacing: host.gap
 
                     Repeater {

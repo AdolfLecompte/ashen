@@ -60,7 +60,6 @@ PanelWindow {
         // The pill's icon lands on the panel's header icon: same glyph, moved.
         openW: 360
         openH: Math.min((card.bodyItem ? card.bodyItem.contentH : 0) + 28, root.height - 80)
-        cardRadius: 14
 
         pillKey: "usb"
         restSide: "right"
@@ -94,7 +93,7 @@ PanelWindow {
                             textFormat: Text.PlainText
                             text: Services.I18n.t("usb.title")
                             color: Services.Colors.snow
-                            font.pixelSize: 14
+                            font.pixelSize: Services.Sizes.fsCardTitle
                             font.bold: true
                             font.family: "JetBrainsMono NF"
                             Layout.fillWidth: true
@@ -107,7 +106,7 @@ PanelWindow {
                         visible: Services.USB.devices.length === 0
                         text: root.emptyLine
                         color: Services.Colors.ash
-                        font.pixelSize: 11
+                        font.pixelSize: Services.Sizes.fsBody
                         font.family: "JetBrainsMono NF"
                         topPadding: 20
                         bottomPadding: 20
@@ -120,8 +119,8 @@ PanelWindow {
                             required property var modelData
                             width: panelCol.width
                             height: 66
-                            radius: 10
-                            color: Services.Colors.fillInset
+                            radius: Services.Sizes.cardR
+                            color: Services.Colors.plate
 
                             RowLayout {
                                 anchors.fill: parent
@@ -149,7 +148,7 @@ PanelWindow {
                                         textFormat: Text.PlainText
                                         text: modelData.label
                                         color: Services.Colors.snow
-                                        font.pixelSize: 13
+                                        font.pixelSize: Services.Sizes.fsInput
                                         font.bold: true
                                         font.family: "JetBrainsMono NF"
                                         elide: Text.ElideRight
@@ -159,7 +158,7 @@ PanelWindow {
                                         textFormat: Text.PlainText
                                         text: modelData.size + (modelData.mountpoint ? " · " + modelData.mountpoint : " · Not mounted")
                                         color: Services.Colors.mist
-                                        font.pixelSize: 10
+                                        font.pixelSize: Services.Sizes.fsMeta
                                         font.family: "JetBrainsMono NF"
                                         elide: Text.ElideRight
                                         width: parent.width
@@ -169,7 +168,7 @@ PanelWindow {
                                 Rectangle {
                                     width: mountLabel.implicitWidth + 16
                                     height: 28
-                                    radius: 8
+                                    radius: Services.Sizes.innerR
                                     color: modelData.mountpoint ? Services.Colors.fillLine : Services.Colors.ghost
                                     Text {
                                         textFormat: Text.PlainText
@@ -177,7 +176,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         text: modelData.mountpoint ? Services.I18n.t("usb.unmount") : Services.I18n.t("usb.mount")
                                         color: modelData.mountpoint ? Services.Colors.snow : Services.Colors.abyss
-                                        font.pixelSize: 11
+                                        font.pixelSize: Services.Sizes.fsBody
                                         font.family: "JetBrainsMono NF"
                                     }
                                     MouseArea {

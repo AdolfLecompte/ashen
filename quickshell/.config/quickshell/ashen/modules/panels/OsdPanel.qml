@@ -36,7 +36,10 @@ Scope {
     PanelWindow {
         id: win
         anchors { top: true; right: true; bottom: true }
-        screen: Services.Screens.active
+        // Opens on the focused monitor and stays there until it hides.
+        property var pinned: null
+        screen: win.pinned || Services.Screens.active
+        onVisibleChanged: win.pinned = visible ? Services.Screens.active : null
         implicitWidth: 90
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
@@ -56,7 +59,7 @@ Scope {
 
         Timer {
             id: hideTimer
-            interval: 1400
+            interval: Services.Prefs.osdMs
             onTriggered: { win.shown = false; unmapDelay.restart() }
         }
         // keep the window mapped a bit longer so the fade-out is visible,
@@ -75,7 +78,7 @@ Scope {
             height: 250
             radius: 14
             color: Services.Colors.surfacePanel
-            border.color: Services.Colors.fillOutline
+            border.color: Services.Colors.panelEdgeColor
             border.width: Services.Colors.panelEdgeW
 
             opacity: win.shown ? 1.0 : 0.0

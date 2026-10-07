@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Widgets
 import QtQuick
+import QtQuick.Effects
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
 
@@ -91,6 +92,34 @@ PanelWindow {
         openW: root.openW
         openH: root.openH
 
+        // ── Backdrop: the cover itself, blurred and dim, behind everything ──
+        Image {
+            id: backArt
+            anchors.fill: parent
+            source: panelRef.shownArtUrl
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            cache: false
+            visible: false
+        }
+        // Rounded like the card, or the blur shows square corners past it.
+        ClippingRectangle {
+            anchors.fill: parent
+            radius: 20
+            color: "transparent"
+            opacity: 0.30 * card.contentAmt
+            visible: backArt.status === Image.Ready
+
+            MultiEffect {
+                anchors.fill: parent
+                source: backArt
+                blurEnabled: true
+                blurMax: 64
+                blur: 1.0
+                saturation: -0.2
+            }
+        }
+
         // ── Reference layout A: the pill ────────────────────────────────
         // A structural copy of MediaPill's grid -- same cells, same axis, same
         // gaps -- laid out but never drawn, so the shared items know where the
@@ -123,7 +152,7 @@ PanelWindow {
                     id: refTitle
                     width: parent.width
                     text: panelRef.titleText
-                    font.pixelSize: 11
+                    font.pixelSize: Services.Sizes.fsBody
                     font.bold: true
                     font.family: "JetBrainsMono NF"
                     elide: Text.ElideRight
@@ -190,6 +219,7 @@ PanelWindow {
             // has landed. Morph gets both animations, not one instead of the other.
             stageFn: card.stage
             offerLyrics: true
+            stacked: true
         }
 
         // ── The shared items ────────────────────────────────────────────
@@ -212,6 +242,9 @@ PanelWindow {
             // Changing track sweeps the flown pieces, the same numbers the card
             // publishes -- they are the ones actually drawn.
             opacity: panelRef.swapFade
+            // Lyrics on: the cover sinks into blur behind them, nothing turns.
+            property real face: panelRef.lyricsShown && card.morph >= 1 ? 1 : 0
+            Behavior on face { NumberAnimation { duration: 620; easing.type: Easing.InOutCubic } }
             transform: Translate { x: panelRef.swapOffX }
 
             Image {
@@ -233,6 +266,87 @@ PanelWindow {
                 color: Services.Colors.ash
                 font.family: "Material Symbols Rounded"
                 font.pixelSize: card.lerp(18, 40, card.morph)
+            }
+
+            // The words over the cover as it blurs: the lines around the one sung.
+            Item {
+                id: lyricFace
+                anchors.fill: parent
+                visible: flyArt.face > 0.01
+                readonly property int live: Services.Lyrics.indexAt(panelRef.position)
+                // The lines slide up as the song moves on; text reads the committed index.
+                Widgets.SlideSwap {
+                    id: lineSlide
+                    index: lyricFace.live
+                    axis: "vertical"
+                    travel: 18
+                    onCommit: lyricFace.at = lyricFace.live
+                }
+                property int at: -1
+                Component.onCompleted: lyricFace.at = lyricFace.live
+                function lineOf(i) {
+                    const l = Services.Lyrics.lines
+                    return i >= 0 && i < l.length ? l[i].text : ""
+                }
+
+                MultiEffect {
+                    anchors.fill: parent
+                    source: flyImg
+                    visible: flyImg.status === Image.Ready
+                    blurEnabled: true
+                    blurMax: 48
+                    blur: flyArt.face
+                    scale: 1 + 0.06 * flyArt.face
+                }
+                Rectangle {
+                    anchors.fill: parent
+                    color: Qt.rgba(Services.Colors.abyss.r, Services.Colors.abyss.g,
+                                   Services.Colors.abyss.b, 0.55 * flyArt.face)
+                }
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - 40
+                    spacing: 14
+                    opacity: lineSlide.fade * Math.max(0, (flyArt.face - 0.35) / 0.65)
+                    transform: Translate { y: lineSlide.offY + (1 - flyArt.face) * 12 }
+                    Text {
+                        textFormat: Text.PlainText
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                        text: lyricFace.lineOf(lyricFace.at - 1)
+                        color: Services.Colors.ash
+                        font.pixelSize: Services.Sizes.fsInput
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 3
+                        elide: Text.ElideRight
+                        text: lyricFace.at < 0 ? "\u2026" : lyricFace.lineOf(lyricFace.at)
+                        color: Services.Colors.snow
+                        font.pixelSize: Services.Sizes.fsSectionTitle
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.WordWrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                        text: lyricFace.lineOf(lyricFace.at + 1)
+                        color: Services.Colors.ash
+                        font.pixelSize: Services.Sizes.fsInput
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
             }
         }
 

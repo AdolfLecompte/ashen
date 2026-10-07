@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import "root:/services" as Services
 import "root:/modules/net" as Net
 import "root:/modules/widgets" as Widgets
+import "root:/modules/settings/components" as Parts
 
 PanelWindow {
     id: root
@@ -334,7 +335,7 @@ PanelWindow {
                         Rectangle {
                             id: tabTrack
                             anchors.fill: parent
-                            radius: 10
+                            radius: Services.Sizes.pillR
                             color: Services.Colors.fillLine
                         }
 
@@ -344,7 +345,7 @@ PanelWindow {
                             y: 4
                             x: (Services.AppState.networkTab === "ethernet" ? parent.cell + 8 : 0) + 4
                             width: parent.cell - 8
-                            radius: 8
+                            radius: Services.Sizes.innerR
                             color: Services.Colors.ghost
                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                             Behavior on x { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
@@ -381,7 +382,7 @@ PanelWindow {
                                             textFormat: Text.PlainText
                                             text: modelData.label
                                             color: parent.parent.on ? Services.Colors.accentText : Services.Colors.snow
-                                            font.pixelSize: 13
+                                            font.pixelSize: Services.Sizes.fsInput
                                             font.family: "JetBrainsMono NF"
                                             anchors.verticalCenter: parent.verticalCenter
                                             Behavior on color { Widgets.ColorAnim {} }
@@ -437,31 +438,17 @@ PanelWindow {
                                     textFormat: Text.PlainText
                                     text: Services.I18n.t("settings.wifi.radio")
                                     color: Services.Colors.mist
-                                    font.pixelSize: 11
+                                    font.pixelSize: Services.Sizes.fsBody
                                     font.family: "JetBrainsMono NF"
                                     Layout.fillWidth: true
                                 }
                                 // No refresh icon here: the scan chip in the ring is
                                 // the one place a scan is started from.
-                                Rectangle {
-                                    width: 52; height: 28; radius: 14
-                                    color: root.wifiEnabled ? Services.Colors.ghost : Services.Colors.fillRest
-                                    gradient: Services.Prefs.useGradients && (root.wifiEnabled) ? Services.Colors.accentGradient : null
-                                    Behavior on color { Widgets.ColorAnim {} }
-                                    Rectangle {
-                                        width: 20; height: 20; radius: 10
-                                        color: Services.Colors.snow
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        x: root.wifiEnabled ? parent.width - width - 4 : 4
-                                        Behavior on x { Widgets.Anim {} }
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            root.wifiEnabled = !root.wifiEnabled
-                                            Quickshell.execDetached(["sh", "-c", root.wifiEnabled ? "nmcli radio wifi on" : "nmcli radio wifi off"])
-                                        }
+                                Parts.Toggle {
+                                    checked: root.wifiEnabled
+                                    onToggled: {
+                                        root.wifiEnabled = !root.wifiEnabled
+                                        Quickshell.execDetached(["sh", "-c", root.wifiEnabled ? "nmcli radio wifi on" : "nmcli radio wifi off"])
                                     }
                                 }
                             }
@@ -585,7 +572,7 @@ PanelWindow {
                             Rectangle {
                                 id: askRow
                                 width: parent.width
-                                radius: 10
+                                radius: Services.Sizes.pillR
                                 color: Services.Colors.fillLine
                                 clip: true
                                 height: root.showConnectDialog ? 92 : 0
@@ -621,7 +608,7 @@ PanelWindow {
                                         textFormat: Text.PlainText
                                         text: Services.I18n.t("net.passwordFor", { n: root.connectingTo })
                                         color: Services.Colors.mist
-                                        font.pixelSize: 11
+                                        font.pixelSize: Services.Sizes.fsBody
                                         font.family: "JetBrainsMono NF"
                                     }
 
@@ -632,7 +619,7 @@ PanelWindow {
                                         Rectangle {
                                             Layout.fillWidth: true
                                             height: 36
-                                            radius: 8
+                                            radius: Services.Sizes.innerR
                                             color: Services.Colors.fillLine
                                             border.color: passInput.activeFocus
                                                 ? Services.Colors.ghost : Services.Colors.fillStrong
@@ -653,17 +640,18 @@ PanelWindow {
                                                         anchors.verticalCenter: parent.verticalCenter
                                                         text: Services.I18n.t("settings.wifi.password")
                                                         color: Services.Colors.ash
-                                                        font.pixelSize: 13
+                                                        font.pixelSize: Services.Sizes.fsInput
                                                         font.family: "JetBrainsMono NF"
                                                         visible: passInput.text.length === 0
                                                     }
                                                     TextInput {
                                                         id: passInput
+                                                        Keys.onPressed: e => { if (Services.Readline.handle(e, passInput)) e.accepted = true }
                                                         anchors.fill: parent
                                                         text: root.password
                                                         echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
                                                         color: Services.Colors.snow
-                                                        font.pixelSize: 13
+                                                        font.pixelSize: Services.Sizes.fsInput
                                                         font.family: "JetBrainsMono NF"
                                                         verticalAlignment: TextInput.AlignVCenter
                                                         onTextChanged: root.password = text
@@ -692,7 +680,7 @@ PanelWindow {
 
                                         Rectangle {
                                             Layout.preferredWidth: 84
-                                            height: 36; radius: 8
+                                            height: 36; radius: Services.Sizes.innerR
                                             color: Services.Colors.fillRest
                                             scale: Services.Sizes.hoverScale(cancelMouse.containsMouse, cancelMouse.pressed)
                                             Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
@@ -716,7 +704,7 @@ PanelWindow {
 
                                         Rectangle {
                                             Layout.preferredWidth: 92
-                                            height: 36; radius: 8
+                                            height: 36; radius: Services.Sizes.innerR
                                             color: Services.Colors.ghost
                                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                                             scale: Services.Sizes.hoverScale(joinMouse.containsMouse, joinMouse.pressed)
@@ -765,7 +753,7 @@ PanelWindow {
                                     textFormat: Text.PlainText
                                     text: Services.I18n.t("net.wired")
                                     color: Services.Colors.mist
-                                    font.pixelSize: 11
+                                    font.pixelSize: Services.Sizes.fsBody
                                     font.family: "JetBrainsMono NF"
                                     Layout.fillWidth: true
                                 }
@@ -775,7 +763,7 @@ PanelWindow {
                                         ? Services.I18n.t("net.noPort")
                                         : Services.I18n.t(root.ethPorts.length === 1 ? "net.port" : "net.ports", { n: root.ethPorts.length })
                                     color: Services.Colors.ash
-                                    font.pixelSize: 11
+                                    font.pixelSize: Services.Sizes.fsBody
                                     font.family: "JetBrainsMono NF"
                                 }
                             }

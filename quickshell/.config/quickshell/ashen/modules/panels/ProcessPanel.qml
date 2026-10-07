@@ -141,8 +141,7 @@ PanelWindow {
                     radius: Services.Sizes.cardLgR
                     // Opaque: a translucent plate took its colour from whatever
                     // wallpaper happened to be behind the panel.
-                    color: Services.Colors.tint(Services.Colors.surface,
-                                                Services.Colors.ghost, 0.07)
+                    color: Services.Colors.plate
                     clip: true
                     opacity: bodyRoot.stage(index)
                     transform: Translate { y: (1 - bodyRoot.stage(cd.index)) * 12 }

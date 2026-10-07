@@ -7,7 +7,10 @@ import "root:/services" as Services
 PanelWindow {
     id: win
     anchors { top: true; left: true; right: true; bottom: true }
-    screen: Services.Screens.active
+    // Opens on the focused monitor and stays there while any toast is up.
+    property var pinned: null
+    screen: win.pinned || Services.Screens.active
+    onVisibleChanged: win.pinned = visible ? Services.Screens.active : null
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     visible: Services.Notifications.activePopups.length > 0
@@ -38,7 +41,7 @@ PanelWindow {
            ? parent.height - height - Services.Sizes.marginBottom
            : Services.Sizes.marginTop
         spacing: 8
-        width: 360
+        width: Services.Prefs.toastWidth
 
         move: Transition {
             NumberAnimation { properties: "x,y"; duration: 260; easing.type: Services.Sizes.easeBox }
@@ -76,7 +79,7 @@ PanelWindow {
                 // cards below close the gap instead of jumping up when this one
                 // is dropped from the model.
                 property real collapse: 1
-                width: 360
+                width: Services.Prefs.toastWidth
                 height: fullH * collapse
                 // Only for the height JUMP when a card gains or loses its
                 // action row. On the way out it has to be off: `collapse` is
@@ -111,7 +114,7 @@ PanelWindow {
                     radius: 16
                     color: Services.Colors.surfacePanel
                     border.width: Services.Colors.panelEdgeW
-                    border.color: Services.Colors.fillOutline
+                    border.color: Services.Colors.panelEdgeColor
                     clip: true
                     transform: Translate { id: slideT }
 
@@ -426,7 +429,7 @@ PanelWindow {
                 color: Services.Colors.surfacePanel
                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 border.width: Services.Colors.panelEdgeW
-                border.color: Services.Colors.fillOutline
+                border.color: Services.Colors.panelEdgeColor
                 scale: Services.Sizes.hoverScale(countHover.containsMouse, countHover.pressed)
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
@@ -457,7 +460,7 @@ PanelWindow {
                 color: Services.Colors.surfacePanel
                 Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 border.width: Services.Colors.panelEdgeW
-                border.color: Services.Colors.fillOutline
+                border.color: Services.Colors.panelEdgeColor
                 scale: Services.Sizes.hoverScale(sweepHover.containsMouse, sweepHover.pressed)
                 Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 

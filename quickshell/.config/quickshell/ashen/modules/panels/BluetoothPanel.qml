@@ -5,6 +5,7 @@ import QtQuick.Layouts
 
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
+import "root:/modules/settings/components" as Parts
 
 PanelWindow {
     id: root
@@ -139,7 +140,7 @@ PanelWindow {
                             textFormat: Text.PlainText
                             text: Services.I18n.t("settings.tab.bluetooth")
                             color: Services.Colors.snow
-                            font.pixelSize: 14
+                            font.pixelSize: Services.Sizes.fsCardTitle
                             font.family: "JetBrainsMono NF"
                             font.bold: true
                             Layout.fillWidth: true
@@ -150,28 +151,9 @@ PanelWindow {
                         // the card is the only place a scan starts from. Two
                         // buttons doing the same thing just made you wonder how
                         // they differed.
-                        Rectangle {
-                            width: 52; height: 28; radius: 14
-                            color: (root.adapter && root.adapter.enabled) ? Services.Colors.ghost : Services.Colors.fillRest
-                            gradient: Services.Prefs.useGradients && ((root.adapter && root.adapter.enabled)) ? Services.Colors.accentGradient : null
-                            Behavior on color { Widgets.ColorAnim {} }
-
-                            Rectangle {
-                                width: 20; height: 20; radius: 10
-                                color: Services.Colors.snow
-                                anchors.verticalCenter: parent.verticalCenter
-                                x: (root.adapter && root.adapter.enabled) ? parent.width - width - 4 : 4
-                                Behavior on x { Widgets.Anim {} }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                enabled: root.adapter !== null
-                                onClicked: {
-                                    if (root.adapter) root.adapter.enabled = !root.adapter.enabled
-                                }
-                            }
+                        Parts.Toggle {
+                            checked: root.adapter !== null && root.adapter.enabled
+                            onToggled: if (root.adapter) root.adapter.enabled = !root.adapter.enabled
                         }
                     }
 
