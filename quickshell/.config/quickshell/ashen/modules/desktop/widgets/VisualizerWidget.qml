@@ -50,25 +50,29 @@ DesktopWidget {
     Connections {
         target: Services.Cava
         enabled: root.live
-        function onBarValuesChanged() {
-            const src = Services.Cava.barValues
-            if (!src || src.length === 0) { root.levels = []; return }
-            const half = Math.floor(root.spokes / 2)
-            const per = src.length / half
-            let folded = []
-            for (let i = 0; i < half; i++) {
-                // The loudest reading the slot covers, never the average:
-                // averaging flattens the peaks the eye is watching for. Same
-                // call Spectrum makes.
-                let v = 0
-                const from = Math.floor(i * per)
-                const to = Math.max(from + 1, Math.floor((i + 1) * per))
-                for (let k = from; k < to; k++) v = Math.max(v, src[k] || 0)
-                folded.push(Math.max(0, Math.min(1, v / 100)))
-            }
-            // Up one side and back down the other, so the two halves meet.
-            root.levels = folded.concat(folded.slice().reverse())
+        function onBarValuesChanged() { root.fold() }
+    }
+    // Catch up on whatever changed while nobody was looking.
+    onLiveChanged: if (root.live) root.fold()
+
+    function fold() {
+        const src = Services.Cava.barValues
+        if (!src || src.length === 0) { root.levels = []; return }
+        const half = Math.floor(root.spokes / 2)
+        const per = src.length / half
+        let folded = []
+        for (let i = 0; i < half; i++) {
+            // The loudest reading the slot covers, never the average:
+            // averaging flattens the peaks the eye is watching for. Same
+            // call Spectrum makes.
+            let v = 0
+            const from = Math.floor(i * per)
+            const to = Math.max(from + 1, Math.floor((i + 1) * per))
+            for (let k = from; k < to; k++) v = Math.max(v, src[k] || 0)
+            folded.push(Math.max(0, Math.min(1, v / 100)))
         }
+        // Up one side and back down the other, so the two halves meet.
+        root.levels = folded.concat(folded.slice().reverse())
     }
 
     // The bass end drives the pulse: it is the part of the sound a body feels.

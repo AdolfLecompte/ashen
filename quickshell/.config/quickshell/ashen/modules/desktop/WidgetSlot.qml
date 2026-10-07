@@ -11,10 +11,15 @@ Item {
     required property string wid
     required property Component source
     property bool live: true
+    // The screen this slot's layer is on; the widget shows only on its own.
+    property string hostKey: ""
 
     anchors.fill: parent
+    // An open menu sits above every other widget.
+    z: Services.Desktop.menuFor === slot.wid ? 10 : 0
 
     readonly property bool wanted: Services.Desktop.shown(slot.wid)
+        && Services.Desktop.screenOf(slot.wid) === slot.hostKey
 
     Loader {
         id: holder
@@ -34,6 +39,7 @@ Item {
             item.fieldW = Qt.binding(() => slot.width)
             item.fieldH = Qt.binding(() => slot.height)
             item.live = Qt.binding(() => slot.live)
+            item.hostKey = slot.hostKey
         }
     }
 

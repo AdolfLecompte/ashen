@@ -316,6 +316,8 @@ DesktopWidget {
             // icon and straight back to the next song: two sweeps. Silence is
             // only shown once it has lasted; an untitled track is waited out.
             onLiveKeyChanged: Qt.callLater(function() {
+                // The widget may be gone by now (its screen left, or it moved).
+                if (!lyr) return
                 if (lyr.liveKey === "") { waitWords.stop(); waitGone.restart(); return }
                 waitGone.stop()
                 if (root.title === "") { waitWords.restart(); return }

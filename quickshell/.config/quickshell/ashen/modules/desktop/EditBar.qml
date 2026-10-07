@@ -28,7 +28,7 @@ Item {
         radius: Services.Sizes.pillR
         color: Services.Colors.surfacePanel
         border.width: Services.Colors.panelEdgeW
-        border.color: Services.Colors.fillOutline
+        border.color: Services.Colors.panelEdgeColor
 
         // Behind the chosen mode, travelling between them. A child of the plate
         // and of no Row at all: a Row lays out everything it holds, so a marker

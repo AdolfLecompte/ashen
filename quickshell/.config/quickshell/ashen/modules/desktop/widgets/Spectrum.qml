@@ -28,6 +28,8 @@ Canvas {
         enabled: root.live
         function onBarValuesChanged() { root.requestPaint() }
     }
+    // Catch up on whatever changed while nobody was looking.
+    onLiveChanged: if (root.live) root.requestPaint()
 
     onPaint: {
         const ctx = getContext("2d")

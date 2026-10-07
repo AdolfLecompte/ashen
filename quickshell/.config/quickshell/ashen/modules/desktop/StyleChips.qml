@@ -20,8 +20,9 @@ Item {
     readonly property var styles: Services.Desktop.stylesOf(root.wid)
     readonly property var skins: Services.Desktop.skinsOf(root.wid)
     // One shape is not a choice.
-    readonly property bool offered: Services.Desktop.editMode && root.target !== null
-                                    && (root.styles.length > 1 || root.skins.length > 1)
+    // Only ever opened by a right-click on its widget, arranging or not.
+    readonly property bool menu: Services.Desktop.menuFor === root.wid
+    readonly property bool offered: root.target !== null && root.menu
 
     // Above every widget: two of them sitting close would otherwise bury one
     // another's row of shapes.
@@ -35,8 +36,13 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    x: root.target ? root.target.x + (root.target.width - width) / 2 : 0
-    y: root.target ? root.target.y + root.target.height + 8 : 0
+    x: root.target ? Math.max(8, Math.min(root.target.x + (root.target.width - width) / 2,
+                                          (parent ? parent.width : 0) - width - 8)) : 0
+    // Below the widget, or above it when the screen ends first.
+    readonly property bool roomBelow: !root.target || !parent
+        || root.target.y + root.target.height + 8 + height <= parent.height - 8
+    y: !root.target ? 0 : root.roomBelow ? root.target.y + root.target.height + 8
+                                         : root.target.y - height - 8
 
     // A row of chips in its own container pill, with the accent travelling to
     // the chosen one -- the same language as the wallpaper categories.
@@ -146,6 +152,81 @@ Item {
             model_: root.skins
             current: Services.Desktop.entry(root.wid).skin
             onPicked: id => Services.Desktop.setSkin(root.wid, id)
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.menu
+            width: actions.width + 8
+            height: actions.height + 8
+            radius: Services.Sizes.pillR
+            color: Services.Colors.surfacePill
+
+            Row {
+                id: actions
+                x: 4
+                y: 4
+                spacing: 2
+                ActionChip {
+                    visible: !Services.Desktop.editMode
+                    glyph: "\ue89f"      // open_with
+                    label: Services.I18n.t("desktop.menu.move")
+                    onPicked: Services.Desktop.editMode = true
+                }
+                ActionChip {
+                    visible: Services.Desktop.screenKeys.length > 1
+                    glyph: "\ue8d4"      // swap_horiz: to the other screen
+                    label: Services.I18n.t("desktop.menu.screen")
+                    onPicked: Services.Desktop.moveToNextScreen(root.wid)
+                }
+                ActionChip {
+                    glyph: "\ue872"      // delete
+                    label: Services.I18n.t("desktop.menu.remove")
+                    onPicked: Services.Desktop.takeAway(root.wid)
+                }
+            }
+        }
+    }
+
+    component ActionChip: Item {
+        id: act
+        property string glyph: ""
+        property string label: ""
+        signal picked()
+
+        width: actRow.width + 20
+        height: 26
+        scale: Services.Sizes.hoverScale(actHover.containsMouse, actHover.pressed)
+        Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
+
+        Row {
+            id: actRow
+            anchors.centerIn: parent
+            spacing: 6
+            Text {
+                textFormat: Text.PlainText
+                anchors.verticalCenter: parent.verticalCenter
+                text: act.glyph
+                color: actHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                font.pixelSize: 15
+                font.family: "Material Symbols Rounded"
+            }
+            Text {
+                textFormat: Text.PlainText
+                anchors.verticalCenter: parent.verticalCenter
+                text: act.label
+                color: actHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                font.pixelSize: Services.Sizes.fsMeta
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+            }
+        }
+        MouseArea {
+            id: actHover
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: act.picked()
         }
     }
 }

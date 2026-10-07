@@ -153,7 +153,7 @@ Item {
         radius: Services.Sizes.panelR
         color: Services.Colors.surfacePanel
         border.width: Services.Colors.panelEdgeW
-        border.color: Services.Colors.fillOutline
+        border.color: Services.Colors.panelEdgeColor
 
         // One grid for everything -- the widgets, the pictures you have, and
         // the way to add another. Two grids left the last widget alone on a row

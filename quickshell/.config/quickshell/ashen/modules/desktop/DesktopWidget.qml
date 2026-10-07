@@ -91,29 +91,28 @@ Item {
     // default (a click on the desktop has to reach the desktop), so it cuts a
     // hole for exactly these boxes and no others.
     property bool wantsInput: false
+    // Set by its slot: which screen this copy is drawn on.
+    property string hostKey: ""
 
     // The magnet reads these when something is dropped, so they have to be
     // current -- including while a widget is being dragged past its neighbours.
     // Nothing off the lock screen belongs in the desktop's map: the magnet
     // would snap wallpaper widgets onto boxes that are not out there.
+    // Every managed widget takes the pointer over its box: right-click opens its menu.
     function publish() {
         if (!root.managed) return
         Services.Desktop.setRect(root.wid, root.x, root.y, root.width, root.height)
-        if (root.wantsInput)
-            Services.Desktop.setInputRect(root.wid, root.x, root.y, root.width, root.height)
-    }
-    // A shape can lose its buttons (the lyric page has none): the hole has to
-    // go with them, or it would keep eating clicks meant for the wallpaper.
-    onWantsInputChanged: {
-        if (root.wantsInput) root.publish()
-        else Services.Desktop.dropInputRect(root.wid)
+        Services.Desktop.setInputRect(root.wid, root.x, root.y, root.width, root.height)
     }
     onXChanged: root.publish()
     onYChanged: root.publish()
     onWidthChanged: root.publish()
     onHeightChanged: root.publish()
     Component.onCompleted: root.publish()
-    Component.onDestruction: if (root.managed) {
+    // A widget that only moved to another screen keeps its boxes: the copy
+    // there has already published them.
+    Component.onDestruction: if (root.managed
+                                 && (root.hostKey === "" || Services.Desktop.screenOf(root.wid) === root.hostKey)) {
         Services.Desktop.dropRect(root.wid)
         Services.Desktop.dropInputRect(root.wid)
     }
@@ -158,6 +157,15 @@ Item {
         implicitHeight: body.shape ? body.shape.height : 0
         width: implicitWidth
         height: implicitHeight
+    }
+
+    // Right button only: left clicks fall through to the widget's own controls.
+    MouseArea {
+        anchors.fill: parent
+        z: 2
+        acceptedButtons: Qt.RightButton
+        enabled: root.managed
+        onClicked: Services.Desktop.menuFor = Services.Desktop.menuFor === root.wid ? "" : root.wid
     }
 
     MouseArea {
