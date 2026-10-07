@@ -470,12 +470,75 @@ TabPage {
     Card {
         title: Services.I18n.t("settings.display.workspaces")
 
+        // Hand-picked per screen, or spread automatically over all of them.
+        // Each spread is drawn as the two screens it makes: main one on the left.
+        Segmented {
+            Layout.fillWidth: true
+            stacked: true
+            cellHeight: 52
+            options: [
+                { id: "manual" },
+                { id: "blocks", l: "1\u20135", r: "6\u201310" },
+                { id: "blocksRev", l: "6\u201310", r: "1\u20135" },
+                { id: "alt", l: "2 4 6", r: "1 3 5" },
+                { id: "altRev", l: "1 3 5", r: "2 4 6" }
+            ]
+            current: Services.Prefs.workspaceMode
+            onPicked: id => Services.Displays.setMode(id)
+            cellFace: Component {
+                Item {
+                    property var modelData: ({})
+                    property bool active: false
+                    readonly property color ink: active ? Services.Colors.accentText : Services.Colors.mist
+                    implicitWidth: modelData.id === "manual" ? 24 : pair.width
+                    implicitHeight: 30
+                    width: implicitWidth
+                    height: implicitHeight
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.centerIn: parent
+                        visible: parent.modelData.id === "manual"
+                        text: "\ue913"      // touch_app
+                        color: parent.ink
+                        font.pixelSize: 20
+                        font.family: "Material Symbols Rounded"
+                    }
+                    Row {
+                        id: pair
+                        visible: parent.modelData.id !== "manual"
+                        spacing: 4
+                        Repeater {
+                            model: [pair.parent.modelData.l || "", pair.parent.modelData.r || ""]
+                            Rectangle {
+                                required property string modelData
+                                required property int index
+                                width: 44; height: 30; radius: 4
+                                color: "transparent"
+                                border.width: index === 0 ? 2 : 1
+                                border.color: pair.parent.ink
+                                Text {
+                                    textFormat: Text.PlainText
+                                    anchors.centerIn: parent
+                                    text: parent.modelData
+                                    color: pair.parent.ink
+                                    font.pixelSize: Services.Sizes.fsCaption
+                                    font.bold: true
+                                    font.family: "JetBrainsMono NF"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Text {
             textFormat: Text.PlainText
             Layout.fillWidth: true
             visible: text !== ""
-            text: tab.selEnt && tab.selEnt.ws.length > 0 && tab.selMon
-                ? Services.I18n.t("settings.display.opensOn", { m: tab.selMon.name, w: tab.selEnt.defaultWs }) : ""
+            text: tab.sel !== "" && Services.Displays.wsFor(tab.sel).length > 0 && tab.selMon
+                ? Services.I18n.t("settings.display.opensOn",
+                                  { m: tab.selMon.name, w: Services.Displays.defaultFor(tab.sel) }) : ""
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
@@ -484,8 +547,10 @@ TabPage {
         Flow {
             Layout.fillWidth: true
             spacing: 6
-            enabled: tab.selEnt ? (tab.selEnt.mirror === "" && !tab.selEnt.disabled) : false
-            opacity: enabled ? 1 : 0.4
+            // Read-only while a spread decides: it still shows who holds what.
+            enabled: tab.selEnt ? (tab.selEnt.mirror === "" && !tab.selEnt.disabled
+                                   && !Services.Displays.autoSpread) : false
+            opacity: tab.selEnt && tab.selEnt.mirror === "" && !tab.selEnt.disabled ? 1 : 0.4
             Repeater {
                 // Ten, not nine: SUPER+0 is workspace 10 and it was missing.
                 model: 10
@@ -522,7 +587,7 @@ TabPage {
         readonly property string owner: Services.Displays.ownerOf(chip.n)
         readonly property bool mine: chip.owner === tab.sel && tab.sel !== ""
         readonly property bool taken: chip.owner !== "" && !chip.mine
-        readonly property bool isDefault: chip.mine && tab.selEnt && tab.selEnt.defaultWs === chip.n
+        readonly property bool isDefault: chip.mine && Services.Displays.defaultFor(tab.sel) === chip.n
         readonly property bool warm: wsHover.containsMouse
 
         width: Services.Sizes.innerH

@@ -224,6 +224,17 @@ Section {
     Card {
         title: Services.I18n.t("settings.system.lockScreen")
 
+        SectionLabel { text: Services.I18n.t("settings.system.lockIntro") }
+        Segmented {
+            options: [
+                { id: "padlock", label: Services.I18n.t("settings.system.lockPadlock") },
+                { id: "fade", label: Services.I18n.t("settings.system.lockFade") },
+                { id: "none", label: Services.I18n.t("settings.system.lockNone") }
+            ]
+            current: Services.Prefs.lockIntro
+            onPicked: id => Services.Prefs.lockIntro = id
+        }
+
         // One switch per card out there. The clock and the login are the
         // screen itself, so they are not on the list.
         Repeater {

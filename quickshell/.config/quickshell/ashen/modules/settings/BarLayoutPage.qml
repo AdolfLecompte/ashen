@@ -522,6 +522,24 @@ Section {
                                     Math.min(10, Services.Prefs.workspaceCount + 1)
                             }
                         }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            visible: lookCard.modelData === "workspaces"
+                            spacing: 8
+                            Text {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: Services.I18n.t("settings.layout.wsHideEmpty")
+                                color: Services.Colors.ash
+                                font.pixelSize: Services.Sizes.fsMeta
+                                font.family: "JetBrainsMono NF"
+                            }
+                            Toggle {
+                                checked: Services.Prefs.workspaceHideEmpty
+                                onToggled: Services.Prefs.workspaceHideEmpty = !Services.Prefs.workspaceHideEmpty
+                            }
+                        }
                     }
                 }
             }

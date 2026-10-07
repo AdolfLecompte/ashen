@@ -115,6 +115,7 @@ ColumnLayout {
             }
             TextField {
                 id: search
+                Keys.onPressed: e => { if (Services.Readline.handle(e, search)) e.accepted = true }
                 anchors.fill: parent
                 anchors.leftMargin: 34
                 anchors.rightMargin: 10

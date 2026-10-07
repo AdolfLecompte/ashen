@@ -411,6 +411,125 @@ Item {
         }
 
 
+    // What every shell surface is made of: solid, or glass like the terminal.
+    Card {
+        title: Services.I18n.t("settings.look.surface")
+
+        Segmented {
+            options: [
+                { id: "solid", label: Services.I18n.t("settings.look.solid") },
+                { id: "blur", label: Services.I18n.t("settings.look.blur") },
+            ]
+            current: Services.Prefs.surfaceStyle
+            onPicked: id => Services.Prefs.surfaceStyle = id
+        }
+    }
+
+    // Every outline in the shell, in one place: all of it, none, or part by part.
+    Card {
+        id: outlineCard
+        title: Services.I18n.t("settings.layout.outline")
+
+        readonly property var flags: [Services.Prefs.barOutline, Services.Prefs.panelOutline,
+                                      Services.Prefs.widgetOutline, Services.Prefs.dockGlass]
+        readonly property string derived: flags.every(f => f) ? "all"
+                                        : flags.every(f => !f) ? "none" : "custom"
+        property bool customOpen: false
+
+        Segmented {
+            options: [
+                { id: "none", label: Services.I18n.t("settings.look.outlineNone") },
+                { id: "all", label: Services.I18n.t("settings.look.outlineAll") },
+                { id: "custom", label: Services.I18n.t("settings.look.outlineCustom") }
+            ]
+            current: outlineCard.customOpen ? "custom" : outlineCard.derived
+            onPicked: id => {
+                outlineCard.customOpen = id === "custom"
+                if (id === "custom") return
+                const on = id === "all"
+                Services.Prefs.barOutline = on
+                Services.Prefs.panelOutline = on
+                Services.Prefs.widgetOutline = on
+                Services.Prefs.dockGlass = on
+            }
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            spacing: 8
+            visible: outlineCard.customOpen || outlineCard.derived === "custom"
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                RowGlyph { glyph: "\ue9f7" }        // toolbar
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: Services.I18n.t("settings.tab.bar")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+                Toggle {
+                    checked: Services.Prefs.barOutline
+                    onToggled: Services.Prefs.barOutline = !Services.Prefs.barOutline
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                RowGlyph { glyph: "\ue069" }        // web_asset
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: Services.I18n.t("settings.tab.panels")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+                Toggle {
+                    checked: Services.Prefs.panelOutline
+                    onToggled: Services.Prefs.panelOutline = !Services.Prefs.panelOutline
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                RowGlyph { glyph: "\ue1bd" }        // widgets
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: Services.I18n.t("settings.tab.desktop")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+                Toggle {
+                    checked: Services.Prefs.widgetOutline
+                    onToggled: Services.Prefs.widgetOutline = !Services.Prefs.widgetOutline
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                RowGlyph { glyph: "\uf7e6" }        // dock_to_bottom
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: Services.I18n.t("settings.dock.title")
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+                Toggle {
+                    checked: Services.Prefs.dockGlass
+                    onToggled: Services.Prefs.dockGlass = !Services.Prefs.dockGlass
+                }
+            }
+        }
+    }
+
     Card {
         title: Services.I18n.t("settings.tab.panels")
 
@@ -423,28 +542,6 @@ Item {
             ]
             current: Services.Prefs.panelStyle
             onPicked: id => Services.Prefs.panelStyle = id
-        }
-
-        // The panels' own outline. Not the bar's: the bar is a strip you look
-        // past all day, a panel is a room you opened on purpose, and wanting
-        // one drawn and the other filled is a real preference.
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 12
-            RowGlyph { glyph: "\ue3c6" }        // border_outer
-            Text {
-                textFormat: Text.PlainText
-                Layout.fillWidth: true
-                text: Services.I18n.t("settings.layout.outline")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Toggle {
-                checked: Services.Prefs.panelOutline
-                onToggled: Services.Prefs.panelOutline = !Services.Prefs.panelOutline
-            }
         }
     }
 

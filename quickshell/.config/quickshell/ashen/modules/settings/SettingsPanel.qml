@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 import "root:/modules/settings/components"
+import "SearchIndex.js" as SearchIndex
 
 PanelWindow {
     id: win
@@ -18,7 +19,10 @@ PanelWindow {
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.settingsVisible
     visible: shown || closeDelay.running
-    onShownChanged: if (!shown) closeDelay.restart()
+    onShownChanged: if (!shown) {
+        closeDelay.restart()
+        win.query = ""
+    }
     Timer { id: closeDelay; interval: card.closeMs }
 
     WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -86,8 +90,8 @@ PanelWindow {
     }
 
     // An old id lights the row that took it over.
-    readonly property string activeId: {
-        const t = Services.AppState.settingsTab
+    readonly property string activeId: win.railOf(Services.AppState.settingsTab)
+    function railOf(t) {
         if (t === "wifi" || t === "bluetooth" || t === "network") return "network"
         if (t === "theme") return "look"
         if (t === "devices") return "sound"
@@ -97,6 +101,101 @@ PanelWindow {
         if (t === "widgets" || t === "dock") return "desktop"
         if (t === "notifications" || t === "notify" || t === "clock" || t === "media") return "panels"
         return t
+    }
+
+    // ── Search ──────────────────────────────────────────────────────────
+    // Rows come from SearchIndex.js (scripts/ashen-settings-index.sh), read in
+    // the current language; a hit opens the sub-page that holds the row.
+    property string query: ""
+    property int resultIndex: 0
+    onQueryChanged: win.resultIndex = 0
+    function labelOf(id) {
+        const rail = win.railOf(id)
+        for (const c of win.categories) if (c.id === rail) return c.label
+        return ""
+    }
+    readonly property var results: {
+        const q = win.query.trim().toLowerCase()
+        if (q === "") return []
+        let out = [], seen = {}
+        for (const c of win.categories)
+            if (c.label.toLowerCase().includes(q)) {
+                out.push({ id: c.id, text: c.label, where: "" })
+                seen[c.label + "|" + c.id] = true
+            }
+        for (const e of SearchIndex.entries) {
+            const text = Services.I18n.t(e[1])
+            const k = text + "|" + e[0]
+            if (seen[k] || !text.toLowerCase().includes(q)) continue
+            seen[k] = true
+            out.push({ id: e[0], text: text, where: win.labelOf(e[0]) })
+            if (out.length >= 40) break
+        }
+        return out
+    }
+    function openResult(i) {
+        const r = win.results[i]
+        if (!r) return
+        win.seekText = r.where !== "" ? r.text : ""
+        win.seekTries = 0
+        Services.AppState.settingsTab = r.id
+        win.query = ""
+        if (win.seekText !== "") seekTimer.restart()
+    }
+
+    // ── Landing on the row a search picked ──────────────────────────────
+    // Once the page has loaded: find the label, scroll to it, flash its row.
+    property string seekText: ""
+    property int seekTries: 0
+    property Item tabPage: null
+    Timer {
+        id: seekTimer
+        interval: 420
+        onTriggered: if (!win.seek() && ++win.seekTries < 4) seekTimer.restart()
+    }
+    function findLabel(item, text) {
+        if (!item || !item.visible) return null
+        if (item.text === text && item.textFormat !== undefined) return item
+        const kids = item.children || []
+        for (let i = 0; i < kids.length; i++) {
+            const hit = win.findLabel(kids[i], text)
+            if (hit) return hit
+        }
+        return null
+    }
+    function seek() {
+        const label = win.findLabel(win.tabPage, win.seekText)
+        if (!label) return false
+        const row = label.parent && label.parent.width < label.width * 6 ? label.parent : label
+        let flick = row.parent
+        while (flick && flick.contentY === undefined) flick = flick.parent
+        if (flick) {
+            const y = row.mapToItem(flick.contentItem, 0, 0).y
+            flick.contentY = Math.max(0, Math.min(flick.contentHeight - flick.height, y - flick.height / 3))
+        }
+        const p = row.mapToItem(null, 0, 0)
+        flash.x = p.x - 8
+        flash.y = p.y - 4
+        flash.width = row.width + 16
+        flash.height = row.height + 8
+        flashAnim.restart()
+        win.seekText = ""
+        return true
+    }
+    Rectangle {
+        id: flash
+        z: 100
+        radius: Services.Sizes.innerR
+        color: "transparent"
+        border.width: 2
+        border.color: Services.Colors.ghost
+        opacity: 0
+        SequentialAnimation {
+            id: flashAnim
+            NumberAnimation { target: flash; property: "opacity"; to: 1; duration: 180 }
+            PauseAnimation { duration: 900 }
+            NumberAnimation { target: flash; property: "opacity"; to: 0; duration: 500 }
+        }
     }
 
     MouseArea {
@@ -189,18 +288,78 @@ PanelWindow {
                         readonly property int gap: 2
 
                         Rectangle {
+                            id: searchBox
+                            width: parent.width
+                            height: parent.rowH
+                            radius: Services.Sizes.innerR
+                            color: Services.Colors.fillInset
+                            border.width: 1
+                            border.color: searchInput.activeFocus ? Services.Colors.ghost : Services.Colors.fillLine
+                            Behavior on border.color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+
+                            Text {
+                                textFormat: Text.PlainText
+                                id: searchGlyph
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "\ue8b6"      // search
+                                color: searchInput.activeFocus ? Services.Colors.ghost : Services.Colors.mist
+                                font.pixelSize: 16
+                                font.family: "Material Symbols Rounded"
+                            }
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.left: searchGlyph.right
+                                anchors.leftMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: searchInput.text.length === 0
+                                text: Services.I18n.t("settings.search")
+                                color: Services.Colors.ash
+                                font.pixelSize: Services.Sizes.fsBody
+                                font.family: "JetBrainsMono NF"
+                            }
+                            TextInput {
+                                id: searchInput
+                                Keys.onPressed: e => { if (Services.Readline.handle(e, searchInput)) e.accepted = true }
+                                anchors.left: searchGlyph.right
+                                anchors.leftMargin: 10
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                clip: true
+                                text: win.query
+                                onTextChanged: win.query = text
+                                color: Services.Colors.snow
+                                font.pixelSize: Services.Sizes.fsBody
+                                font.family: "JetBrainsMono NF"
+                                Keys.onDownPressed: win.resultIndex = Math.min(win.results.length - 1, win.resultIndex + 1)
+                                Keys.onUpPressed: win.resultIndex = Math.max(0, win.resultIndex - 1)
+                                Keys.onReturnPressed: win.openResult(win.resultIndex)
+                                Keys.onEscapePressed: {
+                                    if (text.length > 0) win.query = ""
+                                    else Services.AppState.settingsVisible = false
+                                }
+                            }
+                        }
+
+                        Rectangle {
                             id: slide
                             width: parent.width
                             height: parent.rowH
                             radius: Services.Sizes.innerR
                             color: Services.Colors.ghost
                             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
-                            y: win.tabIndex * (parent.rowH + parent.gap)
+                            y: railList.y + win.tabIndex * (parent.rowH + parent.gap)
                             Behavior on y { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
                         }
 
                         Column {
-                            anchors.fill: parent
+                            id: railList
+                            anchors.top: searchBox.bottom
+                            anchors.topMargin: 12
+                            anchors.left: parent.left
+                            anchors.right: parent.right
                             spacing: parent.gap
 
                             Repeater {
@@ -266,15 +425,91 @@ PanelWindow {
                         onCommit: tabLoader.source = win.tabSource(Services.AppState.settingsTab)
                     }
 
-                    Loader {
-                        id: tabLoader
+                    Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        opacity: sectionSlide.fade
-                        transform: Translate { y: sectionSlide.offY }
-                        Component.onCompleted: source = win.tabSource(Services.AppState.settingsTab)
-                        onStatusChanged: if (status === Loader.Error)
-                            console.warn("[SettingsPanel] ERROR loading", source)
+
+                        Loader {
+                            id: tabLoader
+                            anchors.fill: parent
+                            visible: win.query === ""
+                            opacity: sectionSlide.fade
+                            transform: Translate { y: sectionSlide.offY }
+                            Component.onCompleted: source = win.tabSource(Services.AppState.settingsTab)
+                            onItemChanged: win.tabPage = item
+                            onStatusChanged: if (status === Loader.Error)
+                                console.warn("[SettingsPanel] ERROR loading", source)
+                        }
+
+                        // Search hits, in place of the page while there is a query.
+                        ListView {
+                            id: hits
+                            anchors.fill: parent
+                            visible: win.query !== ""
+                            clip: true
+                            spacing: 2
+                            model: win.results
+                            currentIndex: win.resultIndex
+                            highlightFollowsCurrentItem: true
+                            highlightMoveDuration: Services.Sizes.msPronounced
+                            highlight: Rectangle {
+                                radius: Services.Sizes.innerR
+                                color: Services.Colors.ghost
+                                gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
+                            }
+                            delegate: Item {
+                                id: hit
+                                required property var modelData
+                                required property int index
+                                readonly property bool current: hit.index === win.resultIndex
+                                readonly property color fg: hit.current ? Services.Colors.accentText
+                                    : hitHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
+                                width: hits.width
+                                height: 40
+                                Text {
+                                    textFormat: Text.PlainText
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 14
+                                    anchors.right: whereText.left
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    elide: Text.ElideRight
+                                    text: hit.modelData.text
+                                    color: hit.fg
+                                    font.pixelSize: Services.Sizes.fsBody
+                                    font.bold: true
+                                    font.family: "JetBrainsMono NF"
+                                }
+                                Text {
+                                    textFormat: Text.PlainText
+                                    id: whereText
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: hit.modelData.where
+                                    color: hit.current ? Services.Colors.accentText : Services.Colors.ash
+                                    font.pixelSize: Services.Sizes.fsMeta
+                                    font.family: "JetBrainsMono NF"
+                                }
+                                MouseArea {
+                                    id: hitHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onEntered: win.resultIndex = hit.index
+                                    onClicked: win.openResult(hit.index)
+                                }
+                            }
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            anchors.centerIn: parent
+                            visible: win.query !== "" && win.results.length === 0
+                            text: Services.I18n.t("settings.searchNone")
+                            color: Services.Colors.ash
+                            font.pixelSize: Services.Sizes.fsBody
+                            font.family: "JetBrainsMono NF"
+                        }
                     }
                 }
             }

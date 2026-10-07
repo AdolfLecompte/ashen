@@ -212,6 +212,7 @@ Section {
                         }
                         TextField {
                             id: searchField
+                            Keys.onPressed: e => { if (Services.Readline.handle(e, searchField)) e.accepted = true }
                             Layout.fillWidth: true
                             placeholderText: Services.I18n.t("settings.input.searchLayout")
                             text: tab.layoutQuery

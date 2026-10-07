@@ -65,25 +65,6 @@ Section {
             }
         }
 
-        // Same edge the bar and the panels can wear, on the third surface.
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 12
-            RowGlyph { glyph: "\ue3c6" }        // border_outer
-            Text {
-                textFormat: Text.PlainText
-                Layout.fillWidth: true
-                text: Services.I18n.t("settings.layout.outline")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Toggle {
-                checked: Services.Prefs.widgetOutline
-                onToggled: Services.Prefs.widgetOutline = !Services.Prefs.widgetOutline
-            }
-        }
     }
 
 
@@ -144,40 +125,19 @@ Section {
             wrapMode: Text.WordWrap
         }
 
-        RowLayout {
-            Layout.fillWidth: true
+        // How the dock shows: always, only when called, or by itself.
+        Segmented {
             Layout.topMargin: 4
-            spacing: 12
-            RowGlyph { glyph: "\ue8f5" }        // visibility_off
-            Text {
-                textFormat: Text.PlainText
-                Layout.fillWidth: true
-                text: Services.I18n.t("settings.bar.autohide")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Toggle {
-                checked: Services.Prefs.dockAutohide
-                onToggled: Services.Prefs.dockAutohide = !Services.Prefs.dockAutohide
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-            RowGlyph { glyph: "\ue3f4" }        // image
-            Text {
-                textFormat: Text.PlainText
-                Layout.fillWidth: true
-                text: Services.I18n.t("settings.dock.outline")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Toggle {
-                checked: Services.Prefs.dockGlass
-                onToggled: Services.Prefs.dockGlass = !Services.Prefs.dockGlass
+            stacked: true
+            options: [
+                { id: "fixed", icon: "\uf7e6", label: Services.I18n.t("settings.dock.fixed") },   // dock_to_bottom
+                { id: "hide", icon: "\ue4f7", label: Services.I18n.t("settings.dock.hide") },     // web_asset_off
+                { id: "smart", icon: "\ue65f", label: Services.I18n.t("settings.dock.smart") }    // auto_awesome
+            ]
+            current: !Services.Prefs.dockAutohide ? "fixed" : Services.Prefs.dockSmart ? "smart" : "hide"
+            onPicked: id => {
+                Services.Prefs.dockAutohide = id !== "fixed"
+                Services.Prefs.dockSmart = id === "smart"
             }
         }
 
@@ -292,6 +252,7 @@ Section {
         // machine and a scroll of every .desktop is not a chooser.
         TextField {
             id: appQuery
+            Keys.onPressed: e => { if (Services.Readline.handle(e, appQuery)) e.accepted = true }
             Layout.fillWidth: true
             Layout.topMargin: 4
             placeholderText: Services.I18n.t("settings.dock.search")

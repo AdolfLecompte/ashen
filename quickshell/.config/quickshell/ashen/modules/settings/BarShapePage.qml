@@ -72,26 +72,5 @@ Section {
             }
         }
 
-        // One switch for every capsule on the bar. It lived on each of the
-        // fifteen cards in Layout, which meant fifteen ways to end up with a
-        // bar that is half glass and half plate.
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 12
-            RowGlyph { glyph: "\ue3c6" }        // border_outer
-            Text {
-                textFormat: Text.PlainText
-                Layout.fillWidth: true
-                text: Services.I18n.t("settings.layout.outline")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsInput
-                font.family: "JetBrainsMono NF"
-            }
-            Toggle {
-                checked: Services.Prefs.barOutline
-                onToggled: Services.Prefs.barOutline = !Services.Prefs.barOutline
-            }
-        }
     }
 }

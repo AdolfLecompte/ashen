@@ -21,6 +21,9 @@ Item {
     property int pad: 4
     property int iconSize: stacked || iconOnly ? 20 : 15
     property int labelSize: stacked ? 10 : 11
+    // Optional face for each cell, drawn instead of icon/label. It gets
+    // `modelData` and `active`.
+    property Component cellFace: null
     signal picked(string id)
 
     readonly property int count: Math.max(1, options.length)
@@ -83,7 +86,18 @@ Item {
                 // side. Columns must match what is actually drawn: a Grid with
                 // spare columns reserves a trailing gap and the content stops
                 // being centred.
+                Loader {
+                    anchors.centerIn: parent
+                    active: root.cellFace !== null
+                    sourceComponent: root.cellFace
+                    onLoaded: {
+                        item.modelData = Qt.binding(() => cell.modelData)
+                        item.active = Qt.binding(() => cell.active)
+                    }
+                }
+
                 Grid {
+                    visible: root.cellFace === null
                     anchors.centerIn: parent
                     columns: root.stacked ? 1 : ((cell.hasIcon ? 1 : 0) + (cell.hasLabel ? 1 : 0))
                     horizontalItemAlignment: Grid.AlignHCenter

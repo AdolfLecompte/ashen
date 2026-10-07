@@ -63,6 +63,31 @@ Section {
                 onPicked: id => Services.Prefs.maxToasts = parseInt(id)
             }
         }
+        SectionLabel { text: Services.I18n.t("settings.notify.width") }
+        Segmented {
+            options: [
+                { id: "300", label: "300" },
+                { id: "360", label: "360" },
+                { id: "440", label: "440" }
+            ]
+            current: String(Services.Prefs.toastWidth)
+            onPicked: id => Services.Prefs.toastWidth = parseInt(id)
+        }
+    }
+
+    Card {
+        title: Services.I18n.t("settings.notify.osd")
+
+        SectionLabel { text: Services.I18n.t("settings.notify.duration") }
+        Segmented {
+            options: [
+                { id: "1000", label: "1s" },
+                { id: "1400", label: "1.4s" },
+                { id: "3000", label: "3s" }
+            ]
+            current: String(Services.Prefs.osdMs)
+            onPicked: id => Services.Prefs.osdMs = parseInt(id)
+        }
     }
 
     Item { Layout.preferredHeight: 8 }

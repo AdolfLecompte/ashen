@@ -127,6 +127,7 @@ RowLayout {
 
                 TextField {
                     id: field
+                    Keys.onPressed: e => { if (Services.Readline.handle(e, field)) e.accepted = true }
                     anchors.fill: parent
                     anchors.leftMargin: 10
                     anchors.rightMargin: 10

@@ -316,6 +316,7 @@ Item {
                         }
                         TextInput {
                             id: passInput
+                            Keys.onPressed: e => { if (Services.Readline.handle(e, passInput)) e.accepted = true }
                             anchors.fill: parent
                             text: tab.password
                             echoMode: tab.showPassword ? TextInput.Normal : TextInput.Password

@@ -246,6 +246,7 @@ Section {
                         }
                         TextField {
                             id: cityInput
+                            Keys.onPressed: e => { if (Services.Readline.handle(e, cityInput)) e.accepted = true }
                             Layout.fillWidth: true
                             placeholderText: Services.I18n.t("settings.clock.searchCity")
                             color: Services.Colors.snow
