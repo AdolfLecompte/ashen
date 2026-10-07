@@ -24,9 +24,12 @@ hl.window_rule({ match = { class = "^(brave.*|firefox|chromium|google-chrome|ste
 -- to be, and at the global 0.70 a light wallpaper swallowed the file names.
 hl.window_rule({ match = { class = "^(nemo|thunar|org.gnome.Nautilus|xdg-desktop-portal-gtk|zenity|file-roller)$" }, opacity = "0.96 override 0.92 override" })
 
--- Bar blur
-hl.layer_rule({ match = { namespace = "quickshell:.*" }, blur = true })
-hl.layer_rule({ match = { namespace = "quickshell:.*" }, ignore_alpha = 0.05 })
+-- Shell blur: the bar, panels and toasts (their layer is plain "quickshell")
+hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })
+hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignore_alpha = 0.3 })
+-- Desktop widgets live on their own layer ("ashen:desktop"): same glass.
+hl.layer_rule({ match = { namespace = "^ashen:.*" }, blur = true })
+hl.layer_rule({ match = { namespace = "^ashen:.*" }, ignore_alpha = 0.3 })
 
 -- The screenshot selection must not animate OUT. grimblast asks for exactly
 -- this itself -- `hyprctl keyword layerrule "match:selection, no_anim on"` --
