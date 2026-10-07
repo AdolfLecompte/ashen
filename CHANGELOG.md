@@ -14,6 +14,46 @@
   onto the bar from Settings > Bar > Layout, a desktop widget (the day's apps,
   its hours, or the week), and `qs ipc call usage today|week|toggle`.
 
+- **Glass surfaces.** Settings > Look > Surface: *Solid* or *Blur*. Blur makes
+  the bar, the pills, every panel, the launcher, the toasts, the dock and the
+  desktop widgets glass like the terminal -- its background at the same
+  opacity, with Hyprland's blur behind.
+- **One switch for every outline.** Settings > Look > Outline: none, all, or
+  part by part (bar, panels, widgets, dock), instead of four switches in four
+  pages.
+- **Right-click a desktop widget** for its menu: shapes, sizes, move, send it to
+  the other screen, or remove it. The shape choices no longer cover every
+  widget while arranging; they appear only on the one you right-click.
+- **Search in Settings.** A field above the tabs finds any row in the current
+  language and takes you to it, scrolled and marked. Arrow keys and Enter work.
+- **Spread workspaces over your screens.** Settings > Screen > Workspaces: by
+  hand, 1-5 / 6-10 (either way round), or evens on the main screen and odds on
+  the other (either way round). Each bar shows only its own screen's
+  workspaces, paged by the count you chose.
+- **Desktop widgets per screen.** Every widget lives on one screen; if that
+  screen is unplugged it waits on the main one until it comes back.
+- **Alt+Tab filters**: all windows, this monitor's, or this workspace's -- the
+  icons above the previews, or the up and down arrows.
+- **Dock: Always, Hidden or Auto.** Auto stays out on an empty workspace and
+  hides when windows arrive, without the windows resizing.
+- **Full-size covers.** Browsers hand the system a 150 px thumbnail; the cover
+  is now looked up on Deezer by artist and title, cached, and drawn at 1000 px.
+  If it is not found, the thumbnail stays.
+- **Lyrics behind the cover.** In the music panel the cover sinks into blur and
+  the lines around the one being sung appear over it, sliding as the song
+  moves on.
+- **Show the password** from a switch in the lock screen's power menu.
+- **How the lock screen arrives**: padlock, fade or nothing (Settings > System).
+- **Toast width and how long the volume and brightness OSD stays**, in
+  Settings > Panels > Notifications.
+- **Ctrl+W and Ctrl+U** delete a word and the line in every text field.
+- **Hide empty workspaces** on the bar (Settings > Bar, the Workspaces card).
+- **A recording started outside the shell is picked up** by the recording pill,
+  and its stop button ends it.
+- **Sound themes**: the notification sound list offers every installed theme.
+- **The launcher has wallpaper and settings buttons**, so nothing needs a
+  keybind on a first day.
+
 ### Changed
 - **The lyric widget fills its box.** With nothing to sing, the song takes the
   whole widget -- a cover the height of the box and a large name that wraps to
@@ -24,6 +64,30 @@
   what the machine plays, instead of under Panels.
 - **The bar's shape card reads in order**: its length, then auto-hide, then the
   outline.
+
+- **The sound, battery and music panels were rebuilt** in the language of the
+  screen-time panel: tinted plates, the same corner radius and type scale.
+  Sound is the big reading, its tabs and a plate for each tab, with brightness
+  at the foot. Battery is the level with its ticks, health, cycles and charge
+  rate beside it, and the power profiles with game mode as a switch. Music puts
+  the cover on top, with the track, the wave and the controls under it.
+- **Panels stay within the bar's length.** On a bar that does not span the whole
+  edge, a panel no longer sticks out past its end.
+- **Window-style panels unroll from the bar's edge**: left to right on a bar on
+  the left, and so on.
+- **Toasts and the OSD open on the focused screen** and stay there while shown.
+- **The login screen carries no name.** It is laid out like the lock screen --
+  the time large, who, the password, the session and the ways out in the
+  corners -- so it suits any desktop.
+- **The installer upgrades the system first**, builds yay when there is no AUR
+  helper, and asks the AUR for anything the official repos lack. Installed
+  cleanly on Arch, Manjaro, CachyOS, EndeavourOS and Garuda.
+- **The visualiser only listens while something plays**, and the bars fall to
+  zero instead of freezing.
+- **A new wallpaper with no design of its own wears the shell as it ships** --
+  bar on top, with every pill a first day needs.
+- AM/PM on a side bar is the size of the hour. Passive tray icons are hidden.
+  Bluetooth and network panels use the same switch as Settings.
 
 ### Fixed
 - **A wallpaper forgot part of its look.** The workspace count, the bar's
@@ -60,6 +124,19 @@
   line shows a third of a second before its stamp.
 - **A list stayed open after closing Settings**, and after changing tab or
   scrolling its row away, floating over whatever was underneath.
+
+- **Mirroring could not be undone.** A mirrored screen is no longer listed as
+  live by Hyprland, so it vanished from Settings > Screen and there was nothing
+  left to un-mirror. It stays in the grid now.
+- **Hyprland's blur never reached the shell**: the rule named a layer that does
+  not exist. Rounded corners no longer step either.
+- **Covers came out wrong after changing track.** A lookup that finished after
+  the next song had started was filed under it.
+- **The weather showed an old forecast with no connection**; it now says it is
+  offline, in the bar and in the clock panel.
+- **The power menu grew a frame** in the blur style.
+- Network and Bluetooth: the scanning line no longer covers a connection; it is
+  written inside the middle circle.
 
 ## 3.1.0
 

@@ -683,6 +683,43 @@ that can move focus; the event stream alone left a stale empty class at login.
 It is its own panel, not a tab of the process monitor: that one is the
 machine's hardware, this is how the machine is used.
 
+### A card inside a panel is a plate
+
+Groups of rows inside a panel stand on `Colors.plate` (the surface leaning
+towards the accent; `fillInset` in the blur style) at `Sizes.cardLgR`, never on
+a hairline divider or an inset box with a border. `Widgets.PanelPlate` is that
+plate. The panel itself takes the default `Sizes.panelR`, and text sizes come
+from the `Sizes.fs*` scale, never a bare pixel count. The screen-time panel is
+the reference.
+
+### A panel stays within the bar
+
+Along the bar's edge a panel is clamped to the bar's own span (`Sizes.alongBar`):
+the bar is centred at `barLength` %, and a panel that sticks out past its end
+reads as misaligned. One longer than the bar is centred on it.
+
+### Glass is one decision
+
+`Prefs.surfaceStyle` solid|blur changes the surface tokens in `Colors`
+(`surfacePanel`, `surfacePill`, `surfaceBar`, `surfaceGlass`, `plate`) and
+nothing else. No component chooses its own translucency. The compositor does
+the blurring: `windowrules.lua` blurs the `quickshell` and `ashen:` layers with
+`ignore_alpha 0.3`, high enough that the antialiased edge of a rounded corner
+is left out of the blur -- lower, and the corner steps.
+
+### Options are a sliding strip
+
+A closed choice in Settings is a `Segmented`: one strip, the accent sliding
+under the pick. Never a row of separate buttons. When an option is better drawn
+than named (the workspace spreads), `Segmented.cellFace` draws it inside the
+strip.
+
+### A widget's options are on its right-click
+
+Shapes, sizes, moving, the other screen and removing all live in the menu a
+right-click opens on the widget itself. Nothing is shown on every widget at
+once, arranging or not.
+
 ### Where it comes from is not where it goes
 
 Two separate questions, and conflating them is why the launcher was wrong twice.
