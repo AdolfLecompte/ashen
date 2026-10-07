@@ -13,14 +13,18 @@ Item {
     id: root
 
     // ── Metrics ─────────────────────────────────────────────────────────
-    readonly property real artSize: 160
+    // Stacked: cover on top, everything else under it (the media panel).
+    property bool stacked: false
+    readonly property real artSize: root.stacked ? root.contentW : 160
+    // The column beside (or under) the cover.
+    readonly property real colH: root.stacked ? 150 : root.artSize
     // Narrow on purpose: the bars stand on an axis in the middle of this, so
     // every pixel of column is two pixels of air between the words and the
     // sound. 130 read as two separate things sharing an edge.
     readonly property real cavaW: 100
     readonly property real gap: 18
     readonly property real pad: 20
-    readonly property real contentW: 630
+    readonly property real contentW: root.stacked ? 340 : 630
     readonly property real chipLg: 40
     readonly property real playLg: 48
     // The words, when this copy of the card is offering them and the track has
@@ -39,7 +43,8 @@ Item {
     // the card grows for. Widening it instead would have paid for the longest
     // line the song ever has on every line it does not.
     readonly property real verseH: 58
-    property real verseRoom: root.lyricsShown ? root.verseH : 0
+    // Stacked shows the words on the back of the cover instead of in a row.
+    property real verseRoom: root.lyricsShown && !root.stacked ? root.verseH : 0
     Behavior on verseRoom {
         NumberAnimation {
             duration: Services.Sizes.msPanel
@@ -48,7 +53,7 @@ Item {
     }
 
     implicitWidth: contentW
-    implicitHeight: artSize + root.verseRoom
+    implicitHeight: (root.stacked ? root.artSize + root.gap : 0) + root.colH + root.verseRoom
     width: implicitWidth
     height: implicitHeight
 
@@ -239,10 +244,12 @@ Item {
     readonly property real nextCY: ctlY + nextChip.y + nextChip.height / 2
 
     // ── Layout ──────────────────────────────────────────────────────────
-    RowLayout {
+    GridLayout {
         id: row
         anchors.fill: parent
-        spacing: root.gap
+        columns: root.stacked ? 1 : 3
+        rowSpacing: root.gap
+        columnSpacing: root.gap
 
         ClippingRectangle {
             id: artSlot
@@ -285,7 +292,7 @@ Item {
             // bottom stack, so a column still measured at the cover's 160 grows
             // upwards into the title instead of into the room the card just
             // opened. The cover keeps its own square.
-            Layout.preferredHeight: root.artSize + root.verseRoom
+            Layout.preferredHeight: root.colH + root.verseRoom
             Layout.alignment: Qt.AlignVCenter
 
             Column {
@@ -452,6 +459,17 @@ Item {
                                 // would buzz rather than breathe.
                                 snake.level = snake.level * 0.72 + Math.min(1, v / 100) * 0.28
                             }
+                            // Silence arrives as one frame; ease the rest of the way down.
+                            function onIsActiveChanged() {
+                                if (!Services.Cava.isActive) levelDrop.restart()
+                            }
+                        }
+                        NumberAnimation {
+                            id: levelDrop
+                            target: snake
+                            property: "level"
+                            to: 0
+                            duration: 400
                         }
                         onLevelChanged: waveCanvas.requestPaint()
 
@@ -649,9 +667,16 @@ Item {
                     // only takes it away -- so the chip shows up only where
                     // there is a band to close, and remembers the answer.
                     CtlChip {
+                        id: lyricChip
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: root.offerLyrics && Services.Lyrics.has
-                        opacity: root.beat(2)
+                        // Opens and closes in width, so the row glides rather than jumps.
+                        property real amt: root.offerLyrics && Services.Lyrics.has ? 1 : 0
+                        Behavior on amt { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
+                        visible: amt > 0.01
+                        width: root.chipLg * amt
+                        clip: true
+                        opacity: root.beat(2) * amt
+                        scale: 0.7 + 0.3 * amt
                         size: root.chipLg
                         glyphSize: 20
                         glyph: "\uec0b"
@@ -690,7 +715,7 @@ Item {
         Item {
             id: cavaCol
             // Switched off it takes no room either.
-            visible: root.showSpectrum && Services.Cava.enabled
+            visible: root.showSpectrum && Services.Cava.enabled && !root.stacked
             Layout.preferredWidth: cavaCol.visible ? root.cavaW : 0
             Layout.preferredHeight: root.artSize
             Layout.alignment: Qt.AlignVCenter

@@ -29,6 +29,9 @@ Item {
     // the one line here that is TYPED: a wait is time passing, and that is what
     // typing draws.
     property string waitLine: ""
+    // What the hub says in place of its label: the wait, or an empty ring.
+    readonly property string hubLine: root.waitLine !== "" ? root.waitLine
+        : (root.ringCount === 0 ? root.emptyHint : "")
 
     // While a panel morphs its bar chip into this hub, the hub lends out its
     // face: the flying copies are the ones on screen until they land.
@@ -635,6 +638,8 @@ Item {
                 width: root.hubR * 1.72
                 horizontalAlignment: Text.AlignHCenter
                 id: hubLabelText
+                // While a line is being said, it takes this place instead.
+                visible: root.hubLine === ""
                 text: root.shownLabel
                 color: root.hubFilled ? Services.Colors.accentText : Services.Colors.snow
                 opacity: root.handOverLabel ? 0 : 1
@@ -643,10 +648,23 @@ Item {
                 font.family: "JetBrainsMono NF"
                 elide: Text.ElideRight
             }
+            Widgets.SaidLine {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: root.hubR * 1.6
+                visible: root.hubLine !== ""
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                maximumLineCount: 3
+                line: root.hubLine
+                // Waiting is written out; an empty ring is simply stated.
+                msPerChar: root.waitLine !== "" ? 26 : 0
+                color: root.hubFilled ? Services.Colors.accentText : Services.Colors.snow
+                font.pixelSize: 11
+            }
             Text {
                 textFormat: Text.PlainText
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.shownSub !== ""
+                visible: root.shownSub !== "" && root.hubLine === ""
                 text: root.shownSub
                 color: root.hubFilled ? Services.Colors.accentText : Services.Colors.mist
                 font.pixelSize: 10
@@ -710,15 +728,6 @@ Item {
         }
     }
 
-    Widgets.SaidLine {
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: root.cy + root.hubR + 30
-        line: root.waitLine !== "" ? root.waitLine
-            : (root.ringCount === 0 ? root.emptyHint : "")
-        // Waiting is written out; an empty ring is simply stated.
-        msPerChar: root.waitLine !== "" ? 26 : 0
-        font.pixelSize: 11
-    }
 
     // ── The ring ────────────────────────────────────────────────────────
     Repeater {

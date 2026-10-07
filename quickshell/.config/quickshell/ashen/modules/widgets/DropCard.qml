@@ -166,8 +166,8 @@ Item {
     Rectangle {
         id: card
         // The panel's own outline, separate from the bar's (Prefs.panelOutline).
-        border.width: Services.Colors.panelEdgeW
-        border.color: Services.Colors.fillOutline
+        border.width: root.plateless ? 0 : Services.Colors.panelEdgeW
+        border.color: Services.Colors.panelEdgeColor
 
         // How far it has fallen, how far it has stretched away from the bar,
         // how far it has spread sideways, and how much of the content is in.

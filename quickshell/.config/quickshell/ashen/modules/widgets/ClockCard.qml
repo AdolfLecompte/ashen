@@ -986,6 +986,7 @@ Item {
             // belongs to the body and changes mid-sweep with the figures.
             Row {
                 id: wxDayNav
+                visible: !Services.Weather.offline
                 anchors.top: wxCity.bottom
                 anchors.topMargin: 6
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -1035,6 +1036,7 @@ Item {
             // pill, so they are slots here and fly in from it.
             Item {
                 id: wxNow
+                visible: !Services.Weather.offline
                 anchors.top: wxDayNav.bottom
                 anchors.topMargin: 14
                 width: parent.width
@@ -1129,7 +1131,7 @@ Item {
                 height: 160
                 opacity: root.beat(5) * root.wxSlideFade
                 transform: Translate { x: root.wxSlideX }
-                visible: root.hours.length > 1
+                visible: root.hours.length > 1 && !Services.Weather.offline
 
                 // The curve, with the temperature written ON it every three
                 // hours and the clock under it. A line with no numbers was the
@@ -1202,8 +1204,32 @@ Item {
             // them: the strip of day cards used to live here, and the arrows
             // over the reading replaced it. Sunrise and sunset are not here --
             // the clock column already says both, and the light it has left.
+            // No forecast while the weather cannot be reached: say so instead.
+            Column {
+                anchors.centerIn: parent
+                visible: Services.Weather.offline
+                spacing: 10
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "\ue2c1"      // cloud_off
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsHero
+                    font.family: "Material Symbols Rounded"
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: Services.Weather.condition
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsBody
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+
             Grid {
                 id: wxGrid
+                visible: !Services.Weather.offline
                 anchors.top: hourly.bottom
                 anchors.topMargin: 24
                 anchors.left: parent.left

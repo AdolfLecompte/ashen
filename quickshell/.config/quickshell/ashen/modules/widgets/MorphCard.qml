@@ -301,19 +301,24 @@ Item {
             }
         }
 
-        width: root.pillW + (root.openW - root.pillW) * spread
-        height: (root.pillH + (root.openH - root.pillH) * stretch)
-                * (plate.plain ? 0.06 + 0.94 * plate.plainFade : 1)
-        x: root.pillCX + (openX + root.openW / 2 - root.pillCX) * fall - width / 2
-        y: plate.plain ? openY
-           : root.pillCY + (openY + root.openH / 2 - root.pillCY) * fall - height / 2
+        // Window style unrolls away from the bar's edge, along its own axis.
+        readonly property string edge: Services.Sizes.barPosition
+        readonly property bool sideways: edge === "left" || edge === "right"
+        readonly property real unroll: plate.plain ? 0.06 + 0.94 * plate.plainFade : 1
+        width: (root.pillW + (root.openW - root.pillW) * spread) * (sideways ? unroll : 1)
+        height: (root.pillH + (root.openH - root.pillH) * stretch) * (sideways ? 1 : unroll)
+        x: !plate.plain ? root.pillCX + (openX + root.openW / 2 - root.pillCX) * fall - width / 2
+           : edge === "right" ? openX + root.openW - width
+           : sideways ? openX : openX + root.openW / 2 - width / 2
+        y: !plate.plain ? root.pillCY + (openY + root.openH / 2 - root.pillCY) * fall - height / 2
+           : edge === "bottom" ? openY + root.openH - height : openY
 
         // Pill corner while small, card corner once open
         opacity: plate.plain ? plate.plainFade : 1
         radius: Services.Sizes.pillR + (20 - Services.Sizes.pillR) * Math.min(1, spread)
         color: root.plateColor
         border.width: Services.Colors.panelEdgeW
-        border.color: Services.Colors.fillOutline
+        border.color: Services.Colors.panelEdgeColor
         clip: true
 
         MouseArea { anchors.fill: parent; onClicked: {} }

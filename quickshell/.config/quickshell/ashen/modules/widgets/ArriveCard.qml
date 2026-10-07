@@ -81,8 +81,9 @@ Item {
         // "transparent" for a panel whose content is the surface -- the
         // wallpaper carousel is its own cards and wants no plate behind them.
         color: root.cardColor
-            border.width: Services.Colors.panelEdgeW
-            border.color: Services.Colors.fillOutline
+            // No card, no edge: a transparent card would leave only a frame.
+            border.width: root.cardColor.a > 0 ? Services.Colors.panelEdgeW : 0
+            border.color: Services.Colors.panelEdgeColor
         clip: true
         opacity: arrive.fade
         transform: Translate { y: arrive.offY }
@@ -98,8 +99,8 @@ Item {
             height: root.openH
             // Centred while the box unfolds around its middle; pinned to the
             // top while it unrolls, or the contents would slide as it opens.
-            x: (parent.width - width) / 2
-            y: arrive.plain ? 0 : (parent.height - height) / 2
+            x: arrive.plain ? arrive.innerX(root.openW) : (parent.width - width) / 2
+            y: arrive.plain ? arrive.innerY(root.openH) : (parent.height - height) / 2
             opacity: arrive.contentAmt
             visible: opacity > 0.01
         }

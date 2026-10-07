@@ -34,20 +34,34 @@ Item {
     // How long the panel must stay mapped after `shown` goes false.
     readonly property int holdMs: closeMs + 60
 
-    // Size now, given the size when open. Plain keeps its full width and
-    // unrolls its height from the top edge: the contents are laid out at the
-    // final size from the first frame and the box simply reveals more of them.
+    // Plain unrolls away from this edge: the bar's, unless the panel says otherwise.
+    property string from: Services.Sizes.barPosition
+    readonly property bool sideways: root.from === "left" || root.from === "right"
+    readonly property real unroll: 0.06 + 0.94 * root.boxAmt
+
+    // Size now, given the size when open. Plain keeps its cross size and
+    // unrolls along one axis; the contents are laid out at the final size from
+    // the first frame and the box simply reveals more of them.
     function boxW(full) {
-        if (root.plain) return full
+        if (root.plain) return root.sideways ? full * root.unroll : full
         return full * (root.foldFrom + (1 - root.foldFrom) * root.boxAmt)
     }
     function boxH(full) {
-        if (root.plain) return full * (0.06 + 0.94 * root.boxAmt)
+        if (root.plain) return root.sideways ? full : full * root.unroll
         return full * (root.foldFrom + (1 - root.foldFrom) * root.boxAmt)
     }
-    // Centred while it unfolds; pinned to its top edge while it unrolls.
-    function boxX(fullX, full) { return root.plain ? fullX : fullX + (full - root.boxW(full)) / 2 }
-    function boxY(fullY, full) { return root.plain ? fullY : fullY + (full - root.boxH(full)) / 2 }
+    // Centred while it unfolds; pinned to its source edge while it unrolls.
+    function boxX(fullX, full) {
+        if (!root.plain) return fullX + (full - root.boxW(full)) / 2
+        return root.from === "right" ? fullX + full - root.boxW(full) : fullX
+    }
+    function boxY(fullY, full) {
+        if (!root.plain) return fullY + (full - root.boxH(full)) / 2
+        return root.from === "bottom" ? fullY + full - root.boxH(full) : fullY
+    }
+    // Where open-size contents sit inside the box so they stay still on screen.
+    function innerX(full) { return root.plain && root.from === "right" ? root.boxW(full) - full : 0 }
+    function innerY(full) { return root.plain && root.from === "bottom" ? root.boxH(full) - full : 0 }
 
     // Per-piece stagger out of the single content driver: piece i starts a
     // little after piece i-1 and they all land together.
