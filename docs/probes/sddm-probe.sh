@@ -22,7 +22,9 @@ grep -q 'import SddmComponents' "$main" \
 n=$(python3 -c "
 import io,sys
 s=io.open('$main',encoding='utf-8').read()
-print(sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF))")
+import re
+lit=sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF)
+print(lit + len(re.findall(r'\\\\u[eEfF][0-9a-fA-F]{3}', s)))")
 [ "$n" -eq 5 ] && say ok "five glyphs survive" || { say FAIL "expected 5 PUA glyphs, found $n"; fail=1; }
 
 python3 -c "
@@ -42,21 +44,10 @@ sys.exit(1 if any('textConstants' in l for l in code) else 0)" \
   && say ok "no textConstants" \
   || { say FAIL "uses textConstants -- the greeter does not inject it"; fail=1; }
 
-# The mark is the same artifact fastfetch prints, at the size that still reads.
-python3 - <<'PY'
-import io, sys
-art = io.open('fastfetch/.config/fastfetch/ashen.txt', encoding='utf-8').read()
-rows = [l[2:] for l in art.split('\n') if l.startswith('$1')]
-rows = [r[3:] for r in rows if r.strip()][:6]
-qml = io.open('sddm/ashen/Main.qml', encoding='utf-8').read()
-want = '\\n'.join(rows)
-sys.exit(0 if want in qml else 1)
-PY
-[ $? -eq 0 ] && say ok "mark matches fastfetch's rows" \
-  || { say FAIL "the mark drifted from fastfetch/ashen.txt"; fail=1; }
-
-grep -q 'font.pixelSize: 12' "$main" && say ok "mark at 12px" \
-  || { say FAIL "mark size changed -- past ~14px the ramp reads as dots"; fail=1; }
+# The login carries no name: it is meant to suit any desktop, not only this one.
+grep -qiE 'text: *"[^"]*(ashen|g h o s t)' "$main" \
+  && { say FAIL "the login shows the rice's name or motto"; fail=1; } \
+  || say ok "no rice name on screen"
 
 # The pickers draw their own popup. A ComboBox popup is NOT covered by the
 # control's opacity -- it is its own item, so without this it arrives in Qt's
@@ -127,8 +118,7 @@ done
 grep -q '^surface=#1c1c21' "$conf" && say ok "surface is Colors.surface" \
   || { say FAIL "surface is not the shell's #1c1c21"; fail=1; }
 
-# The bar's numbers come from services/Sizes.qml and must not drift.
-grep -q 'readonly property int barH: 56'  "$main" && say ok "barH 56"  || { say FAIL "barH drifted"; fail=1; }
+# The capsule numbers come from services/Sizes.qml and must not drift.
 grep -q 'readonly property int pillH: 44' "$main" && say ok "pillH 44" || { say FAIL "pillH drifted"; fail=1; }
 grep -q 'readonly property int pillR: 10' "$main" && say ok "pillR 10" || { say FAIL "pillR drifted"; fail=1; }
 
