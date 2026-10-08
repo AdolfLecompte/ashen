@@ -29,12 +29,12 @@ A monochrome Hyprland + Quickshell rice for Arch.
 ## Previews
 
 <p align="center">
-  <img src="previews/preview1.jpg" alt="Desktop widgets and the battery panel on a teal manga wallpaper" width="49%">
-  <img src="previews/preview2.jpg" alt="Network panel from a side bar, with the machine, lyrics and calendar widgets" width="49%">
+  <img src="previews/preview1.jpg" alt="Desktop widgets and the battery panel, glass bar on top" width="49%">
+  <img src="previews/preview2.jpg" alt="A side bar with the music, machine, calendar, clock and visualiser widgets" width="49%">
 </p>
 <p align="center">
-  <img src="previews/preview3.jpg" alt="Media panel with lyrics and the cava visualiser" width="49%">
-  <img src="previews/preview4.jpg" alt="The machine widget, every reading drawn as ticks" width="49%">
+  <img src="previews/preview3.jpg" alt="The music panel, cover on top, beside the visualiser and sun widgets" width="49%">
+  <img src="previews/preview4.jpg" alt="The process monitor, every reading drawn as ticks, and the dock" width="49%">
 </p>
 
 ---
@@ -65,11 +65,18 @@ It draws five steps and rewrites them in place as it goes:
   · folders
 ```
 
+- **The system is brought up to date first** (`pacman -Syu`). Installing
+  against a stale package database is how a fresh machine hits 404s, and a
+  refresh without the upgrade is a partial upgrade, which Arch does not support.
 - **Packages, one transaction each.** `pacman -S a b c` is atomic: one bad name
   and the other fifty-nine never install. That is how a fresh machine came up
   with no Nerd Font and nothing said about it. Here a package that fails is
   printed above the steps — so it survives the redraw — and named again at the
   end with the command to retry it.
+- **An AUR helper if there is none.** `yay` is built from the AUR when the
+  machine has neither `paru` nor `yay` (vanilla Arch and Manjaro ship none), and
+  anything the official repos could not give is asked of the AUR before it
+  counts as a failure.
 - **Dotfiles**, by symlink from the checkout, so editing `~/.config/hypr/…` edits
   the repo and there is no second copy to keep in sync.
 - **The login screen**, if `sddm` is installed. It is never switched blind: the
@@ -78,6 +85,10 @@ It draws five steps and rewrites them in place as it goes:
   and with the command to undo it printed at the end.
 - **Services** (`NetworkManager`, `bluetooth`, `power-profiles-daemon`), the
   `video` group, and the XDG folders the scripts expect by their English names.
+
+Installed from scratch, with no failures, on **Arch, Manjaro, CachyOS,
+EndeavourOS and Garuda**. Distributions without systemd (Artix) are not
+supported yet: the services step uses `systemctl`.
 
 It ends by asking you to **reboot** — this changed the login screen, enabled
 system services and added you to a group, and a logout shows none of that.
@@ -147,19 +158,29 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   bluetooth, sound, battery, CPU and memory, power. Every capsule can be dragged
   to either end or the centre of any of the four edges, and each one chooses how
   much it says — `full`, `compact` or `icon`, offered only where they differ.
-  Four shapes for the bar itself — pills, island, solid, framed — and an outline
-  switch that draws the plate of whichever shape is in use instead of filling it.
+  Four shapes for the bar itself — pills, island, solid, framed.
+- **Look** — every surface solid or glass (*Blur*: the terminal's own
+  translucency, with Hyprland's blur behind), and one outline switch for the
+  whole shell or part by part.
 - **Dock** — pinned and open applications on an edge of your choosing. A click
   launches, focuses, or hides to a special workspace, in that order; a
   right-click pins or unpins, and Settings has the list with a search.
 - **Panels** — every pill opens a panel that grows out of it and leaves the same
-  way. Their own outline switch, separate from the bar's.
-- **Lock screen** — its own `WlSessionLock` surface: padlock intro, PAM auth,
-  blurred wallpaper, media card with a live Cava visualiser, battery and power
-  profiles.
-- **Login screen** — an SDDM theme drawn with the shell's own bar and mark.
+  way, or opens like a window from the bar's edge. They share one language —
+  tinted plates, one radius, one type scale — and never stick out past the bar.
+- **Lock screen** — its own `WlSessionLock` surface: padlock, fade or no intro,
+  PAM auth, blurred wallpaper, media card with a live Cava visualiser, battery
+  and power profiles, and a switch to show the password as you type it.
+- **Login screen** — an SDDM theme laid out like the lock screen: the time large,
+  who, the password, the session and the ways out in the corners. It carries no
+  name, so it suits any desktop.
 - **Desktop widgets** — clock, weather, updates, media, calendar, machine, placed
-  by dragging them where you want them. Outline switch of their own too.
+  by dragging them where you want them. Right-click one for its shapes, sizes,
+  the other screen, or to remove it.
+- **Two screens** — arrange them on a grid, mirror one, or let workspaces spread
+  over them (1-5 / 6-10, or evens on one and odds on the other); each bar shows
+  its own. Widgets and wallpapers live on a screen of their own, and the whole
+  arrangement comes back when a screen is plugged in again.
 - **Screen time** — how long each application had you today and across the
   week, counted only while you are at the machine. A panel, an optional pill and
   a desktop widget; the numbers never leave `~/.config/ashen`.
@@ -170,7 +191,7 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   wallpaper on each screen when more than one is plugged in.
 - **Process monitor** — CPU, GPU and traffic drawn as the last minute of samples,
   memory, drives and temperatures as levels.
-- **Launcher, clipboard, emoji picker, glyph picker, settings.**
+- **Launcher, clipboard, and Settings with a search** that takes you to the row.
 - **Four languages** — English, Spanish, Russian and German, switched on the spot.
 - **Dynamic theming** — the wallpaper picker runs `matugen` over the image you
   choose and the whole shell re-colours from `~/.cache/ashen_scheme.json`.
