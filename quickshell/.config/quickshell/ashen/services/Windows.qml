@@ -86,10 +86,13 @@ Singleton {
     // window class. Stored for the same reason iconByWorkspace is: a function
     // does not re-run when a window opens.
     property var runningIds: ({})
+    // Workspace id -> how many windows it holds. Drives the "count" style.
+    property var countByWorkspace: ({})
 
     function recompute() {
         let m = ({})
         let live = ({})
+        let cnt = ({})
         for (const t of Hyprland.toplevels.values) {
             const o = t.lastIpcObject
             const cls = (o && o.class ? String(o.class) : "").toLowerCase()
@@ -99,8 +102,10 @@ Singleton {
             const ws = t.workspace ? t.workspace.id : 0
             if (ws === 0) continue
             m[ws] = root.iconForClass(o ? o.class : "")   // later windows win
+            cnt[ws] = (cnt[ws] || 0) + 1
         }
         root.runningIds = live
+        root.countByWorkspace = cnt
         // ...except the focused one, so a workspace reads as whatever you were
         // last doing on it rather than whatever opened first.
         const a = Hyprland.activeToplevel
@@ -136,6 +141,8 @@ Singleton {
         const o = a.lastIpcObject
         return o && o.class ? root.sameApp(id, String(o.class)) : false
     }
+
+    function windowCount(wsId) { return root.countByWorkspace[wsId] || 0 }
 
     function workspaceIcon(wsId) {
         const g = root.iconByWorkspace[wsId]

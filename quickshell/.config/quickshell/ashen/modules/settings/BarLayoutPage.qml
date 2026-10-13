@@ -474,16 +474,61 @@ Section {
                         // show is this choice instead, so it takes the same place
                         // in the same card. It lived on the shape page, apart from
                         // every other choice about what a pill shows.
+                        // Six styles do not fit as six words: each cell shows a
+                        // sample of what the bar will draw, its name small below.
                         Segmented {
                             visible: lookCard.modelData === "workspaces"
                             Layout.fillWidth: true
-                            cellHeight: 28
+                            cellHeight: 50
                             options: [
-                                { id: "icons",   icon: "", label: Services.I18n.t("settings.bar.wsIcons") },
-                                { id: "numbers", icon: "", label: Services.I18n.t("settings.bar.wsNumbers") },
-                                { id: "dots",    icon: "", label: Services.I18n.t("settings.bar.wsDots") }
+                                { id: "icons",   label: Services.I18n.t("settings.bar.wsIcons"),
+                                  sample: Services.Windows.glyphTerminal + " " + Services.Windows.glyphInternet,
+                                  font: "Material Symbols Rounded" },
+                                { id: "numbers", label: Services.I18n.t("settings.bar.wsNumbers"), sample: "1 2 3" },
+                                { id: "dots",    label: Services.I18n.t("settings.bar.wsDots"), sample: "\u25cf \u2501 \u25cf" },
+                                { id: "pacman",  label: Services.I18n.t("settings.bar.wsPacman"),
+                                  sample: "\udb82\udfaf \u2022 \udb80\udea0" },
+                                { id: "count",   label: Services.I18n.t("settings.bar.wsCount"), sample: "1 2", ticks: true },
+                                // Needs a CJK font; greyed out without one.
+                                { id: "kanji",   label: Services.I18n.t("settings.bar.wsKanji"),
+                                  sample: "\u4e00 \u4e8c", font: "Noto Sans CJK JP",
+                                  available: Qt.fontFamilies().indexOf("Noto Sans CJK JP") !== -1 }
                             ]
-                            current: Services.Prefs.workspaceStyle
+                            cellFace: Component {
+                                Column {
+                                    property var modelData
+                                    property bool active
+                                    spacing: 2
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: parent.modelData ? parent.modelData.sample : ""
+                                        font.family: parent.modelData && parent.modelData.font
+                                                     ? parent.modelData.font : "JetBrainsMono NF"
+                                        font.pixelSize: 14
+                                        font.bold: true
+                                        color: parent.active ? Services.Colors.accentText : Services.Colors.snow
+                                    }
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        visible: !!(parent.modelData && parent.modelData.ticks)
+                                        text: "\u2022  \u2022\u2022"
+                                        font.family: "JetBrainsMono NF"
+                                        font.pixelSize: 7
+                                        color: parent.active ? Services.Colors.accentText : Services.Colors.snow
+                                    }
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: parent.modelData ? parent.modelData.label : ""
+                                        font.family: "JetBrainsMono NF"
+                                        font.pixelSize: 10
+                                        color: parent.active ? Services.Colors.accentText : Services.Colors.mist
+                                    }
+                                }
+                            }
+                            current: Services.Prefs.workspaceLook
                             onPicked: id => Services.Prefs.workspaceStyle = id
                         }
 

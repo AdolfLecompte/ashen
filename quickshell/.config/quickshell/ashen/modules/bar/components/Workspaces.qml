@@ -19,8 +19,38 @@ Item {
     // icons / numbers / dots. In dots the chips carry no reading at all: the one
     // you are standing on is a bar, the rest are dots, and the row says WHERE
     // you are rather than what is running.
-    readonly property string wsStyle: Services.Prefs.workspaceStyle
+    readonly property string wsStyle: Services.Prefs.workspaceLook
     readonly property bool dots: root.wsStyle === "dots"
+    readonly property bool marks: root.dots
+    readonly property bool kanji: root.wsStyle === "kanji"
+    // Pac-Man eats the row: he is where you are, a ghost haunts every
+    // workspace with windows, and the empty ones are pellets. No plates.
+    readonly property bool pacman: root.wsStyle === "pacman"
+    readonly property bool bare: root.marks || root.pacman
+    readonly property string glyphPacman: "\udb82\udfaf"
+    readonly property string glyphGhost: "\udb80\udea0"
+    readonly property string glyphPellet: "\u2022"
+    // The number, with one tick under it per window.
+    readonly property bool counted: root.wsStyle === "count"
+    readonly property var kanjiDigits: ["\u3007", "\u4e00", "\u4e8c", "\u4e09", "\u56db", "\u4e94",
+                                        "\u516d", "\u4e03", "\u516b", "\u4e5d", "\u5341"]
+    function kanjiOf(n) {
+        if (n <= 10) return root.kanjiDigits[n]
+        if (n < 20) return root.kanjiDigits[10] + root.kanjiDigits[n - 10]
+        return String(n)
+    }
+    function specialKanji(name) {
+        if (name === "music")   return "\u97f3"
+        if (name === "discord") return "\u8a71"
+        if (name === "notes")   return "\u8a18"
+        if (name === "fav")     return "\u661f"
+        return "\u7279"
+    }
+    // A chip's length along the bar: fixed, except the active dot.
+    function alongOf(wsId, active) {
+        if (root.marks) return active ? root.dotOnW : root.dotW
+        return root.innerH
+    }
     // A dot is a chip that gave up its READING, not its size: it is exactly as
     // big as the numbered chip it replaces (Sizes.innerH), so switching styles
     // changes what the row says and never how much room it takes. Grown three
@@ -118,6 +148,22 @@ Item {
             || root.occupied.indexOf(id) !== -1
     }
 
+    // The "count" style: one tick per window under the number, up to three.
+    component Ticks: Row {
+        id: tk
+        property int wins: 0
+        property color ink
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 5
+        visible: tk.wins > 0
+        spacing: 3
+        Repeater {
+            model: tk.wins
+            Rectangle { width: 3; height: 3; radius: 1.5; color: tk.ink }
+        }
+    }
+
     function specialIcon(name) {
         if (name === "music")   return ""
         if (name === "discord") return ""
@@ -209,7 +255,11 @@ Item {
 
         Rectangle {
             id: slideIndicator
-            width: root.innerH; height: root.innerH
+            readonly property real along: root.alongOf(root.lastNormalId, true)
+            width: root.vertical ? root.innerH : along
+            height: root.vertical ? along : root.innerH
+            Behavior on width { Widgets.Anim { speed: Services.Sizes.msPronounced } }
+            Behavior on height { Widgets.Anim { speed: Services.Sizes.msPronounced } }
             radius: root.innerR
             // Only in OUTLINE is the indicator a ring: a filled block inside a
             // drawn edge is what undoes the outline. On a solid, island or
@@ -224,14 +274,14 @@ Item {
             // Part of the numbers, so it leaves and comes back with them.
             // In dots the chips carry their own fill, so the indicator that
             // would slide under them has nothing left to say.
-            opacity: root.dots ? 0 : (pill.showSpecial ? 0 : pill.contentOpacity)
+            opacity: root.bare ? 0 : (pill.showSpecial ? 0 : pill.contentOpacity)
             readonly property real slot: {
-                let idx = 0
+                let at = root.pad
                 for (const id of root.chipIds) {
                     if (id === root.lastNormalId) break
-                    if (root.chipShown(id)) idx++
+                    if (root.chipShown(id)) at += root.alongOf(id, false) + 4
                 }
-                return root.pad + idx * (root.innerH + 4)
+                return at
             }
             readonly property real centred: (root.pillH - root.innerH) / 2
             x: root.vertical ? centred : slot
@@ -266,7 +316,15 @@ Item {
                     // A dot stretches ALONG the bar. On a side bar that is its
                     // height: stretching the width made the one you stand on a
                     // bar lying across a column only one pill wide.
-                    readonly property int along: root.dots ? (isActive ? root.dotOnW : root.dotW) : root.innerH
+                    readonly property int along: root.alongOf(wsId, isActive)
+                    readonly property int wins: root.counted ? Math.min(3, Services.Windows.windowCount(wsId)) : 0
+                    readonly property color ink: root.pacman
+                        ? (isActive ? Services.Colors.ghost : warm ? Services.Colors.snow
+                           : hasWindows ? Services.Colors.mist : Services.Colors.ash)
+                        : isActive
+                                 ? (!Services.Pills.rings ? Services.Colors.accentText : Services.Colors.ghost)
+                             : warm ? Services.Colors.snow
+                             : (!Services.Pills.rings ? Services.Colors.ash : Services.Colors.mist)
                     width: root.vertical ? root.innerH : along
                     height: root.vertical ? along : root.innerH
                     Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard
@@ -283,7 +341,7 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         radius: root.innerR
-                        visible: !root.dots
+                        visible: !root.bare
                         // The plate says whether the workspace has anything on it, nothing else.
                         // Active chips are carried by the sliding indicator, so they stay bare.
                         color: Services.Colors.fillRest
@@ -294,14 +352,17 @@ Item {
                     // The dot itself. Fully round, so growing into the active
                     // bar is the same shape stretched rather than a new one.
                     Rectangle {
-                        visible: root.dots
+                        visible: root.marks
                         anchors.centerIn: parent
+                        // A line is a dot drawn as a stick: thin across, short along.
+                        readonly property int cross: root.dotH
+                        readonly property int rest: root.dotH
                         // A CIRCLE when it is only a dot, a capsule when it is
                         // the one you are standing on. Taking the cell's whole
                         // width made every dot an oval, which reads as a short
                         // bar rather than as a point.
-                        width: (parent.isActive && !root.vertical) ? parent.width : root.dotH
-                        height: (parent.isActive && root.vertical) ? parent.height : root.dotH
+                        width: root.vertical ? cross : (parent.isActive ? parent.width : rest)
+                        height: root.vertical ? (parent.isActive ? parent.height : rest) : cross
                         radius: Math.min(width, height) / 2
                         // Outlined, a dot is a RING: a row of filled circles on
                         // a drawn plate is the same filled-blob-inside-an-
@@ -335,16 +396,17 @@ Item {
 
                     Text {
                         textFormat: Text.PlainText
-                        visible: !root.dots
+                        visible: !root.marks
                         anchors.centerIn: parent
-                        text: parent.appIcon !== "" ? parent.appIcon : wsId
-                        color: parent.isActive
-                                 ? (!Services.Pills.rings ? Services.Colors.accentText
-                                                         : Services.Colors.ghost)
-                             : parent.warm ? Services.Colors.snow
-                             : (!Services.Pills.rings ? Services.Colors.ash : Services.Colors.mist)
-                        font.pixelSize: parent.appIcon !== "" ? 15 : 13
-                        font.family: parent.appIcon !== "" ? "Material Symbols Rounded" : "JetBrainsMono NF"
+                        anchors.verticalCenterOffset: parent.wins > 0 ? -3 : 0
+                        text: root.pacman ? (parent.isActive ? root.glyphPacman
+                                             : parent.hasWindows ? root.glyphGhost : root.glyphPellet)
+                            : parent.appIcon !== "" ? parent.appIcon
+                            : root.kanji ? root.kanjiOf(wsId) : wsId
+                        color: parent.ink
+                        font.pixelSize: root.pacman ? 18 : parent.appIcon !== "" ? 15 : root.kanji ? 14 : 13
+                        font.family: parent.appIcon !== "" ? "Material Symbols Rounded"
+                                   : root.kanji ? "Noto Sans CJK JP" : "JetBrainsMono NF"
                         font.bold: true
                         z: 1
                         // The preview flies this very label into its caption, so
@@ -355,6 +417,8 @@ Item {
                         Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
                         Behavior on color { Widgets.ColorAnim {} }
                     }
+
+                    Ticks { wins: parent.wins; ink: parent.ink }
 
                     PreviewHover {
                         id: chipHover
@@ -387,7 +451,25 @@ Item {
                     required property var modelData
                     readonly property string shortName: modelData.name.replace("special:", "")
                     readonly property bool isShown: modelData.name === root.shownSpecial
-                    width: root.innerH; height: root.innerH
+                    // Same style as the numbered row: a glyph, an initial, or a dot.
+                    readonly property bool lettered: root.wsStyle === "numbers" || root.counted
+                    readonly property string label: lettered ? shortName.charAt(0).toUpperCase()
+                        : root.pacman ? (isShown ? root.glyphPacman : root.glyphGhost)
+                        : root.kanji ? root.specialKanji(shortName) : root.specialIcon(shortName)
+                    readonly property int along: root.marks ? (isShown ? root.dotOnW : root.dotW) : root.innerH
+                    readonly property int wins: root.counted ? Math.min(3, Services.Windows.windowCount(modelData.id)) : 0
+                    readonly property color ink: root.pacman
+                        ? (isShown ? Services.Colors.ghost : warm ? Services.Colors.snow : Services.Colors.mist)
+                        : isShown
+                                 ? (!Services.Pills.rings ? Services.Colors.accentText : Services.Colors.ghost)
+                             : warm ? Services.Colors.snow
+                             : (!Services.Pills.rings ? Services.Colors.ash : Services.Colors.mist)
+                    width: root.vertical ? root.innerH : along
+                    height: root.vertical ? along : root.innerH
+                    Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard
+                                                          easing.type: Services.Sizes.easeOut } }
+                    Behavior on height { NumberAnimation { duration: Services.Sizes.msStandard
+                                                           easing.type: Services.Sizes.easeOut } }
                     readonly property bool warm: spHover && spHover.containsMouse
                     scale: Services.Sizes.hoverScale(warm, spHover && spHover.pressed)
                     Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
@@ -395,6 +477,7 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         radius: root.innerR
+                        visible: !root.bare
                         color: Services.Pills.rings ? "transparent"
                              : parent.isShown ? Services.Colors.ghost : Services.Colors.fillRest
                         border.width: (Services.Pills.rings && parent.isShown)
@@ -405,17 +488,33 @@ Item {
                         Behavior on color { Widgets.ColorAnim {} }
                     }
 
+                    Rectangle {
+                        visible: root.marks
+                        anchors.centerIn: parent
+                        readonly property int cross: root.dotH
+                        readonly property int rest: root.dotH
+                        width: root.vertical ? cross : (parent.isShown ? parent.width : rest)
+                        height: root.vertical ? (parent.isShown ? parent.height : rest) : cross
+                        radius: Math.min(width, height) / 2
+                        border.width: (Services.Pills.rings && !parent.isShown) ? Services.Sizes.outlineW : 0
+                        border.color: Services.Colors.fillOutline
+                        color: parent.isShown ? Services.Colors.ghost
+                             : parent.warm ? Services.Colors.snow
+                             : Services.Pills.rings ? "transparent" : Services.Colors.ash
+                        Behavior on color { Widgets.ColorAnim {} }
+                    }
+
                     Text {
                         textFormat: Text.PlainText
+                        visible: !root.marks
                         anchors.centerIn: parent
-                        text: root.specialIcon(parent.shortName)
-                        color: parent.isShown
-                                 ? (!Services.Pills.rings ? Services.Colors.accentText
-                                                         : Services.Colors.ghost)
-                             : parent.warm ? Services.Colors.snow
-                             : (!Services.Pills.rings ? Services.Colors.ash : Services.Colors.mist)
-                        font.pixelSize: 18
-                        font.family: "Material Symbols Rounded"
+                        anchors.verticalCenterOffset: parent.wins > 0 ? -3 : 0
+                        text: parent.label
+                        color: parent.ink
+                        font.pixelSize: parent.lettered ? 13 : root.kanji ? 14 : 18
+                        font.family: (parent.lettered || root.pacman) ? "JetBrainsMono NF"
+                                   : root.kanji ? "Noto Sans CJK JP" : "Material Symbols Rounded"
+                        font.bold: parent.lettered || root.kanji
                         z: 1
                         // Handed over to the preview's caption while it is open
                         opacity: Services.AppState.wsPreviewMorphing
@@ -424,10 +523,12 @@ Item {
                         Behavior on color { Widgets.ColorAnim {} }
                     }
 
+                    Ticks { wins: parent.wins; ink: parent.ink }
+
                     PreviewHover {
                         id: spHover
                         wsId: parent.modelData.id
-                        label: root.specialIcon(parent.shortName)
+                        label: parent.label
                         previewable: Hyprland.toplevels.values.filter(
                             t => t.workspace && t.workspace.id === parent.modelData.id).length > 0
                         onActivated: {

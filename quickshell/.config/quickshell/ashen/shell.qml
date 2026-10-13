@@ -399,7 +399,7 @@ ShellRoot {
         }
         // What the workspace chips show: icons, numbers or dots.
         function workspaces(name: string) {
-            if (["icons", "numbers", "dots"].indexOf(name) === -1) return
+            if (["icons", "numbers", "dots", "pacman", "count", "kanji"].indexOf(name) === -1) return
             Services.Prefs.workspaceStyle = name
         }
         // How much of the edge it takes, 50-100 %.

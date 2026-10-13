@@ -365,6 +365,9 @@ Singleton {
     //   "numbers" the number, always
     //   "dots"    no reading at all -- a dot, and the one you are on is a bar
     property string workspaceStyle: "icons"
+    // Lines and windows were retired; a saved one shows as its nearest kin.
+    readonly property string workspaceLook: workspaceStyle === "lines" ? "dots"
+        : workspaceStyle === "windows" ? "icons" : workspaceStyle
     // Kept so a saved `false` still means numbers on the first run after this.
 
     // Idle timeouts in seconds, 0 = never. The Idle service turns these into
