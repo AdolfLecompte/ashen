@@ -1,5 +1,40 @@
 # Changelog
 
+## 3.3.0
+
+### Added
+- **Three more workspace styles.** Settings > Bar > Layout > Workspaces:
+  *Pac-Man* (he is where you are, a ghost on every workspace with windows,
+  pellets on the empty ones), *Count* (the number with one tick per window)
+  and *Kanji* (needs a CJK font). Each choice shows a sample of what it draws.
+  Special workspaces now follow every style instead of always drawing their
+  icon.
+
+### Changed
+- The Ashen mark in About and the welcome takes your scheme: accent faces, the
+  edges a step darker. fastfetch and the installer draw it in two colours too.
+- Drop-down lists and the Wi-Fi password dialog are opaque (dense glass in the
+  blur style). They float over the panel's own rows, which Hyprland's blur
+  never reaches, so the text underneath showed through.
+
+### Fixed
+- The clock on a side bar showed the 24-hour hour next to AM/PM. It now
+  follows the 12-hour setting, and the column reads as three blocks: the day
+  in two letters like AM/PM (MO, TU... in your language) over its date, the time, then the weather with
+  the unit under the number, all at one size.
+- The release notes are set larger, at reading size.
+- The welcome card's shortcuts list the wallpaper picker instead of the
+  clipboard.
+- The wallpaper banner in Settings had square dark corners at the bottom.
+- Caps and num lock grow into the keyboard pill together with their glyph, on
+  a side bar too, instead of opening an empty gap first.
+- Pills next to one that resizes no longer trail and wobble behind it.
+- The visualiser bars could freeze tall after the music stopped: a last
+  buffered line from cava arrived after they had been set to rest.
+- Installer: Ctrl-C now stops the install instead of carrying on; what a step
+  prints no longer breaks the live step list; a failed step shows a cross
+  instead of a tick; long notes are cut cleanly to the terminal width.
+
 ## 3.2.0
 
 ### Added
