@@ -42,7 +42,9 @@ Singleton {
         running: root.procAlive
         stdout: SplitParser {
             onRead: data => {
-                if (!data || !root.enabled) return
+                // A line still buffered when the process is told to stop lands
+                // after stopSoon's zeros and froze the bars tall: ignore it.
+                if (!data || !root.enabled || !root.procAlive) return
                 let parts = data.split(";").filter(s => s.length > 0).map(Number)
                 if (parts.length === 0) return
                 let maxV = Math.max.apply(null, parts)

@@ -1,6 +1,5 @@
 import Quickshell
 import Quickshell.Widgets
-import Quickshell.Services.Mpris
 import QtQuick
 
 import "root:/modules/desktop"
@@ -20,13 +19,8 @@ DesktopWidget {
 
     // The picture IS the widget here; a rim of plate around it reads as a mount.
 
-    readonly property var livePlayer: {
-        const live = Mpris.players.values.filter(p => p.playbackState !== MprisPlaybackState.Stopped)
-        if (live.length === 0) return null
-        const playing = live.find(p => p.isPlaying)
-        return playing !== undefined ? playing : live[0]
-    }
-    readonly property string art: root.livePlayer ? (root.livePlayer.trackArtUrl || "") : ""
+    // The shared cover: full size when Media found one, the player's otherwise.
+    readonly property string art: Services.Media.art
 
     // How big the circle is. Its own axis: the shape is the ring, the size is
     // how much wall you are giving it.
