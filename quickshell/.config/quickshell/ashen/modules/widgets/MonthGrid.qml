@@ -56,22 +56,23 @@ Grid {
             // pointer by brightening its number.
             readonly property real level: (root.levelOf && isValid) ? root.levelOf(day) : -1
             readonly property bool isSelected: isValid && day === root.selectedDay
+            // The picked day is FILLED, never outlined: the shell draws no
+            // outlines unless the outline style asks for them.
             color: isToday ? Services.Colors.ghost
+                 : isSelected ? Services.Colors.fillStrong
                  : level > 0 ? Services.Colors.tint(Services.Colors.fillInset, Services.Colors.ghost, 0.12 + 0.5 * level)
                  : "transparent"
             // Vertical: the cell is a square block, not a wide pill, so the
             // light reads down it -- lit top, dark foot.
             gradient: Services.Prefs.useGradients && isToday ? Services.Colors.accentGradientV : null
             Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
-            border.width: isSelected && !isToday ? 2 : 0
-            border.color: Services.Colors.snow
 
             Text {
                 textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: parent.isValid ? parent.day : ""
                 color: parent.isToday ? Services.Colors.accentText
-                     : (dayHover.containsMouse && parent.isValid) ? Services.Colors.snow
+                     : (parent.isSelected || (dayHover.containsMouse && parent.isValid)) ? Services.Colors.snow
                      : Services.Colors.mist
                 Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
                 font.pixelSize: 12

@@ -24,6 +24,14 @@ PanelWindow {
     function shift(k, n) { const d = win.dateOf(k); return win.keyOf(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)) }
     readonly property string todayKey: { win.beat; return win.keyOf(new Date()) }
     property string selected: ""
+    // Same day of the next or previous month, clamped to its length and to today.
+    function shiftMonth(key, n) {
+        const d = win.dateOf(key)
+        const last = new Date(d.getFullYear(), d.getMonth() + n + 1, 0).getDate()
+        const t = new Date(d.getFullYear(), d.getMonth() + n, Math.min(d.getDate(), last))
+        const k = win.keyOf(t)
+        return k > win.todayKey ? win.todayKey : k
+    }
     readonly property string day: win.selected !== "" ? win.selected : win.todayKey
     readonly property bool isToday: win.day === win.todayKey
 
@@ -477,6 +485,24 @@ PanelWindow {
                         width: card.monthW
                         height: card.bottomH
                         readonly property date shownDate: win.dateOf(win.day)
+                        // Month by month, never past this one.
+                        Widgets.IconButton {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 8
+                            anchors.verticalCenter: monthTitle.verticalCenter
+                            glyph: "\ue408"
+                            onActivated: win.selected = win.shiftMonth(win.day, -1)
+                        }
+                        Widgets.IconButton {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 8
+                            anchors.verticalCenter: monthTitle.verticalCenter
+                            glyph: "\ue409"
+                            readonly property bool atNow: monthPlate.shownDate.getFullYear() === win.dateOf(win.todayKey).getFullYear()
+                                && monthPlate.shownDate.getMonth() === win.dateOf(win.todayKey).getMonth()
+                            available: !atNow
+                            onActivated: if (!atNow) win.selected = win.shiftMonth(win.day, 1)
+                        }
                         Text {
                             textFormat: Text.PlainText
                             id: monthTitle

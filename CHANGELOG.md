@@ -29,6 +29,8 @@
 - The network and Bluetooth pills show a name at once, but a state word
   ("Searching", "Off") waits a moment: it flashed in before the network name
   had arrived, too fast to see it unroll.
+- Screen time's calendar has arrows to walk month by month, and the day you
+  picked is filled instead of outlined.
 - A Wi-Fi password asked for in the scan stayed on screen after leaving the
   scan or closing the panel.
 - Desktop widgets could only be grabbed by their rim while arranging: the
