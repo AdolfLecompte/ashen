@@ -26,6 +26,14 @@
 - The welcome card's shortcuts list the wallpaper picker instead of the
   clipboard.
 - The wallpaper banner in Settings had square dark corners at the bottom.
+- The network and Bluetooth pills show a name at once, but a state word
+  ("Searching", "Off") waits a moment: it flashed in before the network name
+  had arrived, too fast to see it unroll.
+- A Wi-Fi password asked for in the scan stayed on screen after leaving the
+  scan or closing the panel.
+- Desktop widgets could only be grabbed by their rim while arranging: the
+  calendar's day cells and other controls inside took the press. A press
+  anywhere on a widget now drags it (the picture keeps its framing).
 - Caps and num lock grow into the keyboard pill together with their glyph, on
   a side bar too, instead of opening an empty gap first.
 - Pills next to one that resizes no longer trail and wobble behind it.

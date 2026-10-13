@@ -13,7 +13,7 @@
    ▓▓▒▒░░   a  g h o s t  i n  t h e  s h e l l   ░░▒▒▓▓    
 </pre>
 
-A monochrome Hyprland + Quickshell rice for Arch.
+A Hyprland + Quickshell rice for Arch, coloured by your wallpaper.
 
 <img alt="compositor: Hyprland" src="https://img.shields.io/badge/compositor-Hyprland-81d3de?style=for-the-badge&labelColor=0e1415">
 
@@ -58,7 +58,7 @@ That line is the whole thing. What it does, in order:
 It draws five steps and rewrites them in place as it goes:
 
 ```
-  ✓ packages      ██████████████████  60/60
+  ✓ packages      ██████████████████  62/62
   ▸ dotfiles      35 files linked
   · login screen
   · services
@@ -69,10 +69,11 @@ It draws five steps and rewrites them in place as it goes:
   against a stale package database is how a fresh machine hits 404s, and a
   refresh without the upgrade is a partial upgrade, which Arch does not support.
 - **Packages, one transaction each.** `pacman -S a b c` is atomic: one bad name
-  and the other fifty-nine never install. That is how a fresh machine came up
+  and none of the rest install. That is how a fresh machine came up
   with no Nerd Font and nothing said about it. Here a package that fails is
   printed above the steps — so it survives the redraw — and named again at the
-  end with the command to retry it.
+  end with the command to retry it. A step that went wrong ends on a ✗, not a
+  tick, and `Ctrl-C` stops the install and gives the terminal back.
 - **An AUR helper if there is none.** `yay` is built from the AUR when the
   machine has neither `paru` nor `yay` (vanilla Arch and Manjaro ship none), and
   anything the official repos could not give is asked of the AUR before it
@@ -158,7 +159,9 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   bluetooth, sound, battery, CPU and memory, power. Every capsule can be dragged
   to either end or the centre of any of the four edges, and each one chooses how
   much it says — `full`, `compact` or `icon`, offered only where they differ.
-  Four shapes for the bar itself — pills, island, solid, framed.
+  Four shapes for the bar itself — pills, island, solid, framed — and six
+  styles for the workspaces: icons, numbers, dots, Pac-Man, a tick per window,
+  or kanji.
 - **Look** — every surface solid or glass (*Blur*: the terminal's own
   translucency, with Hyprland's blur behind), and one outline switch for the
   whole shell or part by part.
@@ -170,13 +173,16 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   tinted plates, one radius, one type scale — and never stick out past the bar.
 - **Lock screen** — its own `WlSessionLock` surface: padlock, fade or no intro,
   PAM auth, blurred wallpaper, media card with a live Cava visualiser, battery
-  and power profiles, and a switch to show the password as you type it.
+  and power profiles, and a switch in its power menu to show the password as
+  you type it.
 - **Login screen** — an SDDM theme laid out like the lock screen: the time large,
   who, the password, the session and the ways out in the corners. It carries no
   name, so it suits any desktop.
-- **Desktop widgets** — clock, weather, updates, media, calendar, machine, placed
-  by dragging them where you want them. Right-click one for its shapes, sizes,
-  the other screen, or to remove it.
+- **Desktop widgets** — clock, weather, calendar, sun, media, visualiser,
+  timer, notifications, updates, battery, machine, disks, screen time and
+  pictures. Arrange them with `SUPER + SHIFT + D` and drag a widget by any part
+  of it; right-click one for its shapes, sizes, the other screen, or to remove
+  it.
 - **Two screens** — arrange them on a grid, mirror one, or let workspaces spread
   over them (1-5 / 6-10, or evens on one and odds on the other); each bar shows
   its own. Widgets and wallpapers live on a screen of their own, and the whole
@@ -227,9 +233,10 @@ fzf zoxide eza bat fd
 grimblast-git bibata-cursor-theme mpvpaper zsh-theme-powerlevel10k
 ```
 
-- **quickshell** must be built with **PAM** and the **Hyprland** modules — the lock
-  screen authenticates through `PamContext` (config `login`) and the bar reads
-  workspaces over Hyprland IPC. `quickshell-allflags-git` also works.
+- **quickshell** is the stable package from `extra`, never `quickshell-git`: the
+  shell targets the 0.3 API and the -git build drifts ahead of it. It must have
+  **PAM** and the **Hyprland** modules — the lock screen authenticates through
+  `PamContext` (config `login`) and the bar reads workspaces over Hyprland IPC.
 - **ttf-material-symbols-variable** is required: every icon in the shell is a
   Material Symbols Rounded codepoint. Without it the bar renders empty boxes.
 - **awww** paints static images and gifs, **mpvpaper** paints video wallpapers.
@@ -271,6 +278,7 @@ and not only on a distro that happens to source it for you.
 | `gtk-launch` (gtk3) | opening the app behind a notification action |
 | `qt6ct` | Qt apps follow the palette (`QT_QPA_PLATFORMTHEME`) |
 | `nvidia-utils` (`nvidia-smi`) | dGPU stats — **only** read when the GPU is already awake |
+| `noto-fonts-cjk` | the kanji workspace style — optional, greyed out without it |
 
 ## Update
 
@@ -299,10 +307,10 @@ bash install/run.sh
 
 Two things to expect on that first run:
 
-- **stow may report a conflict for a package.** That means a real file — not a
-  symlink — is sitting where a config belongs; `~/.zshrc` is the usual one.
-  Move it aside (`mv ~/.zshrc ~/.zshrc.mine`) and re-run. Only the package that
-  conflicts is skipped, the other eight still land.
+- **Your own config files are kept, not overwritten.** Where a real file — not
+  a symlink — sits where a config belongs (`~/.zshrc` is the usual one), the
+  installer moves it to `<name>.bak` and says so. Copy back whatever you want
+  from it.
 - **Log out and back in** afterwards if the bar looks half-dressed: an old
   session is still holding the previous Hyprland config and the old
   environment.
@@ -323,6 +331,7 @@ Two things to expect on that first run:
 | `SUPER + SHIFT + P` | process monitor |
 | `SUPER + SHIFT + U` | screen time |
 | `SUPER + SHIFT + D` | arrange desktop widgets |
+| `ALT + Tab` | window switcher |
 | `SUPER + L` | lock |
 | `SUPER + Escape` | power menu |
 | `SUPER + M / D / O / X` | show or hide the music, discord, notes and fav special workspaces |
@@ -332,7 +341,7 @@ Every one of these can be changed from **Settings → Input**.
 
 The keyboard layout pill in the bar is **read-only**. Layouts are declared in
 `hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`) and switched from
-**Settings → System → Keyboard**.
+**Settings → Input**.
 
 ## Notes
 
@@ -340,7 +349,7 @@ The keyboard layout pill in the bar is **read-only**. Layouts are declared in
   `hyprctl keyword` does **not** work against it — use `hyprctl eval '<lua>'` to try
   things at runtime.
 - Shell IPC: `qs -c ashen ipc show` lists every callable target.
-- Reload the shell with `pkill quickshell; setsid nohup quickshell -c ashen &`.
+- Reload the shell with `pkill -x quickshell; setsid -f quickshell -c ashen`.
 - Window opacity: a `windowrule` opacity value is **multiplied** by
   `active_opacity`/`inactive_opacity` unless you append `override`. That is why the
   browser rule reads `opacity 0.85 override 0.80 override`.
@@ -357,7 +366,8 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.2.0
+3.3.0 in progress — the latest release is 3.2.0. What changed is in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
