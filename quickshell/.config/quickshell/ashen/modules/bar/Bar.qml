@@ -386,6 +386,14 @@ Scope {
                 // the layout hands all three Repeaters a new array, so every
                 // delegate is destroyed and rebuilt -- without this the whole
                 // bar replayed its entrance because one pill moved.
+                // The groups only slide on a structural change (a pill added,
+                // removed, shown or hidden). A pill resizing re-lays the row
+                // every frame, and a move transition restarted on each one
+                // left the neighbours trailing and wobbling behind it.
+                property bool shuffling: false
+                function shuffle() { content.shuffling = true; shuffleEnd.restart() }
+                Timer { id: shuffleEnd; interval: Services.Sizes.msPronounced + 60; onTriggered: content.shuffling = false }
+
                 property var seen: []
                 function markSeen(id) {
                     if (content.seen.indexOf(id) === -1) content.seen.push(id)
@@ -443,13 +451,17 @@ Scope {
                     property bool entering: true
                     scale: 0
                     opacity: 0
+                    // Popping in at full size is a structural change; a pill that
+                    // grows from nothing pushes its neighbours by itself.
+                    onVisibleChanged: if ((bar.vertical ? implicitHeight : implicitWidth) > 0) content.shuffle()
                     Component.onCompleted: {
+                        content.shuffle()
                         slot.entering = content.seen.indexOf(slot.pillId) === -1
                         content.markSeen(slot.pillId)
                         scale = 1
                         opacity = 1
                     }
-                    Component.onDestruction: content.forgetLater()
+                    Component.onDestruction: { content.forgetLater(); content.shuffle() }
                     Behavior on scale { enabled: slot.entering; NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Easing.OutBack; easing.overshoot: Services.Sizes.overshoot } }
                     Behavior on opacity { enabled: slot.entering; Widgets.Anim {} }
                 }
@@ -498,7 +510,7 @@ Scope {
                                     : strip.x + content.islandInset
                     y: bar.vertical ? strip.y + content.islandInset
                                     : strip.y + (strip.height - height) / 2
-                    move: Transition { NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
+                    move: Transition { enabled: content.shuffling; NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
 
                     Repeater {
                         model: content.pillsIn("left")
@@ -512,7 +524,7 @@ Scope {
                 // clock off centre the moment anything joined it.
                 BarGroup {
                     id: centreGroup
-                    move: Transition { NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
+                    move: Transition { enabled: content.shuffling; NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
 
                     property Item anchorItem: null
                     readonly property real anchorMid: anchorItem
@@ -581,7 +593,7 @@ Scope {
                                     : strip.x + strip.width - width - content.islandInset
                     y: bar.vertical ? strip.y + strip.height - height - content.islandInset
                                     : strip.y + (strip.height - height) / 2
-                    move: Transition { NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
+                    move: Transition { enabled: content.shuffling; NumberAnimation { properties: "x,y"; duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
 
                     Repeater {
                         model: content.pillsIn("right")

@@ -17,7 +17,9 @@ Rectangle {
     // A side bar is one pill wide: the clock stacks hours over minutes there and
     // drops the date and the weather chip.
     readonly property bool vertical: Services.Sizes.barVertical
-    readonly property string vertHour: Services.Time.fmt(Services.Prefs.hourToken)
+    // Qt only reads "hh" as 12-hour when AP is in the SAME format string, so
+    // the hour is cut out of a full one rather than asked for alone.
+    readonly property string vertHour: Services.Time.fmt(Services.Prefs.hourToken + "|AP").split("|")[0]
     readonly property string vertMinute: Services.Time.fmt("mm")
     readonly property string vertSuffix: Services.Prefs.clock24h ? "" : Services.Time.fmt("AP")
     readonly property string vertSecond: Services.Prefs.clockSeconds ? Services.Time.fmt("ss") : ""
@@ -25,7 +27,12 @@ Rectangle {
     // and the vertical one used to say nothing at all -- the month is what does
     // not fit in 44 px, not the day. Stacked like everything else in this
     // column: the name over its number, the way the glyph sits over its reading.
-    readonly property string vertDay: Services.Time.fmt("ddd").toUpperCase()
+    // Two letters side by side, like AM/PM: MO, TU... in the shell's language.
+    readonly property string vertDay: Services.Time.fmt("ddd").replace(".", "").slice(0, 2).toUpperCase()
+    // The number and its unit stack too: "18°" over "C".
+    readonly property string vertTemp: Services.Weather.offline ? "--"
+        : Services.Weather.convert(Services.Weather.tempC) + (Services.Prefs.tempUnit === "K" ? "" : "\u00b0")
+    readonly property string vertUnit: Services.Weather.offline ? "" : Services.Prefs.tempUnit
     readonly property string vertDayNum: Services.Time.fmt("d")
 
     height: root.vertical ? vertCol.implicitHeight + 16 : Services.Sizes.pillH
@@ -117,97 +124,44 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 0
 
-        // Date above, weather below, the hour between them: the three the
-        // horizontal pill shows in a row, stacked in the same order. No rules
-        // between them -- 15 px against 9 px already says which one is the
-        // headline, and two hairlines in a 44 px column read as a fence.
-        // Compact is the hour alone here as well: a side bar used to ignore
-        // it and keep the date and the weather, so the option did nothing on
-        // the one edge where room is tightest.
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.content === "full"
-            text: root.vertDay
-            color: Services.Colors.mist
-            font.pixelSize: 9
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.content === "full"
-            text: root.vertDayNum
-            color: Services.Colors.mist
-            font.pixelSize: 11
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
-        Item { width: 1; height: 3; visible: root.content === "full" }
+        // Three blocks -- day, time, weather -- each in one size, with air
+        // between them so the weather glyph never reads as part of the time.
+        // Compact is the time alone.
+        VText { visible: root.content === "full"; text: root.vertDay; px: 13; tone: Services.Colors.mist }
+        VText { visible: root.content === "full"; text: root.vertDayNum; px: 13; tone: Services.Colors.mist }
+        Gap { visible: root.content === "full" }
 
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: root.vertHour
-            color: Services.Colors.snow
-            font.pixelSize: 15
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: root.vertMinute
-            color: Services.Colors.snow
-            font.pixelSize: 15
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.vertSecond !== ""
-            text: root.vertSecond
-            color: Services.Colors.mist
-            font.pixelSize: 10
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.vertSuffix !== ""
-            text: root.vertSuffix
-            color: Services.Colors.snow
-            font.pixelSize: 15
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
+        VText { text: root.vertHour; px: 13; tone: Services.Colors.snow }
+        VText { text: root.vertMinute; px: 13; tone: Services.Colors.snow }
+        VText { visible: root.vertSecond !== ""; text: root.vertSecond; px: 13; tone: Services.Colors.mist }
+        VText { visible: root.vertSuffix !== ""; text: root.vertSuffix; px: 13; tone: Services.Colors.snow }
 
-        // Weather closes the pill the way the date opens it: the sky over its
-        // number, not beside it.
-        Item { width: 1; height: 3; visible: root.content === "full" }
+        Gap { visible: root.content === "full" }
         Text {
             textFormat: Text.PlainText
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.content === "full"
             text: Services.Weather.icon
-            font.pixelSize: 14
+            font.pixelSize: 16
             font.family: "Material Symbols Rounded"
             color: Services.Colors.neutral
         }
-        Text {
-            textFormat: Text.PlainText
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.content === "full"
-            text: Services.Weather.temp
-            color: Services.Colors.mist
-            font.pixelSize: 9
-            font.family: "JetBrainsMono NF"
-            font.bold: true
-        }
+        Item { width: 1; height: 4; visible: root.content === "full" }
+        VText { visible: root.content === "full"; text: root.vertTemp; px: 13; tone: Services.Colors.mist }
+        VText { visible: root.content === "full" && root.vertUnit !== ""; text: root.vertUnit; px: 13; tone: Services.Colors.mist }
     }
+
+    component VText: Text {
+        property int px: 11
+        property color tone: Services.Colors.mist
+        textFormat: Text.PlainText
+        anchors.horizontalCenter: parent ? parent.horizontalCenter : undefined
+        color: tone
+        font.pixelSize: px
+        font.family: "JetBrainsMono NF"
+        font.bold: true
+    }
+    component Gap: Item { width: 1; height: 8 }
 
     RowLayout {
         id: clockRow

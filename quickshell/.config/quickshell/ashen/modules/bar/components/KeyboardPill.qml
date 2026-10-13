@@ -57,35 +57,28 @@ Rectangle {
         property bool on: false
         property string glyph: ""
 
-        // The room it takes, and the chip standing in it.
-        property real boxAmt: 0
-        property real faceAmt: 0
+        // 0..1: how much of the chip is there. Box and glyph grow TOGETHER
+        // along the bar's own axis, so the neighbours never slide aside for
+        // a gap that is still empty.
+        property real amt: 0
+        // The strip's spacing is folded into the slot, so it opens from
+        // nothing instead of jumping by one gap when it becomes visible.
+        readonly property real gap: kbRow.spacing
+        readonly property real along: Math.max(0,
+            ((root.vertical ? plate.height : plate.width) + gap) * slot.amt - gap)
 
-        width: plate.width * slot.boxAmt
-        height: Services.Sizes.innerH
-        visible: slot.boxAmt > 0.01 || slot.faceAmt > 0.01
+        width: root.vertical ? plate.width : slot.along
+        height: root.vertical ? slot.along : Services.Sizes.innerH
+        visible: slot.along > 0.5
 
-        onOnChanged: {
-            if (slot.on) { outAnim.stop(); inAnim.restart() }
-            else { inAnim.stop(); outAnim.restart() }
-        }
+        onOnChanged: slot.amt = slot.on ? 1 : 0
         // Born with the lock already on: land there, do not play an entrance
         // for a state that was true before the bar existed.
-        Component.onCompleted: if (slot.on) { slot.boxAmt = 1; slot.faceAmt = 1 }
-
-        SequentialAnimation {
-            id: inAnim
-            NumberAnimation { target: slot; property: "boxAmt"; to: 1
-                              duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
-            NumberAnimation { target: slot; property: "faceAmt"; to: 1
-                              duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeOut }
-        }
-        SequentialAnimation {
-            id: outAnim
-            NumberAnimation { target: slot; property: "faceAmt"; to: 0
-                              duration: Services.Sizes.msMicro; easing.type: Services.Sizes.easeIn }
-            NumberAnimation { target: slot; property: "boxAmt"; to: 0
-                              duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeInOut }
+        Component.onCompleted: { slot.amt = slot.on ? 1 : 0; slot.armed = true }
+        property bool armed: false
+        Behavior on amt {
+            enabled: slot.armed
+            NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Services.Sizes.easeOut }
         }
 
         SystemChip {
@@ -96,10 +89,9 @@ Rectangle {
             // Same rest as the layout beside it: the chip only EXISTS while
             // the lock is on, so its being there is the whole message.
             idleColor: Services.Colors.mist
-            x: (slot.width - width) / 2
-            anchors.verticalCenter: parent.verticalCenter
-            opacity: slot.faceAmt
-            scale: 0.82 + 0.18 * slot.faceAmt
+            anchors.centerIn: parent
+            opacity: slot.amt
+            scale: 0.5 + 0.5 * slot.amt
         }
     }
 }
