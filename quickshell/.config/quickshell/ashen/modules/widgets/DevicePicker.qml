@@ -193,7 +193,7 @@ Column {
                 anchors.fill: optsCol
                 anchors.margins: -4
                 radius: Services.Sizes.cardR
-                color: Services.Colors.surfacePanel
+                color: Services.Colors.surfacePopup
                 border.width: 1
                 border.color: Services.Colors.fillLine
             }

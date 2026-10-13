@@ -261,7 +261,7 @@ Item {
         width: 360
         height: connectCol.implicitHeight + 32
         radius: Services.Sizes.cardR
-        color: Services.Colors.surfacePanel
+        color: Services.Colors.surfacePopup
         border.color: Services.Colors.fillRest
         border.width: 0
         visible: tab.showConnectDialog

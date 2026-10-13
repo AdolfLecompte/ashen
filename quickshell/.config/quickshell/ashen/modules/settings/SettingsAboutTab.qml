@@ -114,7 +114,6 @@ Section {
 
             Widgets.AshenMark {
                 pixelSize: 12
-                color: Services.Colors.snow
             }
 
             RowLayout {

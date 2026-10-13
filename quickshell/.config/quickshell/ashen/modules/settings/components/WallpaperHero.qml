@@ -73,6 +73,9 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: parent.height * 0.46
+        // Its own lower corners: square, they poked past the masked picture.
+        bottomLeftRadius: hero.radius
+        bottomRightRadius: hero.radius
         visible: shot.status === Image.Ready
         // Hover lifts the veil rather than filling the card.
         opacity: heroHover.containsMouse ? 1 : 0.86

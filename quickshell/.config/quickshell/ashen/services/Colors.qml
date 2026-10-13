@@ -67,6 +67,11 @@ Singleton {
     readonly property int panelEdgeW: Prefs.panelOutline ? Sizes.outlineW : 0
     readonly property color panelEdgeColor: Prefs.panelOutline ? root.fillOutline
         : Qt.rgba(abyss.r, abyss.g, abyss.b, 0.92)
+    // A list or dialog floating over a panel's own rows. Hyprland only blurs
+    // what is behind the layer, never the panel under the popup, so it must
+    // hide those rows itself: dense frost in blur style, opaque in solid.
+    readonly property color surfacePopup: root.frosted ? Qt.rgba(abyss.r, abyss.g, abyss.b, 0.94)
+                                                       : Qt.rgba(raised.r, raised.g, raised.b, 1)
     readonly property color surfacePill:  root.frosted ? root.frost : Qt.rgba(surface.r, surface.g, surface.b, 0.82)
     // A card inside a panel: the surface leaning a little towards the accent.
     readonly property color plate: root.frosted ? root.fillInset : root.tint(surface, ghost, 0.07)

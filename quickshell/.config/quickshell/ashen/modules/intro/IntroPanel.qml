@@ -143,7 +143,6 @@ PanelWindow {
                         id: title
                         Layout.alignment: Qt.AlignHCenter
                         pixelSize: 16
-                        color: Services.Colors.snow
                         opacity: card.stage(0)
                         transform: Translate { y: (1 - card.stage(0)) * 10 }
                     }
@@ -220,7 +219,7 @@ PanelWindow {
                                     { keys: Services.Shortcuts.keyOf("browser"),  what: Services.I18n.t("intro.front.browser") },
                                     { keys: Services.Shortcuts.keyOf("files"),    what: Services.I18n.t("intro.front.files") },
                                     { keys: Services.Shortcuts.keyOf("settings"), what: Services.I18n.t("intro.front.settings") },
-                                    { keys: Services.Shortcuts.keyOf("clipboard"), what: Services.I18n.t("intro.key.clipboard") }
+                                    { keys: Services.Shortcuts.keyOf("wallpaper"), what: Services.I18n.t("intro.key.wallpaper") }
                                 ]
                                 delegate: RowLayout {
                                     required property var modelData
@@ -344,8 +343,8 @@ PanelWindow {
                                         textFormat: Text.StyledText
                                         color: modelData.group !== "" ? Services.Colors.ghost
                                                                       : Services.Colors.snow
-                                        font.pixelSize: modelData.group !== ""
-                                            ? Services.Sizes.fsCaption : Services.Sizes.fsBody
+                                        // Read as prose, so bigger than a list row.
+                                        font.pixelSize: modelData.group !== "" ? 12 : 14
                                         font.bold: modelData.group !== ""
                                         font.letterSpacing: modelData.group !== "" ? 1.4 : 0
                                         font.family: "JetBrainsMono NF"
@@ -363,7 +362,7 @@ PanelWindow {
                                 visible: Services.Release.notes.length === 0
                                 text: Services.I18n.t("intro.news.empty")
                                 color: Services.Colors.mist
-                                font.pixelSize: Services.Sizes.fsBody
+                                font.pixelSize: 14
                                 font.family: "JetBrainsMono NF"
                             }
                         }
