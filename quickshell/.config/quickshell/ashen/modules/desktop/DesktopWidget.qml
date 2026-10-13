@@ -86,6 +86,9 @@ Item {
     // …and can what it shows be framed by hand? Same arrangement: the button
     // that turns it on sits outside the widget, with the grips.
     property bool croppable: false
+    // While arranging, a press anywhere on a widget is a drag. Only a widget
+    // whose body is itself arranged by hand (the picture's framing) keeps it.
+    property bool bodyWhileEditing: false
 
     // Widgets with something to press say so: the wallpaper layer is deaf by
     // default (a click on the desktop has to reach the desktop), so it cuts a
@@ -148,6 +151,9 @@ Item {
         // there to be pulled. Items that are not MouseAreas do not take events,
         // so dragging the widget by its plate still works.
         z: 1
+        // Controls inside (a calendar's day cells, media buttons) took the
+        // press and the widget could only be grabbed by its rim.
+        enabled: !root.editing || root.bodyWhileEditing
         // Measured from the FIRST child -- what the widget draws -- and never
         // from childrenRect. Anything else in here (an overlay filling the box)
         // is sized BY the box, so measuring the box by it is a loop: shrink the

@@ -51,6 +51,7 @@ DesktopWidget {
     // slot: a control sitting on the picture covers the thing being framed.
     resizable: true
     croppable: true
+    bodyWhileEditing: true
 
     ClippingRectangle {
         id: frame

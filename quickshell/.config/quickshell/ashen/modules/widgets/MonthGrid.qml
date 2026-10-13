@@ -82,6 +82,8 @@ Grid {
             MouseArea {
                 id: dayHover
                 anchors.fill: parent
+                // A grid that only shows the month must not take the press.
+                enabled: root.interactive
                 hoverEnabled: root.interactive && parent.isValid
                 cursorShape: Qt.PointingHandCursor
                 onClicked: if (root.interactive && parent.isValid && parent.level >= 0) root.picked(parent.day)
