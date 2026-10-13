@@ -37,6 +37,17 @@ Rectangle {
     scale: Services.Sizes.hoverScale(chip.hovered, chip.pressed)
     Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
+    // A name shows at once; a state word ("Searching", "Off") waits, so it
+    // does not flash in before the name arrives and its unroll is seen.
+    readonly property string statusWord: (Services.Network.wifiSsid !== "" || Services.Network.ethConnection !== "") ? ""
+        : Services.Network.wifiEnabled ? Services.I18n.t("net.searching") : Services.I18n.t("net.disabled")
+    property string shownStatus: ""
+    onStatusWordChanged: {
+        if (root.statusWord === "") { statusDelay.stop(); root.shownStatus = "" }
+        else statusDelay.restart()
+    }
+    Timer { id: statusDelay; interval: 1800; running: true; onTriggered: root.shownStatus = root.statusWord }
+
     SystemChip {
         id: chip
         anchors.centerIn: parent
@@ -56,8 +67,8 @@ Rectangle {
         label: root.content === "icon" ? ""
              : root.content === "compact" ? (Services.Network.wifiSsid !== "" ? Services.Network.wifiSignal + "%" : "")
              : Services.Network.wifiSsid !== "" ? Services.Network.wifiSsid
-             : (Services.Network.ethConnection !== "" ? Services.Network.ethDevice
-             : (Services.Network.wifiEnabled ? Services.I18n.t("net.searching") : Services.I18n.t("net.disabled")))
+             : Services.Network.ethConnection !== "" ? Services.Network.ethDevice
+             : root.shownStatus
         onActivated: {
             Services.AppState.networkTab = "wifi"
             Services.AppState.togglePanel("networkVisible")

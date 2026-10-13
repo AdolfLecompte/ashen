@@ -78,8 +78,17 @@ PanelWindow {
         }
     }
 
+    // A password asked for a network you walked away from must not wait
+    // there for the next time the panel or the scan opens.
+    function dropAsk() {
+        askDelay.stop()
+        root.showConnectDialog = false
+        root.password = ""
+        root.showPassword = false
+    }
+
     onShownChanged: {
-        if (!shown) { closeDelay.restart(); return }
+        if (!shown) { root.dropAsk(); closeDelay.restart(); return }
         root.refreshNetworks()
         root.refreshKnown()
         root.rescan()
@@ -515,7 +524,7 @@ PanelWindow {
                                     root.showPassword = false
                                     askDelay.restart()
                                 }
-                                onScanClosed: root.refreshNetworks()
+                                onScanClosed: { root.dropAsk(); root.refreshNetworks() }
 
                                 nodes: graph.knownInRange.map(n => ({
                                     id: n.ssid,

@@ -37,6 +37,17 @@ Rectangle {
     scale: Services.Sizes.hoverScale(chip.hovered, chip.pressed)
     Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
 
+    // A name shows at once; a state word ("Searching", "Off") waits, so it
+    // does not flash in before the name arrives and its unroll is seen.
+    readonly property string statusWord: Services.Network.btDevice !== "" ? ""
+        : Services.Network.btEnabled ? Services.I18n.t("net.scanning") : Services.I18n.t("net.disabled")
+    property string shownStatus: ""
+    onStatusWordChanged: {
+        if (root.statusWord === "") { statusDelay.stop(); root.shownStatus = "" }
+        else statusDelay.restart()
+    }
+    Timer { id: statusDelay; interval: 1800; running: true; onTriggered: root.shownStatus = root.statusWord }
+
     SystemChip {
         id: chip
         anchors.centerIn: parent
@@ -52,8 +63,8 @@ Rectangle {
         glyph: Services.Network.btDevice !== "" ? "\ue1a8"
              : (Services.Network.btEnabled ? "\ue1a7" : "\ue1a9")
         label: root.content === "icon" ? ""
-             : (Services.Network.btDevice !== "" ? Services.Network.btDevice
-             : (Services.Network.btEnabled ? Services.I18n.t("net.scanning") : Services.I18n.t("net.disabled")))
+             : Services.Network.btDevice !== "" ? Services.Network.btDevice
+             : root.shownStatus
         onActivated: Services.AppState.togglePanel("bluetoothVisible")
     }
 }
