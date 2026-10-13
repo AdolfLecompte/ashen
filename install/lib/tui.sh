@@ -8,7 +8,9 @@ C_OK=$'\e[32m'; C_BAD=$'\e[31m'; C_DIM=$'\e[2m'
 # The terminal is borrowed, not taken: every exit path gives it back. Without the
 # trap, a Ctrl-C mid-install leaves the user typing blind into a shell with no
 # echo. stty fails harmlessly when there is no tty, which is how the probes run.
-_tui_open()  { printf '\e[?25l'; stty -echo 2>/dev/null; trap _tui_close EXIT INT TERM; }
+# INT and TERM must EXIT: a bare handler on them restored the terminal and then
+# carried on installing.
+_tui_open()  { printf '\e[?25l'; stty -echo 2>/dev/null; trap _tui_close EXIT; trap 'exit 130' INT TERM; }
 _tui_close() { stty echo 2>/dev/null; printf '\e[?25h\n'; }
 
 # Redraw in place: up N lines, and every line clears itself as it is rewritten --
@@ -51,8 +53,11 @@ tui_steps() {
 
 # Cut to the terminal, never wrapped: a wrapped line breaks the redraw, because
 # what went down two rows only comes back up one.
+# Measures plain text only: escapes counted as width cut lines short and could
+# split a colour sequence in half. `reserve` is what the caller draws before it.
 _tui_fit() {
-    local text=$1 max=$(( ${COLUMNS:-$(tput cols 2>/dev/null || echo 80)} - 6 ))
+    local text=$1 max=$(( ${COLUMNS:-$(tput cols 2>/dev/null || echo 80)} - 6 - ${2:-0} ))
+    [ "$max" -lt 8 ] && max=8
     [ "${#text}" -le "$max" ] && { printf '%s' "$text"; return; }
     printf '%s…' "${text:0:max-1}"
 }
@@ -68,7 +73,7 @@ _tui_render() {
             bad) mark="${C_BAD}✗${RESET}" ;;
             *)   mark="${C_DIM}·${RESET}" ;;
         esac
-        _tui_line "$(_tui_fit "  $mark $(printf '%-14s' "${TUI_STEPS[$i]}")${C_DIM}${TUI_NOTE[$i]}${RESET}")"
+        _tui_line "  $mark $(printf '%-14s' "${TUI_STEPS[$i]}")${C_DIM}$(_tui_fit "${TUI_NOTE[$i]}" 18)${RESET}"
     done
 }
 
@@ -91,9 +96,22 @@ tui_note() {
 tui_say() {
     if [ "$TUI_LIVE" -eq 1 ]; then
         _tui_up "${#TUI_STEPS[@]}"
-        _tui_line "$*"
+        _tui_line "$(_tui_fit "$*")"
         _tui_render first
     else
         printf '  %s\n' "$*"
     fi
+}
+
+# Runs one step's function and lifts what it printed ABOVE the surface. Printed
+# straight through, those lines pushed the surface down and the next redraw
+# climbed back over them. In a subshell, so only for steps that set nothing.
+tui_run() {
+    local out rc line
+    out=$("$@" 2>&1); rc=$?
+    while IFS= read -r line; do
+        line="${line#"${line%%[![:space:]]*}"}"
+        [ -n "$line" ] && tui_say "$line"
+    done <<<"$out"
+    return $rc
 }

@@ -30,8 +30,8 @@ for i in 1 2 3 4 5; do
 done
 say ok "ramp never goes backwards"
 
-# fastfetch prints the same rows, modulo its $1 colour token and indentation.
-strip() { sed 's/^\$1//' | grep '[░▒▓█]' | tr -d ' '; }
+# fastfetch prints the same rows, modulo its $1/$2 colour tokens and indentation.
+strip() { sed 's/\$[12]//g' | grep '[░▒▓█]' | tr -d ' '; }
 a=$(printf '%s\n' "$got" | strip)
 b=$(strip < fastfetch/.config/fastfetch/ashen.txt)
 [ "$a" = "$b" ] && say ok "fastfetch matches" || { say FAIL "fastfetch differs"; fail=1; }

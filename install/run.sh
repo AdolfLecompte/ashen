@@ -54,11 +54,14 @@ if [ "$ASHEN_DRY" -eq 0 ]; then
     while true; do sudo -n true; sleep 60; kill -0 "$$" 2>/dev/null || exit; done 2>/dev/null &
 fi
 
-[ "$ASHEN_DRY" -eq 0 ] && _tui_open
+# Only a terminal is borrowed: on a pipe the escapes are just noise in a log.
+[ "$ASHEN_DRY" -eq 0 ] && [ -t 1 ] && _tui_open
 
 # The mark first, not only at the end: what you are installing should be on the
 # screen while it installs, and a curl into bash has shown nothing until now.
-printf '\n'; ashen_logo; printf '\n'
+printf '\n'
+if [ -t 1 ]; then ashen_logo_tinted; else ashen_logo; fi
+printf '\n'
 
 tui_steps "packages" "dotfiles" "login screen" "services" "folders"
 
@@ -68,6 +71,7 @@ pkgs_drop_pulseaudio
 pkgs_install "sudo pacman -S" "${PKGS_OFFICIAL[@]}"
 
 # base-devel and git are in place now, which is what building a helper needs.
+tui_note 0 "AUR helper"
 pkgs_bootstrap_helper
 if helper=$(pkgs_aur_helper); then
     pkgs_retry_from_aur "$helper"
@@ -75,25 +79,21 @@ if helper=$(pkgs_aur_helper); then
 elif [ "$ASHEN_DRY" -eq 1 ]; then
     printf '  would install from the AUR: %s\n' "${PKGS_AUR[*]}"
 else
-    printf '  no AUR helper and yay-bin could not be built; skipping:\n'
-    printf '    %s\n' "${PKGS_AUR[@]}"
+    tui_say "${C_BAD}✗${RESET} no AUR helper and yay-bin could not be built; skipped: ${PKGS_AUR[*]}"
 fi
 
-tui_step 0 ok
+# A step that went wrong says so: every step used to end on a tick.
+tui_note 0 "${#PKG_OK[@]} new · ${#PKG_HAVE[@]} there · ${#PKG_FAILED[@]} failed"
+if [ "${#PKG_FAILED[@]}" -eq 0 ]; then tui_step 0 ok; else tui_step 0 bad; fi
 tui_step 1 run
-dots_place
-
-tui_step 1 ok
+if tui_run dots_place; then tui_step 1 ok; else tui_step 1 bad; fi
 tui_step 2 run
-sddm_install
-
-tui_step 2 ok
+if tui_run sddm_install; then tui_step 2 ok; else tui_step 2 bad; fi
 tui_step 3 run
-pkgs_services
-
-pkgs_video_group
-
-tui_step 3 ok
+ok=1
+tui_run pkgs_services || ok=0
+tui_run pkgs_video_group || ok=0
+if [ "$ok" -eq 1 ]; then tui_step 3 ok; else tui_step 3 bad; fi
 tui_step 4 run
 # Named, not guessed: whatever the system locale calls the user's folders, the
 # wallpaper picker and the screenshot keybind look here.

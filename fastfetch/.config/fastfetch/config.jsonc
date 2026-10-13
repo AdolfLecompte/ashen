@@ -3,7 +3,7 @@
   "logo": {
     "type": "file",
     "source": "~/.config/fastfetch/ashen.txt",
-    "color": { "1": "blue" },
+    "color": { "1": "blue", "2": "90" },
     "padding": {
       "top": 5,
       "left": 1,

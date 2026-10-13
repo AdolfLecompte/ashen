@@ -33,7 +33,8 @@ dots_place() {
             | sort
         return 0
     fi
-    ASHEN_CONFIG_SRC="$src" "$setup" "${args[@]}"
+    # Its "log out" hint is dropped: the installer ends by asking for a reboot.
+    ASHEN_CONFIG_SRC="$src" "$setup" "${args[@]}" > >(grep -v 'log out and back') 2>&1
 }
 
 # Run directly as well as sourced, so the probe can drive it.

@@ -167,14 +167,16 @@ pkgs_retry_from_aur() {
 }
 
 pkgs_services() {
-    local svc
+    local svc bad=0
     for svc in "${SERVICES[@]}"; do
         if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
             printf '  would enable   %s\n' "$svc"; continue
         fi
         systemctl is-enabled --quiet "$svc" 2>/dev/null && continue
-        sudo systemctl enable --now "$svc" >>"$ASHEN_LOG" 2>&1
+        sudo systemctl enable --now "$svc" >>"$ASHEN_LOG" 2>&1 \
+            || { printf '  could not enable %s — see the log\n' "$svc"; bad=1; }
     done
+    return $bad
 }
 
 # /dev/video* is root:video rw----, so a webcam in a browser, in Discord, or in
@@ -186,7 +188,8 @@ pkgs_video_group() {
     if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
         printf '  would add %s to the video group\n' "$USER"; return 0
     fi
-    sudo usermod -aG video "$USER" >>"$ASHEN_LOG" 2>&1
+    sudo usermod -aG video "$USER" >>"$ASHEN_LOG" 2>&1 \
+        || { printf '  could not add %s to the video group\n' "$USER"; return 1; }
 }
 
 # What happened, named with its cause and with the command to retry it.

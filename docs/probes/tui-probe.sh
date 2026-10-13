@@ -7,10 +7,21 @@ say() { printf '%-4s %s\n' "$1" "$2"; }
 
 bash -n install/lib/tui.sh 2>/dev/null && say ok "syntax" || { say FAIL "syntax"; exit 1; }
 
-# The trap covers all three signals, not just EXIT: a Ctrl-C mid-install is the
-# case that leaves a user typing blind.
-grep -qE 'trap[[:space:]]+_tui_close[[:space:]]+EXIT[[:space:]]+INT[[:space:]]+TERM' install/lib/tui.sh \
-  && say ok "trap on EXIT INT TERM" || { say FAIL "trap misses a signal"; fail=1; }
+# Ctrl-C ENDS the install: a handler on INT that only restored the terminal let
+# the run carry on installing.
+out=$(bash -c 'source install/lib/tui.sh; _tui_open; kill -INT $$; echo AFTER' 2>&1)
+printf '%s' "$out" | grep -q AFTER \
+  && { say FAIL "install carries on after Ctrl-C"; fail=1; } || say ok "Ctrl-C stops the run"
+
+# What a step prints lands above the surface, never through it.
+out=$(bash -c 'source install/lib/tui.sh; TUI_LIVE=1; TUI_STEPS=(a b); TUI_STATE=(idle idle); TUI_NOTE=("" "");
+               f() { echo "  hello"; return 3; }; tui_run f; echo "rc=$?"' 2>&1)
+printf '%s' "$out" | grep -q 'rc=3' && printf '%s' "$out" | grep -q $'\e\[K'"hello" \
+  && say ok "tui_run lifts output, keeps rc" || { say FAIL "tui_run"; fail=1; }
+
+# A long note is cut on its visible text, never through an escape sequence.
+n=$(bash -c 'source install/lib/tui.sh; COLUMNS=40; _tui_fit "$(printf "x%.0s" {1..80})" 18' | wc -m)
+[ "$n" -le 16 ] && say ok "notes fit the terminal ($n)" || { say FAIL "note too long ($n)"; fail=1; }
 
 # A run that dies mid-draw still emits the restoring sequences.
 out=$(bash -c 'source install/lib/tui.sh; _tui_open; _tui_line hi; kill -INT $$' 2>&1)
