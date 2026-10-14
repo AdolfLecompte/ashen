@@ -20,7 +20,7 @@ Singleton {
         "panelStyle", "themeMode", "desktopLayout",
         "barLength", "barOutline", "workspaceStyle", "barContent",
         "dockEnabled", "dockEdge",
-        "workspaceCount", "workspaceHideEmpty", "barAutohide", "panelOutline", "widgetOutline",
+        "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "barAutohide", "panelOutline", "widgetOutline",
         "dockAutohide", "dockSmart", "dockGlass", "dockIconSize"
     ]
 
@@ -36,7 +36,7 @@ Singleton {
         visualizer: true, panelStyle: "morph", desktopLayout: "",
         barLength: 100, barOutline: false, workspaceStyle: "icons", barContent: "",
         dockEnabled: true, dockEdge: "bottom",
-        workspaceCount: 5, workspaceHideEmpty: false, barAutohide: false, panelOutline: false, widgetOutline: false,
+        workspaceCount: 5, workspaceHideEmpty: false, workspaceTicks: false, barAutohide: false, panelOutline: false, widgetOutline: false,
         dockAutohide: true, dockSmart: false, dockGlass: false, dockIconSize: 44
     })
 
@@ -60,6 +60,7 @@ Singleton {
         dockEdge: Prefs.dockEdge,
         workspaceCount: Prefs.workspaceCount,
         workspaceHideEmpty: Prefs.workspaceHideEmpty,
+        workspaceTicks: Prefs.workspaceTicks,
         barAutohide: Prefs.barAutohide,
         panelOutline: Prefs.panelOutline,
         widgetOutline: Prefs.widgetOutline,

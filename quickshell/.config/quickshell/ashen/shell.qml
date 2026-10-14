@@ -398,8 +398,10 @@ ShellRoot {
             Services.Prefs.barPosition = order[(i + 1) % order.length]
         }
         // What the workspace chips show: icons, numbers or dots.
+        // A tick per window under each workspace chip.
+        function ticks() { Services.Prefs.workspaceTicks = !Services.Prefs.workspaceTicks }
         function workspaces(name: string) {
-            if (["icons", "numbers", "dots", "pacman", "count", "kanji"].indexOf(name) === -1) return
+            if (["icons", "numbers", "dots", "pacman", "kanji"].indexOf(name) === -1) return
             Services.Prefs.workspaceStyle = name
         }
         // How much of the edge it takes, 50-100 %.

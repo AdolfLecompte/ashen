@@ -30,8 +30,10 @@ Item {
     readonly property string glyphPacman: "\udb82\udfaf"
     readonly property string glyphGhost: "\udb80\udea0"
     readonly property string glyphPellet: "\u2022"
-    // The number, with one tick under it per window.
-    readonly property bool counted: root.wsStyle === "count"
+    // A tick per window under each chip: a switch, not a style.
+    readonly property bool counted: Services.Prefs.workspaceTicks
+    // What an icons chip shows when nothing is open on it: an empty ring.
+    readonly property string glyphEmpty: "\ue836"
     readonly property var kanjiDigits: ["\u3007", "\u4e00", "\u4e8c", "\u4e09", "\u56db", "\u4e94",
                                         "\u516d", "\u4e03", "\u516b", "\u4e5d", "\u5341"]
     function kanjiOf(n) {
@@ -290,6 +292,23 @@ Item {
             Behavior on y { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
         }
 
+        // Pac-Man is the indicator in his style: ONE of him, riding the
+        // indicator's own sliding position.
+        Text {
+            id: pac
+            z: 2
+            visible: root.pacman && !pill.showSpecial
+            opacity: pill.contentOpacity
+            textFormat: Text.PlainText
+            text: root.glyphPacman
+            color: Services.Colors.ghost
+            font.pixelSize: 18
+            font.family: "JetBrainsMono NF"
+            readonly property bool ticked: root.counted && Services.Windows.windowCount(root.lastNormalId) > 0
+            x: slideIndicator.x + (slideIndicator.width - width) / 2
+            y: slideIndicator.y + (slideIndicator.height - height) / 2 + (pac.ticked ? -3 : 0)
+        }
+
         BarStrip {
             id: wsRow
             anchors.centerIn: parent
@@ -317,10 +336,10 @@ Item {
                     // height: stretching the width made the one you stand on a
                     // bar lying across a column only one pill wide.
                     readonly property int along: root.alongOf(wsId, isActive)
-                    readonly property int wins: root.counted ? Math.min(3, Services.Windows.windowCount(wsId)) : 0
+                    readonly property int wins: (root.counted && !root.marks) ? Math.min(3, Services.Windows.windowCount(wsId)) : 0
                     readonly property color ink: root.pacman
                         ? (isActive ? Services.Colors.ghost : warm ? Services.Colors.snow
-                           : hasWindows ? Services.Colors.mist : Services.Colors.ash)
+                           : winCount > 0 ? Services.Colors.mist : Services.Colors.ash)
                         : isActive
                                  ? (!Services.Pills.rings ? Services.Colors.accentText : Services.Colors.ghost)
                              : warm ? Services.Colors.snow
@@ -391,16 +410,20 @@ Item {
                     // A workspace with something on it shows what that is; an
                     // empty one keeps its number, which is the only thing left
                     // to identify it by.
-                    readonly property string appIcon: root.wsStyle === "icons"
-                        ? Services.Windows.workspaceIcon(wsId) : ""
+                    readonly property string appIcon: root.wsStyle !== "icons" ? ""
+                        : Services.Windows.workspaceIcon(wsId) !== "" ? Services.Windows.workspaceIcon(wsId)
+                        : root.glyphEmpty
 
                     Text {
                         textFormat: Text.PlainText
                         visible: !root.marks
                         anchors.centerIn: parent
                         anchors.verticalCenterOffset: parent.wins > 0 ? -3 : 0
-                        text: root.pacman ? (parent.isActive ? root.glyphPacman
-                                             : parent.hasWindows ? root.glyphGhost : root.glyphPellet)
+                        // The active chip is empty: Pac-Man himself slides over it.
+                        // Real windows, not Hyprland's list: it keeps the workspace you
+                        // just left for a moment, and that read as a ghost there.
+                        text: root.pacman ? (parent.isActive ? ""
+                                             : parent.winCount > 0 ? root.glyphGhost : root.glyphPellet)
                             : parent.appIcon !== "" ? parent.appIcon
                             : root.kanji ? root.kanjiOf(wsId) : wsId
                         color: parent.ink
@@ -452,11 +475,13 @@ Item {
                     readonly property string shortName: modelData.name.replace("special:", "")
                     readonly property bool isShown: modelData.name === root.shownSpecial
                     // Same style as the numbered row: a glyph, an initial, or a dot.
-                    readonly property bool lettered: root.wsStyle === "numbers" || root.counted
-                    readonly property string label: lettered ? shortName.charAt(0).toUpperCase()
-                        : root.pacman ? (isShown ? root.glyphPacman : root.glyphGhost)
+                    // Every style shows the special's own icon, so it can be told
+                    // apart -- a dot or a number would not say which one it is.
+                    // Pac-Man stands on the one that is open.
+                    readonly property bool eaten: root.pacman && isShown
+                    readonly property string label: eaten ? root.glyphPacman
                         : root.kanji ? root.specialKanji(shortName) : root.specialIcon(shortName)
-                    readonly property int along: root.marks ? (isShown ? root.dotOnW : root.dotW) : root.innerH
+                    readonly property int along: root.innerH
                     readonly property int wins: root.counted ? Math.min(3, Services.Windows.windowCount(modelData.id)) : 0
                     readonly property color ink: root.pacman
                         ? (isShown ? Services.Colors.ghost : warm ? Services.Colors.snow : Services.Colors.mist)
@@ -477,7 +502,8 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         radius: root.innerR
-                        visible: !root.bare
+                        // Pac-Man draws no blocks, not even under a special.
+                        visible: !root.pacman
                         color: Services.Pills.rings ? "transparent"
                              : parent.isShown ? Services.Colors.ghost : Services.Colors.fillRest
                         border.width: (Services.Pills.rings && parent.isShown)
@@ -488,33 +514,16 @@ Item {
                         Behavior on color { Widgets.ColorAnim {} }
                     }
 
-                    Rectangle {
-                        visible: root.marks
-                        anchors.centerIn: parent
-                        readonly property int cross: root.dotH
-                        readonly property int rest: root.dotH
-                        width: root.vertical ? cross : (parent.isShown ? parent.width : rest)
-                        height: root.vertical ? (parent.isShown ? parent.height : rest) : cross
-                        radius: Math.min(width, height) / 2
-                        border.width: (Services.Pills.rings && !parent.isShown) ? Services.Sizes.outlineW : 0
-                        border.color: Services.Colors.fillOutline
-                        color: parent.isShown ? Services.Colors.ghost
-                             : parent.warm ? Services.Colors.snow
-                             : Services.Pills.rings ? "transparent" : Services.Colors.ash
-                        Behavior on color { Widgets.ColorAnim {} }
-                    }
-
                     Text {
                         textFormat: Text.PlainText
-                        visible: !root.marks
                         anchors.centerIn: parent
                         anchors.verticalCenterOffset: parent.wins > 0 ? -3 : 0
                         text: parent.label
                         color: parent.ink
-                        font.pixelSize: parent.lettered ? 13 : root.kanji ? 14 : 18
-                        font.family: (parent.lettered || root.pacman) ? "JetBrainsMono NF"
+                        font.pixelSize: root.kanji ? 14 : 18
+                        font.family: parent.eaten ? "JetBrainsMono NF"
                                    : root.kanji ? "Noto Sans CJK JP" : "Material Symbols Rounded"
-                        font.bold: parent.lettered || root.kanji
+                        font.bold: root.kanji
                         z: 1
                         // Handed over to the preview's caption while it is open
                         opacity: Services.AppState.wsPreviewMorphing

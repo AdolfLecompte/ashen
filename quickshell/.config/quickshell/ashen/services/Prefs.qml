@@ -157,6 +157,8 @@ Singleton {
     property int workspaceCount: 5
     // Drop chips of empty workspaces you are not standing on.
     property bool workspaceHideEmpty: false
+    // One tick per window under each workspace, whatever the style.
+    property bool workspaceTicks: false
 
     // WHAT a pill shows, and HOW it is drawn, are two questions: a pill can be
     // compact and made of glass at the same time. Two packed strings, beside the
@@ -367,7 +369,8 @@ Singleton {
     property string workspaceStyle: "icons"
     // Lines and windows were retired; a saved one shows as its nearest kin.
     readonly property string workspaceLook: workspaceStyle === "lines" ? "dots"
-        : workspaceStyle === "windows" ? "icons" : workspaceStyle
+        : workspaceStyle === "windows" ? "icons"
+        : workspaceStyle === "count" ? "numbers" : workspaceStyle
     // Kept so a saved `false` still means numbers on the first run after this.
 
     // Idle timeouts in seconds, 0 = never. The Idle service turns these into
@@ -440,7 +443,7 @@ Singleton {
         "toastSeconds", "maxToasts", "toastWidth", "osdMs", "lockIntro", "switcherScope", "workspaceMode", "hiddenPills", "barLayout", "barContent",
         "barOutline", "panelOutline", "widgetOutline", "dockPins", "dockEdge",
         "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockIconSize",
-        "workspaceCount", "workspaceHideEmpty", "displayLayout", "desktopLayout", "appTerminal",
+        "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications",

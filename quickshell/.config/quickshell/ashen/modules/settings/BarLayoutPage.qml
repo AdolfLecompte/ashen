@@ -488,7 +488,6 @@ Section {
                                 { id: "dots",    label: Services.I18n.t("settings.bar.wsDots"), sample: "\u25cf \u2501 \u25cf" },
                                 { id: "pacman",  label: Services.I18n.t("settings.bar.wsPacman"),
                                   sample: "\udb82\udfaf \u2022 \udb80\udea0" },
-                                { id: "count",   label: Services.I18n.t("settings.bar.wsCount"), sample: "1 2", ticks: true },
                                 // Needs a CJK font; greyed out without one.
                                 { id: "kanji",   label: Services.I18n.t("settings.bar.wsKanji"),
                                   sample: "\u4e00 \u4e8c", font: "Noto Sans CJK JP",
@@ -507,15 +506,6 @@ Section {
                                                      ? parent.modelData.font : "JetBrainsMono NF"
                                         font.pixelSize: 14
                                         font.bold: true
-                                        color: parent.active ? Services.Colors.accentText : Services.Colors.snow
-                                    }
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        visible: !!(parent.modelData && parent.modelData.ticks)
-                                        text: "\u2022  \u2022\u2022"
-                                        font.family: "JetBrainsMono NF"
-                                        font.pixelSize: 7
                                         color: parent.active ? Services.Colors.accentText : Services.Colors.snow
                                     }
                                     Text {
@@ -583,6 +573,24 @@ Section {
                             Toggle {
                                 checked: Services.Prefs.workspaceHideEmpty
                                 onToggled: Services.Prefs.workspaceHideEmpty = !Services.Prefs.workspaceHideEmpty
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            visible: lookCard.modelData === "workspaces"
+                            spacing: 8
+                            Text {
+                                textFormat: Text.PlainText
+                                Layout.fillWidth: true
+                                text: Services.I18n.t("settings.layout.wsTicks")
+                                color: Services.Colors.ash
+                                font.pixelSize: Services.Sizes.fsMeta
+                                font.family: "JetBrainsMono NF"
+                            }
+                            Toggle {
+                                checked: Services.Prefs.workspaceTicks
+                                onToggled: Services.Prefs.workspaceTicks = !Services.Prefs.workspaceTicks
                             }
                         }
                     }
