@@ -1,5 +1,25 @@
 # Changelog
 
+## 3.3.1
+
+### Changed
+- **Workspaces.** Counting windows is now a switch for every style instead
+  of a style of its own: Settings > Bar > Layout > Workspaces > *Count
+  windows*, or `qs -c ashen ipc call bar ticks`. Dots leave it out, the ticks
+  would sit on the dot.
+- Special workspaces show their own icon (music, discord, notes, fav) in every
+  style but kanji, so a dot or a number no longer hides which one is open. In
+  Pac-Man they stand without a block behind them and the open one becomes
+  Pac-Man.
+- In the icons style an empty workspace shows an empty ring instead of its
+  number.
+
+### Fixed
+- Pac-Man slides from workspace to workspace like the other styles'
+  indicator, instead of blinking from one chip to the next.
+- A ghost stands only where there really are windows: the workspace you had
+  just left showed one for a moment.
+
 ## 3.3.0
 
 ### Added

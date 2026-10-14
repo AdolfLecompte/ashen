@@ -159,9 +159,10 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   bluetooth, sound, battery, CPU and memory, power. Every capsule can be dragged
   to either end or the centre of any of the four edges, and each one chooses how
   much it says — `full`, `compact` or `icon`, offered only where they differ.
-  Four shapes for the bar itself — pills, island, solid, framed — and six
-  styles for the workspaces: icons, numbers, dots, Pac-Man, a tick per window,
-  or kanji.
+  Four shapes for the bar itself — pills, island, solid, framed — and five
+  styles for the workspaces: icons, numbers, dots, Pac-Man or kanji, each with
+  an optional tick per window. Special workspaces keep their own icon in all
+  of them.
 - **Look** — every surface solid or glass (*Blur*: the terminal's own
   translucency, with Hyprland's blur behind), and one outline switch for the
   whole shell or part by part.
@@ -366,7 +367,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.3.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
+3.3.1 — what changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
