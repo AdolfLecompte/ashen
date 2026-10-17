@@ -353,7 +353,7 @@
   "settings.dock.fixed": "Always",
   "settings.dock.hide": "Hidden",
   "settings.dock.smart": "Auto",
-  "settings.dock.hint": "Right-click an icon to pin it",
+  "settings.dock.hint": "Drag to reorder, or onto the bottom to unpin. Right-click a dock icon to pin it.",
   "settings.dock.enable": "Show the dock",
   "settings.dock.barEdge": "The bar already holds one edge, so the dock cannot take it.",
   "settings.dock.outline": "Outline",
@@ -529,5 +529,14 @@
   "kb.sec.system": "System",
   "kb.sec.audioandbrightness": "Audio and brightness",
   "kb.sec.media": "Media",
-  "settings.input.another": "another shortcut"
+  "settings.input.another": "another shortcut",
+  "desktop.w.lyrics": "Lyrics",
+  "shape.page": "Page",
+  "shape.line": "Line",
+  "shape.focus": "Focus",
+  "settings.system.lid": "Closing the lid",
+  "settings.system.lid.suspend": "Suspend",
+  "settings.system.lid.lock": "Lock only",
+  "settings.system.lid.nothing": "Nothing",
+  "settings.dock.dropUnpin": "Drop here to unpin"
 }

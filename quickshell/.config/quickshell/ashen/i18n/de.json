@@ -353,7 +353,7 @@
   "settings.dock.fixed": "Immer",
   "settings.dock.hide": "Versteckt",
   "settings.dock.smart": "Auto",
-  "settings.dock.hint": "Rechtsklick auf ein Symbol heftet es an",
+  "settings.dock.hint": "Ziehen zum Sortieren, nach unten zum Lösen. Rechtsklick auf ein Dock-Symbol heftet es an.",
   "settings.dock.enable": "Dock anzeigen",
   "settings.dock.barEdge": "Die Leiste belegt bereits eine Kante, der Dock kann sie nicht übernehmen.",
   "settings.dock.outline": "Kontur",
@@ -529,5 +529,14 @@
   "kb.sec.system": "System",
   "kb.sec.audioandbrightness": "Ton und Helligkeit",
   "kb.sec.media": "Medien",
-  "settings.input.another": "einem anderen Kürzel"
+  "settings.input.another": "einem anderen Kürzel",
+  "desktop.w.lyrics": "Liedtext",
+  "shape.page": "Seite",
+  "shape.line": "Zeile",
+  "shape.focus": "Fokus",
+  "settings.system.lid": "Beim Zuklappen",
+  "settings.system.lid.suspend": "Ruhezustand",
+  "settings.system.lid.lock": "Nur sperren",
+  "settings.system.lid.nothing": "Nichts",
+  "settings.dock.dropUnpin": "Hier ablegen zum Lösen"
 }

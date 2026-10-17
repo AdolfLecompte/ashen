@@ -353,7 +353,7 @@
   "settings.dock.fixed": "Siempre",
   "settings.dock.hide": "Oculto",
   "settings.dock.smart": "Auto",
-  "settings.dock.hint": "Clic derecho en un icono para anclarlo",
+  "settings.dock.hint": "Arrastra para ordenar, o abajo para quitar. Clic derecho en un icono del dock para anclarlo.",
   "settings.dock.enable": "Mostrar el dock",
   "settings.dock.barEdge": "La barra ya ocupa un borde, así que el dock no puede tomarlo.",
   "settings.dock.outline": "Contorno",
@@ -529,5 +529,14 @@
   "kb.sec.system": "Sistema",
   "kb.sec.audioandbrightness": "Sonido y brillo",
   "kb.sec.media": "Multimedia",
-  "settings.input.another": "otro atajo"
+  "settings.input.another": "otro atajo",
+  "desktop.w.lyrics": "Letra",
+  "shape.page": "Página",
+  "shape.line": "Línea",
+  "shape.focus": "Foco",
+  "settings.system.lid": "Al cerrar la tapa",
+  "settings.system.lid.suspend": "Suspender",
+  "settings.system.lid.lock": "Solo bloquear",
+  "settings.system.lid.nothing": "Nada",
+  "settings.dock.dropUnpin": "Suéltala aquí para quitarla"
 }

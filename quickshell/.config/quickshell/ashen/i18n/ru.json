@@ -353,7 +353,7 @@
   "settings.dock.fixed": "Всегда",
   "settings.dock.hide": "Скрыт",
   "settings.dock.smart": "Авто",
-  "settings.dock.hint": "Правый клик по значку закрепляет его",
+  "settings.dock.hint": "Перетащите, чтобы упорядочить, или вниз, чтобы открепить. Правый клик по значку дока закрепляет его.",
   "settings.dock.enable": "Показывать док",
   "settings.dock.barEdge": "Панель уже занимает один край, поэтому док не может его занять.",
   "settings.dock.outline": "Контур",
@@ -529,5 +529,14 @@
   "kb.sec.system": "Система",
   "kb.sec.audioandbrightness": "Звук и яркость",
   "kb.sec.media": "Медиа",
-  "settings.input.another": "другим сочетанием"
+  "settings.input.another": "другим сочетанием",
+  "desktop.w.lyrics": "Текст песни",
+  "shape.page": "Страница",
+  "shape.line": "Строка",
+  "shape.focus": "Фокус",
+  "settings.system.lid": "При закрытии крышки",
+  "settings.system.lid.suspend": "Сон",
+  "settings.system.lid.lock": "Только блокировка",
+  "settings.system.lid.nothing": "Ничего",
+  "settings.dock.dropUnpin": "Отпустите здесь, чтобы открепить"
 }
