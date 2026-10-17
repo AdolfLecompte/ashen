@@ -124,6 +124,7 @@ ShellRoot {
     IpcHandler {
         target: "dock"
         function toggle() { Services.Prefs.dockEnabled = !Services.Prefs.dockEnabled }
+        function autohide() { Services.Prefs.dockAutohide = !Services.Prefs.dockAutohide }
         function edge(side: string) {
             if (["top", "bottom", "left", "right"].indexOf(side) === -1) return
             Services.Prefs.dockEdge = side
@@ -134,6 +135,7 @@ ShellRoot {
         function list(): string {
             return "enabled=" + Services.Prefs.dockEnabled
                  + " edge=" + Services.Prefs.dockEdge
+                 + " autohide=" + Services.Prefs.dockAutohide
                  + " pins=" + Services.Prefs.dockPinList.join(",")
         }
     }

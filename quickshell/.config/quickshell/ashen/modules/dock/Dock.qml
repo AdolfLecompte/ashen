@@ -54,9 +54,12 @@ Scope {
             // back reflows the windows, and a reflow under the pointer can cost
             // the surface its hover for an instant, which reads as a shiver.
             Timer { id: stayOut; interval: 420 }
-            onRevealedChanged: if (revealed) stayOut.restart()
+            // Grace after leaving: overshooting the icons by a few pixels hid it
+            // at once, and only the 4 px sliver could bring it back.
+            Timer { id: linger; interval: 600 }
+            onRevealedChanged: revealed ? stayOut.restart() : linger.restart()
 
-            readonly property bool out: !dock.peeking || dock.revealed || stayOut.running
+            readonly property bool out: !dock.peeking || dock.revealed || stayOut.running || linger.running
             visible: Services.Prefs.dockEnabled && dock.out
 
             anchors {
@@ -72,8 +75,12 @@ Scope {
             exclusionMode: ExclusionMode.Normal
             exclusiveZone: Services.Prefs.dockAutohide ? 0 : dock.thick
             WlrLayershell.layer: Services.Prefs.dockAutohide ? WlrLayer.Overlay : WlrLayer.Top
+            // Input only on the plate: the rest of the edge-wide band ate the
+            // clicks meant for the windows under it.
+            mask: Region { item: plate }
 
             Rectangle {
+                id: plate
                 anchors.centerIn: parent
                 width: dock.vertical ? Services.Sizes.dockIcon + Services.Sizes.dockPad
                                      : row.width + Services.Sizes.dockPad * 2
