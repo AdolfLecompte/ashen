@@ -48,7 +48,7 @@ Singleton {
         let p = hm.split(":")
         let h = parseInt(p[0])
         if (Services.Prefs.clock24h) return p[0] + ":" + p[1]
-        let ap = h >= 12 ? I18n.locale.pmText : I18n.locale.amText
+        let ap = h >= 12 ? "PM" : "AM"
         let h12 = h % 12
         if (h12 === 0) h12 = 12
         return h12 + ":" + p[1] + " " + ap

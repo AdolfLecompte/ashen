@@ -28,8 +28,20 @@ Singleton {
 
     // Every face formats through here, and every one of these goes through
     // I18n.locale -- never the system's. The shell speaks one language.
-    function fmt(spec) { return root.now.toLocaleString(I18n.locale, spec) }
-    function fmtOf(date, spec) { return date.toLocaleString(I18n.locale, spec) }
+    function fmt(spec) { return root.fmtOf(root.now, spec) }
+    function fmtOf(date, spec) { return root.plainAmPm(date.toLocaleString(I18n.locale, spec)) }
+
+    // AM/PM in every language: the locale's own ("p. m.") is too wide for a pill.
+    // Swapped after formatting, since without an AP token Qt counts 24 hours.
+    function plainAmPm(text) {
+        const l = I18n.locale
+        let s = String(text)
+        for (const [loc, plain] of [[l.amText, "AM"], [l.pmText, "PM"]]) {
+            if (!loc || loc === plain) continue
+            s = s.split(loc.toUpperCase()).join(plain).split(loc).join(plain)
+        }
+        return s
+    }
 
     // Day and month names. Indexes are the JavaScript ones (0 = Sunday,
     // 0 = January), which is what QML's Locale takes too.
