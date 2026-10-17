@@ -3,6 +3,18 @@
 ## 3.3.1
 
 ### Added
+- **Choose which player the music card follows**, as in Caelestia: the
+  player's name sits between the times, and a click lists every player with
+  what it is playing; pick one and the card, its buttons, the bar and the
+  widgets follow it (`qs -c ashen ipc call media source` steps to the next).
+  Before, every surface took the first player and the other could not be
+  paused. Two tabs of one browser are still one player: the browser
+  publishes only the last one that played.
+- **Lyrics is a widget of its own**, no longer a shape of the music one:
+  reading the words cost the play button. Three shapes -- *Page* (the old
+  one, with the cover), *Line* (the line being sung and the next, for a
+  corner) and *Focus* (the line large in the middle, the ones around it dim).
+  A desktop that wore the lyrics shape gets the lyrics widget in its place.
 - The lock screen shows the music's wave along its top edge, at rest and
   while logging in -- the same one the bar draws.
 - **The installer asks three things first**, with the arrow keys: the shell's
@@ -13,6 +25,19 @@
   and Russian notes live in `i18n/changelog.<lang>.md`, English otherwise.
 
 ### Changed
+- Pinned dock apps are put in order by dragging them (Settings > Desktop >
+  Dock), and unpinned by dropping them on the zone that takes the search
+  field's place while you drag. No more arrows.
+- **System starts with you**: your picture large over your wallpaper,
+  blurred, with your name and a button to change it.
+- **Idle & Suspend** reads at a glance: a track per timer with its icon,
+  never at the far left. New: what closing the lid does -- *Suspend*, *Lock
+  only* or *Nothing*. The last two hold a lid inhibitor for as long as the
+  shell runs.
+- The music widget is the one with buttons: *Full* and *Compact*. Its *Wave*
+  moved to the visualizer, which drew the same sound, and takes the place of
+  the visualizer's *Bars*. A desktop that wore either gets the wave on the
+  visualizer.
 - **Workspaces.** Counting windows is now a switch for every style instead
   of a style of its own: Settings > Bar > Layout > Workspaces > *Count
   windows*, or `qs -c ashen ipc call bar ticks`. Dots leave it out, the ticks
@@ -30,6 +55,13 @@
   folders and the default apps.
 
 ### Fixed
+- The music panel's wave sat on the album name; the card is a little taller.
+- The hidden dock no longer vanishes the moment the pointer overshoots its
+  icons: it waits a moment, so coming back keeps it out. The empty band
+  beside it stopped swallowing clicks meant for the windows under it.
+  `qs -c ashen ipc call dock autohide` toggles hiding.
+- AM and PM read the same in every language: Spanish wrote "p. m.", too
+  wide for the bar and the sunrise line.
 - **Two keyboards, two layouts.** Hyprland keeps a layout per keyboard, and
   one that appeared later (a wireless receiver waking up, a USB plug, the
   login) started on the first layout while the rest stayed on your pick.

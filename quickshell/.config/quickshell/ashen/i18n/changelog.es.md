@@ -6,6 +6,19 @@ si falta, la bienvenida las enseña en inglés.
 ## 3.3.1
 
 ### Añadido
+- **Elige qué reproductor sigue la tarjeta de música**, como en Caelestia:
+  el nombre del reproductor está entre los tiempos, y un clic lista todos con
+  lo que suena en cada uno; al elegir, la tarjeta, sus botones, la barra y los
+  widgets lo siguen (`qs -c ashen ipc call media source` pasa al siguiente).
+  Antes cada superficie tomaba el primero y el otro no se podía pausar. Dos
+  pestañas de un navegador siguen siendo un solo reproductor: el navegador
+  solo publica la última que sonó.
+- **La letra es un widget propio**, ya no una forma del de música: leerla
+  costaba el botón de reproducir. Tres formas -- *Página* (la de antes, con
+  la portada), *Línea* (la línea que suena y la siguiente, para una esquina)
+  y *Foco* (la línea grande en el centro, las de alrededor atenuadas). Un
+  escritorio que llevaba la forma de letra recibe el widget de letra en su
+  sitio.
 - La pantalla de bloqueo muestra la onda de la música en su borde superior, en
   reposo y al iniciar sesión -- la misma que dibuja la barra.
 - **El instalador pregunta tres cosas primero**, con las flechas: el idioma
@@ -17,6 +30,19 @@ si falta, la bienvenida las enseña en inglés.
   alemán y ruso viven en `i18n/changelog.<idioma>.md`; si no, en inglés.
 
 ### Cambiado
+- Las apps ancladas al dock se ordenan arrastrándolas (Ajustes > Escritorio
+  > Dock), y se quitan soltándolas en la zona que ocupa el sitio del buscador
+  mientras arrastras. Sin flechas.
+- **System empieza por ti**: tu foto en grande sobre tu fondo, difuminado,
+  con tu nombre y un botón para cambiarla.
+- **Inactividad y suspensión** se lee de un vistazo: un deslizador por
+  temporizador con su icono, *nunca* a la izquierda del todo. Nuevo: qué hace
+  cerrar la tapa -- *Suspender*, *Solo bloquear* o *Nada*. Las dos últimas
+  impiden la suspensión mientras el shell esté en marcha.
+- El widget de música es el de los botones: *Completo* y *Compacto*. Su
+  *Onda* pasó al visualizador, que dibujaba el mismo sonido, y ocupa el lugar
+  de sus *Barras*. Un escritorio que llevaba cualquiera de las dos recibe la
+  onda en el visualizador.
 - **Escritorios.** Contar ventanas ahora es un interruptor para todos los
   estilos en lugar de un estilo propio: Ajustes > Barra > Disposición > Escritorios
   > *Contar ventanas*, o `qs -c ashen ipc call bar ticks`. Los puntos no lo
@@ -34,6 +60,14 @@ si falta, la bienvenida las enseña en inglés.
   las carpetas del selector y las aplicaciones predeterminadas.
 
 ### Arreglado
+- La onda del panel de música pisaba el nombre del álbum; la tarjeta es un
+  poco más alta.
+- El dock oculto ya no desaparece en cuanto el puntero se pasa de sus
+  iconos: espera un momento, y volver lo mantiene fuera. La franja vacía a
+  sus lados dejó de tragarse los clics de las ventanas de debajo.
+  `qs -c ashen ipc call dock autohide` activa o quita el ocultado.
+- AM y PM se escriben igual en todos los idiomas: en español salía "p. m.",
+  demasiado ancho para la barra y la línea del amanecer.
 - **Dos teclados, dos distribuciones.** Hyprland guarda una distribución por
   teclado, y uno que aparecía después (un receptor inalámbrico al despertar,
   un USB, el inicio de sesión) empezaba en la primera mientras el resto

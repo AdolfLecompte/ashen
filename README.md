@@ -189,8 +189,8 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
 - **Login screen** — an SDDM theme laid out like the lock screen: the time large,
   who, the password, the session and the ways out in the corners. It carries no
   name, so it suits any desktop.
-- **Desktop widgets** — clock, weather, calendar, sun, media, visualiser,
-  timer, notifications, updates, battery, machine, disks, screen time and
+- **Desktop widgets** — clock, weather, calendar, sun, media, lyrics,
+  visualiser, timer, notifications, updates, battery, machine, disks, screen time and
   pictures. Arrange them with `SUPER + SHIFT + D` and drag a widget by any part
   of it; right-click one for its shapes, sizes, the other screen, or to remove
   it.

@@ -6,6 +6,18 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 ## 3.3.1
 
 ### Neu
+- **Wähle, welchem Player die Musikkarte folgt**, wie in Caelestia: der
+  Name des Players steht zwischen den Zeiten, ein Klick listet alle Player mit
+  dem, was sie spielen; die Wahl übernehmen Karte, Tasten, Leiste und Widgets
+  (`qs -c ashen ipc call media source` springt zum nächsten). Vorher nahm
+  jede Fläche den ersten, der andere ließ sich nicht pausieren. Zwei Tabs
+  eines Browsers bleiben ein Player: der Browser meldet nur den letzten.
+- **Liedtext ist ein eigenes Widget**, keine Form des Musik-Widgets mehr:
+  den Text zu lesen kostete die Wiedergabetaste. Drei Formen -- *Seite* (die
+  alte, mit Cover), *Zeile* (die gesungene Zeile und die nächste, für eine
+  Ecke) und *Fokus* (die Zeile groß in der Mitte, die umliegenden gedämpft).
+  Ein Desktop mit der Liedtext-Form bekommt das Liedtext-Widget an ihre
+  Stelle.
 - Der Sperrbildschirm zeigt die Musikwelle an seinem oberen Rand, im Ruhezustand
   und beim Anmelden -- dieselbe, die die Leiste zeichnet.
 - **Der Installer fragt zuerst drei Dinge**, mit den Pfeiltasten: die
@@ -18,6 +30,19 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Englisch.
 
 ### Geändert
+- Angeheftete Dock-Apps werden per Ziehen sortiert (Einstellungen >
+  Desktop > Dock) und gelöst, indem man sie auf die Zone fallen lässt, die
+  beim Ziehen an die Stelle des Suchfelds tritt. Keine Pfeile mehr.
+- **System beginnt mit dir**: dein Bild groß über deinem Hintergrund,
+  unscharf, mit deinem Namen und einer Taste zum Ändern.
+- **Leerlauf & Ruhezustand** auf einen Blick: ein Regler pro Timer mit
+  Symbol, ganz links *nie*. Neu: was das Zuklappen tut -- *Ruhezustand*, *Nur
+  sperren* oder *Nichts*. Die letzten beiden verhindern den Ruhezustand,
+  solange die Shell läuft.
+- Das Musik-Widget ist das mit den Tasten: *Voll* und *Kompakt*. Seine
+  *Welle* ist zum Visualizer gewandert, der denselben Klang zeichnete, und
+  ersetzt dort die *Balken*. Ein Desktop mit einer der beiden bekommt die
+  Welle am Visualizer.
 - **Arbeitsflächen.** Fenster zählen ist jetzt ein Schalter für jeden Stil
   statt eines eigenen Stils: Einstellungen > Leiste > Anordnung > Arbeitsflächen
   > *Fenster zählen*, oder `qs -c ashen ipc call bar ticks`. Punkte lassen es
@@ -36,6 +61,13 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Widget-Formen, die Ordner der Auswahl und die Standard-Apps.
 
 ### Behoben
+- Die Welle im Musikpanel lag auf dem Albumnamen; die Karte ist etwas höher.
+- Das versteckte Dock verschwindet nicht mehr, sobald der Zeiger über die
+  Symbole hinausschießt: Es wartet kurz, und wer zurückkommt, behält es. Der
+  leere Streifen daneben schluckt keine Klicks mehr für die Fenster darunter.
+  `qs -c ashen ipc call dock autohide` schaltet das Verstecken um.
+- AM und PM sehen in jeder Sprache gleich aus: Spanisch schrieb "p. m.",
+  zu breit für die Leiste und die Sonnenaufgangszeile.
 - **Zwei Tastaturen, zwei Layouts.** Hyprland merkt sich ein Layout pro
   Tastatur, und eine, die später auftauchte (ein Funkempfänger, der aufwacht,
   ein USB-Stecker, die Anmeldung), begann auf dem ersten Layout, während der
