@@ -98,19 +98,20 @@ Singleton {
     function setLayout(i) {
         if (i < 0 || i >= layouts.length) return
         Services.Prefs.keyboardLayout = layouts[i]
-        if (i === activeIndex) return
         Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", String(i)])
-        refresh()
+        refreshLater.restart()
     }
 
-    // Re-apply the remembered layout: login always starts on index 0 (the first
-    // in kb_layout), and eval on add/remove resets it too.
-    function restorePick() {
-        let want = Services.Prefs.keyboardLayout
-        if (want === "") return
-        let i = root.layouts.indexOf(want)
-        if (i < 0 || i === root.activeIndex) return
-        Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", String(i)])
+    // Every keyboard types on the picked layout. Login and a keyboard that
+    // appears later (a receiver waking up, a USB plug) start on index 0 while
+    // the rest sit on the pick -- two keyboards, two layouts at once.
+    function sync(kbs) {
+        if (root.layouts.length < 2) return
+        let want = root.layouts.indexOf(Services.Prefs.keyboardLayout)
+        if (want < 0) want = root.activeIndex
+        const real = kbs.filter(k => !/virtual/i.test(k.name))
+        if (real.some(k => (k.active_layout_index || 0) !== want))
+            Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", String(want)])
     }
 
     function cycle() {
@@ -134,8 +135,8 @@ Singleton {
                     root.capsLock = !!main.capsLock
                     root.numLock = !!main.numLock
                     // Converges: the switch fires an activelayout event -> refresh
-                    // -> this runs again, finds the pick already active, no-ops.
-                    root.restorePick()
+                    // -> this runs again, finds every keyboard on the pick, no-ops.
+                    root.sync(kbs)
                 } catch (e) {
                     // hyprctl not up yet; the next refresh will catch it
                 }
@@ -181,6 +182,15 @@ Singleton {
             root.capsLock = capsFile.read() !== "0"
             root.numLock = numFile.read() !== "0"
         }
+    }
+
+    // Hyprland says nothing when a keyboard appears, so look now and then --
+    // only while there is more than one layout to disagree on.
+    Timer {
+        interval: 4000
+        running: root.layouts.length > 1
+        repeat: true
+        onTriggered: devProc.running = true
     }
 
     // Hyprland announces every layout change, whoever caused it
