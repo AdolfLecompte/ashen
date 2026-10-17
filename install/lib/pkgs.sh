@@ -59,7 +59,9 @@ PKGS_AUR=(
     # mpvpaper and zsh-theme-powerlevel10k were sitting in the official list
     # and do not exist there -- they are AUR, and this machine only had them
     # because CachyOS ships them in its own repos.
-    grimblast-git bibata-cursor-theme
+    # -bin: the prebuilt cursors. The plain package builds them from source
+    # and needs python-clickgen, itself only in the AUR.
+    grimblast-git bibata-cursor-theme-bin
     mpvpaper zsh-theme-powerlevel10k
 )
 
@@ -199,7 +201,15 @@ pkgs_report() {
     if [ "${#PKG_FAILED[@]}" -gt 0 ]; then
         printf '\n  failed:\n'
         printf '    %s\n' "${PKG_FAILED[@]}"
-        printf '\n  retry with:\n    sudo pacman -S %s\n' "${PKG_FAILED[*]}"
+        # pacman cannot see the AUR: each package is retried with what can.
+        local p repo=() aur=() helper
+        for p in "${PKG_FAILED[@]}"; do
+            if printf '%s\n' "${PKGS_AUR[@]}" | grep -qx "$p"; then aur+=("$p"); else repo+=("$p"); fi
+        done
+        helper=$(pkgs_aur_helper) || helper="paru -S"
+        printf '\n  retry with:\n'
+        [ "${#repo[@]}" -gt 0 ] && printf '    sudo pacman -S %s\n' "${repo[*]}"
+        [ "${#aur[@]}" -gt 0 ] && printf '    %s %s\n' "$helper" "${aur[*]}"
     fi
     printf '\n  full log:  %s\n' "$ASHEN_LOG"
 }

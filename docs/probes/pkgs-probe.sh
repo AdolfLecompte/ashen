@@ -42,7 +42,8 @@ missing=0
 while read -r p; do
     [ -z "$p" ] && continue
     case "$p" in stow|papirus-folders|zenity|python) continue ;; esac
-    has "$p" || { say FAIL "$p was in setup-system.sh and is gone"; missing=1; fail=1; }
+    # A -bin build of the same package counts (bibata-cursor-theme-bin).
+    has "$p" || has "$p-bin" || { say FAIL "$p was in setup-system.sh and is gone"; missing=1; fail=1; }
 done < docs/probes/fixtures/setup-system-packages.txt
 [ "$missing" -eq 0 ] && say ok "nothing lost from setup-system.sh"
 

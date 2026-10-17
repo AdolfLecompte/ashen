@@ -40,7 +40,7 @@ optdepends=(
     'grimblast-git: screenshot keybinds'
     'papirus-icon-theme: app icons in the launcher and the tray'
     'adw-gtk-theme: GTK apps that match the palette'
-    'bibata-cursor-theme: the shipped cursor'
+    'bibata-cursor-theme-bin: the shipped cursor'
     'polkit-gnome: the agent that asks when something needs root'
     'btop: matugen writes it a theme'
     'pacman-contrib: checkupdates, for the pending-updates readout'
