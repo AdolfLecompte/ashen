@@ -179,60 +179,130 @@ Section {
         // right-click because they are not there to click.
         SectionLabel { text: Services.I18n.t("settings.dock.apps"); Layout.topMargin: 4 }
 
-        Repeater {
-            model: Services.Prefs.dockPinList
-            delegate: RowLayout {
-                id: pinRow
-                required property var modelData
-                required property int index
-                // byId first, byClass after: a pin made by right-clicking a
-                // running window is stored under what Hyprland calls it, which
-                // is not always the .desktop id -- `codium` is `vscodium`.
-                readonly property var entry: Services.Apps.byId(pinRow.modelData)
-                                          || Services.Apps.byClass(pinRow.modelData)
-                Layout.fillWidth: true
-                spacing: 10
+        // Dragged into place, no arrows: the rows stand at fixed slots and
+        // step aside for the one being carried. Let go over the drop zone
+        // below and it is unpinned.
+        Item {
+            id: pinList
+            Layout.fillWidth: true
+            readonly property int rowH: 38
+            readonly property int count: Services.Prefs.dockPinList.length
+            Layout.preferredHeight: pinList.count * pinList.rowH
+            // The order on screen: the saved one, or the one the drag proposes.
+            property var order: Services.Prefs.dockPinList
+            property string carried: ""
+            property bool overDrop: false
 
-                Image {
-                    Layout.preferredWidth: 22
-                    Layout.preferredHeight: 22
-                    fillMode: Image.PreserveAspectFit
-                    // A pin whose .desktop is gone still holds its slot, and
-                    // the generic icon is what says so -- a blank gap would
-                    // leave nothing to click to get rid of it.
-                    source: {
-                        const ic = pinRow.entry ? pinRow.entry.icon : ""
-                        if (!ic) return Quickshell.iconPath("application-x-executable")
-                        return ic.startsWith("/") ? ("file://" + ic)
-                                                  : Quickshell.iconPath(ic, "application-x-executable")
+            Repeater {
+                model: Services.Prefs.dockPinList
+                delegate: Item {
+                    id: pinRow
+                    required property var modelData
+                    required property int index
+                    // byId first, byClass after: a pin made by right-clicking a
+                    // running window is stored under what Hyprland calls it, which
+                    // is not always the .desktop id -- `codium` is `vscodium`.
+                    readonly property var entry: Services.Apps.byId(pinRow.modelData)
+                                              || Services.Apps.byClass(pinRow.modelData)
+                    readonly property bool carried: pinList.carried === pinRow.modelData
+                    width: pinList.width
+                    height: pinList.rowH
+                    z: pinRow.carried ? 2 : 1
+                    property real dragY: 0
+                    y: pinRow.carried ? pinRow.dragY : pinList.order.indexOf(pinRow.modelData) * pinList.rowH
+                    Behavior on y {
+                        enabled: !pinRow.carried
+                        Widgets.Anim { speed: Services.Sizes.msMicro }
                     }
-                }
-                Text {
-                    textFormat: Text.PlainText
-                    Layout.fillWidth: true
-                    text: pinRow.entry ? pinRow.entry.name : pinRow.modelData
-                    color: pinRow.entry ? Services.Colors.snow : Services.Colors.ash
-                    elide: Text.ElideRight
-                    font.pixelSize: Services.Sizes.fsInput
-                    font.family: "JetBrainsMono NF"
-                }
-                // Order is the dock's order, so it is changed here rather than
-                // by dragging an icon on a dock that may be hidden.
-                StepBtn {
-                    glyph: "\ue5d8"        // arrow_upward
-                    enabled: pinRow.index > 0
-                    opacity: enabled ? 1 : 0.35
-                    onClicked: Services.Prefs.dockMovePin(pinRow.modelData, pinRow.index - 1)
-                }
-                StepBtn {
-                    glyph: "\ue5db"        // arrow_downward
-                    enabled: pinRow.index < Services.Prefs.dockPinList.length - 1
-                    opacity: enabled ? 1 : 0.35
-                    onClicked: Services.Prefs.dockMovePin(pinRow.modelData, pinRow.index + 1)
-                }
-                StepBtn {
-                    glyph: "\ue15b"        // remove
-                    onClicked: Services.Prefs.dockUnpin(pinRow.modelData)
+                    opacity: pinRow.carried && pinList.overDrop ? 0.45 : 1
+                    scale: pinRow.carried ? 1.02 : 1
+                    Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
+
+                    // The one being carried gets a plate, so it reads as lifted.
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Services.Sizes.innerR
+                        color: Services.Colors.fillRest
+                        visible: pinRow.carried
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 4
+                        anchors.rightMargin: 4
+                        spacing: 10
+
+                        Text {
+                            textFormat: Text.PlainText
+                            text: "\ue945"
+                            color: grab.containsMouse || pinRow.carried ? Services.Colors.ghost : Services.Colors.ash
+                            font.pixelSize: 18
+                            font.family: "Material Symbols Rounded"
+                        }
+                        Image {
+                            Layout.preferredWidth: 22
+                            Layout.preferredHeight: 22
+                            fillMode: Image.PreserveAspectFit
+                            // A pin whose .desktop is gone still holds its slot, and
+                            // the generic icon is what says so -- a blank gap would
+                            // leave nothing to drag away.
+                            source: {
+                                const ic = pinRow.entry ? pinRow.entry.icon : ""
+                                if (!ic) return Quickshell.iconPath("application-x-executable")
+                                return ic.startsWith("/") ? ("file://" + ic)
+                                                          : Quickshell.iconPath(ic, "application-x-executable")
+                            }
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            Layout.fillWidth: true
+                            text: pinRow.entry ? pinRow.entry.name : pinRow.modelData
+                            color: !pinRow.entry ? Services.Colors.ash
+                                 : grab.containsMouse || pinRow.carried ? Services.Colors.snow : Services.Colors.mist
+                            elide: Text.ElideRight
+                            font.pixelSize: Services.Sizes.fsInput
+                            font.family: "JetBrainsMono NF"
+                        }
+                    }
+
+                    MouseArea {
+                        id: grab
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        // The page scrolls on a vertical drag too; this one is ours.
+                        preventStealing: true
+                        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                        property real grabY: 0
+                        onPressed: mouse => {
+                            grab.grabY = mouse.y
+                            pinRow.dragY = pinRow.y
+                            pinList.carried = pinRow.modelData
+                        }
+                        onPositionChanged: mouse => {
+                            if (!pressed) return
+                            const top = pinRow.mapToItem(pinList, 0, mouse.y).y - grab.grabY
+                            pinRow.dragY = top
+                            const pt = pinRow.mapToItem(dropZone, mouse.x, mouse.y)
+                            pinList.overDrop = dropZone.contains(Qt.point(pt.x, pt.y))
+                            const slot = Math.max(0, Math.min(pinList.count - 1, Math.round(top / pinList.rowH)))
+                            let next = Services.Prefs.dockPinList.filter(x => x !== pinRow.modelData)
+                            next.splice(slot, 0, pinRow.modelData)
+                            pinList.order = next
+                        }
+                        onReleased: {
+                            const id = pinRow.modelData
+                            if (pinList.overDrop) Services.Prefs.dockUnpin(id)
+                            else Services.Prefs.dockMovePin(id, pinList.order.indexOf(id))
+                            pinList.carried = ""
+                            pinList.overDrop = false
+                            pinList.order = Qt.binding(() => Services.Prefs.dockPinList)
+                        }
+                        onCanceled: {
+                            pinList.carried = ""
+                            pinList.overDrop = false
+                            pinList.order = Qt.binding(() => Services.Prefs.dockPinList)
+                        }
+                    }
                 }
             }
         }
@@ -250,7 +320,41 @@ Section {
         // ── Adding one ───────────────────────────────────────────────
         // A search rather than the whole list: there are 1300 packages on this
         // machine and a scroll of every .desktop is not a chooser.
+        // Where a carried pin is let go to unpin it. It stands in the search
+        // field's place, since nobody types while dragging.
+        Rectangle {
+            id: dropZone
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            Layout.preferredHeight: appQuery.implicitHeight + 8
+            visible: pinList.carried !== ""
+            radius: Services.Sizes.innerR
+            color: "transparent"
+            border.width: 1
+            border.color: pinList.overDrop ? Services.Colors.ghost : Services.Colors.fillOutline
+            Row {
+                anchors.centerIn: parent
+                spacing: 8
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue872"
+                    color: pinList.overDrop ? Services.Colors.ghost : Services.Colors.mist
+                    font.pixelSize: 18
+                    font.family: "Material Symbols Rounded"
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Services.I18n.t("settings.dock.dropUnpin")
+                    color: pinList.overDrop ? Services.Colors.snow : Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+        }
         TextField {
+            visible: pinList.carried === ""
             id: appQuery
             Keys.onPressed: e => { if (Services.Readline.handle(e, appQuery)) e.accepted = true }
             Layout.fillWidth: true
