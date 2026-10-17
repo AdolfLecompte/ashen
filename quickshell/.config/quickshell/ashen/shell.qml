@@ -322,12 +322,16 @@ ShellRoot {
         function playPause() { Services.Media.playPause() }
         // No lyric toggle any more: the words are a column of the card and
         // stand there whenever the track has any.
+        // The next player along, when more than one is playing.
+        function source() { Services.Media.cycle() }
         function state(): string {
             return "has=" + Services.Lyrics.has
                  + " lines=" + Services.Lyrics.lines.length
                  + " loading=" + Services.Lyrics.loading
                  + " artist=[" + Services.Lyrics.artist + "]"
                  + " title=[" + Services.Lyrics.title + "]"
+                 + " sources=[" + Services.Media.live.map(p => Services.Media.nameOf(p)).join(",") + "]"
+                 + " on=[" + Services.Media.nameOf(Services.Media.player) + "]"
         }
     }
     IpcHandler {

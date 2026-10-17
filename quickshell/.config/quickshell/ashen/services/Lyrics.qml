@@ -13,12 +13,7 @@ Singleton {
 
     // Same sticky read as everywhere else: MPRIS drops to null for a few ms
     // between tracks, and asking for the lyrics of nothing wastes a request.
-    readonly property var livePlayer: {
-        const live = Mpris.players.values.filter(p => p.playbackState !== MprisPlaybackState.Stopped)
-        if (live.length === 0) return null
-        const playing = live.find(p => p.isPlaying)
-        return playing !== undefined ? playing : live[0]
-    }
+    readonly property var livePlayer: Media.player
     property var player: null
     onLivePlayerChanged: if (root.livePlayer !== null) root.player = root.livePlayer
 

@@ -8,12 +8,27 @@ import QtQuick
 Singleton {
     id: root
 
+    // Every player with something loaded. Each surface reads `player` from
+    // here: with two playing, each one picked the first on its own, and the
+    // one you could pause was never the one you meant.
+    readonly property var live: Mpris.players.values.filter(p => p.playbackState !== MprisPlaybackState.Stopped)
+    // Picked by hand from the card; kept while that player is still there.
+    property var chosen: null
+    onLiveChanged: if (root.chosen !== null && root.live.indexOf(root.chosen) === -1) root.chosen = null
     readonly property var player: {
-        const live = Mpris.players.values.filter(p => p.playbackState !== MprisPlaybackState.Stopped)
+        const live = root.live
         if (live.length === 0) return null
+        if (root.chosen !== null && live.indexOf(root.chosen) !== -1) return root.chosen
         const playing = live.find(p => p.isPlaying)
         return playing !== undefined ? playing : live[0]
     }
+    // The next source along, for the card's switch.
+    function cycle() {
+        const live = root.live
+        if (live.length < 2) return
+        root.chosen = live[(live.indexOf(root.player) + 1) % live.length]
+    }
+    function nameOf(p) { return p ? (p.identity || p.desktopEntry || "") : "" }
 
     // Is anything playing right now, on any player.
     readonly property bool playing: Mpris.players.values.some(p => p.isPlaying)

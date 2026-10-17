@@ -21,12 +21,7 @@ Item {
     readonly property bool vertical: Services.Sizes.barVertical
 
     // Raw MPRIS read: drops to null for a few ms while the player changes track
-    property var livePlayer: {
-        let list = Mpris.players.values.filter(p => p.playbackState !== MprisPlaybackState.Stopped)
-        if (list.length === 0) return null
-        let playing = list.find(p => p.isPlaying)
-        return playing !== undefined ? playing : list[0]
-    }
+    readonly property var livePlayer: Services.Media.player
 
     // Held across that gap so the pill does not collapse or flicker
     property var activePlayer: null

@@ -220,6 +220,8 @@ PanelWindow {
             stageFn: card.stage
             offerLyrics: true
             stacked: true
+            // Its pieces fly over the card; the list has to be above them.
+            menuOutside: true
         }
 
         // ── The shared items ────────────────────────────────────────────
@@ -477,5 +479,24 @@ PanelWindow {
             y: card.lerp(pillRef.y + refCtl.y + refNext.y + refNext.height / 2,
                          panelRef.y + panelRef.nextCY, flyNext.m) - height / 2
         }
+
+        // ── Which player ────────────────────────────────────────────────
+        // Above everything that flies, or the title would be drawn over it.
+        MouseArea {
+            anchors.fill: parent
+            visible: panelRef.pickOpen
+            onClicked: panelRef.pickOpen = false
+        }
+        Widgets.PlayerMenu {
+            open: panelRef.pickOpen && card.morph >= 1
+            x: Math.max(8, Math.min(parent.width - width - 8, panelRef.x + panelRef.pickX - width / 2))
+            y: panelRef.y + panelRef.pickY - height - 6
+            onPicked: panelRef.pickOpen = false
+        }
+    }
+    // Closing the panel closes the list with it.
+    Connections {
+        target: root
+        function onShownChanged() { if (!root.shown) panelRef.pickOpen = false }
     }
 }

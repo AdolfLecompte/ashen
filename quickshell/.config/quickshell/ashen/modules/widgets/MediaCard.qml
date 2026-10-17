@@ -16,8 +16,9 @@ Item {
     // Stacked: cover on top, everything else under it (the media panel).
     property bool stacked: false
     readonly property real artSize: root.stacked ? root.contentW : 160
-    // The column beside (or under) the cover.
-    readonly property real colH: root.stacked ? 150 : root.artSize
+    // The column beside (or under) the cover. Stacked, the names (~60) and the
+    // wave with the buttons (94) need more than 150: the wave sat on the album.
+    readonly property real colH: root.stacked ? 164 : root.artSize
     // Narrow on purpose: the bars stand on an axis in the middle of this, so
     // every pixel of column is two pixels of air between the words and the
     // sound. 130 read as two separate things sharing an edge.
@@ -82,18 +83,27 @@ Item {
         return root.stageFn ? root.stageFn(i) * root.extrasOpacity : root.extrasOpacity
     }
 
+    // The player list: open, and where its button is in the card. A panel
+    // whose pieces fly over the card draws the list itself (menuOutside).
+    property bool pickOpen: false
+    property real pickX: 0
+    property real pickY: 0
+    property bool menuOutside: false
+    onHasPlayerChanged: if (!root.hasPlayer) root.pickOpen = false
+    onPickOpenChanged: if (root.pickOpen) root.placePick()
+    function placePick() {
+        const p = source.mapToItem(root, source.width / 2, 0)
+        root.pickX = p.x
+        root.pickY = p.y
+    }
+
     // Whether this copy of the card carries the lyric column. The panel does;
     // the lock screen has no room for it beside its other cards.
     property bool offerLyrics: false
 
     // ── Player ──────────────────────────────────────────────────────────
     // Raw MPRIS read: drops to null for a few ms while the player changes track
-    property var livePlayer: {
-        let list = Mpris.players.values.filter(p => p.playbackState !== MprisPlaybackState.Stopped)
-        if (list.length === 0) return null
-        let playing = list.find(p => p.isPlaying)
-        return playing !== undefined ? playing : list[0]
-    }
+    readonly property var livePlayer: Services.Media.player
 
     // Held across that gap so the card does not flip to "Nothing playing"
     property var activePlayer: null
@@ -607,6 +617,49 @@ Item {
                             font.pixelSize: 10; font.bold: true
                             font.family: "JetBrainsMono NF"
                         }
+
+                        // Which player the card follows: its name, and a list
+                        // of every player to pick another from.
+                        Row {
+                            id: source
+                            anchors.centerIn: parent
+                            spacing: 2
+                            visible: root.hasPlayer
+                            opacity: root.beat(1)
+                            scale: Services.Sizes.hoverScale(pick.containsMouse, pick.pressed)
+                            Behavior on scale { Anim {} }
+                            readonly property color tint: pick.containsMouse || root.pickOpen
+                                ? Services.Colors.snow : Services.Colors.ghost
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Math.min(implicitWidth, times.width - posT.width - lenT.width - 60)
+                                text: Services.Media.nameOf(root.activePlayer)
+                                color: source.tint
+                                font.pixelSize: 10; font.bold: true
+                                font.family: "JetBrainsMono NF"
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "\ue5cf"
+                                color: source.tint
+                                font.pixelSize: 14
+                                font.family: "Material Symbols Rounded"
+                                rotation: root.pickOpen ? 180 : 0
+                                Behavior on rotation { Anim { speed: Services.Sizes.msMicro } }
+                            }
+                        }
+                        MouseArea {
+                            id: pick
+                            anchors.fill: source
+                            anchors.margins: -6
+                            visible: source.visible
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.pickOpen = !root.pickOpen
+                        }
                     }
                 }
 
@@ -789,5 +842,18 @@ Item {
                 }
             }
         }
+    }
+
+    // Clicking anywhere else on the card closes the list.
+    MouseArea {
+        anchors.fill: parent
+        visible: root.pickOpen && !root.menuOutside
+        onClicked: root.pickOpen = false
+    }
+    PlayerMenu {
+        open: root.pickOpen && !root.menuOutside
+        x: Math.max(0, Math.min(root.width - width, root.pickX - width / 2))
+        y: root.pickY - height - 6
+        onPicked: root.pickOpen = false
     }
 }
