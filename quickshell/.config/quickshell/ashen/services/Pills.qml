@@ -148,7 +148,7 @@ Singleton {
     // glass switch.
     function hasContentChoice(id) { return root.contentsFor(id).length > 1 }
 
-    function label(id) { const m = meta[id]; return m ? m.label : id }
+    function label(id) { const m = meta[id]; return m ? I18n.tr("pill." + id, m.label) : id }
     function glyph(id) { const m = meta[id]; return m ? m.glyph : "" }
     function opens(id) { const m = meta[id]; return m ? m.opens : "" }
 }

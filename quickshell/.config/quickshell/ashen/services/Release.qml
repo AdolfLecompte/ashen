@@ -17,14 +17,25 @@ Singleton {
         onLoaded: root.raw = text()
         onLoadFailed: root.raw = ""
     }
+    // The same notes written in the shell's language, when someone wrote them.
+    property string localRaw: ""
+    FileView {
+        path: I18n.lang === "en" ? "" : Quickshell.shellPath("i18n/changelog." + I18n.lang + ".md")
+        onLoaded: root.localRaw = text()
+        onLoadFailed: root.localRaw = ""
+        onPathChanged: if (path === "") root.localRaw = ""
+    }
 
     // ── What the changelog says ─────────────────────────────────────────
     // The newest numbered heading. "Unreleased" is skipped on purpose: work in
     // the tree is not a release, and announcing it would fire on every edit.
-    readonly property var sections: {
+    readonly property var sections: root.parse(root.raw)
+    readonly property var localSections: root.parse(root.localRaw)
+
+    function parse(raw) {
         const out = []
-        if (root.raw === "") return out
-        const lines = root.raw.split("\n")
+        if (raw === "") return out
+        const lines = raw.split("\n")
         let cur = null
         for (const ln of lines) {
             const head = ln.match(/^##\s+(.+?)\s*$/)
@@ -54,7 +65,13 @@ Singleton {
         return null
     }
     readonly property string version: root.current ? root.current.title : ""
-    readonly property var notes: root.current ? root.current.entries : []
+    // The translation only when it covers this version; English otherwise.
+    readonly property var notes: {
+        if (!root.current) return []
+        for (const s of root.localSections)
+            if (s.title === root.version && s.entries.length > 0) return s.entries
+        return root.current.entries
+    }
 
     // ── Is there a newer Ashen? ──────────────────────────────────────────
     // NOT services/Updates: that runs checkupdates and an AUR helper and answers
@@ -133,6 +150,7 @@ Singleton {
     function rich(s) {
         return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
                         .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+                        .replace(/\*(.+?)\*/g, "<i>$1</i>")
                         .replace(/`(.+?)`/g, "<font face='JetBrainsMono NF'>$1</font>")
     }
 

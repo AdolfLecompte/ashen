@@ -104,7 +104,7 @@ Item {
                         textFormat: Text.PlainText
                         id: label
                         anchors.centerIn: parent
-                        text: chip.modelData.label
+                        text: Services.I18n.tr("shape." + Services.I18n.slug(chip.modelData.label), chip.modelData.label)
                         // Hover brightens the word; the plate never changes.
                         color: chip.active ? Services.Colors.accentText
                              : hover.containsMouse ? Services.Colors.snow

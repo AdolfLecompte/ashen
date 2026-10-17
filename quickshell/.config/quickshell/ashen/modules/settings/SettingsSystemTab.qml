@@ -106,8 +106,8 @@ Section {
                 required property var modelData
                 kind: modelData.id
                 glyph: modelData.glyph
-                title: modelData.label
-                fallback: modelData.hint
+                title: Services.I18n.tr("apps." + modelData.id, modelData.label)
+                fallback: Services.I18n.tr("apps.hint." + modelData.id, modelData.hint)
             }
         }
     }

@@ -206,7 +206,7 @@ PanelWindow {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.label
+                                text: Services.I18n.tr("picker.dir." + Services.I18n.slug(modelData.label), modelData.label)
                                 color: parent.here ? Services.Colors.accentText
                                      : placeHover.containsMouse ? Services.Colors.snow
                                                                 : Services.Colors.mist

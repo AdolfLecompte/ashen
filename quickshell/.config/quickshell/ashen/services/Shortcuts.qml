@@ -58,7 +58,7 @@ Singleton {
             if (b.id === id) continue
             if (norm(root.keyOf(b.id !== "" ? b.id : "")) === want
                 || (b.id === "" && norm(b.keys) === want))
-                return b.action || "another shortcut"
+                return b.action || I18n.t("settings.input.another")
         }
         return ""
     }

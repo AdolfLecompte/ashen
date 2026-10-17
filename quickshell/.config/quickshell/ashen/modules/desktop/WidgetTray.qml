@@ -170,7 +170,7 @@ Item {
                 model: {
                     let out = []
                     for (const w of Services.Desktop.trayOrder)
-                        out.push({ kind: "widget", id: w.id, glyph: w.glyph, label: w.label })
+                        out.push({ kind: "widget", id: w.id, glyph: w.glyph, label: Services.I18n.tr("desktop.w." + w.id, w.label) })
                     for (const id of Services.Desktop.idsOf("image"))
                         out.push({ kind: "picture", id: id, glyph: "\ue3f4", label: Services.I18n.t("widget.picture") })
                     out.push({ kind: "add", id: "", glyph: "\ue145", label: Services.I18n.t("widget.picture") })

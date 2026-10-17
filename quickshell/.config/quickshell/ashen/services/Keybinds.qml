@@ -13,8 +13,16 @@ Singleton {
 
     readonly property string confPath: Paths.home + "/.config/hypr/conf/keybinds.lua"
 
-    // [{ section, keys, action }]
-    property var binds: []
+    // [{ section, keys, action }], worded in the shell's language.
+    property string raw: ""
+    readonly property var binds: { I18n.lang; I18n.dict; return root.raw === "" ? [] : root.parse(root.raw) }
+
+    // A phrase in the shell's language; English and its {vars} as fallback.
+    function say(key, en, vars) {
+        let s = I18n.tr("kb." + key, en)
+        for (const k in vars || {}) s = s.split("{" + k + "}").join(vars[k])
+        return s
+    }
     readonly property var sections: {
         let out = []
         for (const b of root.binds) {
@@ -60,7 +68,8 @@ Singleton {
             }
         }
         return out.replace(/\s+/g, " ").trim()
-            .replace("mouse:272", "left drag").replace("mouse:273", "right drag")
+            .replace("mouse:272", root.say("leftDrag", "left drag"))
+            .replace("mouse:273", root.say("rightDrag", "right drag"))
     }
 
     // The shell's own IPC calls are the ones worth naming properly.
@@ -76,22 +85,22 @@ Singleton {
             "switcher": "Window switcher", "game": "Game mode", "record": "Screen recording",
             "usage": "Screen time"
         }
-        const label = names[target] !== undefined ? names[target] : target
+        const label = names[target] !== undefined ? root.say("ipc." + target, names[target]) : target
         if (target === "switcher") {
             // One call both opens it and steps: naming it after the step is
             // what the bind actually does from the keyboard's side.
-            if (fn === "next") return "Window switcher"
-            if (fn === "prev") return "Window switcher (backwards)"
+            if (fn === "next") return root.say("ipc.switcher", "Window switcher")
+            if (fn === "prev") return root.say("switcherBack", "Window switcher (backwards)")
         }
         if (target === "media") {
-            if (fn === "next") return "Next track"
-            if (fn === "prev") return "Previous track"
-            if (fn === "playPause") return "Play / pause"
+            if (fn === "next") return root.say("nextTrack", "Next track")
+            if (fn === "prev") return root.say("prevTrack", "Previous track")
+            if (fn === "playPause") return root.say("playPause", "Play / pause")
         }
         if (fn === "toggle") return label
         if (target === "lockscreen") return label
-        if (target === "widgets" && fn === "edit") return "Arrange desktop widgets"
-        if (target === "notifications" && fn === "screenshot") return "Screenshot (area)"
+        if (target === "widgets" && fn === "edit") return root.say("arrange", "Arrange desktop widgets")
+        if (target === "notifications" && fn === "screenshot") return root.say("shot", "Screenshot (area)")
         return label + " — " + fn
     }
 
@@ -101,44 +110,44 @@ Singleton {
             const cmd = m[1]
             // What the bind DOES comes first: the media keys also fire an OSD
             // ipc call, and naming them after that would call them all "volume".
-            if (cmd.indexOf("grimblast") !== -1) return "Screenshot (area)"
-            if (cmd.indexOf("wpctl set-mute") !== -1 && cmd.indexOf("toggle") !== -1) return "Mute"
-            if (cmd.indexOf("5%+") !== -1) return cmd.indexOf("brightnessctl") !== -1 ? "Brightness up" : "Volume up"
-            if (cmd.indexOf("5%-") !== -1) return cmd.indexOf("brightnessctl") !== -1 ? "Brightness down" : "Volume down"
+            if (cmd.indexOf("grimblast") !== -1) return root.say("shot", "Screenshot (area)")
+            if (cmd.indexOf("wpctl set-mute") !== -1 && cmd.indexOf("toggle") !== -1) return root.say("mute", "Mute")
+            if (cmd.indexOf("5%+") !== -1) return cmd.indexOf("brightnessctl") !== -1 ? root.say("brightUp", "Brightness up") : root.say("volUp", "Volume up")
+            if (cmd.indexOf("5%-") !== -1) return cmd.indexOf("brightnessctl") !== -1 ? root.say("brightDown", "Brightness down") : root.say("volDown", "Volume down")
             const ipc = root.ipcLabel(cmd)
             if (ipc !== "") return ipc
             // Bare app launches read fine as they are
             const bare = cmd.replace(/^sh -c '/, "").replace(/'$/, "")
             return bare.split(" ")[0]
         }
-        if (expr.indexOf("window.close") !== -1) return "Close window"
-        if (expr.indexOf("window.fullscreen") !== -1) return "Fullscreen"
-        if (expr.indexOf("window.float") !== -1) return "Toggle floating"
-        if (expr.indexOf("window.pseudo") !== -1) return "Pseudo tile"
-        if (expr.indexOf("window.drag") !== -1) return "Move window with the mouse"
-        if (expr.indexOf("window.resize") !== -1) return "Resize window with the mouse"
+        if (expr.indexOf("window.close") !== -1) return root.say("close", "Close window")
+        if (expr.indexOf("window.fullscreen") !== -1) return root.say("fullscreen", "Fullscreen")
+        if (expr.indexOf("window.float") !== -1) return root.say("float", "Toggle floating")
+        if (expr.indexOf("window.pseudo") !== -1) return root.say("pseudo", "Pseudo tile")
+        if (expr.indexOf("window.drag") !== -1) return root.say("drag", "Move window with the mouse")
+        if (expr.indexOf("window.resize") !== -1) return root.say("resize", "Resize window with the mouse")
 
         m = expr.match(/^app\(\s*"(\w+)"\s*\)$/)
-        if (m) return "Open " + m[1]
+        if (m) return root.say("open", "Open {app}", { app: I18n.tr("apps." + m[1], m[1]) })
         m = expr.match(/window\.move\(\s*\{\s*workspace\s*=\s*"special:(\w+)"/)
-        if (m) return "Send window to special workspace: " + m[1]
+        if (m) return root.say("sendSpecial", "Send window to special workspace: {name}", { name: m[1] })
         m = expr.match(/window\.move\(\s*\{\s*workspace\s*=\s*"?([\w+-]+)"?/)
-        if (m) return "Move window to " + root.workspaceLabel(m[1])
+        if (m) return root.say("moveTo", "Move window to {ws}", { ws: root.workspaceLabel(m[1]) })
         m = expr.match(/focus\(\s*\{\s*workspace\s*=\s*"?([\w+-]+)"?/)
-        if (m) return "Go to " + root.workspaceLabel(m[1])
+        if (m) return root.say("goTo", "Go to {ws}", { ws: root.workspaceLabel(m[1]) })
         m = expr.match(/focus\(\s*\{\s*direction\s*=\s*"(\w+)"/)
-        if (m) return "Focus " + m[1]
+        if (m) return root.say("focus", "Focus {dir}", { dir: root.say("dir." + m[1], m[1]) })
         m = expr.match(/workspace\.toggle_special\(\s*"(\w+)"/)
-        if (m) return "Special workspace: " + m[1]
+        if (m) return root.say("special", "Special workspace: {name}", { name: m[1] })
 
         return expr   // shown raw rather than dropped
     }
 
     function workspaceLabel(v) {
-        if (v === "e+1") return "the next workspace"
-        if (v === "e-1") return "the previous workspace"
-        if (v === "i") return "that workspace"
-        return "workspace " + v
+        if (v === "e+1") return root.say("ws.next", "the next workspace")
+        if (v === "e-1") return root.say("ws.prev", "the previous workspace")
+        if (v === "i") return root.say("ws.that", "that workspace")
+        return root.say("ws.n", "workspace {n}", { n: v })
     }
 
     function parse(text) {
@@ -187,7 +196,7 @@ Singleton {
             if (expr.indexOf("switch:") !== -1) continue
             const fallback = root.keysOf(expr, mod)
             out.push({
-                section: section,
+                section: root.say("sec." + I18n.slug(section), section),
                 id: id,
                 // What the file ships with, and what is in force right now --
                 // which are the same until someone changes it in Settings.
@@ -203,7 +212,7 @@ Singleton {
         path: root.confPath
         watchChanges: true
         onFileChanged: reload()
-        onLoaded: root.binds = root.parse(text())
-        onLoadFailed: root.binds = []
+        onLoaded: root.raw = text()
+        onLoadFailed: root.raw = ""
     }
 }

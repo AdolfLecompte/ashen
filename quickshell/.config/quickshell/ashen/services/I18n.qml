@@ -68,6 +68,16 @@ Singleton {
         return s
     }
 
+    // A word for a label kept in a catalogue: its key when one is written,
+    // the catalogue's own English otherwise.
+    function tr(key, fallback) {
+        const d = root.dict
+        const b = root.base
+        const s = d[key] !== undefined ? d[key] : b[key]
+        return s !== undefined ? s : fallback
+    }
+    function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "") }
+
     function setLang(id) {
         if (!root.known(id) || id === Prefs.language) return
         Prefs.language = id
