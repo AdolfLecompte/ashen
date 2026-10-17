@@ -94,6 +94,7 @@ DesktopWidget {
         Column {
             spacing: 12
             Widgets.MediaCard {
+                followSwitch: !root.managed
                 id: card
                 // Its own column of bars would say the same thing as the strip
                 // below, in a tenth of the room.

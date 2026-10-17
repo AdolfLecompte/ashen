@@ -66,6 +66,9 @@ Item {
 
     // Off where the surface draws its own, bigger one (the desktop widget).
     property bool showSpectrum: true
+    // A desktop widget hears the music whatever the visualiser switch says.
+    property bool followSwitch: true
+    readonly property bool hearing: root.followSwitch ? Services.Cava.enabled : Services.Cava.needed
 
     // Fade for everything the bar pill has no counterpart for. The panel drives
     // it so those pieces arrive after the blob has finished opening; the lock
@@ -444,11 +447,11 @@ Item {
                         // it and the drop swells it. Without cava running there
                         // is nothing to ask, and it holds its full height.
                         property real level: 0
-                        readonly property real loudness: Services.Cava.enabled
+                        readonly property real loudness: root.hearing
                             ? (0.35 + 0.65 * snake.level) : 1
                         Connections {
                             target: Services.Cava
-                            enabled: snake.playing && Services.Cava.enabled
+                            enabled: snake.playing && root.hearing
                             function onBarValuesChanged() {
                                 const src = Services.Cava.barValues
                                 if (!src || src.length === 0) return
@@ -715,7 +718,7 @@ Item {
         Item {
             id: cavaCol
             // Switched off it takes no room either.
-            visible: root.showSpectrum && Services.Cava.enabled && !root.stacked
+            visible: root.showSpectrum && root.hearing && !root.stacked
             Layout.preferredWidth: cavaCol.visible ? root.cavaW : 0
             Layout.preferredHeight: root.artSize
             Layout.alignment: Qt.AlignVCenter

@@ -8,6 +8,7 @@ import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
 import "root:/modules/desktop/widgets" as DeskWidgets
 import "root:/modules/settings/components" as Parts
+import "root:/modules/bar/components" as BarParts
 
 Scope {
     id: root
@@ -292,6 +293,18 @@ Scope {
                         GradientStop { position: 1.0; color: Qt.rgba(Services.Colors.abyss.r, Services.Colors.abyss.g, Services.Colors.abyss.b, bgLayer.veilBottom) }
                     }
                 }
+            }
+
+            // What is playing, along the top edge in both states: the same
+            // wave the bar draws, fading in with the rest of the screen.
+            Item {
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 72
+                opacity: surface.unlocking ? 0.0 : (surface.revealed ? 1.0 : 0.0)
+                Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
+                BarParts.CavaBackground { edge: "top" }
             }
 
             // ── Main content (with enter/exit animation) ──

@@ -203,9 +203,9 @@ Scope {
                 y: content.y
                 width: content.width
                 height: content.height
-                // Nothing to hide behind in the island style: the wave would
-                // climb the screen edge in the gaps between the plates.
-                visible: !Services.Sizes.barFramed && !Services.Sizes.barIsland
+                // Framed draws its own inside the frame. Island shows it in the
+                // gaps between its plates, exactly as pills does between pills.
+                visible: !Services.Sizes.barFramed
                 opacity: content.opacity
                 CavaBackground {}
             }

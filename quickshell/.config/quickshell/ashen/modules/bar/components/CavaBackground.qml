@@ -8,14 +8,16 @@ Item {
     z: -1
 
     readonly property var barValues: Services.Cava.barValues
-    readonly property bool isActive: Services.Cava.isActive
+    // Cava may be running for a desktop widget with the switch off.
+    readonly property bool isActive: Services.Cava.isActive && Services.Cava.enabled
     opacity: isActive ? 1.0 : 0.0
     Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msPanel } }
 
     // Bars grow inwards from the screen edge the bar is docked to, so on a side
     // bar they lie down and run horizontally instead of standing up.
-    readonly property string edge: Services.Sizes.barPosition
-    readonly property bool vertical: Services.Sizes.barVertical
+    // The lock screen pins it to its own top edge.
+    property string edge: Services.Sizes.barPosition
+    readonly property bool vertical: root.edge === "left" || root.edge === "right"
 
     // Nothing is repainted while there is nothing to see: the wave is at zero
     // opacity in silence, and a transparent Canvas costs exactly as much to
