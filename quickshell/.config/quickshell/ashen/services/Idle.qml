@@ -1,6 +1,7 @@
 // Ashen — idle timeouts (hypridle.conf generator).  by Adolf — github.com/AdolfLecompte
 pragma Singleton
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 // hypridle has no runtime API, so Settings writes its own copy of the config
@@ -94,4 +95,15 @@ Singleton {
     onSuspendSecsChanged: if (root.ready) root.write(true)
     // Keep Awake flipped: rewrite with or without listeners and restart.
     onModeChanged: if (root.ready) root.write(true)
+
+    // The lid. logind suspends on it unless someone holds an inhibitor, so
+    // anything but "suspend" holds one -- tied to this shell's own life: tail
+    // follows the shell's pid, and a crashed shell lets the lid suspend again.
+    Process {
+        running: Prefs.loaded && Prefs.lidAction !== "suspend"
+        command: ["sh", "-c",
+            'qs=$PPID; exec systemd-inhibit --what=handle-lid-switch --who=Ashen '
+            + '--why="Settings > System: closing the lid does not suspend" --mode=block '
+            + 'tail --pid="$qs" -f /dev/null']
+    }
 }

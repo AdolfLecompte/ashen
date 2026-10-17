@@ -18,6 +18,10 @@ Scope {
         function lock() {
             sessionLock.locked = true
         }
+        // The lid closed: locks unless Settings said the lid does nothing.
+        function lid() {
+            if (Services.Prefs.lidAction !== "nothing") sessionLock.locked = true
+        }
 
     }
 

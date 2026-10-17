@@ -106,9 +106,10 @@ hl.bind(K("switcherPrev", "ALT + SHIFT + Tab"), hl.dsp.exec_cmd("qs ipc -c ashen
 hl.bind(K("screenshot", mod .. " + SHIFT + S"), hl.dsp.exec_cmd("sh -c 'DEFAULT_TARGET_DIR=\"$HOME/Pictures/Screenshots\" SLURP_ARGS=\"-b 12121a99 -s 00000000 -c 6e6e7aff -w 2 -d\" grimblast copysave area && qs ipc -c ashen call notifications screenshot'"))
 hl.bind(K("lock", mod .. " + L"),         hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lock"))
 hl.bind(K("power", mod .. " + Escape"),    hl.dsp.exec_cmd("qs ipc -c ashen call power toggle"))
--- Closing the lid locks right away; logind still owns the suspend itself.
+-- Closing the lid locks right away (unless Settings > System says the lid does
+-- nothing); logind owns the suspend, which the shell inhibits for lock/nothing.
 -- Belt to hypridle's before_sleep_cmd: this fires even if the daemon is down.
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lock"), { locked = true })
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("qs ipc -c ashen call lockscreen lid"), { locked = true })
 
 -- Audio and brightness
 hl.bind("XF86AudioRaiseVolume",  hl.dsp.exec_cmd("sh -c 'wpctl set-mute @DEFAULT_AUDIO_SINK@ 0 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0 && qs ipc -c ashen call osd volume'"),  { locked = true, repeating = true })

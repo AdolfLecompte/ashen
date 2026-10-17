@@ -15,3 +15,4 @@ Section 1.0 Section.qml
 CommandField 1.0 CommandField.qml
 AppRow 1.0 AppRow.qml
 KeyChip 1.0 KeyChip.qml
+ProfileHero 1.0 ProfileHero.qml

@@ -378,6 +378,8 @@ Singleton {
     property int idleLockSecs: 300
     property int idleScreenOffSecs: 600
     property int idleSuspendSecs: 900
+    // Closing the lid: "suspend" (logind's own), "lock" or "nothing".
+    property string lidAction: "suspend"
 
     // Lock screen: the clock and the login are the screen itself; every card
     // around them is a reading you may not want a stranger to have, so each
@@ -448,7 +450,7 @@ Singleton {
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications",
         "workspaceStyle", "idleLockSecs",
-        "idleScreenOffSecs", "idleSuspendSecs", "barPosition", "barStyle",
+        "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle",
         "barLength", "barAutohide", "visualizer", "mediaLyrics",
         "nightLightEnabled", "nightLightScheduled", "nightLightTemp",
         "nightLightFrom", "nightLightTo"

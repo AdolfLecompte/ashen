@@ -16,9 +16,14 @@ Section {
     // button is the only confirmation a card like this can give.
     property string faceState: ""
 
-    // Idle steps in minutes; 0 means the listener is left out of hypridle.conf.
-    function stepIdle(secs, deltaMin) {
-        return Math.max(0, Math.min(120 * 60, secs + deltaMin * 60))
+    // Where an idle track can stop, in seconds; 0 leaves the listener out of
+    // hypridle.conf. A value saved between two stops reads as the nearest.
+    readonly property var idleSteps: [0, 60, 120, 300, 600, 900, 1200, 1800, 2700, 3600, 5400, 7200]
+    function idleStepOf(secs) {
+        let best = 0
+        for (let i = 0; i < tab.idleSteps.length; i++)
+            if (Math.abs(tab.idleSteps[i] - secs) < Math.abs(tab.idleSteps[best] - secs)) best = i
+        return best
     }
     function idleLabel(secs) {
         if (secs <= 0) return Services.I18n.t("common.never")
@@ -70,7 +75,19 @@ Section {
         }
     }
 
-    // The first card of the tab on purpose: everything below it is read in
+    // You first: the face the lock screen shows, at a size it deserves. It
+    // lives HERE, next to what the lock screen draws, and not in About.
+    ProfileHero {
+        action: tab.faceState === "picking" ? Services.I18n.t("settings.about.choosing")
+              : tab.faceState === "done" ? Services.I18n.t("settings.about.updated")
+              : tab.faceState === "failed" ? Services.I18n.t("settings.about.failed") : Services.I18n.t("common.change")
+        onTriggered: {
+            tab.faceState = "picking"
+            Services.Picker.open("profile", "")
+        }
+    }
+
+    // The first card under it on purpose: everything below it is read in
     // whatever this one says. Its own title travels with the pick, so the card
     // is the proof that the language changed.
     Card {
@@ -285,25 +302,6 @@ Section {
         }
     }
 
-    // The face the lock screen shows. It lives HERE, next to what the lock
-    // screen draws, and not in About: About is what this build and this
-    // machine are, and a portrait is neither.
-    PreviewCard {
-        source: Services.AppState.facePath
-        fallbackGlyph: "\uf0d3"
-        title: Services.I18n.t("settings.about.picture")
-        subtitle: Services.AppState.userLabel
-        // The button IS the progress report: there is nowhere else on this card
-        // to say that a dialog is open or that the copy landed.
-        action: tab.faceState === "picking" ? Services.I18n.t("settings.about.choosing")
-              : tab.faceState === "done" ? Services.I18n.t("settings.about.updated")
-              : tab.faceState === "failed" ? Services.I18n.t("settings.about.failed") : Services.I18n.t("common.change")
-        busy: tab.faceState === "picking"
-        onTriggered: {
-            tab.faceState = "picking"
-            Services.Picker.open("profile", "")
-        }
-    }
     // Puts the word back to "Change" once it has been read.
     Timer {
         id: faceStateTimer
@@ -356,56 +354,99 @@ Section {
     Card {
         title: Services.I18n.t("settings.system.idle")
 
-
+        // One row per listener: what it does, how long until it does, and a
+        // track to set it. Far left is never.
         Repeater {
             model: [
-                { key: "lock", label: Services.I18n.t("settings.system.idle.lock") },
-                { key: "screenOff", label: Services.I18n.t("settings.system.idle.screenOff") },
-                { key: "suspend", label: Services.I18n.t("settings.system.idle.suspend") },
+                { key: "lock", glyph: "\ue897", label: Services.I18n.t("settings.system.idle.lock") },
+                { key: "screenOff", glyph: "\uef5b", label: Services.I18n.t("settings.system.idle.screenOff") },
+                { key: "suspend", glyph: "\uef44", label: Services.I18n.t("settings.system.idle.suspend") },
             ]
-            // Label, value, the two buttons -- and no elastic spacer between them:
-            // with one there every row shared its leftover width differently, and
-            // the buttons stood in a different place on each line.
-            delegate: RowLayout {
+            delegate: ColumnLayout {
+                id: idleRow
                 required property var modelData
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 8
                 readonly property int secs: modelData.key === "lock" ? Services.Prefs.idleLockSecs
                     : modelData.key === "screenOff" ? Services.Prefs.idleScreenOffSecs
                     : Services.Prefs.idleSuspendSecs
                 function apply(v) {
+                    if (v === idleRow.secs) return
                     if (modelData.key === "lock") Services.Prefs.idleLockSecs = v
                     else if (modelData.key === "screenOff") Services.Prefs.idleScreenOffSecs = v
                     else Services.Prefs.idleSuspendSecs = v
                 }
+                // What the track is showing, while it is dragged too.
+                readonly property int shownSecs: tab.idleSteps[Math.round(track.shown * (tab.idleSteps.length - 1))]
 
-                Text {
-                    textFormat: Text.PlainText
+                RowLayout {
                     Layout.fillWidth: true
-                    text: modelData.label
-                    color: Services.Colors.snow
-                    font.pixelSize: Services.Sizes.fsBody
-                    font.family: "JetBrainsMono NF"
+                    spacing: 10
+                    Text {
+                        textFormat: Text.PlainText
+                        text: modelData.glyph
+                        color: idleRow.shownSecs > 0 ? Services.Colors.ghost : Services.Colors.mist
+                        font.pixelSize: 18
+                        font.family: "Material Symbols Rounded"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        Layout.fillWidth: true
+                        text: modelData.label
+                        color: Services.Colors.snow
+                        font.pixelSize: Services.Sizes.fsBody
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        text: tab.idleLabel(idleRow.shownSecs)
+                        color: idleRow.shownSecs > 0 ? Services.Colors.ghost : Services.Colors.mist
+                        font.pixelSize: Services.Sizes.fsBody
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
                 }
-                Text {
-                    textFormat: Text.PlainText
-                    text: tab.idleLabel(parent.secs)
-                    color: parent.secs > 0 ? Services.Colors.ghost : Services.Colors.mist
-                    font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                    Layout.preferredWidth: 64
-                    horizontalAlignment: Text.AlignRight
-                }
-                StepBtn {
-                    glyph: ""
-                    onClicked: parent.apply(tab.stepIdle(parent.secs, -5))
-                }
-                StepBtn {
-                    glyph: ""
-                    onClicked: parent.apply(tab.stepIdle(parent.secs, 5))
+                Widgets.SliderTrack {
+                    id: track
+                    Layout.fillWidth: true
+                    value: tab.idleStepOf(idleRow.secs) / (tab.idleSteps.length - 1)
+                    // Off reads as off: the track empties rather than holding a sliver.
+                    onMoved: ratio => idleRow.apply(tab.idleSteps[Math.round(ratio * (tab.idleSteps.length - 1))])
                 }
             }
+        }
+
+        // What the lid does. Anything but suspend holds an inhibitor so logind
+        // leaves the machine on.
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 6
+            spacing: 10
+            Text {
+                textFormat: Text.PlainText
+                text: "\ue31e"
+                color: Services.Colors.ghost
+                font.pixelSize: 18
+                font.family: "Material Symbols Rounded"
+            }
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: Services.I18n.t("settings.system.lid")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsBody
+                font.family: "JetBrainsMono NF"
+            }
+        }
+        Segmented {
+            Layout.fillWidth: true
+            options: [
+                { id: "suspend", label: Services.I18n.t("settings.system.lid.suspend") },
+                { id: "lock",    label: Services.I18n.t("settings.system.lid.lock") },
+                { id: "nothing", label: Services.I18n.t("settings.system.lid.nothing") }
+            ]
+            current: Services.Prefs.lidAction
+            onPicked: id => Services.Prefs.lidAction = id
         }
 
         Text {
