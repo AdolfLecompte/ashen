@@ -156,23 +156,86 @@ DesktopWidget {
         }
     }
 
-    // The flat one: the same wall of mirrored bars the media widget wears, at
-    // whatever width the size axis asks for.
-    component Band: Item {
-        implicitWidth: root.dia * 1.6
-        implicitHeight: root.dia * 0.5
+    // The flat one: the song named small, the sound taking the room under it,
+    // at whatever width the size axis asks for.
+    component Wave: Column {
+        readonly property real w: root.dia * 1.36
+        spacing: 10
+
+        Row {
+            spacing: 12
+            ClippingRectangle {
+                id: cover
+                width: 44
+                height: 44
+                anchors.verticalCenter: parent.verticalCenter
+                radius: Services.Sizes.cardR
+                color: Services.Colors.fillInset
+                Image {
+                    anchors.fill: parent
+                    source: root.art
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    cache: false
+                    visible: status === Image.Ready
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.centerIn: parent
+                    visible: root.art === ""
+                    text: "\ue405"
+                    color: Services.Colors.ash
+                    font.pixelSize: 18
+                    font.family: "Material Symbols Rounded"
+                }
+            }
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 1
+                width: parent.parent.w - cover.width - 12
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width
+                    text: Services.Media.title !== "" ? Services.Media.title : root.idleLine
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                    elide: Text.ElideRight
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width
+                    visible: text !== ""
+                    text: Services.Media.artist
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                    elide: Text.ElideRight
+                }
+            }
+        }
 
         Spectrum {
-            anchors.fill: parent
+            width: parent.w
+            height: root.dia * 0.41
             live: root.live
             color_: Services.Colors.ghost
         }
     }
 
+    // Nothing playing, said rather than labelled.
+    property string idleLine: Services.Voice.pick("media.quiet")
+    Connections {
+        target: Services.Voice
+        function onBaseChanged() { if (root.idleLine === "") root.idleLine = Services.Voice.pick("media.quiet") }
+        function onBankChanged() { if (root.idleLine === "") root.idleLine = Services.Voice.pick("media.quiet") }
+    }
+
     Component { id: ringShape; Ring {} }
-    Component { id: bandShape; Band {} }
+    Component { id: waveShape; Wave {} }
 
     Loader {
-        sourceComponent: root.style === "bars" ? bandShape : ringShape
+        sourceComponent: root.style === "wave" ? waveShape : ringShape
     }
 }

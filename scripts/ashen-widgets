@@ -25,7 +25,7 @@ ashen-widgets — arrange the widgets on the wallpaper
   ashen-widgets src   <name> <path>
 
 Names are the ones `list` prints: clock, weather, media, system, battery,
-calendar, sun, timer, notify, updates, disks, machine, visualizer, image:1…
+calendar, sun, timer, notify, updates, disks, machine, visualizer, lyrics, image:1…
 EOF
 }
 

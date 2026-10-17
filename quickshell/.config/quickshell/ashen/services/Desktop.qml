@@ -33,9 +33,13 @@ Singleton {
             { id: "hourly", label: "Curve" }] },
         { id: "media", group: "media", label: "Music", glyph: "\ue405", x: 80, y: 640, styles: [
             { id: "full", label: "Full" },
-            { id: "compact", label: "Compact" },
-            { id: "wave", label: "Wave" },
-            { id: "lyrics", label: "Lyrics" }] },
+            { id: "compact", label: "Compact" }] },
+        // Its own widget, not a shape of the music one: reading the words
+        // cost the play button.
+        { id: "lyrics", group: "media", label: "Lyrics", glyph: "\uec0b", x: 1180, y: 640, styles: [
+            { id: "page", label: "Page" },
+            { id: "line", label: "Line" },
+            { id: "focus", label: "Focus" }] },
         // Two axes: how much it shows, and how it draws a level. Wanting the
         // big one without water is exactly what one axis cannot say.
         { id: "system", group: "machine", label: "System", glyph: "\ueaa2", x: 80, y: 880,
@@ -81,7 +85,7 @@ Singleton {
         { id: "visualizer", group: "media", label: "Visualizer", glyph: "\ue1b8", x: 700, y: 120,
           styles: [
             { id: "ring", label: "Ring" },
-            { id: "bars", label: "Bars" }],
+            { id: "wave", label: "Wave" }],
           skins: [
             { id: "medium", label: "M" },
             { id: "small", label: "S" },
@@ -455,10 +459,35 @@ Singleton {
         if (Prefs.desktopLayout === "") { root.layout = ({}); return }
         try {
             const parsed = JSON.parse(Prefs.desktopLayout)
-            root.layout = (parsed && typeof parsed === "object") ? parsed : ({})
+            root.layout = root.migrate((parsed && typeof parsed === "object") ? parsed : ({}))
         } catch (e) {
             root.layout = ({})
         }
+    }
+
+    // Lyrics and the wave used to be shapes of the music widget. A layout that
+    // wore one gets the widget that owns it now in that spot, and the music
+    // widget steps aside. The visualizer's bars became its wave.
+    function migrate(l) {
+        let next = l
+        const m = l.media
+        const v = l.visualizer
+        if (v && v.style === "bars") {
+            next = Object.assign({}, next)
+            next.visualizer = Object.assign({}, v, { style: "wave" })
+        }
+        const moves = { lyrics: ["lyrics", "page"], wave: ["visualizer", "wave"] }
+        const to = m ? moves[m.style] : undefined
+        if (to) {
+            next = Object.assign({}, next)
+            const [id, style] = to
+            // One already out keeps its place; the music one just changes shape.
+            if (!next[id] || !next[id].on)
+                next[id] = Object.assign({}, next[id] || {}, { on: m.on, x: m.x, y: m.y, scr: m.scr, style: style })
+            next.media = Object.assign({}, m, { style: "full", on: next[id].on && next[id].x === m.x && next[id].y === m.y ? false : m.on })
+        }
+        if (next !== l) saveSoon.restart()
+        return next
     }
 
     // Nothing builds a singleton until someone reads it, and the layer needs

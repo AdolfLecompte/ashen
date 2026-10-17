@@ -75,7 +75,7 @@ PanelWindow {
         id: holes
         // Only the widgets that live on this screen cut holes in it.
         model: ["clock", "weather", "media", "system", "battery", "calendar", "sun",
-                "timer", "usage", "notify", "updates", "disks", "machine", "visualizer"]
+                "timer", "usage", "notify", "updates", "disks", "machine", "visualizer", "lyrics"]
                .concat(Services.Desktop.idsOf("image"))
                .filter(id => Services.Desktop.screenOf(id) === desk.hostKey)
         delegate: Hole {
@@ -134,6 +134,7 @@ PanelWindow {
         WidgetSlot { wid: "disks";    hostKey: desk.hostKey; live: desk.awake; source: Component { DisksWidget {} } }
         WidgetSlot { wid: "machine";  hostKey: desk.hostKey; live: desk.awake; source: Component { MachineWidget {} } }
         WidgetSlot { wid: "visualizer"; hostKey: desk.hostKey; live: desk.awake; source: Component { VisualizerWidget {} } }
+        WidgetSlot { wid: "lyrics";   hostKey: desk.hostKey; live: desk.awake; source: Component { LyricsWidget {} } }
 
         // The one you can have several of: a slot per record, not per entry in
         // the catalogue.
