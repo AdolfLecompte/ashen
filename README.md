@@ -55,7 +55,14 @@ That line is the whole thing. What it does, in order:
 
 ### What the installer does
 
-It draws five steps and rewrites them in place as it goes:
+First it asks three things, with the arrow keys: the **language** of the shell
+(English, Español, Deutsch, Русский), the **keyboard layout** and the **system
+language**. The layout goes to Hyprland and to the login screen, so the
+password is typed on it too; more can be added later in Settings. The system
+language is generated with `locale-gen` and set with `localectl`, and keeping
+the current one is the default.
+
+Then it draws five steps and rewrites them in place as it goes:
 
 ```
   ✓ packages      ██████████████████  62/62
@@ -99,6 +106,9 @@ system services and added you to a group, and a logout shows none of that.
 | Flag | Effect |
 |---|---|
 | `--dry-run` | says everything, touches nothing — not even its own log |
+| `ASHEN_LANG=es` | skips the language question (`en` `es` `de` `ru`) |
+| `ASHEN_KB=latam` | skips the keyboard question (any XKB layout code) |
+| `ASHEN_LOCALE=es_MX` | skips the system language question (any glibc locale) |
 
 ### If it is already installed
 
@@ -190,7 +200,8 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   arrangement comes back when a screen is plugged in again.
 - **Screen time** — how long each application had you today and across the
   week, counted only while you are at the machine. A panel, an optional pill and
-  a desktop widget; the numbers never leave `~/.config/ashen`.
+  a desktop widget with each app's own icon; the numbers never leave
+  `~/.config/ashen`.
 - **Game mode** — one key flattens the compositor (no animations, blur, shadows,
   rounding or gaps) and quiets the shell, then puts everything back exactly as it
   was, your screen layout included.
@@ -200,6 +211,8 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   memory, drives and temperatures as levels.
 - **Launcher, clipboard, and Settings with a search** that takes you to the row.
 - **Four languages** — English, Spanish, Russian and German, switched on the spot.
+  The shortcut list, the welcome and the release notes follow it too; the notes
+  are read from `i18n/changelog.<lang>.md` and fall back to English.
 - **Dynamic theming** — the wallpaper picker runs `matugen` over the image you
   choose and the whole shell re-colours from `~/.cache/ashen_scheme.json`.
 
@@ -231,7 +244,7 @@ fzf zoxide eza bat fd
 ### AUR (via `paru`, `yay`, …)
 
 ```
-grimblast-git bibata-cursor-theme mpvpaper zsh-theme-powerlevel10k
+grimblast-git bibata-cursor-theme-bin mpvpaper zsh-theme-powerlevel10k
 ```
 
 - **quickshell** is the stable package from `extra`, never `quickshell-git`: the
@@ -341,8 +354,9 @@ Two things to expect on that first run:
 Every one of these can be changed from **Settings → Input**.
 
 The keyboard layout pill in the bar is **read-only**. Layouts are declared in
-`hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`) and switched from
-**Settings → Input**.
+`hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`, or what the installer was
+told) and switched from **Settings → Input**. Every keyboard follows the pick,
+including one that is plugged in or wakes up later.
 
 ## Notes
 
@@ -360,7 +374,7 @@ The keyboard layout pill in the bar is **read-only**. Layouts are declared in
 The first time the shell runs it opens a welcome card with the keys that matter.
 It comes back with `ashen-welcome`, and `ashen-welcome notes` shows what changed
 in the version you are running — the same notes as `CHANGELOG.md`, because it
-reads that file.
+reads that file (or its translation, when there is one for your language).
 
 `ashen-widgets` does the same job for the desktop: `ashen-widgets` toggles the
 editor, `ashen-widgets list` says what is out there and where.

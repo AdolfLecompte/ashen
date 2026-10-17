@@ -2,6 +2,16 @@
 
 ## 3.3.1
 
+### Added
+- The lock screen shows the music's wave along its top edge, at rest and
+  while logging in -- the same one the bar draws.
+- **The installer asks three things first**, with the arrow keys: the shell's
+  language, the keyboard layout (it reaches the login screen too) and the
+  system language (`locale-gen` + `localectl`; keeping the current one is the
+  default). `ASHEN_LANG`, `ASHEN_KB` and `ASHEN_LOCALE` skip each question.
+- The welcome and the release notes come in your language: Spanish, German
+  and Russian notes live in `i18n/changelog.<lang>.md`, English otherwise.
+
 ### Changed
 - **Workspaces.** Counting windows is now a switch for every style instead
   of a style of its own: Settings > Bar > Layout > Workspaces > *Count
@@ -13,8 +23,26 @@
   Pac-Man.
 - In the icons style an empty workspace shows an empty ring instead of its
   number.
+- The screen time widget looks like the other widgets: each app's own icon
+  on a badge, its time, and a bar for its share of the day.
+- More of the shell speaks your language: the shortcut list in Settings >
+  Input, the pill names, the widget tray, the widget shapes, the picker's
+  folders and the default apps.
 
 ### Fixed
+- **Two keyboards, two layouts.** Hyprland keeps a layout per keyboard, and
+  one that appeared later (a wireless receiver waking up, a USB plug, the
+  login) started on the first layout while the rest stayed on your pick.
+  Every keyboard now follows the pick, and a late one is caught within a few
+  seconds.
+- The installer failed on the cursor: `bibata-cursor-theme` builds from source
+  and needs another AUR package, so it installs `bibata-cursor-theme-bin` now.
+  Its retry line no longer tells you to get AUR packages from pacman.
+- Desktop widgets are out of the visualiser switch: with it off, the bar, the
+  music panel and the lock screen go quiet, but the visualiser and music
+  widgets keep moving -- cava keeps listening while one of them is out.
+- The bar's music wave was switched off in the island style; it shows there
+  now, between the plates, the way it does between pills.
 - Pac-Man slides from workspace to workspace like the other styles'
   indicator, instead of blinking from one chip to the next.
 - A ghost stands only where there really are windows: the workspace you had
