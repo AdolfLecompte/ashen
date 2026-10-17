@@ -29,6 +29,8 @@ source "$ASHEN_REPO/install/lib/pkgs.sh"
 source "$ASHEN_REPO/install/lib/dots.sh"
 # shellcheck source=/dev/null
 source "$ASHEN_REPO/install/lib/sddm.sh"
+# shellcheck source=/dev/null
+source "$ASHEN_REPO/install/lib/choices.sh"
 
 # A dry run touches nothing at all -- not even its own log, which is still a
 # file appearing in a home that asked for a rehearsal.
@@ -63,6 +65,9 @@ printf '\n'
 if [ -t 1 ]; then ashen_logo_tinted; else ashen_logo; fi
 printf '\n'
 
+# Asked before anything installs, so the rest runs unattended.
+choices_ask
+
 tui_steps "packages" "dotfiles" "login screen" "services" "folders"
 
 tui_step 0 run
@@ -86,7 +91,10 @@ fi
 tui_note 0 "${#PKG_OK[@]} new · ${#PKG_HAVE[@]} there · ${#PKG_FAILED[@]} failed"
 if [ "${#PKG_FAILED[@]}" -eq 0 ]; then tui_step 0 ok; else tui_step 0 bad; fi
 tui_step 1 run
-if tui_run dots_place; then tui_step 1 ok; else tui_step 1 bad; fi
+ok=1
+tui_run dots_place || ok=0
+tui_run choices_apply || ok=0
+if [ "$ok" -eq 1 ]; then tui_step 1 ok; else tui_step 1 bad; fi
 tui_step 2 run
 if tui_run sddm_install; then tui_step 2 ok; else tui_step 2 bad; fi
 tui_step 3 run
