@@ -316,6 +316,36 @@ Section {
 
     }
 
+    // What the touchpad does, read from conf/gestures.lua like the shortcuts
+    // are from keybinds.lua: a gesture added there shows up here.
+    Card {
+        title: Services.I18n.t("settings.input.gestures")
+        visible: Services.Keybinds.gestures.length > 0
+
+        Repeater {
+            model: Services.Keybinds.gestures
+            delegate: RowLayout {
+                required property var modelData
+                Layout.fillWidth: true
+                spacing: 14
+                KeyChip {
+                    Layout.preferredWidth: 240
+                    wid: ""
+                    plain: modelData.keys
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: modelData.action
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.family: "JetBrainsMono NF"
+                    elide: Text.ElideRight
+                }
+            }
+        }
+    }
+
     Card {
         title: Services.I18n.t("settings.input.shortcuts")
 

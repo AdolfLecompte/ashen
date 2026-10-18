@@ -166,6 +166,14 @@ Item {
         }
     }
 
+    // A named special has its own glyph; any other -- the scratchpad -- holds
+    // whatever app you put there, so it shows that app's, like a normal chip.
+    // Idea from RchrdAriza's PR #2.
+    function specialGlyph(id, name) {
+        if (["music", "discord", "notes", "fav"].indexOf(name) !== -1) return root.specialIcon(name)
+        const app = Services.Windows.workspaceIcon(id)
+        return app !== "" ? app : root.specialIcon(name)
+    }
     function specialIcon(name) {
         if (name === "music")   return ""
         if (name === "discord") return ""
@@ -505,7 +513,7 @@ Item {
                     // Pac-Man stands on the one that is open.
                     readonly property bool eaten: root.pacman && isShown
                     readonly property string label: eaten ? root.glyphPacman
-                        : root.kanji ? root.specialKanji(shortName) : root.specialIcon(shortName)
+                        : root.kanji ? root.specialKanji(shortName) : root.specialGlyph(modelData.id, shortName)
                     readonly property int along: root.innerH
                     readonly property int wins: root.counted ? Math.min(3, Services.Windows.windowCount(modelData.id)) : 0
                     readonly property color ink: root.pacman

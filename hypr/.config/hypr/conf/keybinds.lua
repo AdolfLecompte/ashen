@@ -84,6 +84,8 @@ hl.bind(K("spMusic", mod .. " + M"), hl.dsp.workspace.toggle_special("music"))
 hl.bind(K("spDiscord", mod .. " + D"), hl.dsp.workspace.toggle_special("discord"))
 hl.bind(K("spNotes", mod .. " + O"), hl.dsp.workspace.toggle_special("notes"))
 hl.bind(K("spFav", mod .. " + X"), hl.dsp.workspace.toggle_special("fav"))
+-- A scratchpad: any window, kept out of the way until you want it back.
+hl.bind(K("spScratch", mod .. " + S"), hl.dsp.workspace.toggle_special("scratch"))
 
 -- Send to a special workspace
 -- ALT sends, the way it does for the numbered workspaces. Silent: the window
@@ -92,6 +94,7 @@ hl.bind(K("toMusic", mod .. " + ALT + M"),   hl.dsp.window.move({ workspace = "s
 hl.bind(K("toDiscord", mod .. " + ALT + D"), hl.dsp.window.move({ workspace = "special:discord", silent = true }))
 hl.bind(K("toNotes", mod .. " + ALT + O"),   hl.dsp.window.move({ workspace = "special:notes",   silent = true }))
 hl.bind(K("toFav", mod .. " + ALT + X"),     hl.dsp.window.move({ workspace = "special:fav",     silent = true }))
+hl.bind(K("toScratch", mod .. " + ALT + S"), hl.dsp.window.move({ workspace = "special:scratch", silent = true }))
 
 -- Window switcher: the same call opens it and steps through it
 hl.bind(K("switcherNext", "ALT + Tab"),         hl.dsp.exec_cmd("qs ipc -c ashen call switcher next"), { repeating = true })

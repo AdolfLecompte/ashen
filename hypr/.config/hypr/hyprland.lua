@@ -14,6 +14,7 @@ require("conf/animations")
 
 -- Input
 require("conf/input")
+require("conf/gestures")
 require("conf/keybinds")
 
 -- Rules & Workspaces

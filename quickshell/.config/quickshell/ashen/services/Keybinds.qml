@@ -215,4 +215,61 @@ Singleton {
         onLoaded: root.raw = text()
         onLoadFailed: root.raw = ""
     }
+
+    // ── Touchpad gestures (conf/gestures.lua) ───────────────────────────
+    // Blocks span several lines, so the bind parser above does not see them.
+    // Same rule: anything not recognised is shown raw rather than dropped.
+    readonly property string gesturePath: Paths.home + "/.config/hypr/conf/gestures.lua"
+    property string gestureRaw: ""
+    // [{ keys, action }], worded in the shell's language.
+    readonly property var gestures: { I18n.lang; I18n.dict; return root.parseGestures(root.gestureRaw) }
+
+    // Each `hl.gesture({ ... })` body, braces matched, strings skipped.
+    function gestureBlocks(text) {
+        let out = [], i = 0
+        while (true) {
+            i = text.indexOf("hl.gesture(", i)
+            if (i === -1) break
+            const open = text.indexOf("{", i)
+            if (open === -1) break
+            let depth = 0, quote = "", j = open
+            for (; j < text.length; j++) {
+                const ch = text[j]
+                if (quote !== "") { if (ch === quote && text[j - 1] !== "\\") quote = ""; continue }
+                if (ch === '"' || ch === "'") { quote = ch; continue }
+                if (ch === "{") depth++
+                else if (ch === "}") { depth--; if (depth === 0) { j++; break } }
+            }
+            out.push(text.slice(open, j))
+            i = j
+        }
+        return out
+    }
+    function gestureKeys(block) {
+        const f = block.match(/fingers\s*=\s*(\d+)/)
+        const d = block.match(/direction\s*=\s*"(\w+)"/)
+        const dir = d ? root.say("gdir." + d[1], d[1]) : "?"
+        return root.say("gfingers", "{n} fingers", { n: f ? f[1] : "?" }) + " · " + dir
+    }
+    function gestureAction(block) {
+        const ipc = block.match(/qs ipc -c ashen call (\w+) (\w+)/)
+        if (ipc) return root.ipcLabel("call " + ipc[1] + " " + ipc[2]) || ipc[1]
+        const sp = block.match(/toggle_special\(\s*"(\w+)"/)
+        if (sp) return root.say("special", "Special workspace: {name}", { name: sp[1] })
+        const a = block.match(/action\s*=\s*"(\w+)"/)
+        if (a) return root.say("gact." + a[1], a[1])
+        return root.say("gact.custom", "Custom action")
+    }
+    function parseGestures(text) {
+        if (text === "") return []
+        return root.gestureBlocks(text).map(b => ({ keys: root.gestureKeys(b), action: root.gestureAction(b) }))
+    }
+
+    FileView {
+        path: root.gesturePath
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: root.gestureRaw = text()
+        onLoadFailed: root.gestureRaw = ""
+    }
 }

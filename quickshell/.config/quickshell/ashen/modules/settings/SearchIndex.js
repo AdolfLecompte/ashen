@@ -118,6 +118,7 @@ var entries = [
     ["sound", "settings.sound.saveTo"],
     ["sound", "settings.tab.notifications"],
     ["input", "settings.input.changed"],
+    ["input", "settings.input.gestures"],
     ["input", "settings.input.inUse"],
     ["input", "settings.input.layout"],
     ["input", "settings.input.max"],
