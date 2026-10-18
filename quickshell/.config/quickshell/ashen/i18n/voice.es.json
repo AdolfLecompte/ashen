@@ -422,5 +422,13 @@
     "sin tiempo de pantalla por ahora",
     "la cuenta está en blanco",
     "el reloj te espera"
+  ],
+  "update.out": [
+    "salió una nueva",
+    "hay una versión más fresca",
+    "recién salida",
+    "algo nuevo que traer",
+    "ya llegó la siguiente",
+    "vale la pena mirarla"
   ]
 }

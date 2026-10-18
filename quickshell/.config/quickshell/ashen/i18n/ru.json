@@ -265,7 +265,7 @@
   "proc.discrete": "Дискретная",
   "proc.integrated": "Встроенная",
   "proc.ofTotal": "из {n} ГБ",
-  "usb.title": "USB-устройства",
+  "usb.title": "USB",
   "usb.mount": "Подключить",
   "usb.unmount": "Отключить",
   "volume.output": "Выход",
@@ -538,5 +538,15 @@
   "settings.system.lid.suspend": "Сон",
   "settings.system.lid.lock": "Только блокировка",
   "settings.system.lid.nothing": "Ничего",
-  "settings.dock.dropUnpin": "Отпустите здесь, чтобы открепить"
+  "settings.dock.dropUnpin": "Отпустите здесь, чтобы открепить",
+  "usb.toast": "USB",
+  "usb.eject": "Извлечь",
+  "usb.working": "…",
+  "usb.free": "{n} свободно",
+  "usb.ejected": "{name} можно извлечь",
+  "usb.busy": "{name} используется",
+  "usb.failed.mount": "Не удалось подключить {name}",
+  "usb.failed.unmount": "Не удалось отключить {name}",
+  "usb.failed.eject": "Не удалось извлечь {name}",
+  "settings.about.notify": "Сообщать о новых версиях"
 }

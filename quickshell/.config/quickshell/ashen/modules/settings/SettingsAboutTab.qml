@@ -272,9 +272,27 @@ Section {
                     if (Services.Release.checkState !== "available") { Services.Release.check(); return }
                     // Running the installer again IS the update. The terminal is
                     // whichever one Settings was told to open, never a name.
-                    Quickshell.execDetached(["sh", "-c",
-                        "ashen-app terminal -e sh -c 'bash \"$HOME/ashen/install/run.sh\"; read -n1'"])
+                    Quickshell.execDetached(["sh", "-c", Services.Release.updateCmd])
                 }
+
+        // Whether the shell may look for a newer release by itself.
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+            RowGlyph { glyph: "\ue7f4" }
+            Text {
+                textFormat: Text.PlainText
+                text: Services.I18n.t("settings.about.notify")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+            }
+            Item { Layout.fillWidth: true }
+            Toggle {
+                checked: Services.Prefs.updateNotify
+                onToggled: Services.Prefs.updateNotify = !Services.Prefs.updateNotify
+            }
+        }
             }
         }
     }

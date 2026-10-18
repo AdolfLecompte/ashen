@@ -384,6 +384,8 @@ Singleton {
     // Lock screen: the clock and the login are the screen itself; every card
     // around them is a reading you may not want a stranger to have, so each
     // one is its own switch.
+    // Ask GitHub now and then for a newer release and say so, once per version.
+    property bool updateNotify: true
     property bool lockShowMedia: true
     property bool lockShowWeather: true
     property bool lockShowMachine: true
@@ -448,7 +450,7 @@ Singleton {
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
-        "lockShowMachine", "lockShowSystem", "lockShowNotifications",
+        "lockShowMachine", "lockShowSystem", "lockShowNotifications", "updateNotify",
         "workspaceStyle", "idleLockSecs",
         "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle",
         "barLength", "barAutohide", "visualizer", "mediaLyrics",

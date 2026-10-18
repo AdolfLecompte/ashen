@@ -265,7 +265,7 @@
   "proc.discrete": "Discrete",
   "proc.integrated": "Integrated",
   "proc.ofTotal": "of {n} GB",
-  "usb.title": "USB Devices",
+  "usb.title": "USB",
   "usb.mount": "Mount",
   "usb.unmount": "Unmount",
   "volume.output": "Output",
@@ -538,5 +538,15 @@
   "settings.system.lid.suspend": "Suspend",
   "settings.system.lid.lock": "Lock only",
   "settings.system.lid.nothing": "Nothing",
-  "settings.dock.dropUnpin": "Drop here to unpin"
+  "settings.dock.dropUnpin": "Drop here to unpin",
+  "usb.toast": "USB",
+  "usb.eject": "Eject",
+  "usb.working": "…",
+  "usb.free": "{n} free",
+  "usb.ejected": "{name} can be removed",
+  "usb.busy": "{name} is in use",
+  "usb.failed.mount": "Couldn't mount {name}",
+  "usb.failed.unmount": "Couldn't unmount {name}",
+  "usb.failed.eject": "Couldn't eject {name}",
+  "settings.about.notify": "Tell me about new releases"
 }

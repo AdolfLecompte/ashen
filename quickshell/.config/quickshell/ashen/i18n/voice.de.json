@@ -422,5 +422,13 @@
     "bisher keine bildschirmzeit",
     "ein leeres blatt",
     "die uhr wartet auf dich"
+  ],
+  "update.out": [
+    "eine neue ist da",
+    "frisch erschienen",
+    "es gibt eine neuere",
+    "etwas Neues zum Holen",
+    "die nächste ist gelandet",
+    "einen Blick wert"
   ]
 }

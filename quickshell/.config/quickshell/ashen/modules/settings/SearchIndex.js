@@ -190,6 +190,7 @@ var entries = [
     ["about", "settings.about.machine"],
     ["about", "settings.about.memory"],
     ["about", "settings.about.monitor"],
+    ["about", "settings.about.notify"],
     ["about", "settings.about.packages"],
     ["about", "settings.about.product"],
     ["about", "settings.about.read"],

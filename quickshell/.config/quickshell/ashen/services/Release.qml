@@ -127,6 +127,43 @@ Singleton {
         onExited: (code) => { if (code !== 0) { root.checking = false; root.checkState = "failed" } }
     }
 
+    // ── Telling you, without being asked ────────────────────────────────
+    // A minute into the session and every six hours after, a quiet look at the
+    // newest RELEASE (never a commit). Said once per version, as a toast with
+    // the same Update the About tab has; anything else -- no network, up to
+    // date, a checkout ahead of the tag -- stays silent.
+    property string notifiedTag: ""
+    readonly property string updateCmd:
+        "ashen-app terminal -e sh -c 'bash \"$HOME/ashen/install/run.sh\"; read -n1'"
+    Timer {
+        id: autoCheck
+        interval: root.notifiedTag === "" && autoCheck.first ? 60 * 1000 : 6 * 3600 * 1000
+        property bool first: true
+        running: root.loaded && Prefs.updateNotify
+        repeat: true
+        onTriggered: { autoCheck.first = false; root.check() }
+    }
+    onCheckStateChanged: {
+        if (root.checkState !== "available" || !Prefs.updateNotify) return
+        if (root.latest === "" || root.latest === root.notifiedTag) return
+        root.notifiedTag = root.latest
+        seenFile.writeAdapter()
+        // The version is information, so it is the title; the line under it
+        // is a remark from the phrase bank, like every other toast.
+        Notifications.addSystemToast(Voice.pick("update.out"), "\ue8d7", false,
+            "update", {
+                title: "Ashen " + root.latest,
+                // Longer than a passing toast, and kept in the history.
+                holdScale: 2,
+                keep: true,
+                app: "Ashen",
+                actions: [
+                    { id: "default", run: "qs -c ashen ipc call settings tab about" },
+                    { id: "update", text: I18n.t("settings.about.update"), run: root.updateCmd }
+                ]
+            })
+    }
+
     // What the row SAYS about all that. Not a label -- a remark, so it comes
     // from the phrase bank like every other line the shell offers rather than
     // states. A binding, deliberately: the bank arrives asynchronously and a
@@ -194,6 +231,7 @@ Singleton {
         JsonAdapter {
             property alias seenVersion: root.seenVersion
             property alias everRun: root.everRun
+            property alias notifiedTag: root.notifiedTag
         }
     }
 }

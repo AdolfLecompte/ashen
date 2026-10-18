@@ -35,6 +35,8 @@ Singleton {
     function popupHold(entry) {
         // Critical never ages out on its own; it has to be acknowledged.
         if (entry.urgency === 2) return 0
+        // A caller that knows its toast matters more than most asks for longer.
+        if (entry.holdScale > 1) return Math.max(1, Prefs.toastSeconds) * 1000 * entry.holdScale
         // 1.8 s is enough to READ a system toast, but not to look at a picture
         // or reach for it: one carrying a shot gets a full notice's time.
         if (entry.source === "system")
@@ -236,10 +238,11 @@ Singleton {
     function invokeAction(id, actionId) {
         // A system toast is the shell talking to itself: there is no live
         // Notification to invoke, only a shell line the toast was built with.
-        const sys = root.activePopups.find(p => p.id === id && p.source === "system")
+        const sys = root.systemEntry(id)
         if (sys) {
             const act = (sys.actions || []).find(a => a.id === actionId)
             if (act && act.run) Quickshell.execDetached(["sh", "-c", act.run])
+            root.markRead(id)
             root.beginLeave(id, true)
             return
         }
@@ -262,6 +265,13 @@ Singleton {
     // From the history: same destination, but the entry stays. A record you
     // click should not vanish because you followed it.
     function activateFromHistory(id) {
+        const sys = root.history.find(e => e.id === id && e.source === "system")
+        if (sys) {
+            const act = (sys.actions || []).find(a => a.id === "default")
+            if (act && act.run) Quickshell.execDetached(["sh", "-c", act.run])
+            root.markRead(id)
+            return
+        }
         const n = root.liveNotifs[id]
         if (n) {
             const acts = n.actions || []
@@ -508,7 +518,7 @@ Singleton {
     // The history is one long column of rows otherwise, and a chatty app buries
     // everything else. Groups come out newest-first because the history is.
     function groupKey(entry) {
-        if (entry.source === "system") return "System"
+        if (entry.source === "system") return entry.appName && entry.appName !== "System" ? entry.appName : "System"
         return entry.appName || "Unknown"
     }
 
@@ -582,12 +592,25 @@ Singleton {
             icon: "",
             image: (opts && opts.image) || "",
             actions: (opts && opts.actions) || [],
+            holdScale: (opts && opts.holdScale) || 1,
             urgency: 0,
             source: "system",
             id: Date.now() + "-" + Math.floor(Math.random() * 100000),
             timestamp: Date.now()
         }
         root.pushPopup(entry)
+        // Kept in the history too when it says something you may have missed
+        // (a new release); its buttons still work from there.
+        if (opts && opts.keep) {
+            const kept = Object.assign({}, entry, { read: false, appName: opts.app || "System" })
+            root.history = [kept].concat(root.history).slice(0, 300)
+            saveHistory()
+        }
+    }
+    // The system entry with this id, on screen or kept in the history.
+    function systemEntry(id) {
+        return root.activePopups.find(p => p.id === id && p.source === "system")
+            || root.history.find(e => e.id === id && e.source === "system")
     }
 
     // The screenshot keybind saves the file and then calls the shell, but it
