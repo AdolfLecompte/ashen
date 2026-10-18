@@ -2,7 +2,8 @@
 # ══════════════════════════════════════════
 #   Ashen — open one of the four apps the keybinds reach for
 #
-#   usage: ashen-app terminal|browser|files|editor
+#   usage: ashen-app terminal|browser|files|editor [arg…]
+#   (anything after the kind is handed to the app: `ashen-app files /mnt/x`)
 #
 #   What it opens, in order:
 #     1. what Settings > Devices > Keyboard has for it (~/.config/ashen/apps.json)
@@ -81,5 +82,9 @@ case "$what" in
     *)
         echo "unknown app: $what (terminal|browser|files|editor)" >&2; exit 2 ;;
 esac
+
+# What comes after the kind goes to the app, quoted for the shell it runs in.
+shift
+for a in "$@"; do cmd+=" $(printf '%q' "$a")"; done
 
 exec setsid sh -c "$cmd" >/dev/null 2>&1 &

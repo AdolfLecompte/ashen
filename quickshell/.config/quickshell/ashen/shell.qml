@@ -444,6 +444,12 @@ ShellRoot {
     // the bar and there was no way to record at all.
     // Screen time, for a script or a status line: today's apps and the week, as
     // JSON in seconds.
+    // The USB panel, and what the shell thinks is plugged in.
+    IpcHandler {
+        target: "usb"
+        function toggle() { Services.AppState.togglePanel("usbVisible") }
+        function state(): string { return JSON.stringify(Services.USB.drives) }
+    }
     IpcHandler {
         target: "usage"
         function toggle() { Services.AppState.togglePanel("usageVisible") }

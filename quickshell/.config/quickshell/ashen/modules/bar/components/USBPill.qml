@@ -13,12 +13,9 @@ Rectangle {
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
     Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
-    readonly property bool anyMounted: {
-        for (let d of Services.USB.devices) {
-            if (d.mountpoint && d.mountpoint.length > 0) return true
-        }
-        return false
-    }
+    // Something on it is mounted: said by the glyph alone, the way the other
+    // pills say a state. Filling the whole pill read as it lighting up.
+    readonly property bool anyMounted: Services.USB.anyMounted
 
     // While its panel is up the pill IS the panel: it steps aside so the drop
     // that grew out of its rect reads as the pill falling open. Same relay the
@@ -40,12 +37,12 @@ Rectangle {
     }
     Timer {
         id: handBack
-        interval: Services.Sizes.panelCloseMs - 40
+        interval: Services.Sizes.panelHandBackMs
         onTriggered: root.takenOver = false
     }
 
     readonly property bool vertical: Services.Sizes.barVertical
-    readonly property bool present: Services.USB.devices.length > 0
+    readonly property bool present: Services.USB.drives.length > 0
 
     // Collapses along the bar's own axis: width on a horizontal bar, height on
     // a vertical one, where the pill is icon-only anyway.
@@ -53,9 +50,12 @@ Rectangle {
     radius: Services.Sizes.pillR
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: Services.Colors.fillOutline
+    // The fill is the open panel's, and only in the window style: in the
+    // morph one the pill BECOMES the panel instead of staying behind lit.
+    readonly property bool lit: root.panelOpen && Services.Pills.fills && !Services.Pills.wearsFace
     color: root.outlined ? Services.Colors.surfaceGlass
-         : (root.anyMounted ? Services.Colors.ghost : Services.Colors.pillPlate)
-    gradient: Services.Prefs.useGradients && (root.anyMounted) ? Services.Colors.accentGradient : null
+         : root.lit ? Services.Colors.ghost : Services.Colors.pillPlate
+    gradient: Services.Prefs.useGradients && root.lit ? Services.Colors.accentGradient : null
     width: root.vertical ? Services.Sizes.pillH : (root.present ? icon.implicitWidth + 24 : 0)
     opacity: (root.takenOver && Services.Pills.wearsFace) ? 0.0 : (root.present ? 1.0 : 0.0)
     // Keyed on the device, not opacity: handed over to its panel the pill is
@@ -73,13 +73,12 @@ Rectangle {
         id: icon
         anchors.centerIn: parent
         text: "\ue1e0"
-        // `abyss` only when the plate is actually solid. On hover the fill is a
-        // wash you can see the wallpaper through, and a dark glyph on it came
-        // out as a smudge -- the same fault Launcher, Power and Notification
-        // were fixed for; this one was missed.
-        color: root.anyMounted ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
+        // Dark only on the accent fill; lit when something is mounted; lifted
+        // to snow under the pointer, like every other pill.
+        color: root.lit ? Services.Colors.accentText
              : hover.containsMouse ? Services.Colors.snow
-                                   : Services.Colors.mist
+             : root.anyMounted ? Services.Colors.ghost
+                               : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"
         Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }

@@ -5,55 +5,73 @@ import QtQuick
 
 import "root:/services" as Services
 
+// What is plugged in over USB: one entry per drive, its partitions inside.
+// A stick with two partitions is ONE thing you pull out, and listing each
+// partition as its own device gave it two eject buttons that did the same.
 Singleton {
     id: root
 
-    property var devices: []
+    // [{ name, path, title, size, parts: [{ name, path, label, fstype, size,
+    //    mountpoint, used, avail }] }]
+    property var drives: []
+    readonly property bool anyMounted: root.drives.some(d => d.parts.some(p => p.mountpoint !== ""))
+
+    // The partition or drive a command is running on, so its row can say so.
+    property string busyPath: ""
 
     function refresh() { scanProc.running = true }
 
-    function isRemovable(n) {
-        return n.rm === true || n.rm === "1" || n.rm === 1
+    // USB, not "removable": an external SSD or hard drive reports rm=0 and was
+    // never listed at all. A removable card reader on another bus still is.
+    function wanted(dev) {
+        return dev.type === "disk" && (dev.tran === "usb" || dev.rm === true || dev.rm === "1")
+    }
+    function partOf(n) {
+        const size = Number(n.size) || 0
+        return {
+            name: n.name,
+            path: n.path || ("/dev/" + n.name),
+            label: n.label || "",
+            fstype: n.fstype || "",
+            size: size,
+            mountpoint: n.mountpoint || "",
+            used: Number(n.fsused) || 0,
+            avail: Number(n.fsavail) || 0
+        }
     }
 
     Process {
         id: scanProc
-        command: ["sh", "-c", "lsblk -J -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINT,RM,TYPE 2>/dev/null"]
-        running: false
+        command: ["lsblk", "-J", "-b", "-o",
+                  "NAME,PATH,SIZE,FSTYPE,LABEL,MOUNTPOINT,RM,TYPE,TRAN,MODEL,VENDOR,FSUSED,FSAVAIL"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    let data = JSON.parse(text)
+                    const data = JSON.parse(text)
                     let list = []
-                    for (let dev of (data.blockdevices || [])) {
-                        if (dev.type === "disk" && root.isRemovable(dev)) {
-                            let parts = (dev.children || []).filter(c => c.type === "part" && c.fstype !== "swap")
-                            if (parts.length === 0) {
-                                list.push({
-                                    name: dev.name,
-                                    path: "/dev/" + dev.name,
-                                    size: dev.size || "",
-                                    label: (dev.label && dev.label.length > 0) ? dev.label : dev.name,
-                                    fstype: dev.fstype || "",
-                                    mountpoint: dev.mountpoint || "",
-                                    parentName: dev.name
-                                })
-                            } else {
-                                for (let p of parts) {
-                                    list.push({
-                                        name: p.name,
-                                        path: "/dev/" + p.name,
-                                        size: p.size || "",
-                                        label: (p.label && p.label.length > 0) ? p.label : p.name,
-                                        fstype: p.fstype || "",
-                                        mountpoint: p.mountpoint || "",
-                                        parentName: dev.name
-                                    })
-                                }
-                            }
-                        }
+                    for (const dev of (data.blockdevices || [])) {
+                        if (!root.wanted(dev)) continue
+                        let parts = (dev.children || [])
+                            .filter(c => c.type === "part" && c.fstype && c.fstype !== "swap")
+                            .map(root.partOf)
+                        // A stick formatted whole, with no partition table.
+                        if (parts.length === 0 && dev.fstype) parts = [root.partOf(dev)]
+                        const model = [dev.vendor, dev.model].map(s => String(s || "").trim())
+                            .filter(s => s !== "").join(" ")
+                        // Named by what you wrote on it before what the
+                        // factory did: the biggest partition's label first.
+                        const named = parts.slice().sort((a, b) => b.size - a.size)
+                            .find(p => p.label !== "")
+                        list.push({
+                            name: dev.name,
+                            path: dev.path || ("/dev/" + dev.name),
+                            title: named ? named.label : (model !== "" ? model : dev.name),
+                            model: model,
+                            size: Number(dev.size) || 0,
+                            parts: parts
+                        })
                     }
-                    root.devices = list
+                    root.drives = list
                 } catch (e) {
                     console.warn("[USB] parse error:", e)
                 }
@@ -80,28 +98,73 @@ Singleton {
             root.refresh()
         }
     }
-
-    Timer {
-        id: refreshDelay
-        interval: 800
-        repeat: false
-        onTriggered: root.refresh()
-    }
-
     Component.onCompleted: root.refresh()
 
-    function mount(path) {
-        Quickshell.execDetached(["udisksctl", "mount", "-b", path])
-        refreshDelay.restart()
+    // ── Actions ─────────────────────────────────────────────────────────
+    // One at a time, and each one waits for its answer: a mount that fails
+    // because the stick is in use, or an eject refused for the same reason,
+    // used to fail in silence.
+    property string pending: ""     // "mount" | "unmount" | "eject"
+    property string pendingName: ""
+    property string pendingOpen: "" // open the folder once mounted
+
+    function say(key, name, glyph) {
+        Services.Notifications.addSystemToast(Services.I18n.t(key, { name: name }),
+                                              glyph || "\ue1e0", false, "usb",
+                                              { title: Services.I18n.t("usb.toast") })
     }
-    function unmount(path) {
-        Quickshell.execDetached(["udisksctl", "unmount", "-b", path])
-        refreshDelay.restart()
+    function run(kind, path, name, cmd) {
+        if (actProc.running) return
+        root.pending = kind
+        root.pendingName = name
+        root.busyPath = path
+        actProc.command = cmd
+        actProc.running = true
     }
-    function eject(parentName) {
+
+    function mount(part, openAfter) {
+        root.pendingOpen = openAfter ? part.path : ""
+        root.run("mount", part.path, part.label || part.name, ["udisksctl", "mount", "-b", part.path])
+    }
+    function unmount(part) {
+        root.run("unmount", part.path, part.label || part.name, ["udisksctl", "unmount", "-b", part.path])
+    }
+    // Every mounted partition first, then the drive is powered down. Stops at
+    // the first partition that will not let go, and says which.
+    function eject(drive) {
+        const mounted = drive.parts.filter(p => p.mountpoint !== "").map(p => p.path)
+        root.run("eject", drive.path, drive.title, ["sh", "-c",
+            'for p in "$@"; do udisksctl unmount -b "$p" || exit 1; done; udisksctl power-off -b "$0"',
+            drive.path].concat(mounted))
+    }
+    function open(part) {
+        if (part.mountpoint === "") { root.mount(part, true); return }
         Quickshell.execDetached(["sh", "-c",
-            "for p in /dev/" + parentName + "?*; do udisksctl unmount -b \"$p\" 2>/dev/null; done; udisksctl power-off -b /dev/" + parentName
-        ])
-        refreshDelay.restart()
+            'S="$HOME/ashen/scripts/ashen-app"; [ -x "$S" ] || S=ashen-app; exec "$S" files "$1"',
+            "sh", part.mountpoint])
+    }
+
+    Process {
+        id: actProc
+        stdout: StdioCollector { id: actOut }
+        stderr: StdioCollector { id: actErr }
+        onExited: (code) => {
+            const name = root.pendingName
+            const kind = root.pending
+            if (code === 0) {
+                if (kind === "eject") root.say("usb.ejected", name, "\ue8fb")
+                // "Mounted /dev/sda1 at /run/media/you/Stick"
+                const m = actOut.text.match(/ at (.+?)\.?\s*$/)
+                if (kind === "mount" && root.pendingOpen !== "" && m)
+                    root.open({ mountpoint: m[1].trim() })
+            } else {
+                const err = actErr.text
+                root.say(/busy/i.test(err) ? "usb.busy" : ("usb.failed." + kind), name, "\ue1e0")
+            }
+            root.pending = ""
+            root.pendingOpen = ""
+            root.busyPath = ""
+            root.refresh()
+        }
     }
 }
