@@ -3,9 +3,16 @@
 Übersetzung der Notizen aus CHANGELOG.md. Nur die aktuelle Version wird
 gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 
-## 3.3.1
+## 3.4.0
 
 ### Neu
+- **Ashen sagt Bescheid, wenn eine neue Version erscheint.** Eine Minute
+  nach dem Anmelden und danach alle sechs Stunden prüft es das neueste
+  Release auf GitHub (nie einen Commit) und zeigt einmal pro Version eine
+  Toast (Version und ein Satz aus dem Phrasenvorrat) mit Aktualisieren. Er
+  bleibt doppelt so lange wie andere Toasts und landet im
+  Benachrichtigungsverlauf, falls du ihn verpasst. Still ohne Netz, wenn
+  aktuell oder voraus. Der Schalter ist unter Einstellungen > Über.
 - **Wähle, welchem Player die Musikkarte folgt**, wie in Caelestia: der
   Name des Players steht zwischen den Zeiten, ein Klick listet alle Player mit
   dem, was sie spielen; die Wahl übernehmen Karte, Tasten, Leiste und Widgets
@@ -30,6 +37,18 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Englisch.
 
 ### Geändert
+- **Das USB-Panel, neu gemacht.** Eine Karte pro Laufwerk mit seinen
+  Partitionen darin, statt einer pro Partition mit je einer Auswerfen-Taste.
+  Jede Partition hat Ordner öffnen und Ein-/Aushängen, eingehängt einen
+  Balken mit dem freien Platz; das Laufwerk hat Auswerfen, das alles aushängt
+  und es abschaltet. Jede Aktion wartet auf ihre Antwort und sagt sie. Auch
+  externe USB-Festplatten erscheinen. `qs -c ashen ipc call usb toggle|state`.
+- **Panels öffnen sich in einer Bewegung aus ihrer Pille.** Im
+  Verwandlungsstil fällt ein Panel nicht mehr an einem Faden aus der Leiste:
+  es dehnt sich aus seiner Pille und bleibt an ihr, in der Farbe der Leiste,
+  sodass es wie die wachsende Leiste wirkt. Beim Schließen setzt es weich auf
+  der Pille auf, die erscheint, sobald die Box ankommt. Funktioniert an jedem
+  Rand. `qs -c ashen ipc call panels style morph|plain` schaltet es um.
 - Angeheftete Dock-Apps werden per Ziehen sortiert (Einstellungen >
   Desktop > Dock) und gelöst, indem man sie auf die Zone fallen lässt, die
   beim Ziehen an die Stelle des Suchfelds tritt. Keine Pfeile mehr.
@@ -61,6 +80,37 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Widget-Formen, die Ordner der Auswahl und die Standard-Apps.
 
 ### Behoben
+- Panels ohne Pille (Starter, Einstellungen, Zwischenablage, Energiemenü)
+  öffnen jedes Mal gleich. Sie begannen ihre Animation, bevor ihr Fenster
+  sichtbar war, und verloren je nach Lage ein anderes Stück davon.
+- Panels ohne eigene Pille (Einstellungen, Starter, Zwischenablage,
+  Energiemenü, Hintergründe) öffnen mit derselben Bewegung wie der Rest: eine
+  pillengroße Kapsel erscheint an seinem Platz und dehnt sich zu ihm, dann
+  der Inhalt auf einmal. Die
+  Arbeitsflächen-Vorschau wächst wie die anderen Panels aus ihrem Chip, und
+  ihre Fenster erscheinen mit dem Rest statt einzeln hereinzufallen. Sie
+  beginnt genau auf dem Chip in seiner Farbe (Akzent beim aktiven), während
+  der Chip wie jede Pille zurücktritt: vorher lag kurz ein dunkles Quadrat
+  still darauf, und der Chip schaute an den Rändern hervor.
+- **Panels ordnen ihre Teile unterwegs nicht mehr um.** Die Pille wird
+  dunkel, die Box dehnt sich aus ihr, und der Inhalt blendet an seinem Platz
+  ein; beim Schließen blendet er zuerst aus. Fliegende Teile brachen in der
+  Vorschau und anderswo. Und der Teil eines Panels über der Leiste nimmt
+  Klicks an: die Shell hält den Streifen für die Pillen frei, Tasten darin
+  waren tot.
+- Die Beschriftung der Arbeitsflächen-Vorschau ist, was der Chip zeigt --
+  ein Kanji, Pac-Mans Geist, eine App -- nicht immer die Zahl.
+- Panels aus einer Pille halten ihren Inhalt an der Leistenseite: zentriert
+  rutschte er in der Box und war beim Schließen halbiert (Akku).
+- Ein Panel lässt beim Öffnen nicht mehr zuerst seine Pille aufleuchten: die
+  Akzentfüllung gehört zum Fensterstil. Die USB-Pille färbt nur ihr Symbol,
+  wenn etwas eingehängt ist.
+- WLAN, Bluetooth und die anderen Panels auf einer Platte beginnen an deren
+  Kante. Benachrichtigungen und Prozesse wachsen aus ihren Pillen.
+- Der Installer ersetzt ein qt6ct aus dem AUR (qt6ct-kde u. ä.) durch das
+  aus den Repos. Es galt als installiert, passt aber nur zu dem Qt, gegen das
+  es gebaut wurde: nach dem nächsten Qt-Update verwarf Qt es stillschweigend,
+  und Starter und alle Qt-Apps verloren ihre Papirus-Symbole.
 - Die Welle im Musikpanel lag auf dem Albumnamen; die Karte ist etwas höher.
 - Das versteckte Dock verschwindet nicht mehr, sobald der Zeiger über die
   Symbole hinausschießt: Es wartet kurz, und wer zurückkommt, behält es. Der

@@ -1,8 +1,15 @@
 # Changelog
 
-## 3.3.1
+## 3.4.0
 
 ### Added
+- **Ashen tells you when a new release is out.** A minute into the session
+  and every six hours after, it looks at the newest release on GitHub (never
+  a commit) and, once per version, shows a toast -- the version, a line from
+  the phrase bank -- with Update -- the same as Settings > About. It stays
+  twice as long as other toasts and is kept in the notification history in
+  case you missed it. Silent when offline, up to date or ahead. The switch
+  is in Settings > About.
 - **Choose which player the music card follows**, as in Caelestia: the
   player's name sits between the times, and a click lists every player with
   what it is playing; pick one and the card, its buttons, the bar and the
@@ -25,6 +32,19 @@
   and Russian notes live in `i18n/changelog.<lang>.md`, English otherwise.
 
 ### Changed
+- **The USB panel, redone.** One card per drive with its partitions inside,
+  instead of a card per partition with an eject button each. A partition has
+  open-folder and mount/unmount, and a usage bar with what is free once
+  mounted; the drive has Eject, which unmounts everything and powers it down.
+  Every action waits for its answer and says it: "Ventoy can be removed", or
+  that it is in use. External USB disks are listed too, not only sticks.
+  `qs -c ashen ipc call usb toggle|state`.
+- **Panels open in one movement out of their pill.** In the morph style a
+  panel no longer falls from the bar on a strand of goo: it stretches out of
+  its pill and stays on it, in the bar's own colour, so it reads as the bar
+  growing. Closing lands soft back on the pill, which reappears as the box
+  arrives. Works with the bar on any edge. `qs -c ashen ipc call panels style
+  morph|plain` switches it.
 - Pinned dock apps are put in order by dragging them (Settings > Desktop >
   Dock), and unpinned by dropping them on the zone that takes the search
   field's place while you drag. No more arrows.
@@ -55,6 +75,40 @@
   folders and the default apps.
 
 ### Fixed
+- Panels with no pill (launcher, Settings, clipboard, power menu) open the
+  same way every time. They started their animation before their window was
+  on screen, and lost a different slice of it depending on whether the
+  window was new, already up or still closing.
+- Panels with no pill of their own (Settings, launcher, clipboard, power
+  menu, wallpapers) open in the same movement as the rest: a pill-sized
+  capsule appears where it lives and stretches into it, then the contents
+  together -- no unfolding, no rise, no
+  pieces arriving one by one. The workspace preview grows out of its chip like
+  the other panels, and its windows appear with the rest instead of dropping
+  in one by one. It starts exactly on the chip, in its colour (the accent on
+  the active one), while the chip steps aside like any pill: before, a dark
+  square sat still on the chip for a moment and the chip's plate showed
+  around it.
+- **Panels no longer rearrange their pieces on the way.** The pill goes
+  dark, the box stretches out of it, and the contents fade in where they
+  belong; closing fades them out first. Flying pieces broke in the preview
+  and elsewhere. And the part of a panel that grows over the bar takes
+  clicks: the shell keeps the bar's strip for the pills, so buttons there
+  (Wi-Fi/Ethernet tabs, the notification controls) could not be pressed.
+- The workspace preview's caption is what the chip shows -- a kanji,
+  Pac-Man's ghost, an app -- not always the number.
+- Panels growing out of a pill keep their contents on the bar side: centred,
+  they slid inside the box and showed cut in half on the way home (battery).
+- Opening a panel no longer lights its pill up first: the accent fill is
+  for the window style, where the pill stays on the bar. The USB pill only
+  lights its glyph when something is mounted, like the rest.
+- Wi-Fi, Bluetooth and the other panels on a plate start on the plate's edge,
+  not a few pixels inside it. Notifications and processes grow out of their
+  pills like the rest.
+- The installer swaps an AUR qt6ct (qt6ct-kde and the like) for the repo's.
+  It counted as installed, but it only matches the Qt it was built against:
+  after the next Qt upgrade Qt dropped it in silence and the launcher and
+  every Qt app lost their Papirus icons.
 - The music panel's wave sat on the album name; the card is a little taller.
 - The hidden dock no longer vanishes the moment the pointer overshoots its
   icons: it waits a moment, so coming back keeps it out. The empty band
