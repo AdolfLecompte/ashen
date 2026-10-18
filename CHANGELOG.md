@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.5.0
+
+### Added
+- **Touchpad gestures and a scratchpad** (ideas from RchrdAriza's PR #2).
+  Three fingers sideways still switch workspaces; up opens the launcher, down
+  shows the scratchpad; four fingers move the window. They live in
+  `hypr/conf/gestures.lua` and Settings > Input lists them in a Gestures
+  card. The scratchpad is a special workspace like the others: SUPER+S shows
+  it, SUPER+ALT+S sends a window there (both rebindable), and its chip shows
+  the icon of the app inside.
+
+### Changed
+- What's new shows the last three versions, each under its own number, not
+  only the running one: a small release read as a cut-off page.
+
+### Thanks
+- **@RchrdAriza**, for the touchpad gestures, the scratchpad and its live
+  icon (PR #2), which this release builds on.
+
 ## 3.4.0
 
 ### Added

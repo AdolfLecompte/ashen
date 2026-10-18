@@ -3,6 +3,25 @@
 Traducción de las notas de CHANGELOG.md. Solo hace falta la versión actual:
 si falta, la bienvenida las enseña en inglés.
 
+## 3.5.0
+
+### Añadido
+- **Gestos del touchpad y un scratchpad** (ideas del PR #2 de RchrdAriza).
+  Tres dedos a los lados siguen cambiando de escritorio; arriba abre el
+  lanzador y abajo muestra el scratchpad; cuatro dedos mueven la ventana.
+  Viven en `hypr/conf/gestures.lua` y Ajustes > Entrada los lista en una
+  tarjeta Gestos. El scratchpad es un escritorio especial como los demás:
+  SUPER+S lo muestra, SUPER+ALT+S manda allí la ventana (los dos
+  reasignables), y su ficha muestra el icono de la app que contiene.
+
+### Cambiado
+- Novedades muestra las tres últimas versiones, cada una bajo su número, no
+  solo la actual: una versión pequeña se veía como una página cortada.
+
+### Gracias
+- **@RchrdAriza**, por los gestos del touchpad, el scratchpad y su icono
+  vivo (PR #2), en los que se basa esta versión.
+
 ## 3.4.0
 
 ### Añadido

@@ -3,6 +3,24 @@
 Übersetzung der Notizen aus CHANGELOG.md. Nur die aktuelle Version wird
 gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 
+## 3.5.0
+
+### Neu
+- **Touchpad-Gesten und ein Scratchpad** (Ideen aus RchrdArizas PR #2).
+  Drei Finger seitlich wechseln weiter die Arbeitsfläche; nach oben öffnet
+  den Starter, nach unten das Scratchpad; vier Finger verschieben das
+  Fenster. Sie stehen in `hypr/conf/gestures.lua`, Einstellungen > Eingabe
+  listet sie. SUPER+S zeigt das Scratchpad, SUPER+ALT+S schickt ein Fenster
+  hin (beide neu belegbar); sein Chip zeigt das Symbol der App darin.
+
+### Geändert
+- Neuigkeiten zeigt die letzten drei Versionen, jede unter ihrer Nummer,
+  nicht nur die laufende: eine kleine Version wirkte wie abgeschnitten.
+
+### Danke
+- **@RchrdAriza** für die Touchpad-Gesten, das Scratchpad und sein
+  Live-Symbol (PR #2), auf denen diese Version aufbaut.
+
 ## 3.4.0
 
 ### Neu
