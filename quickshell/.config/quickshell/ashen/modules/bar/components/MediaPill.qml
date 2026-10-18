@@ -162,10 +162,9 @@ Item {
             }
         }
     }
-    // The card un-transforms where it stands and only then travels home,
-    // landing on this rect at ~720 ms; fade in just under that so the two
-    // overlap for a few frames instead of leaving a hole.
-    Timer { id: handBack; interval: 330; onTriggered: root.takenOverByPanel = false }
+    // Back as the card lands on this rect, so the two meet instead of
+    // leaving a hole.
+    Timer { id: handBack; interval: Services.Sizes.panelHandBackMs; onTriggered: root.takenOverByPanel = false }
 
     // Only the body fades out on takeover, never this Item: it has to keep
     // holding its slot in the bar or the row would close the gap and shift.

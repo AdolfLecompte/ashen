@@ -14,7 +14,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: card.restRect }
     // stay mapped through the close animation
     visible: Services.AppState.processVisible || closeDelay.running
 
@@ -45,16 +45,14 @@ PanelWindow {
     // chip on the utility trigger, so the edge is read live from the pill
     // rather than written at click time: a keybind never clicks.
     readonly property string srcEdge: Services.Sizes.overlayEdge
-    // Its chip: on the utility pill of that edge, or on the bar.
-    // No capsule since the utility pill went: this panel arrives from the
-    // screen edge. The rect is still read while that is decided, so it is a
-    // zero rect and not null -- reading .cx off null throws four times a frame.
-    readonly property var chipRect: ({ cx: 0, cy: 0, w: 44, h: 44 })
-    readonly property real openXCalc: srcEdge === "" ? NaN
+    // Its capsule is the system readout. With that on the bar the panel grows
+    // out of it; parked, the panel arrives from the screen edge instead.
+    readonly property bool onBar: Services.Pills.onScreen("sys")
+    readonly property real openXCalc: srcEdge === "" || root.onBar ? NaN
         : srcEdge === "left" ? Services.Sizes.panelTop
         : srcEdge === "right" ? root.width - card.openW - Services.Sizes.panelTop
         : (root.width - card.openW) / 2
-    readonly property real openYCalc: srcEdge === "" ? NaN
+    readonly property real openYCalc: srcEdge === "" || root.onBar ? NaN
         : srcEdge === "top" ? Math.max(68, Services.Sizes.marginTop + 18)
         : srcEdge === "bottom" ? root.height - card.openH - Math.max(68, Services.Sizes.marginBottom + 18)
         : (root.height - card.openH) / 2
@@ -62,14 +60,14 @@ PanelWindow {
     Widgets.PanelHost {
         id: card
         shown: root.shown
-        sourceEdge: root.srcEdge
+        sourceEdge: root.onBar ? "" : root.srcEdge
         openXOverride: root.openXCalc
         openYOverride: root.openYCalc
 
-        pillCX: root.chipRect.cx
-        pillCY: root.chipRect.cy
-        pillW: root.chipRect.w
-        pillH: root.chipRect.h
+        pillCX: Services.AppState.sysPillCenterX
+        pillCY: Services.AppState.sysPillCenterY
+        pillW: Services.AppState.sysPillW
+        pillH: Services.AppState.sysPillH
 
         // A board of cards, each saying its own kind of thing: a history worth
         // drawing, a proportion of something fixed, readings in rings, a vessel.
@@ -82,7 +80,7 @@ PanelWindow {
         openH: span(3) + pad * 2
         cardRadius: 22
 
-        pillKey: "process"
+        pillKey: "sys"
         restSide: "bottom"
 
 

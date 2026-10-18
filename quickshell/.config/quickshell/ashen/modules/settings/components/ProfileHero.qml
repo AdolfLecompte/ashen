@@ -94,7 +94,7 @@ Rectangle {
                 textFormat: Text.PlainText
                 anchors.centerIn: parent
                 visible: faceImg.status !== Image.Ready
-                text: ""
+                text: "\uf0d3"
                 color: Services.Colors.ghost
                 font.pixelSize: 48
                 font.family: "Material Symbols Rounded"

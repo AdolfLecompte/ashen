@@ -46,7 +46,7 @@ Rectangle {
                         textFormat: Text.PlainText
                         anchors.verticalCenter: parent.verticalCenter
                         width: 18
-                        text: entry.current ? "" : (entry.modelData.isPlaying ? "" : "")
+                        text: entry.current ? "\ue5ca" : (entry.modelData.isPlaying ? "\ue050" : "\ue034")
                         color: entry.current || hover.containsMouse ? Services.Colors.ghost : Services.Colors.mist
                         font.pixelSize: 16
                         font.family: "Material Symbols Rounded"

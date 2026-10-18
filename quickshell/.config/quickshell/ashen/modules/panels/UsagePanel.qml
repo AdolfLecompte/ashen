@@ -13,7 +13,7 @@ PanelWindow {
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
-    mask: Widgets.ShellMask { winW: win.width; winH: win.height }
+    mask: Widgets.ShellMask { winW: win.width; winH: win.height; keepRect: card.restRect }
     readonly property bool shown: Services.AppState.usageVisible
     visible: shown || closeDelay.running
     Timer { id: closeDelay; interval: card.closeMs }

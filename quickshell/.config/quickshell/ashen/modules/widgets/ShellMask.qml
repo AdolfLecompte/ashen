@@ -44,4 +44,16 @@ Region {
         intersection: Intersection.Combine
         item: root.keep
     }
+
+    // A panel that grew out over the bar takes clicks on its own part of the
+    // strip again. Numbers, not an item: a region following an animated item
+    // commits once and goes quiet. Its resting rect, zero while closed.
+    property rect keepRect: Qt.rect(0, 0, 0, 0)
+    Region {
+        intersection: Intersection.Combine
+        x: root.keepRect.x
+        y: root.keepRect.y
+        width: root.keepRect.width
+        height: root.keepRect.height
+    }
 }

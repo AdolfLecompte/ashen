@@ -77,12 +77,11 @@ Rectangle {
         interval: Services.Sizes.panelArmMs
         onTriggered: chip.takenOver = true
     }
-    // Coming back it goes the other way: contents out, pieces home, then the
-    // box. The chip is free a little before the drop is all the way in, so the
-    // two meet rather than the chip waiting for an empty pill to be handed back.
+    // Coming back it is free as the card lands on it, so the two meet rather
+    // than the chip waiting for an empty pill to be handed back.
     Timer {
         id: handBack
-        interval: Services.Sizes.panelCloseMs - 40
+        interval: Services.Sizes.panelHandBackMs
         onTriggered: chip.takenOver = false
     }
     opacity: (takenOver && Services.Pills.wearsFace) ? 0.0 : 1.0

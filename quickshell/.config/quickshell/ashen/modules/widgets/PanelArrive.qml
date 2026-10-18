@@ -17,20 +17,21 @@ Item {
     readonly property bool plain: Services.Prefs.panelStyle === "plain"
 
     // How folded the box starts, as a fraction of its final size.
-    property real foldFrom: root.plain ? 1.0 : 0.92
+    property real foldFrom: root.plain ? 1.0 : 0.96
     // Pixels below its resting place to come up from, 0 for none. The rise
     // runs on the same beat as the unfold, so arriving and opening are one
     // movement.
     property int rise: 0
-    readonly property real offY: root.plain ? 0 : root.rise * (1 - root.boxAmt)
+    // Kept for callers; panels no longer rise -- one movement, the box's.
+    readonly property real offY: 0
 
     // The drivers, in the order they run.
     property real boxAmt: 0
     property real contentAmt: 0
     property real fade: 0
 
-    readonly property int openMs: root.plain ? 280 : 700
-    readonly property int closeMs: root.plain ? 210 : 380
+    readonly property int openMs: root.plain ? 280 : Services.Sizes.panelFlowInMs
+    readonly property int closeMs: root.plain ? 210 : Services.Sizes.panelFadeMs + Services.Sizes.panelFlowOutMs
     // How long the panel must stay mapped after `shown` goes false.
     readonly property int holdMs: closeMs + 60
 
@@ -65,45 +66,52 @@ Item {
 
     // Per-piece stagger out of the single content driver: piece i starts a
     // little after piece i-1 and they all land together.
-    function stage(i) {
-        if (root.plain) return root.contentAmt
-        const start = Math.min(0.5, i * 0.1)
-        return Math.max(0, Math.min(1, (contentAmt - start) / (1 - start)))
-    }
-    // A few pixels of rise, so a piece settles rather than appears.
-    function riseOf(i) { return root.plain ? 0 : (1 - root.stage(i)) * 10 }
+    // The contents come in together, where they belong: staggered pieces
+    // rising into place read as the panel assembling itself on screen.
+    function stage(i) { return root.contentAmt }
+    function riseOf(i) { return 0 }
 
     // Explicit animations, not Behaviors: open and close are asymmetric, and
     // the other one has to be stopped rather than left to fight over the same
     // properties.
+    // A layer surface is not on screen in the frame it is asked for, and how
+    // long it takes depends on whether the window was just built, already up,
+    // or still closing -- so an animation started at once lost a different
+    // slice each time, and the panel opened differently depending on when.
+    // Same wait as the panels that grow out of a pill; nothing is drawn while
+    // it lasts (fade is 0).
+    Timer { id: arm; interval: Services.Sizes.panelArmMs; onTriggered: openAnim.restart() }
     onShownChanged: {
-        if (shown) { closeAnim.stop(); openAnim.restart() }
-        else { openAnim.stop(); closeAnim.restart() }
+        // Reopened on its way out it is already on screen: carry on from there.
+        if (shown) { closeAnim.stop(); if (root.fade > 0.01) openAnim.restart(); else arm.restart() }
+        else { arm.stop(); openAnim.stop(); closeAnim.restart() }
     }
     // A panel can be built with `shown` already true (LazyPanel preloads), and
     // a property born with its new value never emits a change.
-    Component.onCompleted: if (shown) openAnim.restart()
+    Component.onCompleted: if (shown) arm.restart()
 
+    // Window: a quick fade and unroll. Otherwise the shell's one movement:
+    // the box fades in growing slightly on the flow curve, and the contents
+    // fade in once it has most of its room; closing fades them out first.
     ParallelAnimation {
         id: openAnim
         NumberAnimation {
             target: root; property: "fade"; to: 1
-            duration: root.plain ? 150 : Services.Sizes.msPronounced
+            duration: root.plain ? 150 : Services.Sizes.panelFlowInMs / 2
             easing.type: Services.Sizes.easeOut
         }
         NumberAnimation {
             target: root; property: "boxAmt"; to: 1
-            duration: root.plain ? 260 : Services.Sizes.msPanel
-            easing.type: root.plain ? Services.Sizes.easeOut : Services.Sizes.easeBox
+            duration: root.plain ? 260 : Services.Sizes.panelFlowInMs
+            easing.type: root.plain ? Services.Sizes.easeOut : Easing.BezierSpline
+            easing.bezierCurve: Services.Sizes.panelFlowCurve
         }
-        // The box finishes unfolding before anything fills it -- unless there
-        // is no unfolding, in which case the contents are simply there.
         SequentialAnimation {
-            PauseAnimation { duration: root.plain ? 0 : Services.Sizes.msEmphasis }
+            PauseAnimation { duration: root.plain ? 0 : Services.Sizes.panelFlowInMs / 2 }
             NumberAnimation {
                 target: root; property: "contentAmt"; to: 1
-                duration: root.plain ? root.openMs : Services.Sizes.msEmphasis
-                easing.type: Services.Sizes.easeOut
+                duration: root.plain ? root.openMs : Services.Sizes.panelFlowInMs / 2
+                easing.type: Easing.OutCubic
             }
         }
     }
@@ -112,23 +120,23 @@ Item {
         id: closeAnim
         NumberAnimation {
             target: root; property: "contentAmt"; to: 0
-            duration: root.plain ? root.closeMs : Services.Sizes.msInstant
+            duration: root.plain ? root.closeMs : Services.Sizes.panelFadeMs
             easing.type: Services.Sizes.easeIn
         }
         SequentialAnimation {
-            PauseAnimation { duration: root.plain ? 0 : 60 }
-            NumberAnimation {
-                target: root; property: "boxAmt"; to: 0
-                duration: root.plain ? 190 : Services.Sizes.msEmphasis
-                easing.type: Services.Sizes.easeIn
-            }
-        }
-        SequentialAnimation {
-            PauseAnimation { duration: root.plain ? 0 : 120 }
-            NumberAnimation {
-                target: root; property: "fade"; to: 0
-                duration: root.plain ? root.closeMs : Services.Sizes.msStandard
-                easing.type: Services.Sizes.easeIn
+            PauseAnimation { duration: root.plain ? 0 : Services.Sizes.panelShrinkDelayMs }
+            ParallelAnimation {
+                NumberAnimation {
+                    target: root; property: "boxAmt"; to: 0
+                    duration: root.plain ? 190 : Services.Sizes.panelFlowOutMs
+                    easing.type: root.plain ? Services.Sizes.easeIn : Easing.BezierSpline
+                    easing.bezierCurve: Services.Sizes.panelFlowCurve
+                }
+                NumberAnimation {
+                    target: root; property: "fade"; to: 0
+                    duration: root.plain ? root.closeMs : Services.Sizes.panelFlowOutMs
+                    easing.type: Services.Sizes.easeIn
+                }
             }
         }
     }

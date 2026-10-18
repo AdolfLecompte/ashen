@@ -132,7 +132,6 @@ holds content is a rounded rectangle.
 
 Three things are **not** boxes and the rule does not reach them:
 
-- **Connectors** — the goo neck that ties a drop to its bar while it pinches off.
 - **Plots and gauges** — sparklines, dials, the Cava bars, the node-graph wires.
 - **Invisible or full-bleed layers** — click-off catchers, dim scrims, the lock
   screen's gradient wash, a 2 px text caret. These have no corners to round:
@@ -301,13 +300,28 @@ Anything larger reads as a toy.
 
 | Value | Arrival |
 |---|---|
-| `morph` | The panel grows out of its capsule (`DropCard`) |
+| `morph` | The panel stretches out of its capsule (`DropCard`, `MorphCard`) |
 | `window` | It unfolds where it lives (`ArriveCard`), capsule or not |
 
 Nothing chooses between them by hand: a panel hands its body to `PanelHost`,
 which asks whether the capsule is actually on screen (`Pills.onScreen`) and
 picks the card. A panel with no capsule at all always
 unfolds, which is what `EdgeEntry` is for.
+
+**Morph is one movement, and it stays on the pill.** The side facing the bar
+never leaves the capsule; the card stretches away from it and spreads along
+it on one curve (`Sizes.panelFlowCurve`, leaves fast and lands soft), while
+what the capsule carried slides into place and the extras fade in once the box
+has its room. It closes on the same curve, shorter -- an ease-in spent its last
+third in a frame and read as a pop. There is no fall and no neck: the old drop
+left the bar as a pill and a strand of goo tied it back, and it read as a card
+laid over the bar rather than the bar stretching.
+
+**It wears the bar's colour.** The card settles on the colour of what it came
+out of -- the plate the pill stands on (island, solid), or the pill's own
+(pills) -- through `AppState.joinColorAt`, fed by the plates the bar publishes.
+A panel with a tint of its own (the cover behind the music) starts it past the
+middle, so the side touching the bar is the bar.
 
 ---
 
@@ -738,11 +752,6 @@ destination instead, for ergonomics, and they are the only two:**
 | Launcher | Centre of the screen | You type into it while looking at it, so it goes where your eyes already are — not wherever its opener happened to sit. |
 | Notifications | Always the left rail | It used to jump to the right whenever the bar moved there, so the place you look for your notifications changed with an unrelated setting. |
 
-A panel whose destination is pinned may travel a long way, and the goo neck
-does not survive the trip — stretched over half a screen it stops reading as
-something being pulled apart and becomes a rope. Those set
-`DropCard.neckEnabled: false`.
-
 Adding a third pinned panel needs a reason as good as these two. The default is
 to track the origin.
 
@@ -975,7 +984,7 @@ Ordered by how much each buys.
 7. ~~**Folder move**~~ (§8) — **done.** It touched exactly one import:
    `shell.qml` now imports `root:/modules/panels` alongside `root:/modules/bar`.
    No panel referenced a bar component.
-8. ~~**The goo neck exists four times**~~ — **done.** `widgets/GooNeck` takes
+8. ~~**The goo neck exists four times**~~ — **done**, and since 3.3.1 gone: morph no longer falls, so there is nothing to tie back. `widgets/GooNeck` takes
    numbers (the two edges, the pill width, the pinch) rather than reading
    services, so the bar's panels and the ones hanging off a screen-edge peek
    share it. The 30 px floor on the neck's width, which only `DropCard` had,

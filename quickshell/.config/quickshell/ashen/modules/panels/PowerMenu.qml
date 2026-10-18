@@ -16,7 +16,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: host.restRect }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.powerMenuVisible
     visible: shown || closeDelay.running

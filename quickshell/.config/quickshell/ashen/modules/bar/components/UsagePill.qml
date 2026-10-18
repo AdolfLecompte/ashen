@@ -28,8 +28,8 @@ Rectangle {
     height: root.vertical ? chip.height + 16 : Services.Sizes.pillH
     radius: Services.Sizes.pillR
     color: root.outlined ? Services.Colors.surfaceGlass
-         : (chip.open && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate
-    gradient: (!root.outlined && Services.Prefs.useGradients && Services.Pills.fills && chip.open)
+         : (chip.open && Services.Pills.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : Services.Colors.pillPlate
+    gradient: (!root.outlined && Services.Prefs.useGradients && Services.Pills.fills && chip.open && !Services.Pills.wearsFace)
               ? Services.Colors.accentGradient : null
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: chip.open ? Services.Colors.ghost : Services.Colors.fillOutline

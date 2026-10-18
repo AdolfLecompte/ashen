@@ -110,9 +110,9 @@ Rectangle {
             }
         }
     }
-    // The card only becomes a pill again at ~480 ms and lands on this rect at
-    // ~720; fade in just under that, so the two meet instead of leaving a hole.
-    Timer { id: handBack; interval: 330; onTriggered: root.takenOverByPanel = false }
+    // Back as the card lands on this rect, so the two meet instead of
+    // leaving a hole.
+    Timer { id: handBack; interval: Services.Sizes.panelHandBackMs; onTriggered: root.takenOverByPanel = false }
 
     opacity: (root.takenOverByPanel && Services.Pills.wearsFace) ? 0.0 : 1.0
     Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }

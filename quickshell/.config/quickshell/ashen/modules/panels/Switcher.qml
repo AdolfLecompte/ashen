@@ -19,7 +19,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: host.restRect }
     readonly property bool shown: Services.AppState.switcherVisible
     visible: shown || closeDelay.running
     Timer { id: closeDelay; interval: host.holdMs }

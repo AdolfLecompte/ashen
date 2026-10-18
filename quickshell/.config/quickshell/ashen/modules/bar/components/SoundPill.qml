@@ -30,8 +30,8 @@ Rectangle {
     // One plate, drawn here: the chip inside is bare. Same fill language as
     // every other pill -- accent while its panel is open, plate at rest.
     color: root.outlined ? Services.Colors.surfaceGlass
-         : (chip.open && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate
-    gradient: (!root.outlined && Services.Prefs.useGradients && Services.Pills.fills && chip.open)
+         : (chip.open && Services.Pills.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : Services.Colors.pillPlate
+    gradient: (!root.outlined && Services.Prefs.useGradients && Services.Pills.fills && chip.open && !Services.Pills.wearsFace)
               ? Services.Colors.accentGradient : null
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: chip.open ? Services.Colors.ghost : Services.Colors.fillOutline

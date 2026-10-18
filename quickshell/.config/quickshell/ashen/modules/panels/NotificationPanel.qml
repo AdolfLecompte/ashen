@@ -17,7 +17,10 @@ Scope {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: win.width; winH: win.height }
+    mask: Widgets.ShellMask {
+        winW: win.width; winH: win.height
+        keepRect: win.grows && win.shown ? Qt.rect(card.restX, card.restY, card.fullW, card.fullH) : Qt.rect(0, 0, 0, 0)
+    }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.notificationsVisible
     visible: shown || closeDelay.running
@@ -38,6 +41,43 @@ Scope {
     Widgets.PanelArrive {
         id: arrive
         shown: win.shown
+    }
+
+    // Out of the bell, when the bell is on the bar and panels morph: the rail
+    // stretches out of it in the shell's one movement and stays on the bar,
+    // in the bar's colour. PanelArrive still staggers what is inside.
+    readonly property bool grows: Services.Pills.wearsFace && Services.Pills.onScreen("notifications")
+    property real grow: 0
+    readonly property real pillW: Services.AppState.notificationPillW
+    readonly property real pillH: Services.AppState.notificationPillH
+    readonly property real pillCX: Services.AppState.notificationPillCenterX
+    readonly property real pillCY: Services.AppState.notificationPillCenterY
+    readonly property string side: Services.Sizes.barPosition
+    readonly property real pinAt: Services.AppState.outerEdgeAt(win.side, win.pillCX, win.pillCY, win.pillW, win.pillH)
+    Timer {
+        id: growArm
+        interval: Services.Sizes.panelArmMs
+        onTriggered: { growOut.stop(); growIn.start() }
+    }
+    onGrowsChanged: if (!win.shown) win.grow = 0
+    Connections {
+        target: win
+        function onShownChanged() {
+            if (win.shown) { win.grow = 0; growArm.restart() }
+            else { growArm.stop(); growIn.stop(); growOut.start() }
+        }
+    }
+    NumberAnimation {
+        id: growIn
+        target: win; property: "grow"; to: 1
+        duration: Services.Sizes.panelFlowInMs
+        easing.type: Easing.BezierSpline; easing.bezierCurve: Services.Sizes.panelFlowCurve
+    }
+    NumberAnimation {
+        id: growOut
+        target: win; property: "grow"; to: 0
+        duration: Services.Sizes.panelFlowOutMs
+        easing.type: Easing.BezierSpline; easing.bezierCurve: Services.Sizes.panelFlowCurve
     }
 
     // What the empty rail says. Picked once per opening -- it should have a
@@ -185,23 +225,36 @@ Scope {
         id: card
         // What it becomes. The pill grows into these.
         readonly property int fullW: Services.Sizes.notifRailW
-        readonly property int fullH: parent.height - Services.Sizes.marginTop - Services.Sizes.marginBottom
+        readonly property int fullH: !win.grows ? parent.height - Services.Sizes.marginTop - Services.Sizes.marginBottom
+            : win.side === "top" ? parent.height - win.pinAt - Services.Sizes.marginBottom
+            : win.side === "bottom" ? win.pinAt - Services.Sizes.marginTop
+            : parent.height - Services.Sizes.marginTop - Services.Sizes.marginBottom
+        // Where the grown rail stands: its bar side on the bar's outer edge.
+        readonly property real restX: win.side === "left" ? win.pinAt
+            : win.side === "right" ? win.pinAt - fullW
+            : Services.Sizes.panelX(parent.width, fullW, win.pillCX)
+        readonly property real restY: win.side === "top" ? win.pinAt : Services.Sizes.marginTop
+        function lerp(a, b) { return a + (b - a) * win.grow }
 
         // Opens under its own pill: on a horizontal bar it follows the pill
         // across, on a vertical one it takes the bar's side. Same rule every
         // other panel uses (Sizes.panelX).
-        x: arrive.boxX(Services.Sizes.panelX(parent.width, fullW,
-                                             Services.AppState.notificationPillCenterX), fullW)
-        y: arrive.boxY(Services.Sizes.marginTop, fullH)
-        width: arrive.boxW(fullW)
-        height: arrive.boxH(fullH)
-        radius: 20
-        color: Services.Colors.surfacePanel
-        border.width: Services.Colors.panelEdgeW
+        x: win.grows ? lerp(win.pillCX - win.pillW / 2, restX)
+           : arrive.boxX(Services.Sizes.panelX(parent.width, fullW,
+                                               Services.AppState.notificationPillCenterX), fullW)
+        y: win.grows ? lerp(win.pillCY - win.pillH / 2, restY)
+           : arrive.boxY(Services.Sizes.marginTop, fullH)
+        width: win.grows ? lerp(win.pillW, fullW) : arrive.boxW(fullW)
+        height: win.grows ? lerp(win.pillH, fullH) : arrive.boxH(fullH)
+        radius: win.grows ? Services.Sizes.pillR + (20 - Services.Sizes.pillR) * win.grow : 20
+        color: win.grows ? Services.AppState.joinColorAt(win.pillCX, win.pillCY) : Services.Colors.surfacePanel
+        border.width: win.grows ? 0 : Services.Colors.panelEdgeW
         border.color: Services.Colors.panelEdgeColor
         clip: true
 
-        opacity: arrive.fade
+        // Out of the bell it is there from the first frame, as the bell's own
+        // shape; only the window style fades in.
+        opacity: win.grows ? (win.grow > 0.001 ? 1 : 0) : arrive.fade
 
         MouseArea { anchors.fill: parent; onClicked: {} }
 

@@ -140,6 +140,14 @@ ShellRoot {
         }
     }
 
+    // How panels open: "morph" out of their pill, or "plain" as a window.
+    IpcHandler {
+        target: "panels"
+        function style(name: string) {
+            if (name === "morph" || name === "plain") Services.Prefs.panelStyle = name
+        }
+    }
+
     IpcHandler {
         target: "widgets"
         function edit() { Services.Desktop.editMode = !Services.Desktop.editMode }

@@ -134,12 +134,23 @@ Singleton {
     // wait this long before growing -- and their pill hands over on the same
     // beat, or the bar goes blank first.
     readonly property int panelArmMs: 200
-    // How long a panel takes to climb back into its pill. The window has to
-    // stay mapped for all of it and the pill only comes back at the end, so
-    // the panel, its dismiss layer and the chip all read it from here.
-    // Four beats, so it is longer than a single collapse was: extras out,
-    // pieces home, card back to a pill, pill back to its slot, colour last.
-    readonly property int panelCloseMs: 470
+    // A panel stretches out of its pill and stays on it: one movement, the
+    // edge on the bar side pinned to the pill, on a curve that leaves fast and
+    // lands soft (Material's emphasized-decelerate). Closing is the same curve,
+    // shorter -- an ease-in spent its last third in a frame and read as a pop.
+    readonly property int panelFlowInMs: 460
+    readonly property int panelFlowOutMs: 360
+    readonly property var panelFlowCurve: [0.2, 0, 0, 1, 1, 1]
+    // What is inside does not travel: it fades out before the box goes home,
+    // and fades in once the box has most of its room. Rearranging pieces on
+    // the way read as broken more often than not.
+    readonly property int panelFadeMs: 120
+    readonly property int panelShrinkDelayMs: 90
+    // The pill comes back as the box lands on it, not after: with the curve
+    // above the box is home well before the animation formally ends.
+    readonly property int panelHandBackMs: 340
+    // How long the window stays mapped after a close: the whole way home.
+    readonly property int panelCloseMs: 500
 
     // Gap between the bar and a panel hanging off it, and between a panel and
     // the far screen edges

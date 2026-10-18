@@ -60,6 +60,9 @@ Item {
     // that chip's colour across instead.
     property color cardColor: Services.Colors.surfacePanel
     property real openXOverride: NaN
+    // A chip whose own colour differs from the bar's (a workspace chip): the
+    // card is born in it and fades into the panel. Transparent = the bar's.
+    property color startColor: "transparent"
     property real openYOverride: NaN
     property string sourceEdge: ""
     // Only used when it unfolds: where on screen, and how far it comes up.
@@ -69,6 +72,10 @@ Item {
     property Component body: null
 
     readonly property Item cardItem: dropLoader.active ? dropLoader.item : arriveLoader.item
+    // The card's resting rect when it grew out of a pill, else nothing: only
+    // that card reaches over the bar.
+    readonly property rect restRect: dropLoader.active && dropLoader.item ? dropLoader.item.restRect
+                                                                          : Qt.rect(0, 0, 0, 0)
     readonly property int closeMs: cardItem ? cardItem.closeMs : Services.Sizes.panelCloseMs
     readonly property int holdMs: closeMs + 60
     readonly property real contentAmt: cardItem ? cardItem.contentAmt : 0
@@ -107,6 +114,7 @@ Item {
             openXOverride: host.openXOverride
             openYOverride: host.openYOverride
             sourceEdge: host.sourceEdge
+            startColor: host.startColor
             readonly property alias bodyItem: bodyHolder.item
             Loader { id: bodyHolder; anchors.fill: parent; sourceComponent: host.body }
         }

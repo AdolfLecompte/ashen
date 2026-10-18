@@ -16,7 +16,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: card.restRect }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.mediaVisible
     visible: shown || card.closing
@@ -110,13 +110,38 @@ PanelWindow {
             opacity: 0.30 * card.contentAmt
             visible: backArt.status === Image.Ready
 
-            MultiEffect {
+            // Built only while the contents are out, which is before the box
+            // shrinks: a blur left running down to a sliver of height asked
+            // for a texture tens of thousands of pixels tall.
+            Loader {
                 anchors.fill: parent
-                source: backArt
-                blurEnabled: true
-                blurMax: 64
-                blur: 1.0
-                saturation: -0.2
+                active: card.contentAmt > 0.01
+                sourceComponent: MultiEffect {
+                    source: backArt
+                    blurEnabled: true
+                    blurMax: 64
+                    blur: 1.0
+                    saturation: -0.2
+                }
+            }
+        }
+
+        // Grown out of the bar, the side touching it is the bar's own colour
+        // and the cover's tint only arrives further out, so the box reads as
+        // the bar stretching rather than a card laid over it.
+        Rectangle {
+            id: veil
+            anchors.fill: parent
+            radius: 20
+            visible: !card.plain
+            readonly property string side: Services.Sizes.barPosition
+            readonly property bool far: side === "bottom" || side === "right"
+            gradient: Gradient {
+                orientation: (Services.Sizes.barPosition === "left" || Services.Sizes.barPosition === "right")
+                    ? Gradient.Horizontal : Gradient.Vertical
+                GradientStop { position: 0.0; color: veil.far ? "transparent" : card.joinColor }
+                GradientStop { position: 0.5; color: "transparent" }
+                GradientStop { position: 1.0; color: veil.far ? card.joinColor : "transparent" }
             }
         }
 

@@ -2,9 +2,10 @@ import QtQuick
 import "root:/services" as Services
 
 // ── Dynamic-island morph ────────────────────────────────────────────────────
-// A panel that IS its pill, grown up: it starts as a copy of the pill's rect
-// and swells into the card, height first and width trailing with a hair of
-// overshoot. The numbers came verbatim from MediaPanel and Calendar.
+// A panel that IS its pill, grown up: it stretches out of the pill's rect in
+// one movement and stays on it -- the edge on the bar's side never leaves the
+// pill -- wearing the colour of what it came out of, so it reads as the bar
+// stretching rather than a card dropped over it.
 Item {
     id: root
 
@@ -16,10 +17,10 @@ Item {
     property real pillH: 1
     property real pillCX: 0
     property real pillCY: 0
-    // Where the blob is going. Once it has landed these can still change --
+    // Where the card is going. Once it has landed these can still change --
     // a tab swapped inside the card, a list that grew -- and the card travels
     // between the two sizes instead of jumping, the same way a panel does.
-    // Armed only after the landing: while the blob is on its way the size IS
+    // Armed only after the landing: while the card is on its way the size IS
     // the destination, and `spread` is already the thing interpolating it.
     property real openW: 100
     property real openH: 100
@@ -34,30 +35,20 @@ Item {
         Anim { speed: Services.Sizes.msPanel }
     }
 
-    // What the blob is made of. Transparent for a card whose content already
-    // carries its own plates and wants no container around them.
+    // What the window-style card is made of. Transparent for a card whose
+    // content already carries its own plates and wants no container.
     property color plateColor: Services.Colors.surfacePanel
+    // Grown out of a pill it wears the plate the pill stands on instead.
+    readonly property color joinColor: Services.AppState.joinColorAt(root.pillCX, root.pillCY)
 
-    // The goo bridge back to the bar. Off for a panel that does not hang from
-    // one, and never drawn on a vertical bar.
-    property bool neck: true
-
-    // Which axis leads the growth. A card dropping out of the bar elongates
-    // downwards first, but one that comes out of the SIDE of its capsule has to
-    // sweep sideways, or it reads as falling from somewhere it never was.
-    property bool sideways: false
-    readonly property int leadMs: 130
-    readonly property int trailMs: 180
-
-    // Where it lands. Left alone, it goes where a panel dropping out of that
-    // pill belongs -- which is a question about the BAR. A morph that happens
-    // somewhere else (the lock screen has no bar) names its own spot instead.
+    // Where it lands. Left alone, it grows out of its pill. A morph that
+    // happens somewhere else (the lock screen has no bar) names its own spot.
     property real openXOverride: NaN
+    property real openYOverride: NaN
     // Is its pill on the bar? A parked pill reports nothing, and morphing out
     // of wherever it last was flew the card in from a spot on no bar: with no
     // pill it arrives as a window, in the middle of the screen.
     property bool hasPill: true
-    property real openYOverride: NaN
 
     // True once the surface has landed and the morph is armed. The panel
     // mirrors it into AppState -- which flag it is differs per panel, so it is
@@ -71,11 +62,12 @@ Item {
     readonly property bool plain: plate.plain
     readonly property bool wearingFace: root.morphing && !plate.plain
 
-    // Children go inside the blob, clipped by it and positioned against it.
-    // The pieces this file owns are assigned to `data` by hand further down:
-    // with the default property aliased away, they would otherwise try to
-    // become children of the very rectangle they build.
-    default property alias content: plate.data
+    // Children go inside the blob, clipped by it, positioned against the part
+    // of it past the bar, and faded with it. The pieces this file owns are
+    // assigned to `data` by hand further down: with the default property
+    // aliased away, they would otherwise try to become children of the very
+    // rectangle they build.
+    default property alias content: inner.data
 
     // The drivers, published for the shared items to interpolate against.
     property alias fall: plate.fall          // travel from the bar to the resting spot
@@ -127,6 +119,10 @@ Item {
     }
     // The window has to stay mapped through the close: the panel asks this.
     readonly property bool closing: closeDelay.running
+    // Where it rests, for the window's input mask: the part over the bar has
+    // to take clicks too.
+    readonly property rect restRect: root.shown
+        ? Qt.rect(plate.openX, plate.openY, plate.fullW, plate.fullH) : Qt.rect(0, 0, 0, 0)
 
     data: [
 
@@ -142,52 +138,41 @@ Item {
         }
     },
 
-    // Long enough to cover the slowest leg of the way back: un-transform,
-    // then travel home.
-    Timer { id: closeDelay; interval: 400 },
-
-    // The goo bridge, drawn under the card so the card's own edge hides where
-    // the two meet. Alive only while the blob is on its way out of the bar.
-    GooNeck {
-        active: root.neck && !Services.Sizes.barVertical
-        pillCX: root.pillCX
-        pillW: root.pillW
-        fromBelow: Services.Sizes.barPosition === "bottom"
-        barEdge: Services.Sizes.barPosition === "bottom"
-            ? root.height - Services.Sizes.barH : Services.Sizes.barH
-        cardEdge: Services.Sizes.barPosition === "bottom"
-            ? plate.y + plate.height : plate.y
-        cardHalfW: plate.width / 2
-        pinch: Math.max(0, Math.min(1, plate.fall / 0.55))
-        fillColor: Services.Colors.surfacePanel
-    },
+    // The whole way home.
+    Timer { id: closeDelay; interval: Services.Sizes.panelCloseMs },
 
     Rectangle {
         id: plate
 
-        // Where the grown-up card wants to end up: it still tracks its pill and
-        // follows the bar around.
+        // Where the grown-up card wants to end up. Out of a pill, the side that
+        // faces the bar stays on the bar's outer edge there; along the bar it
+        // is centred on the pill and kept on screen.
+        readonly property real pinAt: Services.AppState.outerEdgeAt(edge, root.pillCX, root.pillCY, root.pillW, root.pillH)
+        readonly property real fullW: root.openW
+        readonly property real fullH: root.openH
         readonly property real openX: !root.hasPill ? (root.width - root.openW) / 2
-            : isNaN(root.openXOverride)
-            ? Services.Sizes.panelX(root.width, root.openW, root.pillCX)
-            : root.openXOverride
+            : !isNaN(root.openXOverride) ? root.openXOverride
+            : !plate.plain && edge === "left" ? plate.pinAt
+            : !plate.plain && edge === "right" ? plate.pinAt - plate.fullW
+            : Services.Sizes.panelX(root.width, plate.fullW, root.pillCX)
         readonly property real openY: !root.hasPill ? (root.height - root.openH) / 2
-            : isNaN(root.openYOverride)
-            ? Services.Sizes.panelY(root.height, root.openH, root.pillCY)
-            : root.openYOverride
+            : !isNaN(root.openYOverride) ? root.openYOverride
+            : !plate.plain && edge === "top" ? plate.pinAt
+            : !plate.plain && edge === "bottom" ? plate.pinAt - plate.fullH
+            : Services.Sizes.panelY(root.height, plate.fullH, root.pillCY)
 
         // Only drawn once the morph is actually armed, so the pill never has to
         // share the screen with a copy of itself.
         visible: root.morphing || closeDelay.running
 
         // "Window" style: the drivers land on 1 at once and only the opacity
-        // moves, so the card appears where it would have dropped without
-        // becoming the pill first. The morph timings below are untouched.
+        // moves, so the card appears where it belongs without becoming the
+        // pill first.
         readonly property bool plain: Services.Prefs.panelStyle === "plain" || !root.hasPill
         property real plainFade: 0
 
         // Where the drivers rest while closed. In "window" they stay landed -- the
-        // card never becomes the pill -- but in "transform" they must be back at
+        // card never becomes the pill -- but in "morph" they must be back at
         // zero. The style can change between openings, so this is applied on the
         // way in rather than assumed.
         function restDrivers() {
@@ -201,8 +186,6 @@ Item {
         property real fall: 0
         property real stretch: 0
         property real spread: 0
-        // Deliberately started late: the box opens first and the contents
-        // rearrange inside it afterwards, never both at once.
         property real morph: 0
         property real contentAmt: 0
 
@@ -210,94 +193,51 @@ Item {
         // durations: a `root.opening ? a : b` inside a Behavior is read with
         // the *old* value of the flag, so the close silently ran with the open
         // timings. Two named animations leave no room for that.
+        //
+        // Morph: the pill goes dark, the box stretches out of it on one curve
+        // (fall, stretch and spread together keep the bar side pinned), and
+        // what is inside fades in where it belongs once the box has most of
+        // its room. Nothing travels: rearranging pieces on the way read as
+        // broken. Window: only the fade moves; the drivers are already landed.
         ParallelAnimation {
             id: openAnim
             NumberAnimation {
                 target: plate; property: "plainFade"; to: 1
                 duration: plate.plain ? 260 : 0; easing.type: Services.Sizes.easeOut
             }
-            // 1. STILL A PILL, it leaves the bar. Nothing grows yet: a box
-            // that opens on the way down is a drop, not a pill that moved.
+            PropertyAction { target: plate; property: "morph"; value: 1 }
             NumberAnimation {
-                target: plate; property: "fall"; to: 1
-                duration: plate.plain ? 0 : 120; easing.type: Services.Sizes.easeOut
+                target: plate; properties: "fall,stretch,spread"; to: 1
+                duration: plate.plain ? 0 : Services.Sizes.panelFlowInMs
+                easing.type: Easing.BezierSpline; easing.bezierCurve: Services.Sizes.panelFlowCurve
             }
-            // 2. Only once it has arrived does it become the card: the axis it
-            // travelled on leads, the other trails, and neither overshoots --
-            // a bounce reads as a pop rather than as something arriving.
             SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 110 }
+                PauseAnimation { duration: plate.plain ? 0 : Services.Sizes.panelFlowInMs / 2 }
                 NumberAnimation {
-                    target: plate; property: "stretch"; to: 1
-                    duration: plate.plain ? 0 : (root.sideways ? root.trailMs : root.leadMs)
-                    easing.type: Services.Sizes.easeOut
+                    target: plate; property: "contentAmt"; to: 1
+                    duration: plate.plain ? 0 : Services.Sizes.panelFlowInMs / 2; easing.type: Easing.OutCubic
                 }
-            }
-            SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 110 }
-                NumberAnimation {
-                    target: plate; property: "spread"; to: 1
-                    duration: plate.plain ? 0 : (root.sideways ? root.leadMs : root.trailMs)
-                    easing.type: Services.Sizes.easeOut
-                }
-            }
-            // 3. What the pill was carrying slides into the card's arrangement
-            // WHILE the box opens: the box and its contents are one movement.
-            SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 140 }
-                NumberAnimation {
-                    target: plate; property: "morph"; to: 1
-                    duration: plate.plain ? 0 : 160; easing.type: Services.Sizes.easeOut
-                }
-            }
-            // 4. The card-only extras arrive last, filling the gaps the
-            // travelling items have opened up by then.
-            SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 290 }
-                    NumberAnimation { target: plate; property: "contentAmt"; to: 1; duration: plate.plain ? 0 : 130 }
             }
         }
-
-        // Closing is not the opening backwards: the extras leave, the items
-        // regroup into the pill, and only then does the shape collapse -- the
-        // same order, mirrored, so the box is never smaller than its contents.
+        // The contents fade out, then the box goes home and lands soft.
         ParallelAnimation {
             id: closeAnim
             NumberAnimation {
                 target: plate; property: "plainFade"; to: 0
                 duration: plate.plain ? 200 : 0; easing.type: Services.Sizes.easeIn
             }
-            NumberAnimation { target: plate; property: "contentAmt"; to: 0; duration: plate.plain ? 0 : 90 }
-            SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 40 }
-                NumberAnimation {
-                    target: plate; property: "morph"; to: plate.plain ? 1 : 0
-                    duration: plate.plain ? 0 : 130; easing.type: Services.Sizes.easeInOut
-                }
+            NumberAnimation {
+                target: plate; property: "contentAmt"; to: plate.plain ? 1 : 0
+                duration: plate.plain ? 0 : Services.Sizes.panelFadeMs; easing.type: Services.Sizes.easeIn
             }
-            // The card becomes a pill again where it stands…
             SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 110 }
-                ParallelAnimation {
-                    NumberAnimation {
-                        target: plate; property: "stretch"; to: plate.plain ? 1 : 0
-                        duration: plate.plain ? 0 : (root.sideways ? 140 : 120)
-                        easing.type: Services.Sizes.easeInOut
-                    }
-                    NumberAnimation {
-                        target: plate; property: "spread"; to: plate.plain ? 1 : 0
-                        duration: plate.plain ? 0 : (root.sideways ? 120 : 140)
-                        easing.type: Services.Sizes.easeInOut
-                    }
-                }
-            }
-            // …and only then does the pill go home.
-            SequentialAnimation {
-                PauseAnimation { duration: plate.plain ? 0 : 220 }
+                PauseAnimation { duration: plate.plain ? 0 : Services.Sizes.panelShrinkDelayMs }
                 NumberAnimation {
-                    target: plate; property: "fall"; to: plate.plain ? 1 : 0
-                    duration: plate.plain ? 0 : 130; easing.type: Services.Sizes.easeInOut
+                    target: plate; properties: "fall,stretch,spread"; to: plate.plain ? 1 : 0
+                    duration: plate.plain ? 0 : Services.Sizes.panelFlowOutMs
+                    easing.type: Easing.BezierSpline; easing.bezierCurve: Services.Sizes.panelFlowCurve
                 }
+                PropertyAction { target: plate; property: "morph"; value: plate.plain ? 1 : 0 }
             }
         }
 
@@ -305,23 +245,31 @@ Item {
         readonly property string edge: Services.Sizes.barPosition
         readonly property bool sideways: edge === "left" || edge === "right"
         readonly property real unroll: plate.plain ? 0.06 + 0.94 * plate.plainFade : 1
-        width: (root.pillW + (root.openW - root.pillW) * spread) * (sideways ? unroll : 1)
-        height: (root.pillH + (root.openH - root.pillH) * stretch) * (sideways ? 1 : unroll)
-        x: !plate.plain ? root.pillCX + (openX + root.openW / 2 - root.pillCX) * fall - width / 2
-           : edge === "right" ? openX + root.openW - width
-           : sideways ? openX : openX + root.openW / 2 - width / 2
-        y: !plate.plain ? root.pillCY + (openY + root.openH / 2 - root.pillCY) * fall - height / 2
-           : edge === "bottom" ? openY + root.openH - height : openY
+        width: (root.pillW + (plate.fullW - root.pillW) * spread) * (sideways ? unroll : 1)
+        height: (root.pillH + (plate.fullH - root.pillH) * stretch) * (sideways ? 1 : unroll)
+        x: !plate.plain ? root.pillCX + (openX + plate.fullW / 2 - root.pillCX) * fall - width / 2
+           : edge === "right" ? openX + plate.fullW - width
+           : sideways ? openX : openX + plate.fullW / 2 - width / 2
+        y: !plate.plain ? root.pillCY + (openY + plate.fullH / 2 - root.pillCY) * fall - height / 2
+           : edge === "bottom" ? openY + plate.fullH - height : openY
 
         // Pill corner while small, card corner once open
         opacity: plate.plain ? plate.plainFade : 1
         radius: Services.Sizes.pillR + (20 - Services.Sizes.pillR) * Math.min(1, spread)
-        color: root.plateColor
-        border.width: Services.Colors.panelEdgeW
+        color: plate.plain ? root.plateColor : root.joinColor
+        border.width: plate.plain ? Services.Colors.panelEdgeW : 0
         border.color: Services.Colors.panelEdgeColor
         clip: true
 
         MouseArea { anchors.fill: parent; onClicked: {} }
+
+        // Everything the panel puts inside, faded in and out as one -- the
+        // window style's contents are always in.
+        Item {
+            id: inner
+            anchors.fill: parent
+            opacity: plate.contentAmt
+        }
     }
     ]
 }

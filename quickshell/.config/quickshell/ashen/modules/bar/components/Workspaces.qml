@@ -175,6 +175,14 @@ Item {
     }
 
 
+    // The chip a preview is growing out of steps aside -- plate, label, marks
+    // and the active indicator -- the way a pill does for its panel. Hiding
+    // only the label left its plate (lit, and grown under the pointer)
+    // showing around the card's first frames.
+    function covered(id) {
+        return Services.AppState.wsPreviewMorphing && Services.AppState.wsPreviewId === id
+    }
+
     // Hold the pointer still on a chip and that workspace opens a preview of
     // itself. 600 ms: long enough that sweeping across the strip never trips
     // it, short enough that it does not feel like waiting.
@@ -184,6 +192,8 @@ Item {
         property string label: ""
         // Nothing to preview on an empty workspace, so it never opens
         property bool previewable: false
+        // Wearing the accent: the workspace you are on, or the special open.
+        property bool lit: false
         signal activated()
 
         anchors.fill: parent
@@ -210,10 +220,17 @@ Item {
                 // and the preview grew off the side of the screen.
                 const g = ph.mapToGlobal(0, 0)
                 const s = QsWindow.window ? QsWindow.window.screen : null
+                // As drawn: grown under the pointer, the chip is a little
+                // larger than its slot, and a card born at the slot's size
+                // left the grown edge showing around it.
+                const k = ph.parent && ph.parent.scale ? ph.parent.scale : 1
                 Services.AppState.setWsPreview(ph.wsId, ph.label,
-                    Services.Sizes.barOriginX(s) + g.x - (s ? s.x : 0),
-                    Services.Sizes.barOriginY(s) + g.y - (s ? s.y : 0),
-                    ph.width, ph.height)
+                    Services.Sizes.barOriginX(s) + g.x - (s ? s.x : 0) - ph.width * (k - 1) / 2,
+                    Services.Sizes.barOriginY(s) + g.y - (s ? s.y : 0) - ph.height * (k - 1) / 2,
+                    ph.width * k, ph.height * k,
+                    // What the chip shows: the accent is the indicator's, under
+                    // the one you are on; any other chip shows the bar.
+                    ph.lit ? (Services.Pills.rings ? "transparent" : Services.Colors.ghost) : "transparent")
             }
         }
     }
@@ -276,7 +293,7 @@ Item {
             // Part of the numbers, so it leaves and comes back with them.
             // In dots the chips carry their own fill, so the indicator that
             // would slide under them has nothing left to say.
-            opacity: root.bare ? 0 : (pill.showSpecial ? 0 : pill.contentOpacity)
+            opacity: root.bare || pill.showSpecial || root.covered(root.lastNormalId) ? 0 : pill.contentOpacity
             readonly property real slot: {
                 let at = root.pad
                 for (const id of root.chipIds) {
@@ -298,7 +315,7 @@ Item {
             id: pac
             z: 2
             visible: root.pacman && !pill.showSpecial
-            opacity: pill.contentOpacity
+            opacity: root.covered(root.lastNormalId) ? 0 : pill.contentOpacity
             textFormat: Text.PlainText
             text: root.glyphPacman
             color: Services.Colors.ghost
@@ -324,6 +341,7 @@ Item {
                 delegate: Item {
                     required property int index
                     property int wsId: root.chipIds[index] || 0
+                    opacity: root.covered(wsId) ? 0 : 1
                     property bool isActive: root.lastNormalId === wsId
                     visible: root.chipShown(wsId)
                     property bool hasWindows: Hyprland.workspaces.values.find(w => w.id === wsId) !== undefined
@@ -446,7 +464,13 @@ Item {
                     PreviewHover {
                         id: chipHover
                         wsId: parent.wsId
-                        label: parent.appIcon !== "" ? parent.appIcon : String(parent.wsId)
+                        lit: parent.isActive && !root.bare
+                        // What the chip itself shows, so the caption it flies
+                        // into matches: a ghost (only a workspace with windows
+                        // is previewed), its app, its kanji, or its number.
+                        label: root.pacman ? root.glyphGhost
+                             : parent.appIcon !== "" ? parent.appIcon
+                             : root.kanji ? root.kanjiOf(parent.wsId) : String(parent.wsId)
                         previewable: parent.winCount > 0
                         onActivated: {
                             var id = parent.wsId
@@ -472,6 +496,7 @@ Item {
 
                 delegate: Item {
                     required property var modelData
+                    opacity: root.covered(modelData.id) ? 0 : 1
                     readonly property string shortName: modelData.name.replace("special:", "")
                     readonly property bool isShown: modelData.name === root.shownSpecial
                     // Same style as the numbered row: a glyph, an initial, or a dot.
@@ -537,6 +562,7 @@ Item {
                     PreviewHover {
                         id: spHover
                         wsId: parent.modelData.id
+                        lit: parent.isShown && !root.bare
                         label: parent.label
                         previewable: Hyprland.toplevels.values.filter(
                             t => t.workspace && t.workspace.id === parent.modelData.id).length > 0

@@ -24,9 +24,21 @@ Rectangle {
     // Whole containment pill fills with the accent while the panel is open, the
     // same inversion every other active pill uses (see RecordingPill /
     // No inner box, and no hover tint on the plate.
-    color: root.outlined ? Services.Colors.surfaceGlass : ((open && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
-    gradient: Services.Prefs.useGradients && open ? Services.Colors.accentGradient : null
+    color: root.outlined ? Services.Colors.surfaceGlass : ((open && Services.Pills.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : Services.Colors.pillPlate)
+    gradient: Services.Prefs.useGradients && open && !Services.Pills.wearsFace ? Services.Colors.accentGradient : null
     Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
+
+    // While the rail wears its shape the bell steps aside, on the same beats
+    // as the other pills: once the rail's window is up, and back as it lands.
+    property bool takenOver: false
+    onOpenChanged: {
+        if (open) { handBack.stop(); handOver.restart() }
+        else { handOver.stop(); handBack.restart() }
+    }
+    Timer { id: handOver; interval: Services.Sizes.panelArmMs; onTriggered: root.takenOver = true }
+    Timer { id: handBack; interval: Services.Sizes.panelHandBackMs; onTriggered: root.takenOver = false }
+    opacity: (root.takenOver && Services.Pills.wearsFace) ? 0.0 : 1.0
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
     PillCenter { key: "notification" }
 
@@ -38,7 +50,7 @@ Rectangle {
         text: root.dnd ? "\uE7F6" : "\uE7F4"
         // Dark only on the accent fill. The hover plate is a surface tone, so
         // the glyph lifts to snow on it the same way it does at rest.
-        color: root.open ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
+        color: root.open ? (Services.Pills.fills && !Services.Pills.wearsFace ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 24
         font.family: "Material Symbols Rounded"

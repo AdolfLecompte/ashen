@@ -303,6 +303,15 @@ Scope {
                 // plate of its own -- there the frame draws the bar as its top
                 // side, and a plate here would be a second one on top of it.
                 Rectangle {
+                    id: solidPlate
+                    // Published so a panel can wear the colour of the plate it grew out of.
+                    readonly property rect onScreen: {
+                        solidPlate.x; solidPlate.y; solidPlate.width; solidPlate.height; solidPlate.visible
+                        if (!solidPlate.visible || solidPlate.width <= 0) return Qt.rect(0, 0, 0, 0)
+                        const p = solidPlate.mapToGlobal(0, 0)
+                        return Qt.rect(p.x, p.y, solidPlate.width, solidPlate.height)
+                    }
+                    onOnScreenChanged: Services.AppState.setPlate("solid", solidPlate.onScreen)
                     anchors.fill: strip
                     z: -2
                     visible: Services.Sizes.barPlate
@@ -472,7 +481,17 @@ Scope {
                 // same air the solid plate keeps at the ends. A section with
                 // nothing in it has no plate: an empty block is not a block.
                 component GroupPlate: Rectangle {
+                    id: gp
                     property Item group: null
+                    property string key: ""
+                    // Published so a panel can wear the colour of the plate it grew out of.
+                    readonly property rect onScreen: {
+                        gp.x; gp.y; gp.width; gp.height; gp.visible
+                        if (!gp.visible || gp.width <= 0) return Qt.rect(0, 0, 0, 0)
+                        const p = gp.mapToGlobal(0, 0)
+                        return Qt.rect(p.x, p.y, gp.width, gp.height)
+                    }
+                    onOnScreenChanged: Services.AppState.setPlate(gp.key, gp.onScreen)
                     readonly property int along: Services.Sizes.plateAlong
                     visible: Services.Sizes.barIsland && width > 0 && group && group.visible
                     z: -2
@@ -491,9 +510,9 @@ Scope {
                     height: !group || group.height <= 0 ? 0
                           : (bar.vertical ? group.height + along * 2 : group.height)
                 }
-                GroupPlate { id: startPlate;  group: startGroup }
-                GroupPlate { id: centrePlate; group: centreGroup }
-                GroupPlate { id: endPlate;    group: endGroup }
+                GroupPlate { id: startPlate;  group: startGroup; key: "start" }
+                GroupPlate { id: centrePlate; group: centreGroup; key: "centre" }
+                GroupPlate { id: endPlate;    group: endGroup; key: "end" }
 
                 // ── Left ────────────────────────────────────────────────
                 // In the island style each group stands on a plate that is

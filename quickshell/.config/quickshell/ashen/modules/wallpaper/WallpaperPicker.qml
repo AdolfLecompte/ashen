@@ -18,7 +18,7 @@ Scope {
         color: "transparent"
         // Everything but the bar's strip: a click on a pill has to reach it,
         // or changing panels costs two. See widgets/ShellMask.qml.
-        mask: Widgets.ShellMask { winW: win.width; winH: win.height }
+        mask: Widgets.ShellMask { winW: win.width; winH: win.height; keepRect: card.restRect }
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.wallpaperVisible
         visible: shown || closeDelay.running

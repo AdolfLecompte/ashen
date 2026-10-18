@@ -12,7 +12,7 @@ Singleton {
     // never does, so a capsule that steps aside anyway leaves a hole and half an
     // animation. Written here once: five capsules each spelled out the
     // preference check, and a sixth (the lock screen's) got it wrong.
-    readonly property bool wearsFace: Prefs.panelStyle === "morph"
+    readonly property bool wearsFace: Prefs.panelStyle !== "plain"
 
     // key: what it is called in Prefs.barLayout and in the drag-and-drop UI.
     //   label — the human name, shown in Settings > Bar

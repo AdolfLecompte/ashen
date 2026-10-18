@@ -270,6 +270,9 @@ Singleton {
     property real clockPillCenterX: 960
     property real clockPillCenterY: 60
     property real notificationPillCenterX: 80
+    property real notificationPillCenterY: 0
+    property real notificationPillW: 44
+    property real notificationPillH: 44
     property bool volumeVisible: false
     property bool batteryVisible: false
     property bool usageVisible: false
@@ -287,6 +290,42 @@ Singleton {
     // mapped a few frames after the flag flips) until it is home again. The
     // pill hides off this, not off mediaVisible, so the handover has no gap.
     property bool mediaMorphing: false
+
+    // Where the bar's plates stand on screen, so a panel growing out of a pill
+    // can wear the colour of what it came out of. key -> rect.
+    property var barPlates: ({})
+    // The plate under a point, or null: a pill in the pills style carries its own.
+    function plateAt(cx, cy) {
+        for (const k in root.barPlates) {
+            const r = root.barPlates[k]
+            if (r.width > 0 && cx >= r.x && cx <= r.x + r.width && cy >= r.y && cy <= r.y + r.height) return r
+        }
+        return null
+    }
+    // What a panel growing out of the pill at (cx, cy) wears, so it reads as
+    // the bar stretching rather than a card laid over it.
+    function joinColorAt(cx, cy) {
+        return root.plateAt(cx, cy) !== null
+            ? (Prefs.barOutline ? Colors.surfaceGlass : Colors.surfaceBar)
+            : Colors.surfacePill
+    }
+    // The bar's outer edge on `side` where a pill stands: the plate's when it
+    // has one -- a pill shorter than its plate would leave the panel a step
+    // inside the plate -- else the pill's own.
+    function outerEdgeAt(side, cx, cy, w, h) {
+        const r = root.plateAt(cx, cy)
+        if (side === "top") return r !== null ? r.y : cy - h / 2
+        if (side === "bottom") return r !== null ? r.y + r.height : cy + h / 2
+        if (side === "left") return r !== null ? r.x : cx - w / 2
+        return r !== null ? r.x + r.width : cx + w / 2
+    }
+    function setPlate(key, r) {
+        const was = root.barPlates[key]
+        if (was && was.x === r.x && was.y === r.y && was.width === r.width && was.height === r.height) return
+        const next = Object.assign({}, root.barPlates)
+        next[key] = r
+        root.barPlates = next
+    }
     property bool clockMorphing: false
 
     // Which way the next track change sweeps: +1 forwards, -1 back. Set by
@@ -307,7 +346,11 @@ Singleton {
     property real wsPreviewH: 32
     property bool wsPreviewMorphing: false
 
-    function setWsPreview(id, label, x, y, w, h) {
+    // What the chip looked like when the preview was asked for: the card is
+    // born in it and fades into the panel, instead of a dark square over it.
+    property color wsPreviewColor: "transparent"
+    function setWsPreview(id, label, x, y, w, h, color) {
+        root.wsPreviewColor = color !== undefined ? color : "transparent"
         root.wsPreviewLabel = label
         root.wsPreviewX = x
         root.wsPreviewY = y
@@ -349,6 +392,11 @@ Singleton {
     property real usagePillW: 44
     property real usagePillH: 32
     property real usbPillW: 44
+    // The system readout: the processes panel grows out of it.
+    property real sysPillW: 44
+    property real sysPillH: 32
+    property real sysPillCenterX: 0
+    property real sysPillCenterY: 0
     property real usbPillH: 32
     property real networkPillW: 44
     property real networkPillH: 32
@@ -395,6 +443,8 @@ Singleton {
         else if (key === "process")    { root.processPillW = w;    root.processPillH = h }
         else if (key === "settings")   { root.settingsPillW = w;   root.settingsPillH = h }
         else if (key === "clipboard")  { root.clipboardPillW = w;  root.clipboardPillH = h }
+        else if (key === "sys")        { root.sysPillW = w;        root.sysPillH = h }
+        else if (key === "notification") { root.notificationPillW = w; root.notificationPillH = h }
     }
 
 
@@ -410,8 +460,9 @@ Singleton {
         else if (key === "bluetooth")    { root.bluetoothPillCenterX = x;     root.bluetoothPillCenterY = y }
         else if (key === "usb")          { root.usbPillCenterX = x;           root.usbPillCenterY = y }
         else if (key === "clock")        { root.clockPillCenterX = x;         root.clockPillCenterY = y }
-        else if (key === "notification") { root.notificationPillCenterX = x }
+        else if (key === "notification") { root.notificationPillCenterX = x;  root.notificationPillCenterY = y }
         else if (key === "power")        { root.powerPillCenterX = x;         root.powerPillCenterY = y }
+        else if (key === "sys")          { root.sysPillCenterX = x;           root.sysPillCenterY = y }
     }
 
     property real trayMenuCenterX: 900

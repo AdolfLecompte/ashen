@@ -14,7 +14,7 @@ PanelWindow {
     color: "transparent"
     // Everything but the bar's strip: a click on a pill has to reach it,
     // or changing panels costs two. See widgets/ShellMask.qml.
-    mask: Widgets.ShellMask { winW: root.width; winH: root.height }
+    mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: card.restRect }
     readonly property bool shown: Services.AppState.calendarVisible
     visible: shown || card.closing
 
