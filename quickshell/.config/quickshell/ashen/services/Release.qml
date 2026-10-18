@@ -66,11 +66,26 @@ Singleton {
     }
     readonly property string version: root.current ? root.current.title : ""
     // The translation only when it covers this version; English otherwise.
-    readonly property var notes: {
-        if (!root.current) return []
+    readonly property var notes: root.entriesOf(root.current)
+    function entriesOf(sec) {
+        if (!sec) return []
         for (const s of root.localSections)
-            if (s.title === root.version && s.entries.length > 0) return s.entries
-        return root.current.entries
+            if (s.title === sec.title && s.entries.length > 0) return s.entries
+        return sec.entries
+    }
+    // The running version and the two before it, one list: a lone small
+    // release read as a cut-off page. Older versions start with a marker
+    // entry carrying their number.
+    readonly property int recentCount: 3
+    readonly property var recent: {
+        let out = [], n = 0
+        for (const s of root.sections) {
+            if (!/^\d+\.\d+/.test(s.title)) continue
+            if (n > 0) out.push({ version: s.title, group: "", text: "" })
+            out = out.concat(root.entriesOf(s))
+            if (++n >= root.recentCount) break
+        }
+        return out
     }
 
     // ── Is there a newer Ashen? ──────────────────────────────────────────

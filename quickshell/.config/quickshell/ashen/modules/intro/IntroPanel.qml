@@ -326,15 +326,37 @@ PanelWindow {
                             spacing: 10
 
                             Repeater {
-                                model: Services.Release.notes
+                                model: Services.Release.recent
 
                                 Item {
                                     required property var modelData
+                                    readonly property bool isVersion: modelData.version !== undefined
                                     Layout.fillWidth: true
-                                    implicitHeight: line.implicitHeight + (modelData.group !== "" ? 10 : 4)
+                                    implicitHeight: isVersion ? verRow.implicitHeight + 22
+                                        : line.implicitHeight + (modelData.group !== "" ? 10 : 4)
+
+                                    // An earlier version starts here: a rule and its number.
+                                    RowLayout {
+                                        id: verRow
+                                        visible: parent.isVersion
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.bottom: parent.bottom
+                                        spacing: 10
+                                        Text {
+                                            textFormat: Text.PlainText
+                                            text: parent.parent.isVersion ? parent.parent.modelData.version : ""
+                                            color: Services.Colors.mist
+                                            font.pixelSize: 13
+                                            font.bold: true
+                                            font.family: "JetBrainsMono NF"
+                                        }
+                                        Rectangle { Layout.fillWidth: true; height: 1; color: Services.Colors.fillLine }
+                                    }
 
                                     Text {
                                         id: line
+                                        visible: !parent.isVersion
                                         width: parent.width
                                         y: modelData.group !== "" ? 8 : 0
                                         text: modelData.group !== ""
