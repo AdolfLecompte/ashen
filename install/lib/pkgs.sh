@@ -89,6 +89,24 @@ pkgs_drop_pulseaudio() {
     sudo pacman -R --noconfirm $installed >>"$ASHEN_LOG" 2>&1
 }
 
+# AUR builds like qt6ct-kde PROVIDE qt6ct, so `pacman -Q qt6ct` answers yes and
+# the install moves on. But a Qt platform theme has to match the Qt it loads
+# into, and an AUR build only matches the Qt that was current when it was
+# compiled: the next Qt upgrade and Qt drops the plugin without a word -- no
+# icon theme, every Papirus icon gone from the launcher and from Qt apps. The
+# repo's qt6ct is rebuilt with each Qt. `--ask 4` accepts the conflict removal
+# that --noconfirm would answer no to.
+pkgs_swap_qt6ct() {
+    local owner
+    owner=$(pacman -Qq qt6ct 2>/dev/null) || return 0
+    [ "$owner" = qt6ct ] && return 0
+    if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
+        printf '  would replace %s with qt6ct\n' "$owner"
+        return 0
+    fi
+    sudo pacman -S --noconfirm --ask 4 qt6ct >>"$ASHEN_LOG" 2>&1
+}
+
 # One transaction per package. `pacman -S a b c` is atomic: one bad target and
 # the other 46 never install, which is how a fresh machine ended up with no Nerd
 # Font and nothing said about it.

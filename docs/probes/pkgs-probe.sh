@@ -56,6 +56,8 @@ grep -qE 'pacman -S[^|]*\$\{PKGS' install/lib/pkgs.sh && { say FAIL "batch insta
 # The PulseAudio swap survived: pipewire-pulse Conflicts With it and does not Replace it.
 grep -q 'pulseaudio' install/lib/pkgs.sh && say ok "pulseaudio swap kept" \
                                          || { say FAIL "pulseaudio swap lost"; fail=1; }
+grep -q '^pkgs_swap_qt6ct' install/run.sh && say ok "qt6ct swap runs" \
+                                         || { say FAIL "qt6ct swap not called"; fail=1; }
 # libpulse is NOT removed with it: pipewire-pulse uses it.
 grep -qE 'pacman -R[^\n]*libpulse' install/lib/pkgs.sh && { say FAIL "would remove libpulse"; fail=1; } \
                                                        || say ok "libpulse left alone"

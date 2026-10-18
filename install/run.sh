@@ -73,6 +73,7 @@ tui_steps "packages" "dotfiles" "login screen" "services" "folders"
 tui_step 0 run
 pkgs_sync
 pkgs_drop_pulseaudio
+pkgs_swap_qt6ct
 pkgs_install "sudo pacman -S" "${PKGS_OFFICIAL[@]}"
 
 # base-devel and git are in place now, which is what building a helper needs.
