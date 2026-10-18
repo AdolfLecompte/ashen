@@ -274,6 +274,8 @@ Section {
                     // whichever one Settings was told to open, never a name.
                     Quickshell.execDetached(["sh", "-c", Services.Release.updateCmd])
                 }
+            }
+        }
 
         // Whether the shell may look for a newer release by itself.
         RowLayout {
@@ -291,8 +293,6 @@ Section {
             Toggle {
                 checked: Services.Prefs.updateNotify
                 onToggled: Services.Prefs.updateNotify = !Services.Prefs.updateNotify
-            }
-        }
             }
         }
     }
