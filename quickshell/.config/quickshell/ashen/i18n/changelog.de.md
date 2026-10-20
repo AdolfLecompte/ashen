@@ -26,6 +26,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - **Der Befehl `ashen`**: `update`, `check`, `version`, `restart`, `doctor`,
   `logs`, `wallpaper next|prev|random|<Datei>`, `bar …` und `ipc …`, mit
   zsh-Vervollständigung (`ashen help`).
+- Ein Toast meldet, wenn sich Tastaturlayout, Sprache der Shell oder die
+  Stadt fürs Wetter ändern.
 
 ### Geändert
 - **Framed ist weg**; Angedockt tritt an seine Stelle, und gespeicherte
@@ -39,6 +41,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Die Welle des Visualisierers und der Streifen des Musik-Widgets sind
   dichter.
 - Das Dock mit automatischem Ausblenden macht sich Platz wie die Leiste.
+- Wetterort und Tastaturlayouts sind jetzt Listen, mit dem Suchfeld der
+  Einstellungen darunter: Treffer klappen im selben Feld auf, Enter nimmt
+  den ersten, und ein Fehlgriff sagt es an Ort und Stelle.
 
 ### Behoben
 - **Die Shell verbrauchte im Leerlauf ein paar Prozent CPU.** Sie lauschte
@@ -55,6 +60,7 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Eine angeheftete App in Einstellungen > Desktop zu ziehen hinterlässt
   keine kaputte Zeile mehr.
 - Der Hover des Profilbilds franst seinen runden Rand nicht mehr aus.
+- Das Hintergrundbild oben in Aussehen lädt nicht mehr bei jedem Besuch neu.
 - Die angehefteten Apps des Docks in den Einstellungen umzusortieren
   brauchte zwei Züge: die Liste behielt nach dem ersten die alte Reihenfolge,
   und der nächste Klick erwischte die falsche Zeile.

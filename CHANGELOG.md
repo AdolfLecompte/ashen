@@ -22,6 +22,8 @@
 - **The `ashen` command**: `update`, `check`, `version`, `restart`, `doctor`,
   `logs`, `wallpaper next|prev|random|<file>`, `bar …` and `ipc …`, with zsh
   completion (`ashen help`).
+- A toast says when the keyboard layout, the shell's language or the
+  weather's city changes.
 
 ### Changed
 - **Framed is gone**; Docked takes its place, and saved looks that used it
@@ -33,6 +35,9 @@
   further into the screen.
 - The visualizer's wave and the music widget's strip are denser.
 - The dock with auto-hide makes room for itself like the bar.
+- Weather location and keyboard layouts are lists now, with the Settings
+  search box under them: what it finds unfolds inside the same box, Enter
+  takes the first one, and a miss says so in place.
 - Lighter at rest: album art is decoded at the size it is drawn instead of
   1000 px in every place it appears; the process panel reads temperature and
   traffic straight from the kernel instead of starting `sensors` and `awk`
@@ -53,6 +58,7 @@
   window.
 - Dragging a pinned app in Settings > Desktop no longer leaves a broken row.
 - The profile picture's hover no longer frays its round edge.
+- The wallpaper at the top of Look no longer loads again on every visit.
 - Reordering the dock's pins in Settings took two drags: the list kept the
   old order after the first one, and the next press grabbed the wrong row.
 - Widgets that fold open (music, notifications, the machine) no longer

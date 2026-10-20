@@ -26,6 +26,8 @@ si falta, la bienvenida las enseña en inglés.
 - **El comando `ashen`**: `update`, `check`, `version`, `restart`, `doctor`,
   `logs`, `wallpaper next|prev|random|<archivo>`, `bar …` e `ipc …`, con
   autocompletado en zsh (`ashen help`).
+- Un toast avisa cuando cambian la distribución del teclado, el idioma del
+  shell o la ciudad del clima.
 
 ### Cambiado
 - **Framed desaparece**; Acoplada ocupa su lugar, y los looks guardados que
@@ -38,6 +40,9 @@ si falta, la bienvenida las enseña en inglés.
   widgets, y llega más adentro de la pantalla.
 - La onda del visualizador y la tira del widget de música son más densas.
 - El dock con ocultado automático se hace sitio como la barra.
+- La ubicación del clima y las distribuciones de teclado son ahora listas,
+  con el buscador de Ajustes debajo: lo que encuentra se despliega en la
+  misma caja, Enter toma el primero y si no hay nada lo dice ahí mismo.
 
 ### Corregido
 - **El shell gastaba un par de por ciento de CPU sin hacer nada.** Escuchaba
@@ -53,6 +58,7 @@ si falta, la bienvenida las enseña en inglés.
   maximizada (no a pantalla completa).
 - Arrastrar una app anclada en Ajustes > Escritorio ya no deja una fila rota.
 - El hover de la foto de perfil ya no deshilacha su borde redondo.
+- El wallpaper de arriba de Aspecto ya no se vuelve a cargar en cada visita.
 - Reordenar las apps ancladas del dock en Ajustes pedía dos arrastres: la
   lista se quedaba con el orden viejo tras el primero y el siguiente clic
   agarraba otra fila.
