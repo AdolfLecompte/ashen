@@ -1,6 +1,7 @@
 import QtQuick
 
 import "root:/modules/desktop"
+import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
 // The machine's own name card: what it runs, on what, and how long it has been
@@ -9,6 +10,8 @@ import "root:/services" as Services
 DesktopWidget {
     id: root
     wid: "machine"
+    // The battery line unfolds: the plate eases there in one motion.
+    easeSize: true
 
 
     // Only uptime moves, and only while something is watching it.
@@ -136,51 +139,91 @@ DesktopWidget {
         Line { caption: Services.I18n.t("widget.wm");     value: "Hyprland"; lineWidth: 300 }
         Line { caption: Services.I18n.t("widget.kernel"); value: Services.Machine.kernel; lineWidth: 300 }
         Line { caption: Services.I18n.t("widget.uptime"); value: Services.Machine.shortUptime; lineWidth: 300 }
-
-        Row {
-            spacing: 10
-            topPadding: 8
-
-            Text {
-                textFormat: Text.PlainText
-                anchors.verticalCenter: parent.verticalCenter
-                text: Services.Battery.icon(Services.Battery.level, Services.Battery.charging)
-                // Charging is something happening; a level is not, at any level.
-                color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.mist
-                font.pixelSize: 22
-                font.family: "Material Symbols Rounded"
-            }
-            Text {
-                textFormat: Text.PlainText
-                anchors.verticalCenter: parent.verticalCenter
-                text: Services.Battery.level + "%"
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsReadout
-                font.bold: true
-                font.family: "JetBrainsMono NF"
-            }
-            Text {
-                textFormat: Text.PlainText
-                anchors.verticalCenter: parent.verticalCenter
-                text: Services.Battery.timeRemaining !== "--"
-                    ? Services.I18n.t(Services.Battery.charging ? "battery.fullIn" : "battery.left",
-                                      { t: Services.Battery.timeRemaining })
-                    : ""
-                color: Services.Colors.mist
-                font.pixelSize: Services.Sizes.fsMeta
-                font.letterSpacing: 1.2
-                font.family: "JetBrainsMono NF"
-            }
-        }
     }
 
     Component { id: cardShape; Card_ {} }
     Component { id: compactShape; Compact {} }
     Component { id: sessionShape; Session {} }
 
-    Loader {
-        sourceComponent: root.style === "compact" ? compactShape
-                       : root.style === "session" ? sessionShape
-                       : cardShape
+    // Come close and the battery says where it stands: charged, how long it
+    // has left, or how long to full. Lingers a moment after the pointer goes,
+    // so brushing past does not blink it.
+    readonly property bool near: nearArea.containsMouse || linger.running
+    Timer { id: linger; interval: 600 }
+    readonly property bool hasBattery: Services.Battery.level > 0
+    readonly property string batteryNote: Services.Battery.charging
+        ? (Services.Battery.timeShort !== ""
+           ? Services.I18n.t("battery.fullIn", { t: Services.Battery.timeShort }) : "")
+        : Services.Battery.level >= 99 ? Services.I18n.t("battery.charged")
+        : Services.Battery.timeShort !== ""
+          ? Services.I18n.t("battery.left", { t: Services.Battery.timeShort }) : ""
+
+    Column {
+        Loader {
+            id: shape
+            sourceComponent: root.style === "compact" ? compactShape
+                           : root.style === "session" ? sessionShape
+                           : cardShape
+        }
+
+        Item {
+            id: fold
+            property real amt: root.near && root.hasBattery ? 1 : 0
+            Behavior on amt { Widgets.Anim { speed: Services.Sizes.msPanel } }
+            width: shape.item ? shape.item.width : 0
+            height: 40 * fold.amt
+            visible: fold.amt > 0.01
+            clip: true
+            Binding { target: root; property: "foldH"; value: fold.height }
+            Binding { target: root; property: "foldTo"; value: root.near && root.hasBattery ? 40 : 0 }
+
+            Row {
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                spacing: 10
+                opacity: fold.amt
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Services.Battery.icon(Services.Battery.level, Services.Battery.charging)
+                    // Charging is something happening; a level is not.
+                    color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.mist
+                    font.pixelSize: 20
+                    font.family: "Material Symbols Rounded"
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Services.Battery.level + "%"
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsCardTitle
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: text !== ""
+                    text: root.batteryNote
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+        }
+    }
+
+    // Over the whole widget, hover only: clicks fall through.
+    MouseArea {
+        id: nearArea
+        anchors.fill: parent
+        z: 3
+        enabled: !root.editing
+        hoverEnabled: true
+        acceptedButtons: Qt.NoButton
+        onContainsMouseChanged: {
+            if (containsMouse) Services.Battery.refreshTime()
+            else linger.restart()
+        }
     }
 }

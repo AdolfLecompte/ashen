@@ -139,6 +139,7 @@ DesktopWidget {
             Image {
                 anchors.fill: parent
                 source: root.art
+                sourceSize: Qt.size(512, 512)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 cache: false
@@ -174,6 +175,7 @@ DesktopWidget {
                 Image {
                     anchors.fill: parent
                     source: root.art
+                    sourceSize: Qt.size(512, 512)
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     cache: false

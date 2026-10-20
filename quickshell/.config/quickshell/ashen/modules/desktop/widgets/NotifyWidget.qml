@@ -9,6 +9,8 @@ import "root:/services" as Services
 DesktopWidget {
     id: root
     wid: "notify"
+    // Unfolding eases the plate in one motion instead of stepping the grid.
+    easeSize: true
 
 
     readonly property var log: Services.Notifications.history || []
@@ -151,19 +153,112 @@ DesktopWidget {
     }
 
 
+    // Pressing the cap folds the list out: more of it, or -- with nothing
+    // waiting -- a little drawing to keep the quiet company. Picked on the
+    // opening, never per frame.
+    property bool unfolded: false
+    property var sprite: []
+    onUnfoldedChanged: if (root.unfolded) root.sprite = Services.Sprites.pick("empty")
+    Connections {
+        target: Services.Sprites
+        function onBankChanged() { if (root.unfolded && root.sprite.length === 0) root.sprite = Services.Sprites.pick("empty") }
+    }
+
+    // No spacing: the folds open from 0, and a spaced Column adds its gap the
+    // moment one turns visible -- 8 px popping in under the eased plate.
     component List_: Column {
-        spacing: 8
-        WidgetHead {
+        spacing: 0
+        Item {
             implicitWidth: 340
-            glyph: "\ue7f4"
-            name: Services.I18n.t("widget.notifications")
-            note: root.log.length
+            implicitHeight: 18
+            WidgetHead {
+                anchors.left: parent.left
+                anchors.right: chevron.left
+                anchors.rightMargin: 6
+                anchors.verticalCenter: parent.verticalCenter
+                glyph: "\ue7f4"
+                name: Services.I18n.t("widget.notifications")
+                note: root.log.length
+            }
+            Text {
+                textFormat: Text.PlainText
+                id: chevron
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: "\ue5cf"
+                color: capArea.containsMouse || root.unfolded ? Services.Colors.snow : Services.Colors.ghost
+                font.pixelSize: 16
+                font.family: "Material Symbols Rounded"
+                rotation: root.unfolded ? 180 : 0
+                Behavior on rotation { Widgets.Anim { speed: Services.Sizes.msMicro } }
+            }
+            MouseArea {
+                id: capArea
+                anchors.fill: parent
+                anchors.margins: -4
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.unfolded = !root.unfolded
+            }
         }
-        Repeater {
-            model: Math.min(3, root.log.length)
-            Line { entry: root.log[index]; required property int index }
+        Column {
+            topPadding: 8
+            spacing: 8
+            visible: root.log.length > 0
+            Repeater {
+                model: Math.min(3, root.log.length)
+                Line { entry: root.log[index]; required property int index }
+            }
         }
-        Quiet { visible: root.log.length === 0 }
+        // The next three, folding out under the first ones.
+        Item {
+            id: more
+            property real amt: root.unfolded ? 1 : 0
+            Behavior on amt { Widgets.Anim { speed: Services.Sizes.msPanel } }
+            readonly property int extra: Math.max(0, Math.min(6, root.log.length) - 3)
+            implicitWidth: 340
+            readonly property real full: more.extra > 0 ? moreCol.implicitHeight + 8 : 0
+            implicitHeight: more.full * more.amt
+            clip: true
+            Column {
+                id: moreCol
+                y: 8
+                spacing: 8
+                opacity: more.amt
+                Repeater {
+                    model: more.extra
+                    Line { entry: root.log[index + 3]; required property int index }
+                }
+            }
+        }
+        Binding { target: root; property: "foldH"; value: more.implicitHeight + art.implicitHeight }
+        Binding {
+            target: root; property: "foldTo"
+            value: root.unfolded ? more.full + (root.log.length === 0 ? art.full : 0) : 0
+        }
+        // The drawing, folding out above the quiet line.
+        Item {
+            id: art
+            property real amt: root.unfolded && root.log.length === 0 ? 1 : 0
+            Behavior on amt { Widgets.Anim { speed: Services.Sizes.msPanel } }
+            implicitWidth: 340
+            readonly property real full: pix.implicitHeight + 16
+            implicitHeight: art.full * art.amt
+            clip: true
+            Widgets.PixelArt {
+                id: pix
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                rows: root.sprite
+                opacity: art.amt
+            }
+        }
+        Item {
+            visible: root.log.length === 0
+            implicitWidth: 340
+            implicitHeight: quiet.implicitHeight + 8
+            Quiet { id: quiet; y: 8 }
+        }
     }
 
     // Just how many, for a desktop that wants the number and not the news.

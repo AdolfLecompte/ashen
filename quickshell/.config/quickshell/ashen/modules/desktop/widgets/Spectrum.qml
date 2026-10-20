@@ -15,8 +15,11 @@ Canvas {
 
     // A fixed slot, never "width / number of readings": the wave has to keep
     // the same weight whatever the widget measures.
-    readonly property real slot: Services.Sizes.cavaSlot
-    readonly property real barW: root.slot * 0.5
+    // Dense like the visualizer's ring: thin bars, tight gaps.
+    property real slot: 8
+    // How much of its slot a bar fills; the rest is the gap.
+    property real fill: 0.7
+    readonly property real barW: root.slot * root.fill
     readonly property int slots: Math.max(1, Math.floor(width / root.slot))
 
     // No fade when the room goes quiet: silence is the bars collapsing onto

@@ -100,6 +100,12 @@ Item {
     // Whether this copy of the card carries the lyric column. The panel does;
     // the lock screen has no room for it beside its other cards.
     property bool offerLyrics: false
+    // The chip alone, for a caller that shows the words somewhere of its own
+    // (the desktop widget opens them beside the card): it says lyricsPressed
+    // and lights from lyricsActive instead of toggling the band.
+    property bool lyricChip: root.offerLyrics
+    property bool lyricsActive: Services.Prefs.mediaLyrics
+    signal lyricsPressed()
 
     // ── Player ──────────────────────────────────────────────────────────
     // Raw MPRIS read: drops to null for a few ms while the player changes track
@@ -280,6 +286,7 @@ Item {
                 id: artImg
                 anchors.fill: parent
                 source: root.shownArtUrl
+                sourceSize: Qt.size(512, 512)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 // The player reuses its temp file name: never serve a cached picture.
@@ -726,7 +733,7 @@ Item {
                         id: lyricChip
                         anchors.verticalCenter: parent.verticalCenter
                         // Opens and closes in width, so the row glides rather than jumps.
-                        property real amt: root.offerLyrics && Services.Lyrics.has ? 1 : 0
+                        property real amt: root.lyricChip && Services.Lyrics.has ? 1 : 0
                         Behavior on amt { NumberAnimation { duration: Services.Sizes.msPronounced; easing.type: Services.Sizes.easeOut } }
                         visible: amt > 0.01
                         width: root.chipLg * amt
@@ -736,8 +743,11 @@ Item {
                         size: root.chipLg
                         glyphSize: 20
                         glyph: "\uec0b"
-                        active: Services.Prefs.mediaLyrics
-                        onTriggered: Services.Prefs.mediaLyrics = !Services.Prefs.mediaLyrics
+                        active: root.lyricsActive
+                        onTriggered: {
+                            if (root.offerLyrics) Services.Prefs.mediaLyrics = !Services.Prefs.mediaLyrics
+                            else root.lyricsPressed()
+                        }
                     }
                     // Repeat cycles the three MPRIS states, and says which one
                     // it is with the glyph: the whole list, or this one track.

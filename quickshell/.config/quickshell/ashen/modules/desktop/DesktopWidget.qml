@@ -45,10 +45,11 @@ Item {
     // Only on the desktop: the lock screen places its own and has no bar.
     readonly property string barEdge: root.managed ? Services.Sizes.applied : ""
     readonly property real band: Services.Sizes.panelTop
-    readonly property real minX: root.barEdge === "left" ? root.band : 0
-    readonly property real minY: root.barEdge === "top" ? root.band : 0
-    readonly property real maxX: root.fieldW - (root.barEdge === "right" ? root.band : 0) - width
-    readonly property real maxY: root.fieldH - (root.barEdge === "bottom" ? root.band : 0) - height
+    function onBar(e) { return root.barEdge === e }
+    readonly property real minX: root.onBar("left") ? root.band : 0
+    readonly property real minY: root.onBar("top") ? root.band : 0
+    readonly property real maxX: root.fieldW - (root.onBar("right") ? root.band : 0) - width
+    readonly property real maxY: root.fieldH - (root.onBar("bottom") ? root.band : 0) - height
     readonly property real targetX: Math.max(root.minX, Math.min(root.entry.x, Math.max(root.minX, root.maxX)))
     readonly property real targetY: Math.max(root.minY, Math.min(root.entry.y, Math.max(root.minY, root.maxY)))
     x: root.targetX
@@ -70,8 +71,43 @@ Item {
         return root.onGrid ? Math.ceil(v / step) * step : v
     }
 
-    implicitWidth: root.toGrid(body.implicitWidth + root.padH)
-    implicitHeight: root.toGrid(body.implicitHeight + root.padV)
+    // Where the plate is going. A widget whose content opens and closes
+    // (easeSize) eases the plate there in one motion instead of stepping
+    // through the grid, and keeps its content placed by the end size so it
+    // does not slide while the plate catches up.
+    readonly property real targetW: root.toGrid(body.implicitWidth + root.padH)
+    property bool easeSize: false
+    // How much of the height is a fold the widget has opened (lyrics, more
+    // notifications, the battery line), and the height it has without them:
+    // the lock's columns stand on that, so a fold grows down and moves nothing.
+    property real foldH: 0
+    // Where the fold is going: its full height when open, 0 when shut. The
+    // plate aims there ONCE per toggle. Aiming at the live height made the
+    // grid step mid-fold, restart the ease and jump the content 24 px.
+    property real foldTo: 0
+    // The height without the fold, taken only while the fold is still. Mid
+    // fold, foldH moves at once but the content's Column re-measures a frame
+    // later, so the difference wobbled by ~6 px, the rest height crossed a
+    // grid step and the lock's columns jumped 24 px up and down.
+    property real restContentH: 0
+    function settle() {
+        if (root.foldH === root.foldTo)
+            root.restContentH = body.implicitHeight - root.foldH
+    }
+    onFoldHChanged: root.settle()
+    onFoldToChanged: root.settle()
+    readonly property real restH: root.toGrid(root.restContentH + root.padV)
+    readonly property real targetH: root.toGrid(root.restContentH + root.foldTo + root.padV)
+    implicitWidth: root.targetW
+    implicitHeight: root.targetH
+    Behavior on implicitWidth {
+        enabled: root.easeSize
+        Widgets.Anim { speed: Services.Sizes.msPanel }
+    }
+    Behavior on implicitHeight {
+        enabled: root.easeSize
+        Widgets.Anim { speed: Services.Sizes.msPanel }
+    }
 
     // Off while a widget owns the pointer for something else -- framing a
     // picture is done with the same button that would otherwise move it.
@@ -144,7 +180,15 @@ Item {
 
     Item {
         id: body
-        anchors.centerIn: parent
+        anchors.centerIn: root.easeSize ? undefined : parent
+        x: root.easeSize ? (root.targetW - body.width) / 2 : 0
+        // Centred on the content's END height, eased with the plate: both
+        // move once, together.
+        y: root.easeSize ? (root.targetH - root.restContentH - root.foldTo) / 2 : 0
+        Behavior on y {
+            enabled: root.easeSize
+            Widgets.Anim { speed: Services.Sizes.msPanel }
+        }
         // Above the drag area below, which is declared later and would
         // otherwise swallow every press meant for something INSIDE the widget
         // while arranging -- which is exactly when a picture's corners are
@@ -163,6 +207,7 @@ Item {
         implicitHeight: body.shape ? body.shape.height : 0
         width: implicitWidth
         height: implicitHeight
+        onImplicitHeightChanged: root.settle()
     }
 
     // Right button only: left clicks fall through to the widget's own controls.

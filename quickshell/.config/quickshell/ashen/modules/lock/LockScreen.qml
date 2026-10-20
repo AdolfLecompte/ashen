@@ -305,7 +305,7 @@ Scope {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: 72
+                height: Services.Sizes.barH + Services.Sizes.cavaReach
                 opacity: surface.unlocking ? 0.0 : (surface.revealed ? 1.0 : 0.0)
                 Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
                 BarParts.CavaBackground { edge: "top" }
@@ -430,7 +430,15 @@ Scope {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.horizontalCenterOffset: -(leftCol.gapFromMiddle + colW / 2)
                         readonly property real gapFromMiddle: 250
-                        anchors.verticalCenter: parent.verticalCenter
+                        // Centred on the height the widgets have folded, so one
+                        // that unfolds grows down instead of moving the rest.
+                        readonly property real restH: {
+                            let h = 0, n = 0
+                            for (const c of leftCol.children)
+                                if (c.visible) { h += c.restH !== undefined ? c.restH : c.height; n++ }
+                            return h + Math.max(0, n - 1) * leftCol.spacing
+                        }
+                        y: (parent.height - leftCol.restH) / 2
                         spacing: 16
                         opacity: leftCol.enter
                         visible: leftCol.enter > 0.001
@@ -479,7 +487,13 @@ Scope {
                         readonly property real enter: leftCol.enter
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.horizontalCenterOffset: leftCol.gapFromMiddle + colW / 2
-                        anchors.verticalCenter: parent.verticalCenter
+                        readonly property real restH: {
+                            let h = 0, n = 0
+                            for (const c of rightCol.children)
+                                if (c.visible) { h += c.restH !== undefined ? c.restH : c.height; n++ }
+                            return h + Math.max(0, n - 1) * rightCol.spacing
+                        }
+                        y: (parent.height - rightCol.restH) / 2
                         spacing: 16
                         opacity: rightCol.enter
                         visible: rightCol.enter > 0.001
@@ -566,6 +580,7 @@ Scope {
                                 anchors.fill: parent
                                 anchors.margins: 2
                                 source: Services.AppState.facePath
+                                sourceSize: Qt.size(256, 256)
                                 fillMode: Image.PreserveAspectCrop
                                 cache: false
                                 visible: false

@@ -29,6 +29,7 @@ Scope {
             // Picked once per opening: it should have a bit of character
             // without flickering while you look at it.
             win.emptyLine = Services.Voice.pick("notify.empty")
+            win.emptySprite = Services.Sprites.pick("empty")
         } else {
             closeDelay.restart()
             // Marked on the way out, not on the way in: while the rail is open
@@ -52,7 +53,7 @@ Scope {
     readonly property real pillH: Services.AppState.notificationPillH
     readonly property real pillCX: Services.AppState.notificationPillCenterX
     readonly property real pillCY: Services.AppState.notificationPillCenterY
-    readonly property string side: Services.Sizes.barPosition
+    readonly property string side: Services.Sizes.edgeAt(win.pillCX, win.pillCY, win.width, win.height)
     readonly property real pinAt: Services.AppState.outerEdgeAt(win.side, win.pillCX, win.pillCY, win.pillW, win.pillH)
     Timer {
         id: growArm
@@ -84,6 +85,12 @@ Scope {
     // bit of character without shuffling while you look at it. The lines live
     // in services/Voice.qml with the rest of the shell's asides.
     property string emptyLine: Services.Voice.pick("notify.empty")
+    // And the little drawing above it, from the same kind of bank.
+    property var emptySprite: Services.Sprites.pick("empty")
+    Connections {
+        target: Services.Sprites
+        function onBankChanged() { if (win.emptySprite.length === 0) win.emptySprite = Services.Sprites.pick("empty") }
+    }
 
     // Clearing the history sweeps the rows out one after another and only then
     // wipes the model -- a whole list blinking out at once reads as a glitch.
@@ -308,7 +315,7 @@ Scope {
                 Item { Layout.fillWidth: true }
 
                 Widgets.IconButton {
-                    glyph: Services.AppState.doNotDisturb ? "" : ""
+                    glyph: Services.AppState.doNotDisturb ? "\uf08f" : "\uf08e"
                     active: Services.AppState.doNotDisturb
                     onActivated: Services.AppState.doNotDisturb = !Services.AppState.doNotDisturb
                 }
@@ -319,7 +326,7 @@ Scope {
                     onActivated: win.fadeClear()
                 }
                 Widgets.IconButton {
-                    glyph: ""
+                    glyph: "\ue5cd"
                     onActivated: Services.AppState.notificationsVisible = false
                 }
             }
@@ -344,13 +351,11 @@ Scope {
                     anchors.topMargin: 56
                     spacing: 10
 
-                    Text {
-                        textFormat: Text.PlainText
+                    // Nothing left: a little drawing instead of a tick.
+                    Widgets.PixelArt {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        // done_all: nothing left, everything seen.
-                        text: "\ue877"
-                        font.family: "Material Symbols Rounded"
-                        font.pixelSize: 42
+                        rows: win.emptySprite
+                        cell: 4
                         color: Services.Colors.fillRest
                     }
                     Text {
@@ -491,7 +496,7 @@ Scope {
                             spacing: Services.Sizes.btnGap
                             Widgets.IconButton {
                                 size: 24
-                                glyph: group.open ? "" : ""
+                                glyph: group.open ? "\ue5ce" : "\ue5cf"
                                 onActivated: win.toggleGroup(group.modelData.app)
                             }
                             Widgets.IconButton {
@@ -722,7 +727,7 @@ Scope {
                         textFormat: Text.PlainText
                         anchors.centerIn: parent
                         visible: appIconImg.status !== Image.Ready
-                        text: ""
+                        text: "\uf727"
                         color: Services.Colors.ghost
                         font.pixelSize: 16
                         font.family: "Material Symbols Rounded"
@@ -800,7 +805,7 @@ Scope {
                 anchors.right: parent.right
                 anchors.margins: 8
                 size: 24
-                glyph: ""
+                glyph: "\ue5cd"
                 // Its own hover counts too: the button sits ON TOP of the row's
                 // MouseArea, so reaching for it took the hover off the row and
                 // it faded out from under the pointer. That is what
