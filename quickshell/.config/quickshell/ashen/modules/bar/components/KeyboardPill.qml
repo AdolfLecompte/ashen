@@ -7,11 +7,13 @@ import "root:/services" as Services
 // the system plate until that plate was taken apart.
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     readonly property bool vertical: Services.Sizes.barVertical
     // How this pill draws itself, chosen per pill in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("keyboard")
-    readonly property bool outlined: Services.Pills.isOutlined("keyboard")
+    readonly property bool outlined: root.spec.outlined("keyboard")
 
     // Icon-only is a SQUARE, like every other pill that offers it. Without this
     // branch the plate kept the width of a row whose label had just been
@@ -24,7 +26,7 @@ Rectangle {
     // One plate, drawn here: the chips inside are bare. A readout, so it never
     // fills -- nothing opens from it.
     color: root.outlined ? Services.Colors.surfaceGlass
-                                      : Services.Colors.pillPlate
+                                      : root.spec.pillPlate
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: Services.Colors.fillOutline
 
@@ -40,6 +42,8 @@ Rectangle {
             LockChip { on: Services.Keyboard.numLock;  glyph: "\ue400" }
 
             SystemChip {
+
+                spec: root.spec
                 id: chip
                 bare: true
                 interactive: false
@@ -82,6 +86,8 @@ Rectangle {
         }
 
         SystemChip {
+
+            spec: root.spec
             id: plate
             bare: true
             interactive: false

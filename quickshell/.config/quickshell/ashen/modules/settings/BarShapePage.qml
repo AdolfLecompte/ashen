@@ -10,6 +10,7 @@ Section {
     id: tab
 
     Card {
+        glyph: "\ue9f7"
         title: Services.I18n.t("settings.tab.bar")
 
         SectionLabel { text: Services.I18n.t("settings.bar.position") }
@@ -30,21 +31,20 @@ Section {
 
         Segmented {
             options: [
-                // Least to most: bare capsules, a plate per group, one plate for
-                // the whole edge, and that plate joined to a frame round the screen.
-                { id: "pills", icon: "", label: Services.I18n.t("settings.bar.pills") },
+                // Least to most: bare capsules, a plate per group, one plate
+                // for the bar, and that plate flush with the whole edge.
+                { id: "pills", icon: "\ue11f", label: Services.I18n.t("settings.bar.pills") },
                 { id: "island", icon: "\ue8f3", label: Services.I18n.t("settings.bar.island") },
-                { id: "solid", icon: "", label: Services.I18n.t("settings.bar.solid") },
-                { id: "framed", icon: "", label: Services.I18n.t("settings.bar.framed") },
+                { id: "solid", icon: "\ue9f7", label: Services.I18n.t("settings.bar.solid") },
+                { id: "docked", icon: "\uf7e6", label: Services.I18n.t("settings.bar.docked") },
             ]
             current: Services.Prefs.barStyle
             onPicked: id => Services.Prefs.barStyle = id
         }
 
-        // Not for the framed style: there the bar IS the screen's border, and a
-        // border that stops short of the corners is not one.
+        // Not for docked: it is the whole edge by definition.
         Widgets.SliderRow {
-            visible: !Services.Sizes.barFramed
+            visible: !Services.Sizes.barDocked
             Layout.topMargin: 4
             glyph: "\uf69b"
             label: Services.I18n.t("settings.bar.length")
@@ -71,6 +71,5 @@ Section {
                 onToggled: Services.Prefs.barAutohide = !Services.Prefs.barAutohide
             }
         }
-
     }
 }

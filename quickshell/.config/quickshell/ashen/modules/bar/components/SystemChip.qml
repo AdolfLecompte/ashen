@@ -10,6 +10,8 @@ import "root:/services" as Services
 // brightness ride together in a single wide chip.
 Rectangle {
     id: chip
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // AppState key the panel that belongs to this chip hangs off. Empty for a
     // chip nothing opens.
@@ -123,7 +125,7 @@ Rectangle {
     // Nothing fills underneath, so the reading itself takes the accent. Not
     // accentText: that colour exists to be read ON the accent, and there is no
     // accent behind these letters to read them on.
-    readonly property color contentColor: !Services.Pills.fills
+    readonly property color contentColor: !chip.spec.fills
         // OPEN only, never `active`: a radio that is switched on is the normal
         // state of a radio, and painting it accent left the wifi, the bluetooth
         // and the sound reading in the accent colour all day -- four capsules
@@ -147,7 +149,7 @@ Rectangle {
 
     // The glyph walks the same ladder, but rests on the wallpaper's tone
     // instead of the text colour.
-    readonly property color glyphColor: !Services.Pills.fills
+    readonly property color glyphColor: !chip.spec.fills
         ? (open ? Services.Colors.ghost
                 : hovered ? Services.Colors.snow : chip.glyphTint)
         : chip.bare
@@ -171,9 +173,9 @@ Rectangle {
     // On a solid bar, or in outline, the chip does NOT fill: see Pills.fills.
     // A filled block inside a filled plate is a block inside a block, and a
     // filled block inside a drawn outline is what undoes the outline.
-    color: (chip.bare || !Services.Pills.fills) ? "transparent"
+    color: (chip.bare || !chip.spec.fills) ? "transparent"
          : active ? Services.Colors.ghost : Services.Colors.fillRest
-    gradient: (!chip.bare && Services.Pills.fills && Services.Prefs.useGradients && Services.Pills.fills && active)
+    gradient: (!chip.bare && chip.spec.fills && Services.Prefs.useGradients && chip.spec.fills && active)
               ? Services.Colors.accentGradient : null
     Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
 
@@ -239,7 +241,7 @@ Rectangle {
     // plate's own edge, so what unrolls reads as the plate and not as a label
     // that happens to be nearby.
     readonly property int plateEdge: 8
-    readonly property bool outward: Services.Sizes.barPosition !== "right"
+    readonly property bool outward: chip.spec.edge !== "right"
 
     Rectangle {
         id: tail

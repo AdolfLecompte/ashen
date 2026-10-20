@@ -42,7 +42,7 @@ Singleton {
     // stacked layout (see Sizes.barVertical).
     property string barPosition: "top"
 
-    // "pills" | "solid" | "framed"
+    // "pills" | "island" | "solid" | "docked"
     property string barStyle: "pills"
     // How much of its edge the bar takes, as a percentage. 100 is the whole
     // side; anything less pulls both ends in and leaves the corners to the
@@ -59,6 +59,8 @@ Singleton {
     // off for a while (someone is reading over your shoulder, the words are
     // wrong) and want to find still off next time.
     property bool mediaLyrics: true
+    // The words opened beside the full music widget on the desktop.
+    property bool mediaWidgetLyrics: false
 
     // Light or dark. Applies to the seven fixed schemes and to what matugen is
     // asked for when the palette comes from the wallpaper.
@@ -206,10 +208,6 @@ Singleton {
         root.barContent = out.join(",")
     }
 
-    // The id is still taken so every caller reads the same way it always did;
-    // the answer just no longer depends on which capsule is asking.
-    function isOutlined(id) { return root.barOutline }
-
     // Dock pins, in the user's order, by .desktop id. One packed string for the
     // same reason barLayout is one: the adapter drops sibling writes made in the
     // same tick.
@@ -244,6 +242,14 @@ Singleton {
     // The icon box. Clamped where it is read, so a hand-edited file cannot
     // produce a dock with no room for an icon.
     property int dockIconSize: 44
+    // What the dock carries past the applications, read through DockItems:
+    // bar pills by id, drawn as icons; and shortcuts, JSON -- a shell action
+    // ({a}) or a command of your own ({l, c, g}).
+    property string dockPills: ""
+    property string dockLinks: ""
+    // Which side of the applications each group stands on: "before" | "after".
+    property string dockPillsSide: "after"
+    property string dockLinksSide: "after"
 
     // The five pills the system plate became, in the order they sat in it.
     readonly property string sysSplit: "network,bluetooth,volume,battery,keyboard"
@@ -274,6 +280,15 @@ Singleton {
         const parts = (v2 ? raw.slice(3) : raw).split(";")
         const cut = i => (parts[i] || "").split(",").filter(x => x !== "")
         let next = { left: cut(0), centre: cut(1), right: cut(2) }
+        // 3.6 builds had a second bar, kept in parts 4-6. Its pills go back to
+        // their factory seat, or the end of the right section.
+        const orphans = [4, 5, 6].map(cut).reduce((a, b) => a.concat(b), [])
+        for (const id of orphans) {
+            const home = root.sectionIds.find(t => root.defaultSections[t].indexOf(id) !== -1) || "right"
+            const at = root.defaultSections[home].indexOf(id)
+            next[home].splice(at < 0 ? next[home].length : Math.min(at, next[home].length), 0, id)
+        }
+        if (orphans.length > 0) barWriteTimer.restart()
         // Before v2 there was nowhere to record a pill dragged off the bar, so
         // the old visibility field stands in for it.
         let parked = v2 ? cut(3) : root.hiddenPillList.slice()
@@ -282,7 +297,7 @@ Singleton {
         // it takes its factory seat instead of hiding in Available for ever.
         const known = id => root.sectionIds.some(s => next[s].indexOf(id) !== -1)
         for (const s of root.sectionIds) {
-            const shipped = root.defaultSections[s]
+            const shipped = root.defaultSections[s] || []
             for (let i = 0; i < shipped.length; i++) {
                 const id = shipped[i]
                 if (known(id) || parked.indexOf(id) !== -1) continue
@@ -327,7 +342,7 @@ Singleton {
         let next = {}
         let shipped = []
         for (const s of root.sectionIds) {
-            next[s] = root.defaultSections[s].slice()
+            next[s] = (root.defaultSections[s] || []).slice()
             shipped = shipped.concat(next[s])
         }
         // Known pills the shipped arrangement has no seat for stay off the bar
@@ -342,11 +357,15 @@ Singleton {
         barWriteTimer.restart()
     }
 
+    // The framed style became "docked" in 3.6: a profile or file from before still
+    // names it.
+    function migrateStyle(s) { return s === "framed" ? "docked" : s }
+
     Timer {
         id: barWriteTimer
         interval: 0
         onTriggered: root.barLayout = "v2|"
-            + root.sectionIds.map(s => root.barSections[s].join(",")).join(";")
+            + ["left", "centre", "right"].map(s => root.barSections[s].join(",")).join(";")
             + ";" + root.barParked.join(",")
     }
 
@@ -446,14 +465,14 @@ Singleton {
         "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
         "toastSeconds", "maxToasts", "toastWidth", "osdMs", "lockIntro", "switcherScope", "workspaceMode", "hiddenPills", "barLayout", "barContent",
         "barOutline", "panelOutline", "widgetOutline", "dockPins", "dockEdge",
-        "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockIconSize",
+        "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockIconSize", "dockPills", "dockLinks", "dockPillsSide", "dockLinksSide",
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications", "updateNotify",
         "workspaceStyle", "idleLockSecs",
         "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle",
-        "barLength", "barAutohide", "visualizer", "mediaLyrics",
+        "barLength", "barAutohide", "visualizer", "mediaLyrics", "mediaWidgetLyrics",
         "nightLightEnabled", "nightLightScheduled", "nightLightTemp",
         "nightLightFrom", "nightLightTo"
     ]
@@ -512,6 +531,7 @@ Singleton {
     // syncBarLayout reads hiddenPills and barLayout, and `loaded` is the gate
     // that opens the write path.
     function settle() {
+        root.barStyle = root.migrateStyle(root.barStyle)
         root.syncHiddenPills()
         root.syncBarLayout()
         root.loaded = true

@@ -11,10 +11,12 @@ import "root:/modules/widgets" as Widgets
 // and takes no clicks, so the strip stays clickable through it.
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("window")
-    readonly property bool outlined: Services.Pills.isOutlined("window")
+    readonly property bool outlined: root.spec.outlined("window")
     // Nothing focused, no readout, no slot.
     readonly property bool wanted: root.opacity > 0
     visible: root.wanted
@@ -51,7 +53,7 @@ Rectangle {
     radius: Services.Sizes.pillR
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: Services.Colors.fillOutline
-    color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
+    color: root.outlined ? Services.Colors.surfaceGlass : (root.spec.pillPlate)
     clip: true
     opacity: root.present ? 1.0 : 0.0
 

@@ -5,10 +5,12 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("launcher")
-    readonly property bool outlined: Services.Pills.isOutlined("launcher")
+    readonly property bool outlined: root.spec.outlined("launcher")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -23,7 +25,7 @@ Rectangle {
     // Fills with the accent while open, the same inversion every other toggle
     // pill uses (see NotificationPill / RecordingPill). No hover tint: the
     // plate is the pill itself, and it answers the pointer by growing.
-    color: root.outlined ? Services.Colors.surfaceGlass : ((active && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
+    color: root.outlined ? Services.Colors.surfaceGlass : ((active && root.spec.fills) ? Services.Colors.ghost : root.spec.pillPlate)
     gradient: Services.Prefs.useGradients && active ? Services.Colors.accentGradient : null
     Behavior on color { Widgets.ColorAnim {} }
 
@@ -35,7 +37,7 @@ Rectangle {
         // tone, the glyph lifts to snow. At rest it is `mist` like the pills
         // beside it -- the accent reads as "this one is on", and a pill that is
         // merely there must not wear it.
-        color: root.active ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
+        color: root.active ? (root.spec.fills ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"

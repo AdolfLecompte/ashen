@@ -6,10 +6,12 @@ import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("power")
-    readonly property bool outlined: Services.Pills.isOutlined("power")
+    readonly property bool outlined: root.spec.outlined("power")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -26,7 +28,7 @@ Rectangle {
     // binding). Fills accent while the power menu is open; the plate does not
     // react to hover -- a top-level pill answers by growing, not by lighting.
     color: root.outlined ? Services.Colors.surfaceGlass
-         : ((active && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
+         : ((active && root.spec.fills) ? Services.Colors.ghost : root.spec.pillPlate)
     gradient: Services.Prefs.useGradients && (active) ? Services.Colors.accentGradient : null
     Behavior on color { Widgets.ColorAnim {} }
 
@@ -36,7 +38,7 @@ Rectangle {
         text: ""
         // Dark only on the accent fill. The hover plate is a surface tone, so
         // the glyph lifts to snow on it the same way it does at rest.
-        color: root.active ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
+        color: root.active ? (root.spec.fills ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 22
         font.family: "Material Symbols Rounded"

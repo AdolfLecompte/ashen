@@ -7,6 +7,8 @@ import "root:/modules/widgets" as Widgets
 
 Item {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("media")
@@ -16,7 +18,7 @@ Item {
     property string laid: ""
     property bool reshaping: false
     onContentChanged: { root.reshaping = true; root.laid = root.content; root.reshaping = false }
-    readonly property bool outlined: Services.Pills.isOutlined("media")
+    readonly property bool outlined: root.spec.outlined("media")
     readonly property int pillH: Services.Sizes.pillH
     readonly property bool vertical: Services.Sizes.barVertical
 
@@ -194,7 +196,7 @@ Item {
         // over three chips that do different things. It also animates its own
         // width, and a plate changing under a resizing box reads as a glitch.
         color: root.outlined ? Services.Colors.surfaceGlass
-                                          : Services.Colors.pillPlate
+                                          : root.spec.pillPlate
         border.width: root.outlined ? Services.Sizes.outlineW : 0
         border.color: Services.Colors.fillOutline
         clip: true
@@ -256,6 +258,7 @@ Item {
         id: pillArt
         anchors.fill: parent
         source: root.shownArtUrl
+        sourceSize: Qt.size(96, 96)
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         // The player reuses its temp file name: never serve a cached picture.

@@ -24,7 +24,7 @@ Region {
     // Added back after the cut, so it wins over it.
     property Item keep: null
 
-    readonly property int barH: Services.Sizes.barH
+    readonly property int barH: Services.Sizes.first.thick
     readonly property string edge: Services.Sizes.barPosition
 
     x: 0

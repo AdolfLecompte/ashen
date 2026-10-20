@@ -5,10 +5,12 @@ import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("recording")
-    readonly property bool outlined: Services.Pills.isOutlined("recording")
+    readonly property bool outlined: root.spec.outlined("recording")
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -60,8 +62,8 @@ Rectangle {
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     clip: true
     color: root.outlined ? Services.Colors.surfaceGlass
-         : ((active && Services.Pills.fills) ? Services.Colors.ghost : Services.Colors.pillPlate)
-    gradient: (Services.Prefs.useGradients && Services.Pills.fills && active)
+         : ((active && root.spec.fills) ? Services.Colors.ghost : root.spec.pillPlate)
+    gradient: (Services.Prefs.useGradients && root.spec.fills && active)
               ? Services.Colors.accentGradient : null
     // Opening out to fit the clock is the pill telling you it started, so it
     // gets the same settle as the panels rather than a flat 150 ms slide.
@@ -83,7 +85,7 @@ Rectangle {
             id: dot
             text: "\uf679"
             // Dark only on the solid accent fill; over the hover tint it lifts.
-            color: root.active ? (Services.Pills.fills ? Services.Colors.accentText : Services.Colors.ghost)
+            color: root.active ? (root.spec.fills ? Services.Colors.accentText : Services.Colors.ghost)
                  : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
             font.pixelSize: (root.active && !root.vertical) ? 16 : 22
             font.family: "Material Symbols Rounded"
@@ -128,7 +130,7 @@ Rectangle {
             // fill -- a solid or island bar, or outline -- there is no accent
             // under them and the timer went invisible while recording, which is
             // the one moment the pill has something to say.
-            color: Services.Pills.fills ? Services.Colors.accentText
+            color: root.spec.fills ? Services.Colors.accentText
                                         : Services.Colors.ghost
             font.pixelSize: 12
             font.bold: true

@@ -5,10 +5,12 @@ import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("usb")
-    readonly property bool outlined: Services.Pills.isOutlined("usb")
+    readonly property bool outlined: root.spec.outlined("usb")
     // The bar's one hover language, from Sizes: grow under the pointer,
     // give a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -52,9 +54,9 @@ Rectangle {
     border.color: Services.Colors.fillOutline
     // The fill is the open panel's, and only in the window style: in the
     // morph one the pill BECOMES the panel instead of staying behind lit.
-    readonly property bool lit: root.panelOpen && Services.Pills.fills && !Services.Pills.wearsFace
+    readonly property bool lit: root.panelOpen && root.spec.fills && !Services.Pills.wearsFace
     color: root.outlined ? Services.Colors.surfaceGlass
-         : root.lit ? Services.Colors.ghost : Services.Colors.pillPlate
+         : root.lit ? Services.Colors.ghost : root.spec.pillPlate
     gradient: Services.Prefs.useGradients && root.lit ? Services.Colors.accentGradient : null
     width: root.vertical ? Services.Sizes.pillH : (root.present ? icon.implicitWidth + 24 : 0)
     opacity: (root.takenOver && Services.Pills.wearsFace) ? 0.0 : (root.present ? 1.0 : 0.0)

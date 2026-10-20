@@ -36,13 +36,15 @@ Item {
     // "window" changes how it arrives, never where. Only a panel with no
     // capsule at all falls back to its resting side.
     property bool fromPill: false
+    // The edge the pill's bar stands on.
+    readonly property string pillEdge: Services.Sizes.edgeAt(root.pillCX, root.pillCY, width, height)
     readonly property real openX: !isNaN(openXOverride) ? openXOverride
-        : root.fromPill ? Services.Sizes.panelX(width, root.openW, root.pillCX)
+        : root.fromPill ? Services.Sizes.panelX(width, root.openW, root.pillCX, root.pillEdge)
         : root.restSide === "left" ? Services.Sizes.marginLeft
         : root.restSide === "right" ? width - root.openW - Services.Sizes.marginRight
         : (width - root.openW) / 2
     readonly property real openY: !isNaN(openYOverride) ? openYOverride
-        : root.fromPill ? Services.Sizes.panelY(height, root.openH, root.pillCY)
+        : root.fromPill ? Services.Sizes.panelY(height, root.openH, root.pillCY, root.pillEdge)
         : root.restSide === "top" ? Services.Sizes.marginTop
         : root.restSide === "bottom" ? height - root.openH - Services.Sizes.marginBottom
         : (height - root.openH) / 2

@@ -100,7 +100,9 @@ Item {
     property real openYOverride: NaN
 
     readonly property bool ownEdge: sourceEdge !== ""
-    readonly property string pinSide: ownEdge ? sourceEdge : Services.Sizes.barPosition
+    // The edge the pill's bar stands on.
+    readonly property string pinSide: ownEdge ? sourceEdge
+        : Services.Sizes.edgeAt(root.pillCX, root.pillCY, root.width, root.height)
 
     // The side facing the bar stays on the bar's outer edge where the chip
     // stands; along the bar the card is centred on the chip and kept on screen.
@@ -114,11 +116,11 @@ Item {
     readonly property real openX: !isNaN(openXOverride) ? openXOverride
         : pinSide === "left" ? root.pinAt
         : pinSide === "right" ? root.pinAt - root.fullW
-        : Services.Sizes.panelX(width, root.fullW, root.pillCX)
+        : Services.Sizes.panelX(width, root.fullW, root.pillCX, root.pinSide)
     readonly property real openY: !isNaN(openYOverride) ? openYOverride
         : pinSide === "top" ? root.pinAt
         : pinSide === "bottom" ? root.pinAt - root.fullH
-        : Services.Sizes.panelY(height, root.fullH, root.pillCY)
+        : Services.Sizes.panelY(height, root.fullH, root.pillCY, root.pinSide)
 
     // A layer surface is not on screen in the frame it is asked for, so the
     // stretch waits for it or its first frames play unseen.

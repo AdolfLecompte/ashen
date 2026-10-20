@@ -10,6 +10,8 @@ import "root:/modules/widgets" as Widgets
 // which is plain to see now that the pill draws no full box around them.
 Item {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // The bar flips the whole strip: chips stack instead of running across.
     readonly property bool vertical: Services.Sizes.barVertical
@@ -68,7 +70,7 @@ Item {
     // Only full and outline: what the chips SHOW is settled by the icons switch
     // and by how many of them there are, not by a way of drawing the plate.
     readonly property string content: Services.Pills.contentOf("workspaces")
-    readonly property bool outlined: Services.Pills.isOutlined("workspaces")
+    readonly property bool outlined: root.spec.outlined("workspaces")
     width: pill.width
     height: pill.height
 
@@ -233,12 +235,12 @@ Item {
                 // left the grown edge showing around it.
                 const k = ph.parent && ph.parent.scale ? ph.parent.scale : 1
                 Services.AppState.setWsPreview(ph.wsId, ph.label,
-                    Services.Sizes.barOriginX(s) + g.x - (s ? s.x : 0) - ph.width * (k - 1) / 2,
-                    Services.Sizes.barOriginY(s) + g.y - (s ? s.y : 0) - ph.height * (k - 1) / 2,
+                    root.spec.originX(s) + g.x - (s ? s.x : 0) - ph.width * (k - 1) / 2,
+                    root.spec.originY(s) + g.y - (s ? s.y : 0) - ph.height * (k - 1) / 2,
                     ph.width * k, ph.height * k,
                     // What the chip shows: the accent is the indicator's, under
                     // the one you are on; any other chip shows the bar.
-                    ph.lit ? (Services.Pills.rings ? "transparent" : Services.Colors.ghost) : "transparent")
+                    ph.lit ? (root.spec.rings ? "transparent" : Services.Colors.ghost) : "transparent")
             }
         }
     }
@@ -248,7 +250,7 @@ Item {
         id: pill
         radius: root.pillR
         color: root.outlined ? Services.Colors.surfaceGlass
-                                          : Services.Colors.pillPlate
+                                          : root.spec.pillPlate
         border.width: root.outlined ? Services.Sizes.outlineW : 0
         border.color: Services.Colors.fillOutline
 
@@ -293,10 +295,10 @@ Item {
             // framed bar the plate is the surface these numbers live on, so the
             // indicator fills there exactly as it always did -- ringing it drew
             // an outline the bar had not asked for. See Pills.rings.
-            color: Services.Pills.rings ? "transparent" : Services.Colors.ghost
-            border.width: Services.Pills.rings ? Services.Sizes.outlineW : 0
+            color: root.spec.rings ? "transparent" : Services.Colors.ghost
+            border.width: root.spec.rings ? Services.Sizes.outlineW : 0
             border.color: Services.Colors.ghost
-            gradient: (Services.Prefs.useGradients && !Services.Pills.rings)
+            gradient: (Services.Prefs.useGradients && !root.spec.rings)
                       ? Services.Colors.accentGradient : null
             // Part of the numbers, so it leaves and comes back with them.
             // In dots the chips carry their own fill, so the indicator that
@@ -367,9 +369,9 @@ Item {
                         ? (isActive ? Services.Colors.ghost : warm ? Services.Colors.snow
                            : winCount > 0 ? Services.Colors.mist : Services.Colors.ash)
                         : isActive
-                                 ? (!Services.Pills.rings ? Services.Colors.accentText : Services.Colors.ghost)
+                                 ? (!root.spec.rings ? Services.Colors.accentText : Services.Colors.ghost)
                              : warm ? Services.Colors.snow
-                             : (!Services.Pills.rings ? Services.Colors.ash : Services.Colors.mist)
+                             : (!root.spec.rings ? Services.Colors.ash : Services.Colors.mist)
                     width: root.vertical ? root.innerH : along
                     height: root.vertical ? along : root.innerH
                     Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard
@@ -414,7 +416,7 @@ Item {
                         // outline the rest of the bar just stopped doing. The
                         // one you are standing on stays solid -- it is the
                         // thing the row exists to point at.
-                        border.width: (Services.Pills.rings && !parent.isActive)
+                        border.width: (root.spec.rings && !parent.isActive)
                                       ? Services.Sizes.outlineW : 0
                         border.color: Services.Colors.fillOutline
                         // On a glass plate `ash` and `fillRest` are two shades
@@ -423,7 +425,7 @@ Item {
                         // strength as the border around them.
                         color: parent.isActive ? Services.Colors.ghost
                              : parent.warm ? Services.Colors.snow
-                             : Services.Pills.rings
+                             : root.spec.rings
                                  // A ring, so the inside is the wallpaper. What
                                  // says "this one has windows" is the ring's
                                  // own strength, not a fill.
@@ -519,9 +521,9 @@ Item {
                     readonly property color ink: root.pacman
                         ? (isShown ? Services.Colors.ghost : warm ? Services.Colors.snow : Services.Colors.mist)
                         : isShown
-                                 ? (!Services.Pills.rings ? Services.Colors.accentText : Services.Colors.ghost)
+                                 ? (!root.spec.rings ? Services.Colors.accentText : Services.Colors.ghost)
                              : warm ? Services.Colors.snow
-                             : (!Services.Pills.rings ? Services.Colors.ash : Services.Colors.mist)
+                             : (!root.spec.rings ? Services.Colors.ash : Services.Colors.mist)
                     width: root.vertical ? root.innerH : along
                     height: root.vertical ? along : root.innerH
                     Behavior on width { NumberAnimation { duration: Services.Sizes.msStandard
@@ -537,12 +539,12 @@ Item {
                         radius: root.innerR
                         // Pac-Man draws no blocks, not even under a special.
                         visible: !root.pacman
-                        color: Services.Pills.rings ? "transparent"
+                        color: root.spec.rings ? "transparent"
                              : parent.isShown ? Services.Colors.ghost : Services.Colors.fillRest
-                        border.width: (Services.Pills.rings && parent.isShown)
+                        border.width: (root.spec.rings && parent.isShown)
                                       ? Services.Sizes.outlineW : 0
                         border.color: Services.Colors.ghost
-                        gradient: (Services.Prefs.useGradients && !Services.Pills.rings && parent.isShown)
+                        gradient: (Services.Prefs.useGradients && !root.spec.rings && parent.isShown)
                                   ? Services.Colors.accentGradient : null
                         Behavior on color { Widgets.ColorAnim {} }
                     }

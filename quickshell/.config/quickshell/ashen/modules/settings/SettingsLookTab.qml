@@ -63,6 +63,7 @@ Item {
     // Right under the wallpaper it belongs to: it decides what everything below
     // it does when the wallpaper changes, so it cannot sit at the bottom.
     Card {
+        glyph: "\ue866"
         title: Services.I18n.t("settings.look.profile")
 
         RowLayout {
@@ -105,6 +106,7 @@ Item {
     }
 
     Card {
+        glyph: "\ue3b7"
         title: Services.I18n.t("settings.look.scheme")
         ColumnLayout {
             id: schemeSection
@@ -413,6 +415,7 @@ Item {
 
     // What every shell surface is made of: solid, or glass like the terminal.
     Card {
+        glyph: "\ue3a5"
         title: Services.I18n.t("settings.look.surface")
 
         Segmented {
@@ -428,6 +431,7 @@ Item {
     // Every outline in the shell, in one place: all of it, none, or part by part.
     Card {
         id: outlineCard
+        glyph: "\ue231"
         title: Services.I18n.t("settings.layout.outline")
 
         readonly property var flags: [Services.Prefs.barOutline, Services.Prefs.panelOutline,
@@ -531,6 +535,7 @@ Item {
     }
 
     Card {
+        glyph: "\ue069"
         title: Services.I18n.t("settings.tab.panels")
 
         SectionLabel { text: Services.I18n.t("settings.look.howOpen") }

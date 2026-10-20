@@ -373,6 +373,7 @@ Section {
     }
 
     Card {
+        glyph: "\ue99b"
         title: Services.I18n.t("settings.tab.layout")
 
         // On the bar, in bar order.

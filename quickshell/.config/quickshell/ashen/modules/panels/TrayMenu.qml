@@ -57,8 +57,11 @@ PanelWindow {
     Rectangle {
         id: card
         width: 240
-        x: Services.Sizes.panelX(parent.width, width, Services.AppState.trayMenuCenterX)
-        y: Services.Sizes.panelY(parent.height, height, Services.AppState.trayMenuCenterY)
+        // Off the bar the tray stands on.
+        readonly property string edge: Services.Sizes.edgeAt(Services.AppState.trayMenuCenterX,
+            Services.AppState.trayMenuCenterY, parent.width, parent.height)
+        x: Services.Sizes.panelX(parent.width, width, Services.AppState.trayMenuCenterX, edge)
+        y: Services.Sizes.panelY(parent.height, height, Services.AppState.trayMenuCenterY, edge)
         radius: Services.Sizes.cardR
         // A tray app's menu can be longer than the screen (Steam's is), so the
         // card stops growing and the list scrolls inside it instead of being
@@ -76,8 +79,8 @@ PanelWindow {
         opacity: root.shown ? 1.0 : 0.0
         Behavior on opacity { Widgets.Anim {} }
         transform: Scale {
-            origin.x: Services.Sizes.originX(card.x, card.width, Services.AppState.trayMenuCenterX)
-            origin.y: Services.Sizes.originY(card.y, card.height, Services.AppState.trayMenuCenterY)
+            origin.x: Services.Sizes.originX(card.x, card.width, Services.AppState.trayMenuCenterX, card.edge)
+            origin.y: Services.Sizes.originY(card.y, card.height, Services.AppState.trayMenuCenterY, card.edge)
             xScale: 0.55 + 0.45 * card.openAmt
             yScale: 0.55 + 0.45 * card.openAmt
         }

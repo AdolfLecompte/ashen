@@ -5,10 +5,12 @@ import "root:/services" as Services
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("notifications")
-    readonly property bool outlined: Services.Pills.isOutlined("notifications")
+    readonly property bool outlined: root.spec.outlined("notifications")
     // The bar's one hover language, from Sizes: grow under the pointer, give
     // a little under the click.
     scale: Services.Sizes.hoverScale(hover.containsMouse, hover.pressed)
@@ -24,7 +26,7 @@ Rectangle {
     // Whole containment pill fills with the accent while the panel is open, the
     // same inversion every other active pill uses (see RecordingPill /
     // No inner box, and no hover tint on the plate.
-    color: root.outlined ? Services.Colors.surfaceGlass : ((open && Services.Pills.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : Services.Colors.pillPlate)
+    color: root.outlined ? Services.Colors.surfaceGlass : ((open && root.spec.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : root.spec.pillPlate)
     gradient: Services.Prefs.useGradients && open && !Services.Pills.wearsFace ? Services.Colors.accentGradient : null
     Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msEmphasis } }
 
@@ -50,7 +52,7 @@ Rectangle {
         text: root.dnd ? "\uE7F6" : "\uE7F4"
         // Dark only on the accent fill. The hover plate is a surface tone, so
         // the glyph lifts to snow on it the same way it does at rest.
-        color: root.open ? (Services.Pills.fills && !Services.Pills.wearsFace ? Services.Colors.accentText : Services.Colors.ghost)
+        color: root.open ? (root.spec.fills && !Services.Pills.wearsFace ? Services.Colors.accentText : Services.Colors.ghost)
              : hover.containsMouse ? Services.Colors.snow : Services.Colors.mist
         font.pixelSize: 24
         font.family: "Material Symbols Rounded"

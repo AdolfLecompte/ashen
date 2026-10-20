@@ -6,10 +6,12 @@ import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("clock")
-    readonly property bool outlined: Services.Pills.isOutlined("clock")
+    readonly property bool outlined: root.spec.outlined("clock")
     // These follow Services.Time -- the shell's single SystemClock. They used
     // to be assigned from a Timer of this pill's own, one of four.
     readonly property string currentTime: Services.Time.fmt(Services.Prefs.timeFormat)
@@ -46,7 +48,7 @@ Rectangle {
     // surfaces that happen to touch. Squared, they are ONE taller capsule.
     readonly property string boxEdge: {
         if (!Services.AppState.timerBoxOut) return ""
-        const e = Services.Sizes.barPosition
+        const e = root.spec.edge
         if (e === "bottom") return "top"
         if (e === "left") return "right"
         if (e === "right") return "left"
@@ -60,7 +62,7 @@ Rectangle {
     // swapped), so the settle stays. What used to widen it -- a live stopwatch --
     // hangs under the bar now, in TimerDrops.
     Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim { speed: Services.Sizes.msPronounced; curve: Services.Sizes.easeBox } }
-    color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
+    color: root.outlined ? Services.Colors.surfaceGlass : (root.spec.pillPlate)
     // The bar pivots the centre group on this point, so the HOUR sits dead
     // centre on screen and the date and weather fall either side of it.
     // Plain arithmetic, never mapToItem: a mapping is read once and never

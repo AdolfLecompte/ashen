@@ -32,7 +32,7 @@ Singleton {
     // 190 px column without the gap having to say so.
     // On a plate (solid, island, framed) nothing but bare icons stands on the
     // bar, and capsule air between them read as a bar with holes in it.
-    readonly property int barGap: root.barSolid ? 2 : (root.barVertical ? 10 : 6)
+    readonly property int barGap: root.first.gap
 
     // A side bar is 56 px of INPUT but its window is wider, so a chip can paint
     // its reading out past the strip instead of growing taller. The mask stays
@@ -156,48 +156,47 @@ Singleton {
     // the far screen edges
     readonly property int panelGap: 8
     // Room a panel keeps from a screen edge; inside the frame, never on it.
-    readonly property int edgeGap: 12 + (root.barFramed ? root.frameW : 0)
+    readonly property int edgeGap: 12
 
-    // ── Bar style ────────────────────────────────────────────────────────
-    // `solid` and `framed` share the plate; only `framed` lines the other three
-    // edges. Read from `appliedStyle`, so the change rides the fade.
-    readonly property bool barSolid: root.appliedStyle === "solid" || root.barFramed
-                                     || root.barIsland
-    readonly property bool barFramed: root.appliedStyle === "framed"
-    // One plate per SECTION instead of one across the edge: the bar stops being
-    // a band and becomes two or three floating blocks. It still reserves the
-    // same strip, so nothing else on screen moves.
-    readonly property bool barIsland: root.appliedStyle === "island"
-    // The bar's share of its edge, 50-100 %. Framed keeps the whole side: the
-    // border is the bar there, and half a border is not a border.
-    readonly property int barLength: root.barFramed
-        ? 100 : Math.max(50, Math.min(100, Prefs.barLength))
-    // Framed draws no plate of its own: the frame is it.
-    readonly property bool barPlate: root.appliedStyle === "solid"
-    // Border thickness, and the outer gap it stands in for while it is up.
-    // `shippedGap` is what hypr/conf/general.lua sets.
+    // ── The bar ──────────────────────────────────────────────────────────
+    // The bar and its pills read this spec; the globals below mirror it.
+    readonly property BarSpec first: BarSpec {
+        index: 1
+        on: true
+        edge: root.applied
+        style: root.appliedStyle
+        lengthPref: Prefs.barLength
+        autohide: Prefs.barAutohide
+        outline: Prefs.barOutline
+    }
+    function specOn(e) { return root.first }
+    // Which bar a point on screen belongs to. There is one.
+    function edgeAt(cx, cy, w, h) { return root.first.edge }
+
+    // ── Bar style ────────────────────────────────────────────────
+    readonly property bool barSolid: root.first.solid
+    readonly property bool barDocked: root.first.docked
+    readonly property int barLength: root.first.length
     // How thick the outline style draws its edge. Not 1: at one pixel over a
     // wallpaper the border reads as an artefact of the blur rather than as a
     // line somebody chose.
     readonly property int outlineW: 2
-    readonly property int frameW: 10
-    readonly property int shippedGap: 8
-    // Line of wallpaper between a window and the border.
-    readonly property int framedGap: 8
-    // Corner of the hole the frame leaves.
-    readonly property int frameR: 16
+    // The concave curve a docked bar makes into the screen at each end.
+    readonly property int dockedR: 12
 
     // The plate sits exactly where the capsules sit, so switching style moves
     // nothing: `plateAlong` is the gap at the ends, `plateCross` the long sides.
     // One slot of the visualiser's wave, in PIXELS. A count would make the same
     // 96 bars thinner on a shorter edge, so the wave changed with the bar's side.
     readonly property int cavaSlot: 20
-    // How far the wave may reach past the frame's inner edge in the framed
-    // style, where the ring covers the whole bar: without it nothing shows.
-    readonly property int cavaSpill: 24
+    // How far the wave may reach past the bar into the screen. The bar's
+    // window is this much deeper than the strip on its docked edge; input and
+    // the exclusive zone stay the bar's. In the framed style it is what clears
+    // the ring, which covers the whole bar.
+    readonly property int cavaReach: 56
 
     readonly property int plateAlong: 12
-    readonly property int plateCross: (root.barH - root.pillH) / 2
+    readonly property int plateCross: root.first.plateCross
     readonly property int barR: root.pillR
 
     // ── Bar placement ────────────────────────────────────────────────────
@@ -287,20 +286,23 @@ Singleton {
     // How deep the bar is on screen: framed, that includes the same line of
     // wallpaper the border keeps, since the outer gap is zero while it is up.
     // This is what it reserves whenever it is standing there.
-    readonly property int barDepth: root.barH + (root.barFramed ? root.framedGap : 0)
+    readonly property int barDepth: root.first.thick
     // …and what its edge keeps while it is away: nothing, except in framed,
     // where the border is still drawn and windows must stay off it.
-    readonly property int barZoneAway: root.barFramed ? root.frameW + root.framedGap : 0
+    readonly property int barZoneAway: 0
 
     // Distance from the bar's edge to the first pixel a panel may use
     readonly property int panelTop: barDepth + panelGap
 
     // Margins for a panel pinned to a screen corner: the side the bar is on has
     // to clear it, the other three only keep the usual breathing room.
-    readonly property int marginTop: applied === "top" ? panelTop : edgeGap
-    readonly property int marginBottom: applied === "bottom" ? panelTop : edgeGap
-    readonly property int marginLeft: applied === "left" ? panelTop : edgeGap
-    readonly property int marginRight: applied === "right" ? panelTop : edgeGap
+    function barOn(e) { return applied === e }
+    // Room a bar on edge `e` takes plus the panel gap; each bar its own depth.
+    function topOf(e) { return root.specOn(e).thick + panelGap }
+    readonly property int marginTop: barOn("top") ? topOf("top") : edgeGap
+    readonly property int marginBottom: barOn("bottom") ? topOf("bottom") : edgeGap
+    readonly property int marginLeft: barOn("left") ? topOf("left") : edgeGap
+    readonly property int marginRight: barOn("right") ? topOf("right") : edgeGap
     // Corner-pinned panels hang from the bottom edge only when the bar is there
     readonly property bool pinBottom: applied === "bottom"
 
@@ -322,20 +324,24 @@ Singleton {
     // Where a panel that drops out of a bar pill belongs, in window coords.
     // On a horizontal bar it tracks the pill across the screen and is pinned to
     // the bar's edge; on a vertical bar the two axes swap roles.
-    function panelX(winW, cardW, pillX) {
-        if (!barVertical) return root.alongBar(winW, cardW, pillX)
-        return applied === "left" ? panelTop : winW - cardW - panelTop
+    function panelX(winW, cardW, pillX, edge) {
+        const e = edge || applied
+        const v = e === "left" || e === "right"
+        if (!v) return root.alongBar(winW, cardW, pillX, root.specOn(e).length)
+        return e === "left" ? root.topOf(e) : winW - cardW - root.topOf(e)
     }
 
-    function panelY(winH, cardH, pillY) {
-        if (barVertical) return root.alongBar(winH, cardH, pillY)
-        return applied === "top" ? panelTop : winH - cardH - panelTop
+    function panelY(winH, cardH, pillY, edge) {
+        const e = edge || applied
+        const v = e === "left" || e === "right"
+        if (v) return root.alongBar(winH, cardH, pillY, root.specOn(e).length)
+        return e === "top" ? root.topOf(e) : winH - cardH - root.topOf(e)
     }
 
     // Along the bar, a panel stays within the bar's own span (it is centred
     // on its edge at barLength %); one longer than the bar is centred on it.
-    function alongBar(total, size, pill) {
-        const inset = total * (100 - root.barLength) / 200
+    function alongBar(total, size, pill, length) {
+        const inset = total * (100 - (length || root.barLength)) / 200
         const lo = Math.max(edgeGap, inset)
         const hi = Math.min(total - edgeGap, total - inset)
         if (size >= hi - lo) return Math.max(edgeGap, lo + (hi - lo - size) / 2)
@@ -344,13 +350,15 @@ Singleton {
 
     // Transform origin for the grow-out-of-its-pill open animation: the corner
     // or point of the card that faces the bar.
-    function originX(cardX, cardW, pillX) {
-        if (!barVertical) return Math.max(0, Math.min(cardW, pillX - cardX))
-        return applied === "left" ? 0 : cardW
+    function originX(cardX, cardW, pillX, edge) {
+        const e = edge || applied
+        if (e !== "left" && e !== "right") return Math.max(0, Math.min(cardW, pillX - cardX))
+        return e === "left" ? 0 : cardW
     }
 
-    function originY(cardY, cardH, pillY) {
-        if (barVertical) return Math.max(0, Math.min(cardH, pillY - cardY))
-        return applied === "top" ? 0 : cardH
+    function originY(cardY, cardH, pillY, edge) {
+        const e = edge || applied
+        if (e === "left" || e === "right") return Math.max(0, Math.min(cardH, pillY - cardY))
+        return e === "top" ? 0 : cardH
     }
 }

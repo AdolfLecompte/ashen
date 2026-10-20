@@ -16,7 +16,8 @@ Singleton {
     // The only list. Adding a setting to what a wallpaper remembers is one
     // line here, and nothing else in the file has to know its name.
     readonly property var keys: [
-        "barStyle", "barPosition", "barLayout", "useGradients", "visualizer",
+        "barStyle", "barPosition", "barLayout",
+        "useGradients", "visualizer",
         "panelStyle", "themeMode", "desktopLayout",
         "barLength", "barOutline", "workspaceStyle", "barContent",
         "dockEnabled", "dockEdge",
@@ -32,7 +33,8 @@ Singleton {
     // and dock. Theme mode is not in it: switching somebody's light mode off
     // because a wallpaper is new would be going too far.
     readonly property var shipped: ({
-        barStyle: "pills", barPosition: "top", barLayout: "", useGradients: false,
+        barStyle: "pills", barPosition: "top",
+        barLayout: "", useGradients: false,
         visualizer: true, panelStyle: "morph", desktopLayout: "",
         barLength: 100, barOutline: false, workspaceStyle: "icons", barContent: "",
         dockEnabled: true, dockEdge: "bottom",
@@ -137,13 +139,6 @@ Singleton {
         root.save()
     }
 
-    function forget(path) {
-        const next = Object.assign({}, root.profiles)
-        delete next[path]
-        root.profiles = next
-        root.save()
-    }
-
     // Re-take the picture for the wallpaper on screen. Called whenever anything
     // in `live` moves, so the profile is always what you last had.
     function capture() {
@@ -162,6 +157,7 @@ Singleton {
             if (v === undefined && fillMissing) v = root.shipped[name]
             if (v === undefined) continue
             if (name === "themeMode") Theme.stageMode(v)
+            else if (name === "barStyle") Prefs[name] = Prefs.migrateStyle(v)
             else Prefs[name] = v
         }
         // barLayout is a packed string; the sections the bar actually reads are

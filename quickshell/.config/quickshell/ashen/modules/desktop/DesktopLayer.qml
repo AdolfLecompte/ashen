@@ -6,6 +6,7 @@ import QtQml.Models
 
 import "root:/modules/desktop/widgets"
 import "root:/modules/widgets" as Widgets
+import "root:/modules/bar/components" as BarParts
 import "root:/services" as Services
 
 // The wallpaper's own layer: it sits above whatever is painting the background
@@ -53,7 +54,9 @@ PanelWindow {
         for (const t of Hyprland.toplevels.values) {
             const o = t.lastIpcObject
             if (!o || !o.workspace) continue
-            if (o.workspace.id === desk.activeWs && o.fullscreen) return true
+            // Real fullscreen (2), not maximised (1): a maximised window
+            // can be translucent, and the widgets show through it.
+            if (o.workspace.id === desk.activeWs && o.fullscreen >= 2) return true
         }
         return false
     }
@@ -93,6 +96,27 @@ PanelWindow {
             for (let i = 0; i < holes.count; i++) out.push(holes.objectAt(i))
             return out
         }
+    }
+
+    // The bar's wave, drawn here so it stays behind windows and widgets: it
+    // grows from the docked edge through the bar (seen between its plates)
+    // and Sizes.cavaReach further into the screen.
+    Item {
+        id: wave
+        readonly property string edge: Services.Sizes.barPosition
+        readonly property bool vertical: edge === "left" || edge === "right"
+        readonly property int depth: Services.Sizes.barH + Services.Sizes.cavaReach
+        x: edge === "right" ? parent.width - depth : 0
+        y: edge === "bottom" ? parent.height - depth : 0
+        width: vertical ? depth : parent.width
+        height: vertical ? parent.height : depth
+        visible: desk.screen !== null
+                 && Services.Screens.barScreens.some(s => s.name === desk.screen.name)
+        opacity: Services.Sizes.hidden ? 0 : 1
+        Behavior on opacity {
+            NumberAnimation { duration: 240; easing.type: Services.Sizes.easeInOut }
+        }
+        BarParts.CavaBackground {}
     }
 
     Item {

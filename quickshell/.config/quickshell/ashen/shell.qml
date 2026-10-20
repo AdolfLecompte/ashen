@@ -436,7 +436,7 @@ ShellRoot {
         }
         // The look, from a keybind. Same four the Bar tab offers.
         function style(name: string) {
-            if (["pills", "island", "solid", "framed"].indexOf(name) === -1) return
+            if (["pills", "island", "solid", "docked"].indexOf(name) === -1) return
             Services.Prefs.barStyle = name
         }
     }
@@ -491,7 +491,6 @@ ShellRoot {
     // a system event instantly, so none of it can be built on demand.
     Bar {}
     Dock {}
-    BarFrame {}
     // One desktop per screen; each draws the widgets that live on it.
     Variants {
         model: Services.Screens.barScreens

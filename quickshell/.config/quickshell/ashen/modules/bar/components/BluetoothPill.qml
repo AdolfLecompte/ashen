@@ -8,11 +8,13 @@ import "root:/services" as Services
 // could be arranged like every other pill on the bar.
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     readonly property bool vertical: Services.Sizes.barVertical
     // How this pill draws itself, chosen per pill in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("bluetooth")
-    readonly property bool outlined: Services.Pills.isOutlined("bluetooth")
+    readonly property bool outlined: root.spec.outlined("bluetooth")
 
     // Icon-only is a SQUARE, the size of the notification pill beside it:
     // a glyph with a word's worth of padding on both sides reserved half a
@@ -25,8 +27,8 @@ Rectangle {
     // One plate, drawn here: the chip inside is bare. Same fill language as
     // every other pill -- accent while its panel is open, plate at rest.
     color: root.outlined ? Services.Colors.surfaceGlass
-         : (chip.open && Services.Pills.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : Services.Colors.pillPlate
-    gradient: (!root.outlined && Services.Prefs.useGradients && Services.Pills.fills && chip.open && !Services.Pills.wearsFace)
+         : (chip.open && root.spec.fills && !Services.Pills.wearsFace) ? Services.Colors.ghost : root.spec.pillPlate
+    gradient: (!root.outlined && Services.Prefs.useGradients && root.spec.fills && chip.open && !Services.Pills.wearsFace)
               ? Services.Colors.accentGradient : null
     border.width: root.outlined ? Services.Sizes.outlineW : 0
     border.color: chip.open ? Services.Colors.ghost : Services.Colors.fillOutline
@@ -49,6 +51,8 @@ Rectangle {
     Timer { id: statusDelay; interval: 1800; running: true; onTriggered: root.shownStatus = root.statusWord }
 
     SystemChip {
+
+        spec: root.spec
         id: chip
         anchors.centerIn: parent
         bare: true

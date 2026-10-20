@@ -154,12 +154,12 @@ Item {
             : !isNaN(root.openXOverride) ? root.openXOverride
             : !plate.plain && edge === "left" ? plate.pinAt
             : !plate.plain && edge === "right" ? plate.pinAt - plate.fullW
-            : Services.Sizes.panelX(root.width, plate.fullW, root.pillCX)
+            : Services.Sizes.panelX(root.width, plate.fullW, root.pillCX, edge)
         readonly property real openY: !root.hasPill ? (root.height - root.openH) / 2
             : !isNaN(root.openYOverride) ? root.openYOverride
             : !plate.plain && edge === "top" ? plate.pinAt
             : !plate.plain && edge === "bottom" ? plate.pinAt - plate.fullH
-            : Services.Sizes.panelY(root.height, plate.fullH, root.pillCY)
+            : Services.Sizes.panelY(root.height, plate.fullH, root.pillCY, edge)
 
         // Only drawn once the morph is actually armed, so the pill never has to
         // share the screen with a copy of itself.
@@ -242,7 +242,8 @@ Item {
         }
 
         // Window style unrolls away from the bar's edge, along its own axis.
-        readonly property string edge: Services.Sizes.barPosition
+        // The edge the pill's bar stands on.
+        readonly property string edge: Services.Sizes.edgeAt(root.pillCX, root.pillCY, root.width, root.height)
         readonly property bool sideways: edge === "left" || edge === "right"
         readonly property real unroll: plate.plain ? 0.06 + 0.94 * plate.plainFade : 1
         width: (root.pillW + (plate.fullW - root.pillW) * spread) * (sideways ? unroll : 1)

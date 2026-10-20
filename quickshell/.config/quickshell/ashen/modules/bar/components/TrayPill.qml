@@ -8,16 +8,18 @@ import "root:/modules/widgets" as Widgets
 
 Rectangle {
     id: root
+    // The bar this pill stands on (Bar.qml hands it in).
+    property var spec: Services.Sizes.first
 
     // How this pill draws itself, chosen in Settings > Bar > Layout.
     readonly property string content: Services.Pills.contentOf("tray")
-    readonly property bool outlined: Services.Pills.isOutlined("tray")
+    readonly property bool outlined: root.spec.outlined("tray")
     readonly property bool vertical: Services.Sizes.barVertical
     height: root.vertical ? trayRow.height + 16 : Services.Sizes.pillH
     radius: Services.Sizes.pillR
     border.color: Services.Colors.fillOutline
     border.width: root.outlined ? Services.Sizes.outlineW : 0
-    color: root.outlined ? Services.Colors.surfaceGlass : (Services.Colors.pillPlate)
+    color: root.outlined ? Services.Colors.surfaceGlass : (root.spec.pillPlate)
     width: root.vertical ? Services.Sizes.pillH : trayRow.width + 16
     // An empty tray still measures its 16 px of padding, and a slot kept for
     // that is a hole in the row. `wanted` and not `visible`: read back, an
@@ -82,7 +84,9 @@ Rectangle {
                         // as PillCenter.
                         let g = parent.mapToGlobal(parent.width / 2, 0)
                         let sc = QsWindow.window ? QsWindow.window.screen : null
-                        g = { x: g.x - (sc ? sc.x : 0), y: g.y - (sc ? sc.y : 0) }
+                        // Plus where this bar's window starts: on a bottom bar it is not 0.
+                        g = { x: root.spec.originX(sc) + g.x - (sc ? sc.x : 0),
+                              y: root.spec.originY(sc) + g.y - (sc ? sc.y : 0) }
                         // onlyMenu items have no primary action, so a left click
                         // has to open the menu too or they do nothing at all
                         let wantsMenu = mouse.button === Qt.RightButton || modelData.onlyMenu

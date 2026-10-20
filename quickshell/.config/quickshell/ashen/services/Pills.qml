@@ -36,6 +36,9 @@ Singleton {
         window:        { label: "Active window", glyph: "\ue8f5", opens: "" },
         power:         { label: "Power",         glyph: "", opens: "powerMenuVisible" },
         usage:         { label: "Screen time",   glyph: "\uea5b", opens: "usageVisible" },
+        mic:           { label: "Microphone",    glyph: "\ue029", opens: "" },
+        clipboard:     { label: "Clipboard",     glyph: "\ue14f", opens: "clipboardVisible" },
+        screenshot:    { label: "Screenshot",    glyph: "\uf7d2", opens: "" },
 
     })
 
@@ -44,7 +47,8 @@ Singleton {
     readonly property var arrangeable: [
         "launcher", "notifications", "workspaces", "media", "clock",
         "usb", "recording", "tray", "network", "bluetooth", "volume",
-        "battery", "keyboard", "sys", "window", "power", "usage"
+        "battery", "keyboard", "sys", "window", "power", "usage",
+        "mic", "clipboard", "screenshot"
     ]
 
     // Has this panel got a capsule on screen to come out of?
@@ -86,12 +90,6 @@ Singleton {
     // would draw a frame around every pill inside a filled plate, which is the
     // look the user rejected. There "on" is carried by the letters alone.
     readonly property bool rings: Prefs.barOutline && !Sizes.barSolid
-
-    // Only in the `pills` style does a capsule carry the outline itself. In
-    // solid, island and framed the plate IS the bar's surface, so outlining the
-    // capsules on top of it drew a frame around every pill inside a filled
-    // block -- the opposite of what "outline" means there. The plate takes it.
-    function isOutlined(id) { return Prefs.barOutline && !Sizes.barSolid }
 
     // Settings only offers a pill the readings it actually honours: an option
     // that visibly does nothing is worse than a missing one.

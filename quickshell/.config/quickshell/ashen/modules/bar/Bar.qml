@@ -6,21 +6,23 @@ import "root:/services" as Services
 
 Scope {
     id: root
+    // The bar's own settings (edge, style, length, auto-hide, outline).
+    property var spec: Services.Sizes.first
 
     Variants {
         // Not Quickshell.screens: a mirrored output is in that list and would
         // get a bar nobody can see. Services.Screens does the filtering, next
         // to the rest of the reasoning about which screen is which.
-        model: Services.Screens.barScreens
+        model: root.spec.on ? Services.Screens.barScreens : []
 
         PanelWindow {
             id: bar
             property var modelData
             screen: modelData
 
-            readonly property bool vertical: Services.Sizes.barVertical
+            readonly property bool vertical: root.spec.vertical
             readonly property int pad: 12
-            readonly property string edge: Services.Sizes.barPosition
+            readonly property string edge: root.spec.edge
 
             // The bar claims one screen edge; which anchors are on decides both
             // where it sits and which way it stretches.
@@ -32,11 +34,14 @@ Scope {
             }
             // Exactly the bar: moving it is a fade now, so there is no travel
             // to leave room for.
-            implicitHeight: bar.vertical ? 0 : Services.Sizes.barH
+            // Docked, the window also holds the two curves it makes into the
+            // screen, just past the strip.
+            readonly property int curveRoom: root.spec.docked ? Services.Sizes.dockedR : 0
+            implicitHeight: bar.vertical ? 0 : root.spec.thick + bar.curveRoom
             // Wider than the bar on a side edge: see Sizes.barSpill. The strip
             // below still measures barH and stays pinned to the docked edge, so
             // nothing on the bar moves because of it.
-            implicitWidth: bar.vertical ? Services.Sizes.barH + Services.Sizes.barSpill : 0
+            implicitWidth: bar.vertical ? root.spec.thick + Services.Sizes.barSpill : 0
 
             color: "transparent"
             exclusionMode: ExclusionMode.Normal
@@ -44,7 +49,7 @@ Scope {
             // that edge back; out, they step aside as they always did. The room
             // is only given back once the bar has finished leaving, or the
             // windows grow into a bar that is still on its way out.
-            exclusiveZone: (bar.revealed || zoneHold.running) ? Services.Sizes.barDepth
+            exclusiveZone: (bar.revealed || zoneHold.running) ? root.spec.thick
                                                               : Services.Sizes.barZoneAway
 
             // ── Auto-hide ───────────────────────────────────────────────
@@ -54,16 +59,16 @@ Scope {
             // `stayOut` is the anti-flicker floor: reserving room reflows the
             // windows, and a reflow under the pointer can cost the bar its hover
             // for an instant. Without a minimum stay that reads as a shiver.
-            readonly property bool revealed: !Services.Sizes.autohide
+            readonly property bool revealed: !root.spec.autohide
                 || bar.pointerOn || hideDelay.running || stayOut.running || bar.panelHere
-            // Told to the frame, which gives up its side while the bar is out.
+            // Told to AppState, which reports whether the bar is out.
             readonly property string screenName: bar.screen ? bar.screen.name : ""
             onRevealedChanged: {
-                Services.AppState.setBarRevealed(bar.screenName, bar.revealed)
+                if (root.spec.index === 1) Services.AppState.setBarRevealed(bar.screenName, bar.revealed)
                 if (bar.revealed) stayOut.restart()
                 else zoneHold.restart()
             }
-            Component.onCompleted: Services.AppState.setBarRevealed(bar.screenName, bar.revealed)
+            Component.onCompleted: if (root.spec.index === 1) Services.AppState.setBarRevealed(bar.screenName, bar.revealed)
             Timer {
                 id: hideDelay
                 interval: Services.Sizes.peekHideMs
@@ -78,7 +83,7 @@ Scope {
             }
 
             // How far the bar walks off screen, and which way.
-            readonly property int peekOff: bar.revealed ? 0 : Services.Sizes.barH
+            readonly property int peekOff: bar.revealed ? 0 : root.spec.thick
             readonly property int peekX: bar.vertical
                 ? (bar.edge === "right" ? bar.peekOff : -bar.peekOff) : 0
             readonly property int peekY: bar.vertical ? 0
@@ -88,17 +93,17 @@ Scope {
             // follows its scene position, and anything that moves the content
             // would drag the input region off the surface. Hidden, only a thread
             // at the screen edge stays live -- the rest belongs to the windows.
-            readonly property int maskThick: bar.revealed ? Services.Sizes.barH
+            readonly property int maskThick: bar.revealed ? root.spec.thick
                                                           : Services.Sizes.peekPx
             // In the island style the band is not there to be clicked -- only
             // the plates are, so the gaps between them belong to the wallpaper.
             // While the bar is hidden the thread at the edge is the whole
             // region in every style, which is what wakes it again.
-            readonly property bool islandMask: Services.Sizes.barIsland && bar.revealed
+            readonly property bool islandMask: root.spec.island && bar.revealed
             // A bar that does not reach the corners must not keep taking their
             // clicks. The band is still the full thickness -- only its LENGTH
             // follows the setting, which is what the setting is about.
-            readonly property bool shortMask: Services.Sizes.barLength < 100 && bar.revealed
+            readonly property bool shortMask: root.spec.length < 100 && bar.revealed
             readonly property int maskFrom: bar.shortMask
                 ? (bar.vertical ? content.y + strip.y : content.x + strip.x) - Services.Sizes.plateAlong : 0
             readonly property int maskLen: bar.shortMask
@@ -167,7 +172,7 @@ Scope {
                     return Math.max(1, n)
                 }
                 columns: bar.vertical ? 1 : grp.laid
-                spacing: Services.Sizes.barGap
+                spacing: root.spec.gap
                 horizontalItemAlignment: Grid.AlignHCenter
                 verticalItemAlignment: Grid.AlignVCenter
 
@@ -192,23 +197,8 @@ Scope {
                 HoverHandler { id: peekHover }
             }
 
-            // The wave, UNDER the strip and outside what auto-hide slides away:
-            // it grows out of the screen edge, and riding the strip's Translate
-            // took it off screen with the bar. Same box as `content`, and before
-            // it in the tree, so the plate still covers all but the tips. In the
-            // framed style the plate is the ring, another window, so the wave is
-            // drawn there.
-            Item {
-                x: content.x
-                y: content.y
-                width: content.width
-                height: content.height
-                // Framed draws its own inside the frame. Island shows it in the
-                // gaps between its plates, exactly as pills does between pills.
-                visible: !Services.Sizes.barFramed
-                opacity: content.opacity
-                CavaBackground {}
-            }
+            // The wave is drawn by the desktop layer (DesktopLayer), behind
+            // windows and widgets; this window only holds the strip.
 
             Item {
                 id: content
@@ -224,10 +214,10 @@ Scope {
                 // came out 260 px wide and short, and no capsule was drawn.
                 // Four anchors that always answer were tried on 2026-09-09 and
                 // drew nothing at all. Geometry has no stale state to keep.
-                x: (bar.vertical && bar.edge === "right") ? parent.width - Services.Sizes.barH : 0
-                y: 0
-                width: bar.vertical ? Services.Sizes.barH : parent.width
-                height: parent.height
+                x: (bar.vertical && bar.edge === "right") ? parent.width - root.spec.thick : 0
+                y: (!bar.vertical && bar.edge === "bottom") ? parent.height - root.spec.thick : 0
+                width: bar.vertical ? root.spec.thick : parent.width
+                height: bar.vertical ? parent.height : root.spec.thick
 
                 // Moving the bar just hides it: it goes, the edge changes while
                 // nothing is on screen, and it comes back. Same duration both
@@ -261,21 +251,18 @@ Scope {
                 // ends -- and switching style moves nothing.
                 Item {
                     id: strip
-                    // Room the frame needs on the outer side, and along both
-                    // ends where its side bands run.
-                    readonly property int frame: Services.Sizes.barFramed ? Services.Sizes.frameW : 0
                     // What the length setting takes off each end. Half the
                     // shortfall per side, so the bar keeps its middle.
                     // Not readonly: it carries a Behavior, so the ends slide in
                     // instead of jumping when the slider moves.
                     property int shorten: Math.round(
                         (bar.vertical ? bar.height : bar.width)
-                        * (100 - Services.Sizes.barLength) / 200)
-                    readonly property int along: Services.Sizes.plateAlong + strip.frame + strip.shorten
+                        * (100 - root.spec.length) / 200)
+                    readonly property int along: Services.Sizes.plateAlong + strip.shorten
                     Behavior on shorten {
                         Widgets.Anim { speed: Services.Sizes.msPronounced }
                     }
-                    readonly property int cross: Services.Sizes.plateCross
+                    readonly property int cross: root.spec.plateCross
 
                     anchors.fill: parent
                     // The capsules sit exactly where they sit in every other
@@ -311,17 +298,31 @@ Scope {
                         const p = solidPlate.mapToGlobal(0, 0)
                         return Qt.rect(p.x, p.y, solidPlate.width, solidPlate.height)
                     }
-                    onOnScreenChanged: Services.AppState.setPlate("solid", solidPlate.onScreen)
-                    anchors.fill: strip
+                    onOnScreenChanged: Services.AppState.setPlate(content.plateKey("solid"), solidPlate.onScreen)
+                    // Docked: the whole edge, square, flush with the screen.
+                    anchors.fill: root.spec.docked ? parent : strip
                     z: -2
-                    visible: Services.Sizes.barPlate
-                    radius: Services.Sizes.barR
+                    visible: root.spec.plate || root.spec.docked
+                    radius: root.spec.docked ? 0 : Services.Sizes.barR
                     // Outline is the plate's business in this style: the whole
                     // bar becomes a frame, rather than fifteen little ones.
-                    color: Services.Prefs.barOutline ? Services.Colors.surfaceGlass
-                                                     : Services.Colors.surfaceBar
-                    border.width: Services.Prefs.barOutline ? Services.Sizes.outlineW : 0
+                    color: root.spec.outline ? Services.Colors.surfaceGlass
+                                             : Services.Colors.surfaceBar
+                    border.width: root.spec.outline ? Services.Sizes.outlineW : 0
                     border.color: Services.Colors.fillOutline
+                }
+
+                // Docked: the screen curving into the bar at both ends of its
+                // inner face. The only ornament the style has.
+                DockedCorners {
+                    visible: root.spec.docked
+                    edge: bar.edge
+                    alongLen: bar.vertical ? content.height : content.width
+                    thick: root.spec.thick
+                    r: Services.Sizes.dockedR
+                    fill: root.spec.outline ? Services.Colors.surfaceGlass : Services.Colors.surfaceBar
+                    stroke: Services.Colors.fillOutline
+                    strokeW: root.spec.outline ? Services.Sizes.outlineW : 0
                 }
 
                 // ── Layout ──────────────────────────────────────────────
@@ -343,6 +344,9 @@ Scope {
                 Component { id: cSys;         SysPill {} }
                 Component { id: cUsage;       UsagePill {} }
                 Component { id: cPower;         PowerPill {} }
+                Component { id: cMic;           MicPill {} }
+                Component { id: cClipboard;     ClipboardPill {} }
+                Component { id: cScreenshot;    ScreenshotPill {} }
                 Component { id: cWindow;        WindowPill {} }
 
                 // What a section actually shows. Almost always what the layout
@@ -356,6 +360,7 @@ Scope {
                 // rebuilds every pill in the section: the row came back already
                 // in its new place with nothing sliding, and the capsule arrived
                 // at full size on a frame of half-built pills. See RecordingPill.
+                function plateKey(k) { return k }
                 function pillsIn(section) {
                     const base = Services.Prefs.barPills(section)
                     if (section !== "left") return base
@@ -387,6 +392,9 @@ Scope {
                     case "usage":         return cUsage
                     case "power":         return cPower
                     case "window":        return cWindow
+                    case "mic":           return cMic
+                    case "clipboard":     return cClipboard
+                    case "screenshot":    return cScreenshot
                     }
                     return null
                 }
@@ -452,6 +460,8 @@ Scope {
                     Loader {
                         id: holder
                         sourceComponent: content.pillFor(parent.pillId)
+                        // Every pill paints with the bar it stands on.
+                        onLoaded: if (item && item.spec !== undefined) item.spec = root.spec
                     }
 
 
@@ -491,17 +501,17 @@ Scope {
                         const p = gp.mapToGlobal(0, 0)
                         return Qt.rect(p.x, p.y, gp.width, gp.height)
                     }
-                    onOnScreenChanged: Services.AppState.setPlate(gp.key, gp.onScreen)
+                    onOnScreenChanged: Services.AppState.setPlate(content.plateKey(gp.key), gp.onScreen)
                     readonly property int along: Services.Sizes.plateAlong
-                    visible: Services.Sizes.barIsland && width > 0 && group && group.visible
+                    visible: root.spec.island && width > 0 && group && group.visible
                     z: -2
                     radius: Services.Sizes.barR
                     // Each island outlines as one island. Outlining the pills
                     // inside a filled block reads as a mistake; the block is
                     // the shape that is either filled or drawn.
-                    color: Services.Prefs.barOutline ? Services.Colors.surfaceGlass
-                                                     : Services.Colors.surfaceBar
-                    border.width: Services.Prefs.barOutline ? Services.Sizes.outlineW : 0
+                    color: root.spec.outline ? Services.Colors.surfaceGlass
+                                             : Services.Colors.surfaceBar
+                    border.width: root.spec.outline ? Services.Sizes.outlineW : 0
                     border.color: Services.Colors.fillOutline
                     x: group ? (bar.vertical ? group.x : group.x - along) : 0
                     y: group ? (bar.vertical ? group.y - along : group.y) : 0
@@ -514,13 +524,14 @@ Scope {
                 GroupPlate { id: centrePlate; group: centreGroup; key: "centre" }
                 GroupPlate { id: endPlate;    group: endGroup; key: "end" }
 
+
                 // ── Left ────────────────────────────────────────────────
                 // In the island style each group stands on a plate that is
                 // `plateAlong` WIDER than the group on both sides (GroupPlate).
                 // Anchored flush to the strip, that plate hangs off the screen
                 // by exactly that much -- which is what the right-hand island
                 // was doing. The groups step in by the plate's own overhang.
-                readonly property int islandInset: Services.Sizes.barIsland
+                readonly property int islandInset: root.spec.island
                                                    ? Services.Sizes.plateAlong : 0
 
                 BarGroup {
@@ -563,11 +574,11 @@ Scope {
                     // left to slide into. Off-centre is a compromise; two pills
                     // sharing the same pixels is a fault.
                     readonly property real freeFrom: bar.vertical
-                        ? startGroup.y + startGroup.height + Services.Sizes.barGap
-                        : startGroup.x + startGroup.width + Services.Sizes.barGap
+                        ? startGroup.y + startGroup.height + root.spec.gap
+                        : startGroup.x + startGroup.width + root.spec.gap
                     readonly property real freeTo: bar.vertical
-                        ? endGroup.y - Services.Sizes.barGap
-                        : endGroup.x - Services.Sizes.barGap
+                        ? endGroup.y - root.spec.gap
+                        : endGroup.x - root.spec.gap
                     readonly property real span: bar.vertical ? height : width
                     readonly property bool fits: (freeTo - freeFrom) >= span
 

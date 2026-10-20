@@ -50,8 +50,8 @@ Item {
         if (!pill || !key || !s || s.name !== Services.Screens.activeName) return
         const g = pill.mapToGlobal(0, 0)
         Services.AppState.setPillCenter(key,
-            Services.Sizes.barOriginX(s) + g.x - s.x + pill.width / 2,
-            Services.Sizes.barOriginY(s) + g.y - s.y + pill.height / 2)
+            (pill.spec ? pill.spec.originX(s) : Services.Sizes.barOriginX(s)) + g.x - s.x + pill.width / 2,
+            (pill.spec ? pill.spec.originY(s) : Services.Sizes.barOriginY(s)) + g.y - s.y + pill.height / 2)
         // Size as well: the drop that falls out of a pill has to start the
         // size of that pill, and the neck has to be as wide as it is.
         Services.AppState.setPillSize(key, pill.width, pill.height)
@@ -77,6 +77,10 @@ Item {
     // The pill moves when its own geometry changes…
     Connections {
         target: root.pill
+        ignoreUnknownSignals: true
+        // Bar.qml hands the pill its bar after it is built: the first report
+        // was made against the default spec and has to be said again.
+        function onSpecChanged() { root.report() }
         function onXChanged() { root.report() }
         function onYChanged() { root.report() }
         function onWidthChanged() { root.report() }
