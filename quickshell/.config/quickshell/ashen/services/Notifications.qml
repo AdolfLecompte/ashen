@@ -2,6 +2,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import Quickshell.Services.UPower
 import QtQuick
 import "root:/services" as Services
 
@@ -708,7 +709,11 @@ Singleton {
         saveProc.running = true
     }
 
-    Component.onCompleted: { loadProc.running = true; root.refreshSounds() }
+    Component.onCompleted: {
+        loadProc.running = true
+        root.refreshSounds()
+        root.lastPowerProfile = root.profileIds[PowerProfiles.profile] || ""
+    }
 
     Process {
         id: loadProc
@@ -800,7 +805,6 @@ Singleton {
         }
     }
 
-    // --- Power profile changes (powerprofilesctl monitor, streaming) ---
     // --- Cargador conectado/desconectado ---
     property bool lastCharging: false
     // The mains supply is named per machine -- AC0, ADP1, ACAD -- so it is found
@@ -838,26 +842,23 @@ Singleton {
         onTriggered: root.checkCharger()
     }
 
-    Process {
-        id: profileMonitor
-        command: ["sh", "-c", "powerprofilesctl monitor"]
-        running: true
-        stdout: SplitParser {
-            onRead: data => {
-                let line = data.trim()
-                if (line.length === 0) return
-                if (root.initialized && root.lastPowerProfile !== "" && line !== root.lastPowerProfile) {
-                    let profIcon = line.indexOf("saver") !== -1 ? ""
-                        : line.indexOf("performance") !== -1 ? ""
-                        : ""
-                    root.addSystemToast(Services.I18n.t("toast.profile", { p: line.toUpperCase() }), profIcon, false, "powerprofile")
-                }
-                root.lastPowerProfile = line
+    // Power profile changes, read off the daemon's own property. It used to be
+    // `powerprofilesctl monitor`, a subcommand newer daemons dropped: it exited
+    // at once and the restart-on-exit relaunched python several times a second.
+    readonly property var profileIds: ["power-saver", "balanced", "performance"]
+    Connections {
+        target: PowerProfiles
+        function onProfileChanged() {
+            const line = root.profileIds[PowerProfiles.profile] || ""
+            if (line === "") return
+            if (root.initialized && root.lastPowerProfile !== "" && line !== root.lastPowerProfile) {
+                const profIcon = line === "power-saver" ? "\uec1a"
+                    : line === "performance" ? "\ueb9b" : "\ueaf6"
+                root.addSystemToast(Services.I18n.t("toast.profile", { p: line.toUpperCase() }), profIcon, false, "powerprofile")
             }
+            root.lastPowerProfile = line
         }
-        onRunningChanged: if (!running) running = true
     }
-
     // --- Low battery warnings (20/10/5%), once per threshold ---
     property bool warned20: false
     property bool warned10: false

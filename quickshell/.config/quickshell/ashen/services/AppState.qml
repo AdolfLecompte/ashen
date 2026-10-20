@@ -50,8 +50,10 @@ Singleton {
     }
     // A wf-recorder the shell did not start is adopted; one that died is dropped.
     property bool recordingExternal: false
+    // Quick while recording, so a recorder that died is dropped soon; slow
+    // otherwise, since it is a shell and a pgrep every time.
     Timer {
-        interval: 5000
+        interval: root.recording ? 5000 : 15000
         running: true
         repeat: true
         onTriggered: recordingSyncProc.running = true
@@ -93,6 +95,11 @@ Singleton {
         if (root.recording) root.stopRecording()
         else root.startRecording()
     }
+    // An area screenshot, the same one SUPER+SHIFT+S takes.
+    function screenshotArea() {
+        Quickshell.execDetached(["sh", "-c",
+            "DEFAULT_TARGET_DIR=\"$HOME/Pictures/Screenshots\" SLURP_ARGS=\"-b 12121a99 -s 00000000 -c 6e6e7aff -w 2 -d\" grimblast copysave area && qs ipc -c ashen call notifications screenshot"])
+    }
 
     property bool clipboardVisible: false
 
@@ -115,7 +122,6 @@ Singleton {
         m[name] = on
         root.barRevealed = m
     }
-    function barRevealedOn(name) { return root.barRevealed[name] === true }
 
     // Whether something hanging off a BAR capsule is up: an auto-hiding bar
     // stays out for those, or the panel is left dangling off a bar that walked
@@ -204,7 +210,6 @@ Singleton {
     property string userName: ""
     property string hostName: ""
     property string homeDir: ""
-    readonly property string userLabel: userName === "" ? "" : userName + "@" + hostName
     // faceVersion busts Qt's image cache: the path never changes, the file does
     readonly property string facePath: homeDir === ""
         ? "" : "file://" + homeDir + "/.face?" + faceVersion

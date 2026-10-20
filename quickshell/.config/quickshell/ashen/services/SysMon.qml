@@ -83,8 +83,8 @@ Singleton {
         root.readRam()
         if (!root.deep) return
         root.remember()
-        netProc.running = true
-        sensorsProc.running = true
+        root.readNet()
+        root.readTemp()
         gpuStatProc.running = true
     }
 
@@ -145,14 +145,27 @@ Singleton {
         root.prevCpuIdle = idle
     }
 
+    // The CPU package temperature, read in-process off the sensor `sensors`
+    // would have printed. Found once: it was a shell, sensors and three greps
+    // every sample.
+    SysFile { id: tempFile }
+    property bool tempLooked: false
+    function readTemp() {
+        if (tempFile.path === "") { if (!root.tempLooked) tempFinder.running = true; return }
+        const t = parseInt(tempFile.read())
+        root.cpuTemp = isNaN(t) ? 0 : t / 1000
+    }
     Process {
-        id: sensorsProc
-        command: ["sh", "-c", "sensors 2>/dev/null | grep -iE 'Package id 0|Tctl|Tdie' | head -1 | grep -oE '[0-9]+\\.[0-9]+' | head -1"]
-        running: false
+        id: tempFinder
+        command: ["sh", "-c",
+            "for h in /sys/class/hwmon/hwmon*; do case $(cat $h/name 2>/dev/null) in coretemp|k10temp|zenpower) " +
+            "for l in $h/temp*_label; do grep -qiE '^(Package id 0|Tctl|Tdie)$' $l 2>/dev/null && { echo ${l%_label}_input; exit; }; done; " +
+            "[ -r $h/temp1_input ] && { echo $h/temp1_input; exit; };; esac; done"]
         stdout: StdioCollector {
             onStreamFinished: {
-                let t = parseFloat(text.trim())
-                root.cpuTemp = isNaN(t) ? 0 : t
+                root.tempLooked = true
+                const path = text.trim()
+                if (path !== "") { tempFile.path = path; root.readTemp() }
             }
         }
     }
@@ -229,25 +242,21 @@ Singleton {
         }
     }
 
-    Process {
-        id: netProc
-        command: ["sh", "-c", "cat /proc/net/dev | tail -n +3 | awk '{sub(\":\",\"\",$1); if ($1!=\"lo\") {rx+=$2; tx+=$10}} END {print rx\",\"tx}'"]
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let parts = text.trim().split(",")
-                if (parts.length === 2) {
-                    let rx = parseFloat(parts[0]) || 0
-                    let tx = parseFloat(parts[1]) || 0
-                    if (root.prevRxBytes >= 0) {
-                        root.netRxKBs = Math.max(0, (rx - root.prevRxBytes) / 1024 / 1.5)
-                        root.netTxKBs = Math.max(0, (tx - root.prevTxBytes) / 1024 / 1.5)
-                    }
-                    root.prevRxBytes = rx
-                    root.prevTxBytes = tx
-                }
-            }
+    // Every interface but loopback, summed; read in-process like /proc/stat.
+    SysFile { id: netFile; path: "/proc/net/dev" }
+    function readNet() {
+        let rx = 0, tx = 0
+        for (const line of netFile.read().split("\n").slice(2)) {
+            const p = line.trim().split(/[:\s]+/)
+            if (p.length < 10 || p[0] === "lo") continue
+            rx += parseFloat(p[1]) || 0
+            tx += parseFloat(p[9]) || 0
         }
+        if (root.prevRxBytes >= 0) {
+            root.netRxKBs = Math.max(0, (rx - root.prevRxBytes) / 1024 / 1.5)
+            root.netTxKBs = Math.max(0, (tx - root.prevTxBytes) / 1024 / 1.5)
+        }
+        root.prevRxBytes = rx
+        root.prevTxBytes = tx
     }
-
 }

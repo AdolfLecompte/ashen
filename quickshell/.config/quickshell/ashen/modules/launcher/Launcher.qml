@@ -10,8 +10,6 @@ import "root:/services" as Services
 Scope {
     id: root
 
-    Component.onCompleted: Services.Apps.scan()
-
     PanelWindow {
         id: win
         anchors { top: true; left: true; right: true; bottom: true }

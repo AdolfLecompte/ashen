@@ -140,10 +140,6 @@ Singleton {
         return isFinite(n) ? n : fallback
     }
 
-    function byName(name) {
-        for (const m of root.monitors) if (m.name === name) return m
-        return null
-    }
     function byKey(key) {
         for (const m of root.monitors) if (root.keyOf(m) === key) return m
         return null

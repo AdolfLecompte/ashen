@@ -67,7 +67,7 @@ Singleton {
 
     property bool lowWarned: false
     readonly property int lowThreshold: 15
-    onLevelChanged: { root.maybeWarnLow(); root.sample() }
+    onLevelChanged: root.maybeWarnLow()
     onChargingChanged: { if (root.charging) root.lowWarned = false; root.maybeWarnLow() }
     function maybeWarnLow() {
         if (root.charging || root.level <= 0) return
@@ -131,78 +131,6 @@ Singleton {
         if (root.energyDesign > 0)
             root.health = Math.round(root.energyFull / root.energyDesign * 100)
         if (f.cycle_count !== undefined) root.cycles = Math.round(f.cycle_count)
-    }
-
-    // ── The last day of charge ───────────────────────────────────────────
-    // UPower already keeps this, one line per whole percent, going back days.
-    // Reading its file gives a curve the moment the panel opens instead of one
-    // that only exists after the shell has been up long enough to draw it.
-    // The file belongs to root; on this machine the battery's is world
-    // readable, but some devices' are 0640 -- so anything unreadable simply
-    // leaves `series` empty and `sample()` fills it as the shell runs.
-    property var series: []         // [{t: unix seconds, v: percent}], oldest first
-    readonly property int seriesHours: 24
-
-    function trimSeries(list) {
-        const cut = Date.now() / 1000 - root.seriesHours * 3600
-        return list.filter(p => p.t >= cut)
-    }
-
-    // Our own reading, folded in on top of whatever history was on disk. One
-    // point per whole percent, the same resolution the file has.
-    function sample() {
-        const now = Math.round(Date.now() / 1000)
-        const last = root.series.length > 0 ? root.series[root.series.length - 1] : null
-        if (last && last.v === root.level && now - last.t < 300) return
-        root.series = root.trimSeries(root.series.concat([{ t: now, v: root.level }]))
-    }
-    // Evenly spaced buckets across the window, because the samples are not:
-    // upower writes when the percent changes, so an hour asleep is one point
-    // and a fast drain is thirty. Drawing them evenly would stretch the quiet
-    // hours and squash the busy ones. Each bucket holds the last reading at or
-    // before it, so a flat stretch stays flat.
-    function plot(n) {
-        if (root.series.length === 0) return []
-        const end = Date.now() / 1000
-        const start = end - root.seriesHours * 3600
-        const out = []
-        let i = 0
-        let held = root.series[0].v
-        for (let k = 0; k < n; k++) {
-            const t = start + (end - start) * (k / (n - 1))
-            while (i < root.series.length && root.series[i].t <= t) {
-                held = root.series[i].v
-                i++
-            }
-            out.push(held)
-        }
-        return out
-    }
-
-    Process {
-        id: historyProc
-        command: ["sh", "-c",
-            "cat /var/lib/upower/history-charge-*.dat 2>/dev/null | sort -n | tail -400"]
-        running: true
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const out = []
-                for (const line of text.trim().split("\n")) {
-                    const p = line.split(/\s+/)
-                    if (p.length < 2) continue
-                    const t = parseInt(p[0])
-                    // The comma is not a typo: upower writes the number in the
-                    // machine's locale, so some of these lines say "0,000".
-                    const v = parseFloat(String(p[1]).replace(",", "."))
-                    // `unknown` rows are written as 0 on suspend and resume;
-                    // taken at face value they draw a cliff to the floor and
-                    // back that never happened.
-                    if (isNaN(t) || isNaN(v) || v <= 0) continue
-                    out.push({ t: t, v: v })
-                }
-                root.series = root.trimSeries(out.concat(root.series))
-            }
-        }
     }
 
     SysFile { id: capFile;    path: "/sys/class/power_supply/BAT0/capacity" }

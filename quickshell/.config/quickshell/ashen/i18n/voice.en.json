@@ -147,14 +147,6 @@
     "not one app is playing",
     "all quiet in there"
   ],
-  "battery.noHistory": [
-    "no history yet",
-    "give it a while",
-    "nothing to plot yet",
-    "nothing measured yet",
-    "come back in an hour",
-    "the line starts soon"
-  ],
   "switcher.empty": [
     "no windows",
     "nothing open",

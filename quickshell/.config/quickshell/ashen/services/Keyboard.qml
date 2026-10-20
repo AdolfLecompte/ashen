@@ -114,11 +114,6 @@ Singleton {
             Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", String(want)])
     }
 
-    function cycle() {
-        if (layouts.length < 2) return
-        setLayout((activeIndex + 1) % layouts.length)
-    }
-
     Process {
         id: devProc
         command: ["hyprctl", "devices", "-j"]

@@ -97,6 +97,7 @@ PanelWindow {
             id: backArt
             anchors.fill: parent
             source: panelRef.shownArtUrl
+            sourceSize: Qt.size(256, 256)
             fillMode: Image.PreserveAspectCrop
             asynchronous: true
             cache: false
@@ -134,10 +135,10 @@ PanelWindow {
             anchors.fill: parent
             radius: 20
             visible: !card.plain
-            readonly property string side: Services.Sizes.barPosition
+            readonly property string side: Services.Sizes.edgeAt(card.pillCX, card.pillCY, card.width, card.height)
             readonly property bool far: side === "bottom" || side === "right"
             gradient: Gradient {
-                orientation: (Services.Sizes.barPosition === "left" || Services.Sizes.barPosition === "right")
+                orientation: (veil.side === "left" || veil.side === "right")
                     ? Gradient.Horizontal : Gradient.Vertical
                 GradientStop { position: 0.0; color: veil.far ? "transparent" : card.joinColor }
                 GradientStop { position: 0.5; color: "transparent" }
@@ -278,6 +279,7 @@ PanelWindow {
                 id: flyImg
                 anchors.fill: parent
                 source: panelRef.shownArtUrl
+                sourceSize: Qt.size(512, 512)
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 // The player reuses its temp file name: never serve a cached picture.

@@ -36,10 +36,6 @@ Singleton {
         }
         return idx
     }
-    function lineAt(pos) {
-        const i = root.indexAt(pos)
-        return i < 0 ? "" : root.lines[i].text
-    }
 
     // [mm:ss.xx] text -- several stamps can share one line.
     function parseLrc(lrc) {
