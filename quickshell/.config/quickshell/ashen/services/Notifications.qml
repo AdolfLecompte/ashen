@@ -805,6 +805,46 @@ Singleton {
         }
     }
 
+    // The keyboard layout, the shell's language and the weather's city: said
+    // when they change, never when they first arrive at startup.
+    property string lastKbLayout: ""
+    property string lastLang: ""
+    property string lastCity: ""
+    Connections {
+        target: Services.Keyboard
+        function onCodeChanged() {
+            const c = Services.Keyboard.code
+            if (c === "") return
+            if (root.initialized && root.lastKbLayout !== "" && c !== root.lastKbLayout)
+                root.addSystemToast(Services.I18n.t("toast.layout", { l: Services.Keyboard.label }),
+                                    "\ue312", false, "kblayout")
+            root.lastKbLayout = c
+        }
+    }
+    // On the dictionary, not the pref: the toast speaks the new language.
+    Connections {
+        target: Services.I18n
+        function onDictChanged() {
+            const l = Services.I18n.lang
+            if (root.initialized && root.lastLang !== "" && l !== root.lastLang)
+                root.addSystemToast(Services.I18n.t("toast.language",
+                                    { l: Services.I18n.entry(l).label.toUpperCase() }),
+                                    "\ue8e2", false, "language")
+            root.lastLang = l
+        }
+    }
+    Connections {
+        target: Services.Weather
+        function onCityChanged() {
+            const c = Services.Weather.city
+            if (c === "") return
+            if (root.initialized && root.lastCity !== "" && c !== root.lastCity)
+                root.addSystemToast(Services.I18n.t("toast.location", { c: c.toUpperCase() }),
+                                    "\uf1db", false, "weatherloc")
+            root.lastCity = c
+        }
+    }
+
     // --- Cargador conectado/desconectado ---
     property bool lastCharging: false
     // The mains supply is named per machine -- AC0, ADP1, ACAD -- so it is found
