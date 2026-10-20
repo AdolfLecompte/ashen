@@ -12,16 +12,21 @@ Section {
 
     property string missLine: Services.Voice.pick("search.noMatch")
 
-    // Layout picker state
-    property bool pickerOpen: false
-    property string layoutQuery: ""
     // Match on code or name, so both "de" and "german" find German
     readonly property var filteredLayouts: {
-        let q = tab.layoutQuery.trim().toLowerCase()
+        let q = finder.text.trim().toLowerCase()
         let all = Services.Keyboard.available
-        if (q === "") return all
+        if (q === "") return []
         return all.filter(l => l.code.indexOf(q) !== -1
             || l.name.toLowerCase().indexOf(q) !== -1)
+    }
+    function nameOf(code) {
+        const l = Services.Keyboard.available.find(x => x.code === code)
+        return l ? l.name : code
+    }
+    function add(code) {
+        Services.Keyboard.addLayout(code)
+        finder.clear()
     }
 
 
@@ -38,128 +43,74 @@ Section {
             }
         }
 
-        Flow {
+        // The layouts in use: a list, in the order XKB cycles them. The row
+        // switches, the cross drops (never the last one: nothing would type).
+        Rectangle {
             Layout.fillWidth: true
-            spacing: 10
+            implicitHeight: kbCol.implicitHeight + 12
+            radius: Services.Sizes.cardR
+            color: Services.Colors.fillInset
 
-            Repeater {
-                model: Services.Keyboard.layouts
-                delegate: Rectangle {
-                    id: kbCard
-                    required property var modelData
-                    required property int index
-                    readonly property bool active: Services.Keyboard.activeIndex === kbCard.index
-                    width: 100; height: 64
-                    radius: Services.Sizes.cardR
-                    color: kbCard.active ? Services.Colors.ghost : Services.Colors.fillLine
-                    gradient: Services.Prefs.useGradients && (kbCard.active) ? Services.Colors.accentGradient : null
-                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 4
-                        Text {
-                            textFormat: Text.PlainText
-                            text: "\ue312"
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 20
-                            color: kbCard.active ? Services.Colors.accentText : Services.Colors.mist
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            text: kbCard.modelData.toUpperCase()
-                            font.pixelSize: Services.Sizes.fsMeta
-                            font.family: "JetBrainsMono NF"
-                            color: kbCard.active ? Services.Colors.accentText : Services.Colors.mist
-                            Layout.alignment: Qt.AlignHCenter
-                        }
+            Column {
+                id: kbCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 6
+                spacing: 2
+
+                Repeater {
+                    model: Services.Keyboard.layouts
+                    delegate: PickRow {
+                        required property var modelData
+                        required property int index
+                        code: modelData
+                        label: tab.nameOf(modelData)
+                        active: Services.Keyboard.activeIndex === index
+                        removable: Services.Keyboard.layouts.length > 1
+                        onPicked: Services.Keyboard.setLayout(index)
+                        onRemoved: Services.Keyboard.removeLayout(modelData)
                     }
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        hoverEnabled: true
-                        onClicked: Services.Keyboard.setLayout(kbCard.index)
-                    }
-                    // Removing the last layout would leave a keyboard that
-                    // types nothing, so the X only exists while there are 2+
-                    Rectangle {
-                        visible: Services.Keyboard.layouts.length > 1 && (kbCard.hovered || rmArea.containsMouse)
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                        anchors.margins: 4
-                        width: 18; height: 18
-                        radius: Services.Sizes.innerR
-                        color: Services.Colors.fillSunken
-                        Text {
-                            textFormat: Text.PlainText
-                            anchors.centerIn: parent
-                            scale: Services.Sizes.hoverScale(rmArea.containsMouse, rmArea.pressed)
-                            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-                            text: "\ue5cd"
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 11
-                            color: rmArea.containsMouse ? Services.Colors.snow : Services.Colors.ash
-                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                        }
-                        MouseArea {
-                            id: rmArea
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onClicked: Services.Keyboard.removeLayout(kbCard.modelData)
-                        }
-                    }
-                    property bool hovered: false
-                    HoverHandler { onHoveredChanged: kbCard.hovered = hovered }
                 }
             }
+        }
 
-            Rectangle {
-                id: addCard
-                width: 100; height: 64
-                radius: Services.Sizes.cardR
-                color: Services.Colors.fillInset
-                border.color: Services.Colors.fillLine
-                border.width: 1
-                opacity: Services.Keyboard.canAdd ? 1.0 : 0.4
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: 4
-                    scale: Services.Keyboard.canAdd
-                        ? Services.Sizes.hoverScale(addArea.containsMouse, addArea.pressed) : 1.0
-                    Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
-                    Text {
-                        textFormat: Text.PlainText
-                        text: "\ue145"
-                        font.family: "Material Symbols Rounded"
-                        font.pixelSize: 20
-                        color: Services.Colors.ghost
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    Text {
-                        textFormat: Text.PlainText
-                        text: Services.I18n.t("common.add")
-                        font.pixelSize: Services.Sizes.fsMeta
-                        font.family: "JetBrainsMono NF"
-                        color: (addArea.containsMouse && Services.Keyboard.canAdd)
-                            ? Services.Colors.snow : Services.Colors.mist
-                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                }
-                MouseArea {
-                    id: addArea
-                    anchors.fill: parent
-                    cursorShape: Services.Keyboard.canAdd ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                    hoverEnabled: true
-                    enabled: Services.Keyboard.canAdd
-                    onClicked: {
-                        tab.pickerOpen = !tab.pickerOpen
-                        if (tab.pickerOpen) {
-                            tab.layoutQuery = ""
-                            searchField.forceActiveFocus()
-                        }
-                    }
+        // 99 layouts, so it filters instead of listing. Enter adds the first
+        // one not already in use.
+        FindBox {
+            id: finder
+            visible: Services.Keyboard.canAdd
+            placeholder: Services.I18n.t("settings.input.searchLayout")
+            open: finder.text.trim() !== ""
+            onAccepted: {
+                const l = tab.filteredLayouts.find(x => !Services.Keyboard.layouts.includes(x.code))
+                if (l) tab.add(l.code)
+            }
+
+            PickRow {
+                visible: tab.filteredLayouts.length === 0
+                glyph: "\uea76"                 // search_off
+                label: tab.missLine
+                quiet: true
+            }
+            // Capped: a short query still matches dozens.
+            ListView {
+                width: parent.width
+                height: Math.min(contentHeight, 200)
+                visible: tab.filteredLayouts.length > 0
+                clip: true
+                model: tab.filteredLayouts
+                spacing: 2
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: 4 }
+                delegate: PickRow {
+                    required property var modelData
+                    width: ListView.view.width
+                    code: modelData.code
+                    label: modelData.name
+                    taken: Services.Keyboard.layouts.includes(modelData.code)
+                    takenNote: Services.I18n.t("settings.input.inUse")
+                    onPicked: tab.add(modelData.code)
                 }
             }
         }
@@ -173,147 +124,6 @@ Section {
             font.family: "JetBrainsMono NF"
         }
 
-        // ── Layout picker: 99 layouts, so it filters instead of listing ──
-        Rectangle {
-            Layout.fillWidth: true
-            clip: true
-            radius: Services.Sizes.cardR
-            color: Services.Colors.fillInset
-            implicitHeight: pickerCol.implicitHeight + 20
-            // Slide open/closed instead of snapping.
-            Layout.preferredHeight: tab.pickerOpen ? implicitHeight : 0
-            Behavior on Layout.preferredHeight { Widgets.Anim {} }
-            opacity: tab.pickerOpen ? 1.0 : 0.0
-            Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
-
-            ColumnLayout {
-                id: pickerCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 10
-                spacing: 8
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 34
-                    radius: Services.Sizes.innerR
-                    color: Services.Colors.fillLine
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 8
-                        Text {
-                            textFormat: Text.PlainText
-                            text: "\ue8e2"
-                            font.family: "Material Symbols Rounded"
-                            font.pixelSize: 15
-                            color: Services.Colors.ghost
-                        }
-                        TextField {
-                            id: searchField
-                            Keys.onPressed: e => { if (Services.Readline.handle(e, searchField)) e.accepted = true }
-                            Layout.fillWidth: true
-                            placeholderText: Services.I18n.t("settings.input.searchLayout")
-                            text: tab.layoutQuery
-                            onTextChanged: tab.layoutQuery = text
-                            color: Services.Colors.snow
-                            placeholderTextColor: Services.Colors.ash
-                            font.pixelSize: Services.Sizes.fsBody
-                            font.family: "JetBrainsMono NF"
-                            background: null
-                            padding: 0
-                            Keys.onEscapePressed: tab.pickerOpen = false
-                        }
-                    }
-                }
-
-                Text {
-                    textFormat: Text.PlainText
-                    visible: tab.filteredLayouts.length === 0
-                    text: tab.missLine
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsBody
-                    font.family: "JetBrainsMono NF"
-                }
-
-                // Capped height: the unfiltered list is 99 entries long
-                ListView {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(contentHeight, 168)
-                    visible: tab.filteredLayouts.length > 0
-                    clip: true
-                    model: tab.filteredLayouts
-                    boundsBehavior: Flickable.StopAtBounds
-                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: 4 }
-
-                    delegate: Rectangle {
-                        required property var modelData
-                        readonly property bool already: Services.Keyboard.layouts.includes(modelData.code)
-                        width: ListView.view.width
-                        height: 30
-                        radius: Services.Sizes.innerR
-                        // A full-width row does not grow; hover lifts its name.
-                        color: "transparent"
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 8
-                            anchors.rightMargin: 8
-                            spacing: 10
-                            Text {
-                                textFormat: Text.PlainText
-                                text: modelData.code
-                                color: Services.Colors.ghost
-                                font.pixelSize: Services.Sizes.fsBody
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                                Layout.preferredWidth: 52
-                            }
-                            Text {
-                                textFormat: Text.PlainText
-                                text: modelData.name
-                                color: parent.parent.already ? Services.Colors.ash
-                                     : rowArea.containsMouse ? Services.Colors.snow
-                                     : Services.Colors.mist
-                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                                font.pixelSize: Services.Sizes.fsBody
-                                font.family: "JetBrainsMono NF"
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-                            Text {
-                                textFormat: Text.PlainText
-                                visible: parent.parent.already
-                                text: Services.I18n.t("settings.input.inUse")
-                                color: Services.Colors.ash
-                                font.pixelSize: Services.Sizes.fsCaption
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
-                        MouseArea {
-                            id: rowArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            enabled: !parent.already
-                            cursorShape: parent.already ? Qt.ForbiddenCursor : Qt.PointingHandCursor
-                            onClicked: {
-                                Services.Keyboard.addLayout(modelData.code)
-                                tab.pickerOpen = false
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Text {
-            textFormat: Text.PlainText
-            text: Services.Keyboard.keymap
-            color: Services.Colors.ash
-            font.pixelSize: Services.Sizes.fsMeta
-            font.family: "JetBrainsMono NF"
-        }
 
     }
 

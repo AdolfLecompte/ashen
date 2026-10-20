@@ -12,7 +12,6 @@ Singleton {
     // list ("latam,us") and `active_layout_index` says which one is live.
     property var layouts: []
     property int activeIndex: 0
-    property string keymap: ""
 
     readonly property string code: activeIndex >= 0 && activeIndex < layouts.length
         ? layouts[activeIndex] : ""
@@ -126,7 +125,6 @@ Singleton {
                     if (!main) return
                     root.layouts = (main.layout || "").split(",").map(s => s.trim()).filter(s => s.length > 0)
                     root.activeIndex = main.active_layout_index || 0
-                    root.keymap = main.active_keymap || ""
                     root.capsLock = !!main.capsLock
                     root.numLock = !!main.numLock
                     // Converges: the switch fires an activelayout event -> refresh

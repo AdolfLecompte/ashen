@@ -252,9 +252,12 @@ Singleton {
     // Live geocoding search for the Settings dropdown: up to 5 candidates so a
     // name shared by several cities (region/country shown) can be disambiguated.
     property var searchResults: []
+    // A lookup is out: Settings says so instead of an empty list.
+    property bool searching: false
     function search(name) {
         let q = (name || "").trim()
-        if (q.length < 2) { root.searchResults = []; root.cityError = false; return }
+        if (q.length < 2) { root.searchResults = []; root.cityError = false; root.searching = false; return }
+        root.searching = true
         let url = "https://geocoding-api.open-meteo.com/v1/search?name="
             + encodeURIComponent(q) + "&count=5&language=en"
         searchProc.command = ["sh", "-c", "curl -s --max-time 10 '" + url + "'"]
@@ -289,6 +292,7 @@ Singleton {
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
+                root.searching = false
                 try {
                     let d = JSON.parse(text)
                     if (d.results && d.results.length > 0) {
