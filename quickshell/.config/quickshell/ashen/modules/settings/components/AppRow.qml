@@ -46,7 +46,6 @@ ColumnLayout {
                 text: root.title
                 color: Services.Colors.snow
                 font.pixelSize: Services.Sizes.fsInput
-                font.bold: true
                 font.family: "JetBrainsMono NF"
             }
             Text {

@@ -16,6 +16,7 @@ Section {
     // City add-picker (weather): open state for the search box
     property bool cityPickerOpen: false
     Card {
+        glyph: "\ue192"
         title: Services.I18n.t("settings.tab.clock")
         RowLayout {
             Layout.fillWidth: true

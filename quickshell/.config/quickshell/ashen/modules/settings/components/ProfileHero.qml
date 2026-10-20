@@ -71,40 +71,48 @@ Rectangle {
         anchors.margins: 24
         spacing: 20
 
-        ClippingRectangle {
-            id: face
+        // A fixed slot, and the face grows in real size inside it: scaling a
+        // ClippingRectangle stretches its clipped edge and the circle frays.
+        Item {
             Layout.preferredWidth: 104
             Layout.preferredHeight: 104
-            radius: width / 2
-            color: Services.Colors.fillInset
-            scale: Services.Sizes.hoverScale(area.containsMouse, area.pressed)
-            Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
 
-            Image {
-                id: faceImg
-                anchors.fill: parent
-                source: Services.AppState.facePath
-                fillMode: Image.PreserveAspectCrop
-                sourceSize.width: 208
-                asynchronous: true
-                cache: false
-                visible: status === Image.Ready
-            }
-            Text {
-                textFormat: Text.PlainText
+            ClippingRectangle {
+                id: face
+                property real size: 104 * Services.Sizes.hoverScale(area.containsMouse, area.pressed)
+                Behavior on size { Widgets.Anim { speed: Services.Sizes.msMicro } }
                 anchors.centerIn: parent
-                visible: faceImg.status !== Image.Ready
-                text: "\uf0d3"
-                color: Services.Colors.ghost
-                font.pixelSize: 48
-                font.family: "Material Symbols Rounded"
-            }
-            Rectangle {
-                anchors.fill: parent
+                width: Math.round(face.size)
+                height: width
                 radius: width / 2
-                color: "transparent"
-                border.width: 2
-                border.color: Services.Colors.ghost
+                color: Services.Colors.fillInset
+
+                Image {
+                    id: faceImg
+                    anchors.fill: parent
+                    source: Services.AppState.facePath
+                    fillMode: Image.PreserveAspectCrop
+                    sourceSize.width: 208
+                    asynchronous: true
+                    cache: false
+                    visible: status === Image.Ready
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.centerIn: parent
+                    visible: faceImg.status !== Image.Ready
+                    text: "\uf0d3"
+                    color: Services.Colors.ghost
+                    font.pixelSize: 48
+                    font.family: "Material Symbols Rounded"
+                }
+                Rectangle {
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: "transparent"
+                    border.width: 2
+                    border.color: Services.Colors.ghost
+                }
             }
         }
 

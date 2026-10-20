@@ -10,6 +10,7 @@ Section {
     id: tab
 
     Card {
+        glyph: "\ue050"
         title: Services.I18n.t("settings.sound.audio")
         Widgets.SliderRow {
             glyph: Services.Audio.muted ? "" : ""
@@ -64,6 +65,7 @@ Section {
     // What a notification sounds like. With the rest of what the machine
     // plays, not with the toasts: you come looking for a sound under Sound.
     Card {
+        glyph: "\ue7f7"
         title: Services.I18n.t("settings.tab.notifications")
 
         RowLayout {
@@ -78,7 +80,6 @@ Section {
                     text: Services.I18n.t("settings.notify.play")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
             }
@@ -103,7 +104,6 @@ Section {
                     text: Services.I18n.t("settings.notify.critical")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
                 Toggle {
@@ -143,6 +143,7 @@ Section {
     }
 
     Card {
+        glyph: "\ue837"
         title: Services.I18n.t("settings.sound.recording")
 
         RowLayout {
@@ -157,7 +158,6 @@ Section {
                     text: Services.I18n.t("settings.sound.capture")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
             }

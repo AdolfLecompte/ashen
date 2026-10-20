@@ -91,6 +91,7 @@ Section {
     // whatever this one says. Its own title travels with the pick, so the card
     // is the proof that the language changed.
     Card {
+        glyph: "\ue8e2"
         title: Services.I18n.t("settings.language.title")
 
         // A list, not a row of buttons: four languages fit a row, the fifth
@@ -114,6 +115,7 @@ Section {
     // Named here rather than in keybinds.lua, where "brave" meant SUPER+W did
     // nothing on a machine without it.
     Card {
+        glyph: "\ue5c3"
         title: Services.I18n.t("settings.system.apps")
 
         Repeater {
@@ -130,6 +132,7 @@ Section {
     }
 
     Card {
+        glyph: "\uea0b"
         title: Services.I18n.t("settings.system.power")
         RowLayout {
             spacing: 14
@@ -210,6 +213,7 @@ Section {
     // not the CPU governor, and reading them as one thing would suggest game
     // mode changes your power profile. It does not.
     Card {
+        glyph: "\uea28"
         title: Services.I18n.t("settings.system.game")
 
         RowLayout {
@@ -226,7 +230,6 @@ Section {
                     text: Services.I18n.t("settings.system.gameHint")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
             }
@@ -239,6 +242,7 @@ Section {
     }
 
     Card {
+        glyph: "\ue88d"
         title: Services.I18n.t("settings.system.lockScreen")
 
         SectionLabel { text: Services.I18n.t("settings.system.lockIntro") }
@@ -290,7 +294,6 @@ Section {
                     text: lockRow.modelData.label
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
                 Item { Layout.fillWidth: true }
@@ -352,6 +355,7 @@ Section {
     }
 
     Card {
+        glyph: "\ue1f9"
         title: Services.I18n.t("settings.system.idle")
 
         // One row per listener: what it does, how long until it does, and a

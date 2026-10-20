@@ -300,6 +300,7 @@ Section {
     // A box, not a rule: the panel says where one thing ends by
     // starting the next one, the way every other tab does.
     Card {
+        glyph: "\ue30a"
         title: Services.I18n.t("settings.about.machine")
         ColumnLayout {
             Layout.topMargin: 6

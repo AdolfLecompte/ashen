@@ -9,6 +9,7 @@ import "root:/modules/settings/components"
 Section {
     id: tab
     Card {
+        glyph: "\ue15c"
         title: Services.I18n.t("settings.notify.dnd")
 
         RowLayout {
@@ -23,7 +24,6 @@ Section {
                     text: Services.I18n.t("settings.notify.silence")
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsInput
-                    font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
             }
@@ -36,6 +36,7 @@ Section {
     }
 
     Card {
+        glyph: "\ue7f4"
         title: Services.I18n.t("settings.notify.toasts")
 
         SectionLabel { text: Services.I18n.t("settings.notify.duration") }
@@ -76,6 +77,7 @@ Section {
     }
 
     Card {
+        glyph: "\ue429"
         title: Services.I18n.t("settings.notify.osd")
 
         SectionLabel { text: Services.I18n.t("settings.notify.duration") }

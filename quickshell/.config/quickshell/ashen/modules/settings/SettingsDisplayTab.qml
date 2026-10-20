@@ -74,6 +74,7 @@ TabPage {
     // share a row. Everything you can CHANGE goes underneath at full width:
     // the old half-column made every control a slot too narrow to read.
     Card {
+        glyph: "\uef5b"
         title: Services.I18n.t("settings.display.monitors")
 
         RowLayout {
@@ -280,6 +281,7 @@ TabPage {
     // Everything about the selected screen, two controls to a row so a label
     // and its control are never fighting for the same 200 px.
     Card {
+        glyph: "\ue30c"
         title: tab.selMon ? tab.selMon.name : Services.I18n.t("settings.display.selected")
 
         Text {
@@ -468,6 +470,7 @@ TabPage {
     // and which workspaces a screen owns is a different question from how the
     // screen is set up.
     Card {
+        glyph: "\ue8eb"
         title: Services.I18n.t("settings.display.workspaces")
 
         // Hand-picked per screen, or spread automatically over all of them.
@@ -649,6 +652,7 @@ TabPage {
     // shell's: it grows under the pointer and its label brightens.
 
     Card {
+        glyph: "\ue3ab"
         title: Services.I18n.t("settings.tab.display")
         Widgets.SliderRow {
             glyph: ""

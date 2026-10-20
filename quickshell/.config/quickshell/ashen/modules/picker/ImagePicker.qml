@@ -85,30 +85,40 @@ PanelWindow {
                 property var shownFolders: []
                 property var shownFiles: []
 
-                // ── Where you are, and the way back up ──────────────
+                // ── What you are choosing, and where you are ────────
+                // The panel header every card wears (USB, sound): the glyph in
+                // its tile, the title, and the path under it as the detail.
                 Row {
                     id: crumb
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.right: parent.right
+                    anchors.right: tools.left
                     anchors.margins: 20
-                    spacing: 10
+                    anchors.rightMargin: 12
+                    spacing: 12
 
-                    Widgets.IconButton {
-                        anchors.verticalCenter: parent.verticalCenter
-                        glyph: "\ue5d8"
-                        size: 28
-                        onActivated: Services.Picker.up()
+                    Rectangle {
+                        width: 40
+                        height: 40
+                        radius: Services.Sizes.innerR
+                        color: Services.Colors.fillLine
+                        Text {
+                            textFormat: Text.PlainText
+                            anchors.centerIn: parent
+                            text: Services.Picker.purpose === "profile" ? "\ue853"
+                                : Services.Picker.purpose.indexOf("widget:") === 0 ? "\ue251"
+                                : "\ue413"
+                            color: Services.Colors.ghost
+                            font.pixelSize: 22
+                            font.family: "Material Symbols Rounded"
+                        }
                     }
-                    // WHAT you are choosing, over where you are looking. The
-                    // same box answers two different questions -- the lock
-                    // screen's face and a wallpaper widget's picture -- and it
-                    // used to open with a path and nothing else, so the only
-                    // way to know which one had asked was to remember.
+                    // WHAT you are choosing, over where you are looking: the
+                    // same box answers for the face and for a widget's picture.
                     Column {
                         anchors.verticalCenter: parent.verticalCenter
-                        width: crumb.width - 240
-                        spacing: 1
+                        width: crumb.width - 52
+                        spacing: 2
 
                         Text {
                             textFormat: Text.PlainText
@@ -119,7 +129,7 @@ PanelWindow {
                                     ? Services.I18n.t("picker.widget")
                                     : Services.I18n.t("picker.title")
                             color: Services.Colors.snow
-                            font.pixelSize: Services.Sizes.fsInput
+                            font.pixelSize: Services.Sizes.fsCardTitle
                             font.bold: true
                             font.family: "JetBrainsMono NF"
                             elide: Text.ElideRight
@@ -127,7 +137,7 @@ PanelWindow {
                         Text {
                             textFormat: Text.PlainText
                             width: parent.width
-                            text: Services.Picker.dir
+                            text: Services.Picker.dir.replace(Services.Paths.home, "~")
                             color: Services.Colors.ash
                             font.pixelSize: Services.Sizes.fsMeta
                             font.family: "JetBrainsMono NF"
@@ -135,13 +145,23 @@ PanelWindow {
                         }
                     }
                 }
-                Widgets.IconButton {
+                Row {
+                    id: tools
                     anchors.top: parent.top
                     anchors.right: parent.right
                     anchors.margins: 20
-                    glyph: "\ue5cd"
-                    size: 28
-                    onActivated: Services.Picker.close()
+                    anchors.topMargin: 26
+                    spacing: 6
+                    Widgets.IconButton {
+                        glyph: "\ue5d8"
+                        size: 28
+                        onActivated: Services.Picker.up()
+                    }
+                    Widgets.IconButton {
+                        glyph: "\ue5cd"
+                        size: 28
+                        onActivated: Services.Picker.close()
+                    }
                 }
 
                 // ── The places worth starting from ──────────────────
@@ -151,8 +171,16 @@ PanelWindow {
                     anchors.topMargin: 14
                     anchors.left: parent.left
                     anchors.leftMargin: 20
-                    width: 150
-                    height: places.implicitHeight
+                    width: 170
+                    height: places.implicitHeight + 16
+
+                    // The rail is a plate, like every group inside a panel.
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Services.Sizes.cardLgR
+                        color: Services.Colors.plate
+                        opacity: card.stage(0)
+                    }
 
                     // Which row the accent is standing on.
                     property Item hereRow: null
@@ -162,9 +190,10 @@ PanelWindow {
                     // Same sliding indicator the wallpaper picker's tabs wear.
                     Rectangle {
                         visible: placesWrap.hereRow !== null
-                        y: placesWrap.hereRow ? placesWrap.hereRow.y : 0
+                        x: places.x
+                        y: places.y + (placesWrap.hereRow ? placesWrap.hereRow.y : 0)
                         height: placesWrap.hereRow ? placesWrap.hereRow.height : 0
-                        width: placesWrap.width
+                        width: places.width
                         radius: Services.Sizes.innerR
                         color: Services.Colors.ghost
                         gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
@@ -176,7 +205,9 @@ PanelWindow {
 
                 Column {
                     id: places
-                    width: parent.width
+                    x: 8
+                    y: 8
+                    width: parent.width - 16
                     spacing: 2
 
                     Repeater {
@@ -187,7 +218,7 @@ PanelWindow {
                             required property var modelData
                             required property int index
                             width: places.width
-                            height: 30
+                            height: 36
 
                             // Arrives with the card, one after the next: a list
                             // that is simply there the instant the box opens
@@ -201,17 +232,33 @@ PanelWindow {
                             onHereChanged: if (here) placesWrap.hereRow = placeRow
                             Component.onCompleted: if (here) placesWrap.hereRow = placeRow
 
-                            Text {
-                                textFormat: Text.PlainText
+                            readonly property color ink: here ? Services.Colors.accentText
+                                : placeHover.containsMouse ? Services.Colors.snow
+                                                           : Services.Colors.mist
+                            Row {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: Services.I18n.tr("picker.dir." + Services.I18n.slug(modelData.label), modelData.label)
-                                color: parent.here ? Services.Colors.accentText
-                                     : placeHover.containsMouse ? Services.Colors.snow
-                                                                : Services.Colors.mist
-                                font.pixelSize: Services.Sizes.fsBody
-                                font.family: "JetBrainsMono NF"
+                                spacing: 10
+                                Text {
+                                    textFormat: Text.PlainText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: ({ "Pictures": "\ue251", "Wallpapers": "\ue1bc",
+                                             "Downloads": "\ue171", "Home": "\ue88a" })[modelData.label] || "\ue2c7"
+                                    color: placeRow.here ? Services.Colors.accentText
+                                         : placeHover.containsMouse ? Services.Colors.snow
+                                                                    : Services.Colors.ghost
+                                    font.pixelSize: 18
+                                    font.family: "Material Symbols Rounded"
+                                }
+                                Text {
+                                    textFormat: Text.PlainText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: Services.I18n.tr("picker.dir." + Services.I18n.slug(modelData.label), modelData.label)
+                                    color: placeRow.ink
+                                    font.pixelSize: Services.Sizes.fsBody
+                                    font.family: "JetBrainsMono NF"
+                                }
                             }
                             MouseArea {
                                 id: placeHover
@@ -225,32 +272,17 @@ PanelWindow {
                 }
                 }
 
-                // The places are a rail, not the first column of the grid: one
-                // line says so, and the grid stops looking like it starts at
-                // the card's left edge and then thinks better of it.
-                Rectangle {
-                    anchors.top: crumb.bottom
-                    anchors.topMargin: 14
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 20
-                    anchors.left: placesWrap.right
-                    anchors.leftMargin: 8
-                    width: 1
-                    color: Services.Colors.fillLine
-                    opacity: card.stage(1)
-                }
-
                 // ── What is in this folder ──────────────────────────
                 Flickable {
                     anchors.top: crumb.bottom
                     anchors.topMargin: 14
                     anchors.left: placesWrap.right
-                    anchors.leftMargin: 24
+                    anchors.leftMargin: 18
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     anchors.rightMargin: 20
                     anchors.bottomMargin: 20
-                    contentHeight: grid.implicitHeight
+                    contentHeight: stack.implicitHeight
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
                     // A folder of fifty pictures ends mid-row at the bottom of
@@ -258,32 +290,29 @@ PanelWindow {
                     // the Settings tabs use.
                     ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded; width: 4 }
 
-                    Grid {
-                        id: grid
+                    Column {
+                        id: stack
                         width: parent.width
-                        columns: Math.max(1, Math.floor(width / 148))
-                        spacing: 10
-                        // The tiles SHARE OUT the row rather than each taking a
-                        // fixed 138: whatever a whole number of columns did not
-                        // use piled up as a column of dead air on the right, so
-                        // the grid looked like it had failed to reach the edge
-                        // of its own card. Everything reads these two.
-                        readonly property int cellW: Math.floor(
-                            (grid.width - (grid.columns - 1) * grid.spacing) / grid.columns)
-                        readonly property int cellH: Math.round(grid.cellW * 96 / 138)
+                        spacing: 14
 
                         // Walking into a folder is a new set of pictures, not
                         // the same ones rearranged, so it SWEEPS the way you
-                        // walked: out towards where you came from, in from
-                        // where you went. It used to nudge 8 px down and back
-                        // -- out and in on the same side, which says a list
-                        // reloaded, not that you moved. Same primitive every
-                        // other exchange in the shell uses.
+                        // walked. Same primitive every other exchange uses.
                         opacity: folderSwap.fade
                         transform: Translate { y: folderSwap.offY }
 
-                        // Folders first, as plates with their name: a picture
-                        // grid you cannot walk out of is a dead end.
+                    // Folders first, as rows in the USB panel's language: the
+                    // folder in its tile, the name beside it. A picture grid
+                    // you cannot walk out of is a dead end.
+                    Grid {
+                        id: dirs
+                        width: parent.width
+                        visible: pickBody.shownFolders.length > 0
+                        columns: Math.max(1, Math.floor(width / 200))
+                        spacing: 8
+                        readonly property int cellW: Math.floor(
+                            (dirs.width - (dirs.columns - 1) * dirs.spacing) / dirs.columns)
+
                         Repeater {
                             model: pickBody.shownFolders
 
@@ -291,21 +320,15 @@ PanelWindow {
                                 id: dirCell
                                 required property string modelData
                                 required property int index
-                                width: grid.cellW
-                                height: grid.cellH
+                                width: dirs.cellW
+                                height: 52
 
                                 opacity: card.stage(2 + index)
                                 transform: Translate { y: (1 - card.stage(2 + index)) * 12 }
 
-                                // Hover grows the plate INTO its cell rather
-                                // than scaling it past one. A scaled tile
-                                // overlapped its neighbours and, on the rows at
-                                // the top and bottom of the view, was cut off
-                                // by the Flickable's own clipping -- the grid
-                                // has to clip to scroll, so nothing in it may
-                                // grow outside its slot. The cell keeps the
-                                // room; only what is drawn in it changes size.
-                                property real inset: dirHover.containsMouse ? 0 : 4
+                                // Grows into its cell, never past it: the view
+                                // clips to scroll.
+                                property real inset: dirHover.containsMouse ? 0 : 3
                                 Behavior on inset {
                                     NumberAnimation { duration: Services.Sizes.pillHoverMs
                                                       easing.type: Services.Sizes.easeOut }
@@ -315,32 +338,40 @@ PanelWindow {
                                     anchors.fill: parent
                                     anchors.margins: dirCell.inset
                                     radius: Services.Sizes.cardR
-                                    color: Services.Colors.fillInset
+                                    color: Services.Colors.plate
 
-                                Column {
-                                    anchors.centerIn: parent
-                                    spacing: 4
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        text: "\ue2c7"
-                                        font.family: "Material Symbols Rounded"
-                                        font.pixelSize: 26
-                                        color: dirHover.containsMouse ? Services.Colors.snow
-                                                                      : Services.Colors.ghost
+                                    Row {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 8
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: 10
+                                        Rectangle {
+                                            width: 32
+                                            height: 32
+                                            radius: Services.Sizes.innerR
+                                            color: Services.Colors.fillLine
+                                            Text {
+                                                textFormat: Text.PlainText
+                                                anchors.centerIn: parent
+                                                text: dirHover.containsMouse ? "\ue2c8" : "\ue2c7"
+                                                color: dirHover.containsMouse ? Services.Colors.snow
+                                                                              : Services.Colors.ghost
+                                                font.pixelSize: 18
+                                                font.family: "Material Symbols Rounded"
+                                            }
+                                        }
+                                        Text {
+                                            textFormat: Text.PlainText
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            width: dirs.cellW - 66
+                                            text: Services.Picker.nameOf(dirCell.modelData)
+                                            color: dirHover.containsMouse ? Services.Colors.snow
+                                                                          : Services.Colors.mist
+                                            font.pixelSize: Services.Sizes.fsBody
+                                            font.family: "JetBrainsMono NF"
+                                            elide: Text.ElideMiddle
+                                        }
                                     }
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        width: grid.cellW - 20
-                                        horizontalAlignment: Text.AlignHCenter
-                                        text: Services.Picker.nameOf(modelData)
-                                        color: dirHover.containsMouse ? Services.Colors.snow
-                                                                      : Services.Colors.mist
-                                        font.pixelSize: Services.Sizes.fsMeta
-                                        font.family: "JetBrainsMono NF"
-                                        elide: Text.ElideMiddle
-                                    }
-                                }
                                 }
 
                                 MouseArea {
@@ -352,6 +383,22 @@ PanelWindow {
                                 }
                             }
                         }
+                    }
+
+                    Grid {
+                        id: grid
+                        width: parent.width
+                        visible: pickBody.shownFiles.length > 0
+                        columns: Math.max(1, Math.floor(width / 148))
+                        spacing: 10
+                        // The tiles SHARE OUT the row rather than each taking a
+                        // fixed 138: whatever a whole number of columns did not
+                        // use piled up as a column of dead air on the right, so
+                        // the grid looked like it had failed to reach the edge
+                        // of its own card. Everything reads these two.
+                        readonly property int cellW: Math.floor(
+                            (grid.width - (grid.columns - 1) * grid.spacing) / grid.columns)
+                        readonly property int cellH: Math.round(grid.cellW * 96 / 138)
 
                         // The pictures, as themselves.
                         Repeater {
@@ -459,6 +506,8 @@ PanelWindow {
                                 }
                             }
                         }
+                    }
+
                     }
 
                     // Nothing here, said plainly rather than left blank -- and

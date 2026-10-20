@@ -114,13 +114,26 @@ PanelWindow {
         for (const c of win.categories) if (c.id === rail) return c.label
         return ""
     }
+    function iconOf(id) {
+        const rail = win.railOf(id)
+        for (const c of win.categories) if (c.id === rail) return c.icon
+        return ""
+    }
+    // Where a hit lives, down to the part of the page that has its own name:
+    // two rows called the same read apart by where they are.
+    function whereOf(id) {
+        const part = ({ wifi: "wifi", bluetooth: "bluetooth", clock: "clock", media: "media",
+                        notify: "notifications", layout: "layout" })[id]
+        const top = win.labelOf(id)
+        return part ? top + " \u00b7 " + Services.I18n.t("settings.tab." + part) : top
+    }
     readonly property var results: {
         const q = win.query.trim().toLowerCase()
         if (q === "") return []
         let out = [], seen = {}
         for (const c of win.categories)
             if (c.label.toLowerCase().includes(q)) {
-                out.push({ id: c.id, text: c.label, where: "" })
+                out.push({ id: c.id, text: c.label, where: "", icon: c.icon })
                 seen[c.label + "|" + c.id] = true
             }
         for (const e of SearchIndex.entries) {
@@ -128,7 +141,7 @@ PanelWindow {
             const k = text + "|" + e[0]
             if (seen[k] || !text.toLowerCase().includes(q)) continue
             seen[k] = true
-            out.push({ id: e[0], text: text, where: win.labelOf(e[0]) })
+            out.push({ id: e[0], text: text, where: win.whereOf(e[0]), icon: win.iconOf(e[0]) })
             if (out.length >= 40) break
         }
         return out
@@ -465,11 +478,32 @@ PanelWindow {
                                 readonly property color fg: hit.current ? Services.Colors.accentText
                                     : hitHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
                                 width: hits.width
-                                height: 40
+                                height: 44
+                                // The category's own glyph, in its tile: the
+                                // rail's icon, so a hit says where it is at a glance.
+                                Rectangle {
+                                    id: hitTile
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 8
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 30
+                                    height: 30
+                                    radius: Services.Sizes.innerR
+                                    color: hit.current ? "transparent" : Services.Colors.fillLine
+                                    Text {
+                                        textFormat: Text.PlainText
+                                        anchors.centerIn: parent
+                                        text: hit.modelData.icon
+                                        color: hit.current ? Services.Colors.accentText
+                                             : hitHover.containsMouse ? Services.Colors.snow : Services.Colors.ghost
+                                        font.pixelSize: 18
+                                        font.family: "Material Symbols Rounded"
+                                    }
+                                }
                                 Text {
                                     textFormat: Text.PlainText
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 14
+                                    anchors.left: hitTile.right
+                                    anchors.leftMargin: 12
                                     anchors.right: whereText.left
                                     anchors.rightMargin: 12
                                     anchors.verticalCenter: parent.verticalCenter

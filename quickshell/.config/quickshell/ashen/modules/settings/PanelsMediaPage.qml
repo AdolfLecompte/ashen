@@ -12,6 +12,7 @@ Section {
     // The sound and the words: both belong to the card that plays them, not to
     // the bar the card hangs off.
     Card {
+        glyph: "\ue3a1"
         title: Services.I18n.t("settings.tab.media")
 
         RowLayout {

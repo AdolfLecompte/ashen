@@ -26,6 +26,7 @@ Section {
 
 
     Card {
+        glyph: "\ue312"
         title: Services.I18n.t("settings.tab.keyboard")
         RowLayout {
             Layout.fillWidth: true
@@ -319,6 +320,7 @@ Section {
     // What the touchpad does, read from conf/gestures.lua like the shortcuts
     // are from keybinds.lua: a gesture added there shows up here.
     Card {
+        glyph: "\ue9ec"
         title: Services.I18n.t("settings.input.gestures")
         visible: Services.Keybinds.gestures.length > 0
 
@@ -347,6 +349,7 @@ Section {
     }
 
     Card {
+        glyph: "\ueae7"
         title: Services.I18n.t("settings.input.shortcuts")
 
         Text {

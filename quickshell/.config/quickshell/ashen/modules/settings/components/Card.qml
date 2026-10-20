@@ -8,6 +8,8 @@ Rectangle {
     id: cardRoot
     default property alias content: cardInner.data
     property string title: ""
+    // The card's own glyph, in its tile beside the title (the panels' header).
+    property string glyph: ""
     Layout.fillWidth: true
     radius: Services.Sizes.cardR
     color: Services.Colors.fillInset
@@ -19,14 +21,36 @@ Rectangle {
         anchors.top: parent.top
         anchors.margins: 16
         spacing: 12
-        Text {
-            textFormat: Text.PlainText
-            text: cardRoot.title
+        RowLayout {
             visible: cardRoot.title !== ""
-            color: Services.Colors.mist
-            font.pixelSize: Services.Sizes.fsBody
-            font.family: "JetBrainsMono NF"
+            spacing: 10
             Layout.bottomMargin: 4
+            Rectangle {
+                visible: cardRoot.glyph !== ""
+                Layout.preferredWidth: 30
+                Layout.preferredHeight: 30
+                radius: Services.Sizes.innerR
+                color: Services.Colors.fillLine
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.centerIn: parent
+                    text: cardRoot.glyph
+                    color: Services.Colors.ghost
+                    font.pixelSize: 18
+                    font.family: "Material Symbols Rounded"
+                }
+            }
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: cardRoot.title
+                // The card's name leads: larger than any row inside it.
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsCardTitle
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+                elide: Text.ElideRight
+            }
         }
     }
 }
