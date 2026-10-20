@@ -71,6 +71,7 @@ package() {
         install -Dm755 "$s" "$pkgdir/usr/bin/$(basename "$s")"
     done
     install -Dm755 scripts/ashen-app "$pkgdir/usr/bin/ashen-app"
+    install -Dm755 scripts/ashen "$pkgdir/usr/bin/ashen"
     install -Dm755 scripts/ashen-setup "$pkgdir/usr/bin/ashen-setup"
     install -Dm755 scripts/ashen-widgets "$pkgdir/usr/bin/ashen-widgets"
     install -Dm755 scripts/ashen-welcome "$pkgdir/usr/bin/ashen-welcome"

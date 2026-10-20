@@ -148,8 +148,10 @@ Singleton {
     // the same Update the About tab has; anything else -- no network, up to
     // date, a checkout ahead of the tag -- stays silent.
     property string notifiedTag: ""
+    // `ashen update`: pulls the new release first, then runs the installer.
+    // Running the installer alone reinstalled the version already there.
     readonly property string updateCmd:
-        "ashen-app terminal -e sh -c 'bash \"$HOME/ashen/install/run.sh\"; read -n1'"
+        "ashen-app terminal -e sh -c 'A=\"$HOME/ashen/scripts/ashen\"; [ -x \"$A\" ] || A=ashen; \"$A\" update; read -n1'"
     Timer {
         id: autoCheck
         interval: root.notifiedTag === "" && autoCheck.first ? 60 * 1000 : 6 * 3600 * 1000

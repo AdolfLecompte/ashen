@@ -84,3 +84,5 @@ export PATH="$HOME/.local/bin:$PATH"
 # (ashen-widgets, ashen-wallpaper…) live in the repo and nowhere else, and the
 # package installs them to /usr/bin. Harmless when there is no checkout.
 [[ -d "$HOME/ashen/scripts" ]] && export PATH="$HOME/ashen/scripts:$PATH"
+# Completion for the `ashen` command (ashen help).
+(( $+commands[ashen] )) && (( $+functions[compdef] )) && source <(ashen completion zsh)
