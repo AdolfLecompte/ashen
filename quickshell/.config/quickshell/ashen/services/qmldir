@@ -43,3 +43,6 @@ singleton Game 1.0 Game.qml
 SysFile 1.0 SysFile.qml
 singleton Usage 1.0 Usage.qml
 singleton Readline 1.0 Readline.qml
+singleton Sprites 1.0 Sprites.qml
+BarSpec 1.0 BarSpec.qml
+singleton DockItems 1.0 DockItems.qml

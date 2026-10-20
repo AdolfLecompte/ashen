@@ -17,6 +17,10 @@ Scope {
     readonly property string edge: Services.Prefs.dockEdge === Services.Sizes.barPosition
         ? root.across(Services.Sizes.barPosition)
         : Services.Prefs.dockEdge
+    // Something taken off the dock by a right-click: said, or nothing happened.
+    function saidOff() {
+        Services.Notifications.addSystemToast(Services.Voice.pick("dock.unpinned"), "\ue6aa", false, "dock")
+    }
     function across(e) {
         return e === "top" ? "bottom" : e === "bottom" ? "top"
              : e === "left" ? "right" : "left"
@@ -73,8 +77,10 @@ Scope {
 
             color: "transparent"
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: Services.Prefs.dockAutohide ? 0 : dock.thick
-            WlrLayershell.layer: Services.Prefs.dockAutohide ? WlrLayer.Overlay : WlrLayer.Top
+            // Like the bar: out, it takes its room and the windows step aside;
+            // hidden, the window is unmapped and the edge goes back to them.
+            exclusiveZone: dock.thick
+            WlrLayershell.layer: WlrLayer.Top
             // Input only on the plate: the rest of the edge-wide band ate the
             // clicks meant for the windows under it.
             mask: Region { item: plate }
@@ -112,7 +118,9 @@ Scope {
                 Grid {
                     id: row
                     anchors.centerIn: parent
-                    columns: dock.vertical ? 1 : items.length
+                    // Exactly as many as stand in the row: spare columns are
+                    // phantom spacing.
+                    columns: dock.vertical ? 1 : row.entries.length
                     spacing: Services.Sizes.barGap
                     horizontalItemAlignment: Grid.AlignHCenter
                     verticalItemAlignment: Grid.AlignVCenter
@@ -129,18 +137,88 @@ Scope {
                         return out
                     }
 
+                    // The whole row in order: pills and shortcuts on the side of
+                    // the apps each was given, shortcuts outermost, a short rule
+                    // between groups.
+                    readonly property var entries: {
+                        const pills = Services.DockItems.pills.map(id => ({ kind: "pill", id: id }))
+                        const links = Services.DockItems.links.map((l, i) => ({ kind: "link", l: l, i: i }))
+                        const apps = row.items.map(id => ({ kind: "app", id: id }))
+                        const before = [], after = []
+                        if (Services.Prefs.dockLinksSide === "before") before.push(links)
+                        if (Services.Prefs.dockPillsSide === "before") before.push(pills)
+                        if (Services.Prefs.dockPillsSide !== "before") after.push(pills)
+                        if (Services.Prefs.dockLinksSide !== "before") after.push(links)
+                        const groups = before.concat([apps], after).filter(g => g.length > 0)
+                        let out = []
+                        groups.forEach((g, k) => {
+                            if (k > 0) out.push({ kind: "rule" })
+                            out = out.concat(g)
+                        })
+                        return out
+                    }
+
                     Repeater {
-                        model: row.items
-                        delegate: DockIcon {
+                        model: row.entries
+                        delegate: Loader {
                             required property var modelData
-                            appId: modelData
+                            readonly property var e: modelData
+                            sourceComponent: modelData.kind === "app" ? appTile
+                                           : modelData.kind === "pill" ? pillTile
+                                           : modelData.kind === "link" ? linkTile : ruleTile
+                        }
+                    }
+
+                    Component {
+                        id: appTile
+                        DockIcon {
+                            readonly property string id_: parent ? parent.e.id : ""
+                            appId: id_
                             // Pinned entries are .desktop ids; the ones that
                             // joined because they are open are window classes.
-                            entry: Services.Apps.byId(modelData)
-                                   || Services.Apps.byClass(modelData)
-                            running: Services.Windows.isRunning(modelData)
-                            windowClass: Services.Windows.classOf(modelData)
-                            focused: Services.Windows.isFocused(modelData)
+                            entry: Services.Apps.byId(id_) || Services.Apps.byClass(id_)
+                            running: Services.Windows.isRunning(id_)
+                            windowClass: Services.Windows.classOf(id_)
+                            focused: Services.Windows.isFocused(id_)
+                        }
+                    }
+                    // A right-click takes a pill or shortcut off, the way it
+                    // unpins an app.
+                    Component {
+                        id: pillTile
+                        DockTile {
+                            readonly property string id_: parent ? parent.e.id : ""
+                            glyph: Services.DockItems.pillGlyph(id_)
+                            text: Services.DockItems.pillText(id_, dock.vertical)
+                            lit: Services.DockItems.pillLit(id_)
+                            onClicked: Services.DockItems.pillClick(id_)
+                            onWheeled: delta => Services.DockItems.pillWheel(id_, delta)
+                            onRightClicked: {
+                                Services.DockItems.togglePill(id_)
+                                root.saidOff()
+                            }
+                        }
+                    }
+                    Component {
+                        id: linkTile
+                        DockTile {
+                            readonly property var e_: parent ? parent.e : ({ l: {}, i: -1 })
+                            glyph: Services.DockItems.linkGlyph(e_.l)
+                            lit: Services.DockItems.linkLit(e_.l)
+                            onClicked: Services.DockItems.linkClick(e_.l)
+                            onRightClicked: {
+                                Services.DockItems.removeLink(e_.i)
+                                root.saidOff()
+                            }
+                        }
+                    }
+                    Component {
+                        id: ruleTile
+                        Rectangle {
+                            width: dock.vertical ? Services.Sizes.dockIcon * 0.5 : 2
+                            height: dock.vertical ? 2 : Services.Sizes.dockIcon * 0.5
+                            radius: 1
+                            color: Services.Colors.fillOutline
                         }
                     }
                 }

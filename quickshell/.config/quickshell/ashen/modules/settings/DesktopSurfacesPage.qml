@@ -16,6 +16,7 @@ Section {
     // Turning one on, choosing its shape and putting it somewhere all happen
     // on the desktop itself now -- this card is the door, not the controls.
     Card {
+        glyph: "\ue1bc"
         title: Services.I18n.t("settings.tab.desktop")
 
         RowLayout {
@@ -75,6 +76,7 @@ Section {
     // rather than beside the bar because, like the widgets, it is furniture the
     // windows have to live with rather than part of the bar's own shape.
     Card {
+        glyph: "\ue30e"
         title: Services.I18n.t("settings.dock.title")
 
         // First, because everything under it is moot if this is off.
@@ -188,8 +190,12 @@ Section {
             readonly property int rowH: 38
             readonly property int count: Services.Prefs.dockPinList.length
             Layout.preferredHeight: pinList.count * pinList.rowH
-            // The order on screen: the saved one, or the one the drag proposes.
-            property var order: Services.Prefs.dockPinList
+            // The order on screen: the one the drag proposes, else the saved one.
+            // Derived, never a Qt.binding made in a row: the rows are rebuilt
+            // on every move, and a binding born in one dies with it -- the
+            // list kept the old order and the next drag grabbed the wrong row.
+            property var proposed: null
+            readonly property var order: pinList.proposed || Services.Prefs.dockPinList
             property string carried: ""
             property bool overDrop: false
 
@@ -287,20 +293,26 @@ Section {
                             const slot = Math.max(0, Math.min(pinList.count - 1, Math.round(top / pinList.rowH)))
                             let next = Services.Prefs.dockPinList.filter(x => x !== pinRow.modelData)
                             next.splice(slot, 0, pinRow.modelData)
-                            pinList.order = next
+                            pinList.proposed = next
                         }
+                        // State first, the list after: changing the pins rebuilds
+                        // every row, this one included, and whatever came after
+                        // it in here never ran -- the new row was born carried,
+                        // at the top, over the first one.
                         onReleased: {
                             const id = pinRow.modelData
-                            if (pinList.overDrop) Services.Prefs.dockUnpin(id)
-                            else Services.Prefs.dockMovePin(id, pinList.order.indexOf(id))
+                            const unpin = pinList.overDrop
+                            const to = pinList.order.indexOf(id)
                             pinList.carried = ""
                             pinList.overDrop = false
-                            pinList.order = Qt.binding(() => Services.Prefs.dockPinList)
+                            pinList.proposed = null
+                            Qt.callLater(() => unpin ? Services.Prefs.dockUnpin(id)
+                                                     : Services.Prefs.dockMovePin(id, to))
                         }
                         onCanceled: {
                             pinList.carried = ""
                             pinList.overDrop = false
-                            pinList.order = Qt.binding(() => Services.Prefs.dockPinList)
+                            pinList.proposed = null
                         }
                     }
                 }
@@ -433,6 +445,331 @@ Section {
             wrapMode: Text.WordWrap
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
+        }
+
+    }
+
+    Item { Layout.preferredHeight: 8 }
+
+    // ── Past the applications ────────────────────────────────────
+    // The Layout editor's language, laid out the same way: what is in the
+    // dock on top, everything else under it, chips carried between the two
+    // (or clicked across). A pill may stand on the bar and in the dock at
+    // once; from the dock its panel arrives from the edge.
+    Card {
+        glyph: "\ue11f"
+        title: Services.I18n.t("settings.dock.pills")
+
+        SideRow { pref: "dockPillsSide" }
+        DockZone {
+            group: "pill"; side: "in"
+            caption: Services.I18n.t("settings.dock.inDock")
+            items: Services.DockItems.pills.map(id => ({ key: id, glyph: Services.Pills.glyph(id), label: Services.Pills.label(id) }))
+            onMove: key => Services.DockItems.togglePill(key)
+        }
+        DockZone {
+            group: "pill"; side: "out"
+            caption: Services.I18n.t("settings.layout.available")
+            items: Services.DockItems.dockablePills.filter(id => !Services.DockItems.hasPill(id))
+                .map(id => ({ key: id, glyph: Services.Pills.glyph(id), label: Services.Pills.label(id) }))
+            onMove: key => Services.DockItems.togglePill(key)
+        }
+    }
+
+    Item { Layout.preferredHeight: 8 }
+
+    // Shell actions and commands of your own. A command dropped on Available
+    // is gone: there is nowhere else for it to wait.
+    Card {
+        glyph: "\uea0b"
+        title: Services.I18n.t("settings.dock.links")
+
+        SideRow { pref: "dockLinksSide" }
+        DockZone {
+            group: "link"; side: "in"
+            caption: Services.I18n.t("settings.dock.inDock")
+            items: Services.DockItems.links.map((l, i) => ({
+                key: l.a ? "a:" + l.a : "i:" + i,
+                glyph: Services.DockItems.linkGlyph(l),
+                label: Services.DockItems.linkLabel(l) }))
+            onMove: key => {
+                if (key.startsWith("a:")) Services.DockItems.toggleAction(key.slice(2))
+                else Services.DockItems.removeLink(parseInt(key.slice(2)))
+            }
+        }
+        DockZone {
+            group: "link"; side: "out"
+            caption: Services.I18n.t("settings.layout.available")
+            items: Services.DockItems.actions.filter(a => !Services.DockItems.hasAction(a.id))
+                .map(a => ({ key: "a:" + a.id, glyph: a.glyph, label: Services.I18n.t("dock.action." + a.id) }))
+            onMove: key => Services.DockItems.toggleAction(key.slice(2))
+        }
+
+        // A command of your own: a glyph (click to change it), a name, the line.
+        SectionLabel { text: Services.I18n.t("settings.dock.custom"); Layout.topMargin: 6 }
+        RowLayout {
+            id: newLink
+            Layout.fillWidth: true
+            spacing: 10
+            property int glyphAt: 0
+            // The glyph it will wear, on the same filled square as a chip.
+            Rectangle {
+                Layout.preferredWidth: 34
+                Layout.preferredHeight: 34
+                radius: Services.Sizes.innerR
+                color: Services.Colors.fillRest
+                scale: Services.Sizes.hoverScale(glyphArea.containsMouse, glyphArea.pressed)
+                Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.centerIn: parent
+                    anchors.verticalCenterOffset: 1
+                    text: Services.DockItems.linkGlyphs[newLink.glyphAt]
+                    color: glyphArea.containsMouse ? Services.Colors.snow : Services.Colors.ghost
+                    font.pixelSize: 18
+                    font.family: "Material Symbols Rounded"
+                }
+                MouseArea {
+                    id: glyphArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: newLink.glyphAt = (newLink.glyphAt + 1) % Services.DockItems.linkGlyphs.length
+                }
+            }
+            TextField {
+                id: linkName
+                Layout.preferredWidth: 140
+                Layout.preferredHeight: 34
+                placeholderText: Services.I18n.t("settings.dock.linkName")
+                placeholderTextColor: Services.Colors.ash
+                color: Services.Colors.snow
+                leftPadding: 10
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+                Keys.onPressed: e => { if (Services.Readline.handle(e, linkName)) e.accepted = true }
+                background: Rectangle {
+                    radius: Services.Sizes.innerR
+                    color: Services.Colors.fillRest
+                    border.width: linkName.activeFocus ? 1 : 0
+                    border.color: Services.Colors.ghost
+                }
+            }
+            TextField {
+                id: linkCmd
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                placeholderText: Services.I18n.t("settings.dock.linkCmd")
+                placeholderTextColor: Services.Colors.ash
+                color: Services.Colors.snow
+                leftPadding: 10
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+                Keys.onPressed: e => { if (Services.Readline.handle(e, linkCmd)) e.accepted = true }
+                onAccepted: newLink.add()
+                background: Rectangle {
+                    radius: Services.Sizes.innerR
+                    color: Services.Colors.fillRest
+                    border.width: linkCmd.activeFocus ? 1 : 0
+                    border.color: Services.Colors.ghost
+                }
+            }
+            StepBtn {
+                glyph: "\ue145"        // add
+                onClicked: newLink.add()
+            }
+            function add() {
+                if (linkCmd.text.trim() === "") return
+                Services.DockItems.addCommand(linkName.text, linkCmd.text,
+                                              Services.DockItems.linkGlyphs[newLink.glyphAt])
+                linkName.text = ""
+                linkCmd.text = ""
+            }
+        }
+    }
+
+    // Which side of the apps a group stands on; the arrows follow the dock's
+    // own axis.
+    component SideRow: Segmented {
+        property string pref: ""
+        options: [
+            { id: "before", icon: tab.dockVertical ? "\ue5d8" : "\ue5c4", label: Services.I18n.t("settings.dock.before") },
+            { id: "after", icon: tab.dockVertical ? "\ue5db" : "\ue5c8", label: Services.I18n.t("settings.dock.after") }
+        ]
+        current: Services.Prefs[pref]
+        onPicked: id => Services.Prefs[pref] = id
+    }
+
+    // One side of a dock editor: a sunk plate of chips, like a Layout zone.
+    // `move` sends a chip to the other side: clicked, or carried over and
+    // dropped there.
+    component DockZone: ColumnLayout {
+        id: zone
+        property string group: ""
+        property string side: ""
+        property string caption: ""
+        property var items: []
+        signal move(string key)
+        Layout.fillWidth: true
+        Layout.preferredWidth: 1
+        Layout.alignment: Qt.AlignTop
+        spacing: 5
+        z: tab.dockDragFrom === zone.group + ":" + zone.side ? 10 : 0
+
+        Text {
+            textFormat: Text.PlainText
+            text: zone.caption
+            color: Services.Colors.ash
+            font.pixelSize: Services.Sizes.fsMeta
+            font.bold: true
+            font.family: "JetBrainsMono NF"
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.max(28 + 20, zoneFlow.implicitHeight + 20)
+            radius: Services.Sizes.cardR
+            color: zoneDrop.containsDrag ? Services.Colors.fillRest : Services.Colors.fillInset
+            border.color: zoneDrop.containsDrag ? Services.Colors.fillSunken : "transparent"
+            border.width: 1
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+
+            DropArea {
+                id: zoneDrop
+                anchors.fill: parent
+                keys: [zone.group]
+                onDropped: drop => {
+                    const src = drop.source
+                    if (!src || src.fromSide === zone.side || !src.sendAway) return
+                    src.sendAway(src.key)
+                    drop.accept()
+                }
+            }
+            Flow {
+                id: zoneFlow
+                x: 10; y: 10
+                width: parent.width - 20
+                spacing: 6
+                Repeater {
+                    model: zone.items
+                    delegate: ZoneChip {
+                        required property var modelData
+                        key: modelData.key
+                        glyph: modelData.glyph
+                        label: modelData.label
+                        group: zone.group
+                        fromSide: zone.side
+                        maxWidth: zoneFlow.width
+                        sendAway: k => zone.move(k)
+                    }
+                }
+            }
+            Text {
+                textFormat: Text.PlainText
+                anchors.centerIn: parent
+                visible: zone.items.length === 0
+                text: Services.I18n.t("settings.layout.drop")
+                color: Services.Colors.ash
+                font.pixelSize: Services.Sizes.fsMeta
+                font.family: "JetBrainsMono NF"
+            }
+        }
+    }
+
+    // The dock's real edge is never the bar's (see Dock.qml).
+    readonly property bool dockVertical: {
+        const e = Services.Prefs.dockEdge === Services.Sizes.barPosition
+            ? (Services.Sizes.barPosition === "left" || Services.Sizes.barPosition === "right" ? "left" : "top")
+            : Services.Prefs.dockEdge
+        return e === "left" || e === "right"
+    }
+
+    // Which side a chip is being carried out of, so that plate draws on top.
+    property string dockDragFrom: ""
+
+    // The Layout editor's chip: icon then name, filled at rest, accent while
+    // carried. A click sends it to the other side.
+    component ZoneChip: Item {
+        id: slot
+        property string key: ""
+        property string glyph: ""
+        property string label: ""
+        property string group: ""
+        property string fromSide: ""
+        property real maxWidth: 0
+        property var sendAway: null
+        width: face.width
+        height: 28
+
+        Rectangle {
+            id: face
+            implicitWidth: gly.implicitWidth + chipInner.spacing + lab.implicitWidth + 18
+            width: slot.maxWidth > 0 ? Math.min(implicitWidth, slot.maxWidth) : implicitWidth
+            height: 28
+            radius: Services.Sizes.innerR
+            z: dragArea.drag.active ? 100 : 0
+            color: dragArea.drag.active ? Services.Colors.ghost : Services.Colors.fillRest
+            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+            scale: dragArea.drag.active ? 1.0 : Services.Sizes.hoverScale(dragArea.containsMouse, dragArea.pressed)
+            Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
+
+            // What the other plate reads on the drop.
+            property string key: slot.key
+            property string fromSide: slot.fromSide
+            property var sendAway: slot.sendAway
+            Drag.active: dragArea.drag.active
+            Drag.dragType: Drag.Internal
+            Drag.keys: [slot.group]
+            Drag.hotSpot.x: width / 2
+            Drag.hotSpot.y: height / 2
+            Behavior on x { enabled: !dragArea.drag.active; Widgets.Anim { speed: Services.Sizes.msMicro } }
+            Behavior on y { enabled: !dragArea.drag.active; Widgets.Anim { speed: Services.Sizes.msMicro } }
+
+            Row {
+                id: chipInner
+                anchors.centerIn: parent
+                spacing: 6
+                Text {
+                    id: gly
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: slot.glyph
+                    color: dragArea.drag.active ? Services.Colors.accentText : Services.Colors.ghost
+                    font.pixelSize: 14
+                    font.family: "Material Symbols Rounded"
+                }
+                Text {
+                    id: lab
+                    textFormat: Text.PlainText
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Math.min(implicitWidth, Math.max(0, face.width - 18 - gly.width - chipInner.spacing))
+                    elide: Text.ElideRight
+                    text: slot.label
+                    color: dragArea.drag.active ? Services.Colors.accentText : Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsBody
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+
+            MouseArea {
+                id: dragArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: drag.active ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+                drag.target: face
+                drag.smoothed: false
+                property bool moved: false
+                onPressed: { dragArea.moved = false; tab.dockDragFrom = slot.group + ":" + slot.fromSide }
+                onPositionChanged: if (drag.active) dragArea.moved = true
+                // Flag first, drop after: a drop rewrites the list and this
+                // chip is destroyed mid-handler. A press that never moved is
+                // a click.
+                onReleased: {
+                    tab.dockDragFrom = ""
+                    if (!dragArea.moved) { slot.sendAway(slot.key); return }
+                    face.Drag.drop()
+                    if (face) { face.x = 0; face.y = 0 }
+                }
+            }
         }
     }
 }

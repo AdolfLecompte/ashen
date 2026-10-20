@@ -24,10 +24,12 @@ Item {
     scale: Services.Sizes.hoverScale(root.warm, hover.pressed)
     Behavior on scale { NumberAnimation { duration: Services.Sizes.pillHoverMs; easing.type: Services.Sizes.easeOut } }
 
+    // Centred on the tile, not on the room above the dot: the plate centres
+    // the tile, so anything else sits off its middle. The dot fits under it.
     Image {
-        anchors.fill: parent
-        anchors.margins: 5
-        anchors.bottomMargin: 9      // room for the dot
+        anchors.centerIn: parent
+        width: parent.width - 14
+        height: parent.height - 14
         // iconPath is (icon), (icon, check: bool) or (icon, fallback: string):
         // a size passed as the second argument lands on `check`. A missing icon
         // loads as Ready with Qt's placeholder rather than failing, so the
