@@ -43,7 +43,6 @@ Rectangle {
             fillMode: Image.PreserveAspectCrop
             sourceSize.width: 360
             asynchronous: true
-            cache: false
             layer.enabled: true
             layer.effect: FastBlur { radius: 64 }
         }

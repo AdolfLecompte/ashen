@@ -21,9 +21,13 @@ Singleton {
     readonly property bool isStill: /\.(png|jpe?g|webp)$/i.test(root.path)
     readonly property string stillPath: root.path === ""
         ? "" : (root.isStill ? root.path : root.home + "/.cache/ashen_wall_frame.png")
-    // Ready to drop into an Image.source. Pair it with cache: false.
+    // Ready to drop into an Image.source. The ?v= token changes with every
+    // wallpaper, so the pixmap cache never serves a stale one.
     readonly property string stillUrl: root.stillPath === ""
         ? "" : "file://" + root.stillPath + "?v=" + root.version
+    // Settings' hero decodes at this one width so the copy kept alive in the
+    // panel and the hero share one cached pixmap.
+    readonly property int heroDecodeW: 1280
 
     // Two switches close together write this file twice, and the reload can
     // answer with the first write while the second never raises another

@@ -25,6 +25,15 @@ PanelWindow {
     }
     Timer { id: closeDelay; interval: card.closeMs }
 
+    // Holds the Look hero's picture while its page is unloaded: Qt drops an
+    // unused pixmap this large, and the hero would decode it again each visit.
+    Image {
+        visible: false
+        source: Services.Wallpaper.stillUrl
+        sourceSize.width: Services.Wallpaper.heroDecodeW
+        asynchronous: true
+    }
+
     WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     // One tab per question the user is actually asking; Wi-Fi and Bluetooth

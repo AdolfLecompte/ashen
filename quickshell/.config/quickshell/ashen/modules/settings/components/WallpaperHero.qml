@@ -35,15 +35,14 @@ Rectangle {
         source: Services.Wallpaper.stillUrl
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
-        // Decoded at the width it is DRAWN at, not the width it was shot at: a
-        // 4K wallpaper is 8 megapixels held in memory to fill a strip 220 px
-        // tall. Width and not height because the crop here is width-driven --
-        // the box is far wider than it is tall, so the width is what has to
-        // cover and the height spills over on its own.
-        sourceSize.width: shot.width
+        // Decoded at a fixed card-sized width, not the 4K it was shot at, and
+        // the same width SettingsPanel keeps cached: the page is rebuilt on
+        // every visit to Look, and with cache off (or a width that starts at
+        // 0) it read the file again and popped in late each time. stillUrl
+        // already changes with every wallpaper, so the cache is never stale.
+        // Width-driven because the box is far wider than tall.
+        sourceSize.width: Services.Wallpaper.heroDecodeW
         visible: status === Image.Ready
-        // The path is stable while the file behind it changes.
-        cache: false
         layer.enabled: true
         layer.smooth: true
         layer.effect: OpacityMask {
