@@ -59,6 +59,9 @@
 - Dragging a pinned app in Settings > Desktop no longer leaves a broken row.
 - The profile picture's hover no longer frays its round edge.
 - The wallpaper at the top of Look no longer loads again on every visit.
+- The wallpaper picker, Alt+Tab and the power menu no longer open and close
+  behind a hard edge cutting across them; the picker's carousel fades out
+  instead of vanishing in one frame.
 - Reordering the dock's pins in Settings took two drags: the list kept the
   old order after the first one, and the next press grabbed the wrong row.
 - Widgets that fold open (music, notifications, the machine) no longer

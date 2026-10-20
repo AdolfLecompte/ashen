@@ -22,7 +22,9 @@ Scope {
         // stays mapped through the close animation, so the exit plays in reverse
         readonly property bool shown: Services.AppState.wallpaperVisible
         visible: shown || closeDelay.running
-        Timer { id: closeDelay; interval: card.closeMs }
+        // holdMs, not closeMs: unmapped on the last beat of the fade, the
+        // carousel was still half there and vanished in one frame.
+        Timer { id: closeDelay; interval: card.holdMs }
 
         WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
@@ -448,10 +450,15 @@ Scope {
                         target: bodyRoot; property: "intro"; to: 1
                         duration: 520; easing.type: Services.Sizes.easeOut
                     }
+                    // Linear and long enough to be seen: the pieces leave in
+                    // turn off this one driver, so the carousel only gets its
+                    // first stretch. At 150 ms ease-in it held near full and
+                    // went in a frame; ease-out emptied it in 50 ms. The window
+                    // stays mapped for holdMs, past the end of this.
                     NumberAnimation {
                         id: introOut
                         target: bodyRoot; property: "intro"; to: 0
-                        duration: 150; easing.type: Services.Sizes.easeIn
+                        duration: 240; easing.type: Easing.Linear
                     }
                     // Explicit, never Behaviors: in and out are different
                     // shapes, and starting one does not stop the other.

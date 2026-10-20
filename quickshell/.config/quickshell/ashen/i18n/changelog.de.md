@@ -61,6 +61,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   keine kaputte Zeile mehr.
 - Der Hover des Profilbilds franst seinen runden Rand nicht mehr aus.
 - Das Hintergrundbild oben in Aussehen lädt nicht mehr bei jedem Besuch neu.
+- Hintergrundauswahl, Alt+Tab und Ausschaltmenü öffnen und schließen nicht
+  mehr hinter einer harten Kante quer durch sie; das Karussell der Auswahl
+  blendet aus, statt in einem Frame zu verschwinden.
 - Die angehefteten Apps des Docks in den Einstellungen umzusortieren
   brauchte zwei Züge: die Liste behielt nach dem ersten die alte Reihenfolge,
   und der nächste Klick erwischte die falsche Zeile.

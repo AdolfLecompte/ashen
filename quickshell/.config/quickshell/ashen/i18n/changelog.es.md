@@ -59,6 +59,9 @@ si falta, la bienvenida las enseña en inglés.
 - Arrastrar una app anclada en Ajustes > Escritorio ya no deja una fila rota.
 - El hover de la foto de perfil ya no deshilacha su borde redondo.
 - El wallpaper de arriba de Aspecto ya no se vuelve a cargar en cada visita.
+- El selector de wallpapers, Alt+Tab y el menú de apagado ya no abren ni
+  cierran tras un corte recto que los atraviesa; el carrusel del selector se
+  desvanece en vez de desaparecer de golpe.
 - Reordenar las apps ancladas del dock en Ajustes pedía dos arrastres: la
   lista se quedaba con el orden viejo tras el primero y el siguiente clic
   agarraba otra fila.

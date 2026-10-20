@@ -64,6 +64,10 @@ Item {
     readonly property int holdMs: arrive.holdMs
 
     property color cardColor: Services.Colors.surfacePanel
+    // No plate, no box to unfold: the unroll's clip was the only thing on
+    // screen and cut straight through the wallpaper carousel. Such a panel
+    // stays at its open rect and its own pieces carry the arrival.
+    readonly property bool plateless: root.cardColor.a === 0
 
     default property alias content: body.data
 
@@ -75,10 +79,10 @@ Item {
 
     Rectangle {
         id: card
-        x: arrive.boxX(root.openX, root.openW)
-        y: arrive.boxY(root.openY, root.openH)
-        width: arrive.boxW(root.openW)
-        height: arrive.boxH(root.openH)
+        x: root.plateless ? root.openX : arrive.boxX(root.openX, root.openW)
+        y: root.plateless ? root.openY : arrive.boxY(root.openY, root.openH)
+        width: root.plateless ? root.openW : arrive.boxW(root.openW)
+        height: root.plateless ? root.openH : arrive.boxH(root.openH)
         radius: root.cardRadius
         // "transparent" for a panel whose content is the surface -- the
         // wallpaper carousel is its own cards and wants no plate behind them.
@@ -86,7 +90,7 @@ Item {
             // No card, no edge: a transparent card would leave only a frame.
             border.width: root.cardColor.a > 0 ? Services.Colors.panelEdgeW : 0
             border.color: Services.Colors.panelEdgeColor
-        clip: true
+        clip: !root.plateless
         opacity: arrive.fade
         transform: Translate { y: arrive.offY }
 
@@ -101,8 +105,8 @@ Item {
             height: root.openH
             // Centred while the box unfolds around its middle; pinned to the
             // top while it unrolls, or the contents would slide as it opens.
-            x: arrive.plain ? arrive.innerX(root.openW) : (parent.width - width) / 2
-            y: arrive.plain ? arrive.innerY(root.openH) : (parent.height - height) / 2
+            x: root.plateless ? 0 : arrive.plain ? arrive.innerX(root.openW) : (parent.width - width) / 2
+            y: root.plateless ? 0 : arrive.plain ? arrive.innerY(root.openH) : (parent.height - height) / 2
             opacity: arrive.contentAmt
             visible: opacity > 0.01
         }
