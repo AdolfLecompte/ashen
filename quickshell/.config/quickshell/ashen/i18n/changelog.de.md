@@ -3,6 +3,67 @@
 Übersetzung der Notizen aus CHANGELOG.md. Nur die aktuelle Version wird
 gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 
+## 3.6.0
+
+### Neu
+- **Das Dock trägt mehr als Apps.** Einstellungen > Desktop > Dock setzt
+  Kapseln der Leiste als Symbole hinein -- Ton, Akku, die Uhr,
+  Benachrichtigungen und der Rest, jede tut, was ihre Kapsel tut -- und
+  Verknüpfungen: Sperren, Hintergründe, Einstellungen, Prozesse, Widgets
+  anordnen, Spielmodus, Nachtlicht oder ein eigener Befehl mit Symbol.
+  Jede Gruppe steht vor oder nach den Apps. Ein
+  Rechtsklick nimmt eine heraus, so wie er eine App löst.
+- **Angedockt**, ein Leistenstil: bündig am ganzen Rand, ohne Luft drumherum,
+  und der Bildschirm wölbt sich an beiden Enden in sie hinein.
+- Kleinigkeiten zum Anklicken auf den Widgets, auf dem Desktop und dem
+  Sperrbildschirm: die Musikkarte klappt die gerade gesungene Zeile aus, die
+  Benachrichtigungskarte klappt für mehr auf (oder für ein kleines
+  Pixelbild, wenn nichts da ist), und wer der Rechnerkarte nahe kommt, sieht
+  den Akku und wie lange er noch hält. Das große Musik-Widget öffnet seinen
+  Liedtext daneben.
+- Die Suchergebnisse der Einstellungen tragen das Symbol ihres Abschnitts
+  und sagen, wo sie wohnen, wenn zwei gleich heißen.
+- **Der Befehl `ashen`**: `update`, `check`, `version`, `restart`, `doctor`,
+  `logs`, `wallpaper next|prev|random|<Datei>`, `bar …` und `ipc …`, mit
+  zsh-Vervollständigung (`ashen help`).
+
+### Geändert
+- **Framed ist weg**; Angedockt tritt an seine Stelle, und gespeicherte
+  Looks, die es nutzten, laden als Angedockt.
+- Die Karten der Einstellungen tragen ihr Symbol und einen Titel, der die
+  Zeilen darunter anführt.
+- Die Bildauswahl spricht die Sprache der Panels: Symbolkacheln, Orte auf
+  einer Platte, Ordner als Zeilen.
+- Die Klangwelle der Leiste wird hinter Fenstern und Widgets gezeichnet und
+  reicht weiter in den Bildschirm.
+- Die Welle des Visualisierers und der Streifen des Musik-Widgets sind
+  dichter.
+- Das Dock mit automatischem Ausblenden macht sich Platz wie die Leiste.
+
+### Behoben
+- **Die Shell verbrauchte im Leerlauf ein paar Prozent CPU.** Sie lauschte
+  mit `powerprofilesctl monitor` auf Energieprofile, einem Befehl, den
+  neuere Versionen entfernt haben: er beendete sich sofort und wurde
+  mehrmals pro Sekunde neu gestartet, endlos. Das Profil wird jetzt direkt
+  vom Dienst gelesen, und der Leerlauf liegt wieder weit unter einem halben
+  Prozent.
+- **Aktualisieren aktualisiert jetzt.** Der Knopf ließ den Installer über
+  den vorhandenen Code laufen und holte nie die neue Version; jetzt führt er
+  `ashen update` aus, das zuerst herunterlädt.
+- Desktop-Widgets verschwinden nicht mehr hinter einem maximierten (nicht
+  Vollbild-) Fenster.
+- Eine angeheftete App in Einstellungen > Desktop zu ziehen hinterlässt
+  keine kaputte Zeile mehr.
+- Der Hover des Profilbilds franst seinen runden Rand nicht mehr aus.
+- Die angehefteten Apps des Docks in den Einstellungen umzusortieren
+  brauchte zwei Züge: die Liste behielt nach dem ersten die alte Reihenfolge,
+  und der nächste Klick erwischte die falsche Zeile.
+- Widgets, die aufklappen (Musik, Benachrichtigungen, der Rechner), zittern
+  auf dem Sperrbildschirm nicht mehr und schieben die Karten darunter nicht
+  mehr ruckweise: die Platte gleitet einmal, auf ihre Endgröße. Und die
+  Spalten des Sperrbildschirms springen nicht mehr auf und ab, während eine
+  aufklappt: ihre Höhe wird erst gemessen, wenn die Falte stillsteht.
+
 ## 3.5.0
 
 ### Neu

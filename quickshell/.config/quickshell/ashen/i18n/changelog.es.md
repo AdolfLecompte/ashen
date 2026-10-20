@@ -3,6 +3,65 @@
 Traducción de las notas de CHANGELOG.md. Solo hace falta la versión actual:
 si falta, la bienvenida las enseña en inglés.
 
+## 3.6.0
+
+### Añadido
+- **El dock lleva más que aplicaciones.** Ajustes > Escritorio > Dock pone
+  en él píldoras de la barra como iconos -- sonido, batería, el reloj,
+  notificaciones y el resto, cada una haciendo lo que hace su píldora -- y
+  atajos: bloquear, fondos, ajustes, procesos, ordenar widgets, modo juego,
+  luz nocturna, o un comando tuyo con su glifo. Cada grupo va antes o
+  después de las apps. Clic derecho quita uno,
+  igual que desancla una app.
+- **Acoplada**, un estilo de barra: pegada a todo el borde, sin aire
+  alrededor, y la pantalla curvándose hacia ella en los dos extremos.
+- Cositas que pulsar en los widgets, en el escritorio y en la pantalla de
+  bloqueo: la tarjeta de música despliega la línea que se está cantando, la
+  de notificaciones se abre para enseñar más (o un dibujito de píxeles
+  cuando no hay nada), y acercarse a la tarjeta de la máquina enseña la
+  batería y cuánto le queda. El widget de música completo abre su letra al
+  lado.
+- Los resultados de la búsqueda de Ajustes llevan el icono de su sección, y
+  dicen dónde viven cuando dos se llaman igual.
+- **El comando `ashen`**: `update`, `check`, `version`, `restart`, `doctor`,
+  `logs`, `wallpaper next|prev|random|<archivo>`, `bar …` e `ipc …`, con
+  autocompletado en zsh (`ashen help`).
+
+### Cambiado
+- **Framed desaparece**; Acoplada ocupa su lugar, y los looks guardados que
+  lo usaban cargan como Acoplada.
+- Las tarjetas de Ajustes llevan su icono y un título que encabeza las filas
+  de debajo.
+- El selector de imágenes habla el idioma de los paneles: iconos en
+  baldosas, lugares sobre un plato, carpetas como filas.
+- La onda de sonido de la barra se dibuja detrás de las ventanas y los
+  widgets, y llega más adentro de la pantalla.
+- La onda del visualizador y la tira del widget de música son más densas.
+- El dock con ocultado automático se hace sitio como la barra.
+
+### Corregido
+- **El shell gastaba un par de por ciento de CPU sin hacer nada.** Escuchaba
+  los cambios de perfil de energía con `powerprofilesctl monitor`, un
+  comando que las versiones nuevas quitaron: salía al instante y se volvía a
+  lanzar varias veces por segundo, sin fin. Ahora el perfil se lee del
+  servicio directamente, y en reposo vuelve a quedar muy por debajo del
+  medio por ciento.
+- **Actualizar ahora actualiza.** El botón ejecutaba el instalador sobre el
+  código que ya había y nunca traía la versión nueva; ahora ejecuta
+  `ashen update`, que primero descarga.
+- Los widgets del escritorio ya no desaparecen detrás de una ventana
+  maximizada (no a pantalla completa).
+- Arrastrar una app anclada en Ajustes > Escritorio ya no deja una fila rota.
+- El hover de la foto de perfil ya no deshilacha su borde redondo.
+- Reordenar las apps ancladas del dock en Ajustes pedía dos arrastres: la
+  lista se quedaba con el orden viejo tras el primero y el siguiente clic
+  agarraba otra fila.
+- Los widgets que se despliegan (música, notificaciones, la máquina) ya no
+  tiemblan en la pantalla de bloqueo ni empujan a saltos las tarjetas de
+  debajo: el plato se anima una vez, hasta su tamaño final. Y las columnas
+  del bloqueo ya no saltan arriba y abajo mientras una se despliega: la
+  altura en la que se apoyan solo se mide con el pliegue quieto.
+
 ## 3.5.0
 
 ### Añadido

@@ -1,5 +1,66 @@
 # Changelog
 
+## 3.6.0
+
+### Added
+- **The dock carries more than applications.** Settings > Desktop > Dock
+  puts bar pills in it as icons -- sound, battery, the clock, notifications
+  and the rest, each doing what its pill does -- and shortcuts: lock,
+  wallpapers, settings, processes, arranging widgets, game mode, night
+  light, or a command of your own with a glyph. Each group goes before or
+  after the apps. A right-click takes one
+  off, the way it unpins an app.
+- **Docked**, a bar style: flush with the whole edge, no air around it, and
+  the screen curving into it at both ends.
+- Small things to press on the widgets, on the desktop and the lock screen:
+  the music card folds out the line being sung, the notification card
+  unfolds for more (or for a little pixel drawing when there is nothing),
+  and coming close to the machine card shows the battery and how long it
+  has left. The full music widget opens its lyrics beside it.
+- Settings search results carry their section's icon, and say where they
+  live when two are called the same.
+- **The `ashen` command**: `update`, `check`, `version`, `restart`, `doctor`,
+  `logs`, `wallpaper next|prev|random|<file>`, `bar …` and `ipc …`, with zsh
+  completion (`ashen help`).
+
+### Changed
+- **Framed is gone**; Docked takes its place, and saved looks that used it
+  load as Docked.
+- Settings cards wear their icon and a title that leads the rows under it.
+- The picture picker speaks the panels' language: icon tiles, places on a
+  plate, folders as rows.
+- The bar's sound wave is drawn behind windows and widgets, and reaches
+  further into the screen.
+- The visualizer's wave and the music widget's strip are denser.
+- The dock with auto-hide makes room for itself like the bar.
+- Lighter at rest: album art is decoded at the size it is drawn instead of
+  1000 px in every place it appears; the process panel reads temperature and
+  traffic straight from the kernel instead of starting `sensors` and `awk`
+  each sample; the recorder check slows down while nothing is recording; the
+  battery history nobody drew any more is no longer read; and dead code,
+  files and strings are gone.
+
+### Fixed
+- **The shell sat at a few percent of a core doing nothing.** It listened
+  for power-profile changes with `powerprofilesctl monitor`, a command newer
+  daemons dropped: it exited at once and was relaunched several times a
+  second, forever. The profile is now read off the daemon directly, and idle
+  is back to well under half a percent.
+- **Update now updates.** The button ran the installer on the code already
+  there and never fetched the new release; it runs `ashen update` now, which
+  pulls first.
+- Desktop widgets no longer vanish behind a maximised (not fullscreen)
+  window.
+- Dragging a pinned app in Settings > Desktop no longer leaves a broken row.
+- The profile picture's hover no longer frays its round edge.
+- Reordering the dock's pins in Settings took two drags: the list kept the
+  old order after the first one, and the next press grabbed the wrong row.
+- Widgets that fold open (music, notifications, the machine) no longer
+  shudder on the lock screen, nor shove the cards under them in steps: the
+  plate eases once, to its final size. And the lock's columns no longer
+  jump up and down while one of them unfolds: the height they stand on is
+  only measured once the fold is still.
+
 ## 3.5.0
 
 ### Added

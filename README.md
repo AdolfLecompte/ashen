@@ -72,6 +72,8 @@ Then it draws five steps and rewrites them in place as it goes:
   · folders
 ```
 
+- **Sudo is asked once**, at the start, and kept alive in the background, so
+  the rest runs unattended.
 - **The system is brought up to date first** (`pacman -Syu`). Installing
   against a stale package database is how a fresh machine hits 404s, and a
   refresh without the upgrade is a partial upgrade, which Arch does not support.
@@ -81,12 +83,20 @@ Then it draws five steps and rewrites them in place as it goes:
   printed above the steps — so it survives the redraw — and named again at the
   end with the command to retry it. A step that went wrong ends on a ✗, not a
   tick, and `Ctrl-C` stops the install and gives the terminal back.
+- **PulseAudio is swapped for PipeWire.** `pipewire-pulse` conflicts with
+  `pulseaudio`, so a machine still running the old daemon has it removed
+  first (`libpulse`, the client library, stays). An AUR build that provides
+  `qt6ct` (`qt6ct-kde`) is replaced by the repo's `qt6ct`, which is rebuilt
+  with every Qt upgrade instead of breaking on it.
 - **An AUR helper if there is none.** `yay` is built from the AUR when the
   machine has neither `paru` nor `yay` (vanilla Arch and Manjaro ship none), and
   anything the official repos could not give is asked of the AUR before it
   counts as a failure.
 - **Dotfiles**, by symlink from the checkout, so editing `~/.config/hypr/…` edits
-  the repo and there is no second copy to keep in sync.
+  the repo and there is no second copy to keep in sync. A real file already
+  sitting where a config belongs (`~/.zshrc` is the usual one) is moved to
+  `<name>.bak`, never overwritten. The three answers are applied here too: the
+  shell's language, the layout in `input.lua` and `localectl`, and the locale.
 - **The login screen**, if `sddm` is installed. It is never switched blind: the
   theme has to declare `QtVersion=6`, the Qt6 greeter has to exist **and resolve
   its libraries**, and only then is `/etc/sddm.conf` repointed — with a backup,
@@ -98,8 +108,14 @@ Installed from scratch, with no failures, on **Arch, Manjaro, CachyOS,
 EndeavourOS and Garuda**. Distributions without systemd (Artix) are not
 supported yet: the services step uses `systemctl`.
 
-It ends by asking you to **reboot** — this changed the login screen, enabled
-system services and added you to a group, and a logout shows none of that.
+It ends with a count (installed · already there · failed), the command to
+retry whatever failed, the path of the full log (`~/.cache/ashen-install.log`),
+and asks you to **reboot** — this changed the login screen, enabled system
+services and added you to a group, and a logout shows none of that. The
+welcome card comes up by itself the first time the shell starts.
+
+Running it again asks the same three questions with your last answers already
+chosen, and installs only what is missing.
 
 ### Flags
 
@@ -109,14 +125,25 @@ system services and added you to a group, and a logout shows none of that.
 | `ASHEN_LANG=es` | skips the language question (`en` `es` `de` `ru`) |
 | `ASHEN_KB=latam` | skips the keyboard question (any XKB layout code) |
 | `ASHEN_LOCALE=es_MX` | skips the system language question (any glibc locale) |
+| `ASHEN_LOG=<file>` | writes the install log somewhere else |
+| `ASHEN_SOURCE=<url>` | `boot.sh` clones from this instead (a fork) |
 
-### If it is already installed
+Without a terminal (piped, or in a script) nothing is asked: the answers come
+from these variables or from what the machine already uses.
 
-Run the same line again. That is the update: it fetches the repo and installs
-whatever the new version needs, so new configs **and** the packages they depend
-on arrive in one pass. Nothing is reinstalled if it is current, and a checkout
-with local changes is not force-updated — the installer says so and carries on
-with what is there.
+### From the AUR
+
+```bash
+paru -S ashen-git     # or yay
+ashen-setup           # copies the dotfiles into your home
+```
+
+The package puts the shell in `/etc/xdg/quickshell/ashen` and the commands in
+`/usr/bin`; it may not write to a home, so `ashen-setup` copies Hyprland's,
+kitty's, zsh's and the rest of the configs there (an existing file goes to
+`<name>.bak`; `--dry-run` says what it would do). The package does not ask
+the installer's questions, enable services or switch the login screen:
+enable `NetworkManager`, `bluetooth` and `power-profiles-daemon` yourself.
 
 ### By hand
 
@@ -131,21 +158,14 @@ Same script, same result — `boot.sh` only does the two things above it.
 each other by absolute path (`$HOME/ashen/scripts/…`), so the name is part of the
 contract, not a preference.
 
-Only the dotfiles, without the packages:
-
-```bash
-stow -t ~ cava dconf fastfetch gtk hypr kitty matugen quickshell wallpapers zsh
-```
-
-Or with no `stow` at all — `ashen-setup --link` makes the same symlinks, and
-without `--link` it copies instead, which is what the package does on a machine
-that has no checkout:
+Only the dotfiles, without the packages — the same symlinks the installer
+makes (without `--link` it copies instead):
 
 ```bash
 ASHEN_CONFIG_SRC=~/ashen ~/ashen/scripts/ashen-setup --link
 ```
 
-Either way only the config packages are touched: `docs/`, `scripts/` and the rest
+Only the config packages are touched: `docs/`, `scripts/` and the rest
 of the repo stay where they are. Then set Zsh as your shell
 (`chsh -s $(which zsh)`), enable `NetworkManager`, `bluetooth` and
 `power-profiles-daemon`, and start Hyprland from your display manager or a TTY.
@@ -166,10 +186,12 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
 
 - **Bar** — launcher, notifications, workspaces (incl. special workspaces), media,
   clock, tray, USB, screen recording, active window, keyboard layout, network,
-  bluetooth, sound, battery, CPU and memory, power. Every capsule can be dragged
-  to either end or the centre of any of the four edges, and each one chooses how
-  much it says — `full`, `compact` or `icon`, offered only where they differ.
-  Four shapes for the bar itself — pills, island, solid, framed — and five
+  bluetooth, sound, battery, CPU and memory, screen time, microphone, clipboard,
+  screenshot, power. The bar goes on any of the four edges, and every capsule
+  can be dragged to either end or its centre; each one chooses how much it
+  says — `full`, `compact` or `icon`, offered only where they differ. Four
+  shapes for the bar itself — pills, island, solid, and docked (flush with
+  the whole edge) — and five
   styles for the workspaces: icons, numbers, dots, Pac-Man or kanji, each with
   an optional tick per window. Special workspaces keep their own icon in all
   of them.
@@ -178,14 +200,17 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   whole shell or part by part.
 - **Dock** — pinned and open applications on an edge of your choosing. A click
   launches, focuses, or hides to a special workspace, in that order; a
-  right-click pins or unpins, and Settings has the list with a search.
+  right-click pins or unpins, and Settings has the list with a search. It
+  can also carry bar pills as icons (sound, battery, clock…) and shortcuts:
+  shell actions like lock or game mode, or a command of your own.
 - **Panels** — every pill opens a panel that grows out of it and leaves the same
   way, or opens like a window from the bar's edge. They share one language —
   tinted plates, one radius, one type scale — and never stick out past the bar.
 - **Lock screen** — its own `WlSessionLock` surface: padlock, fade or no intro,
-  PAM auth, blurred wallpaper, media card with a live Cava visualiser, battery
-  and power profiles, and a switch in its power menu to show the password as
-  you type it.
+  PAM auth, blurred wallpaper, and the desktop's own widgets in three columns
+  — music with its sung line, notifications, the machine with its battery
+  time on hover — plus a switch in its power menu to show the password as you
+  type it.
 - **Login screen** — an SDDM theme laid out like the lock screen: the time large,
   who, the password, the session and the ways out in the corners. It carries no
   name, so it suits any desktop.
@@ -296,38 +321,31 @@ and not only on a distro that happens to source it for you.
 
 ## Update
 
-Re-run the install line. There is no second command, and no `git pull`: a pull
-alone brings new configs without the packages they need, which is a shell that
-half-starts.
+`ashen update` -- or Update in Settings > About, which runs the same thing.
+It pulls the new release and then runs the installer, so the packages a new
+version needs arrive with it. Re-running the install line does the same. A
+`git pull` alone brings new configs without their packages, which is a shell
+that half-starts.
+
+The `ashen` command also does the rest from a terminal (`ashen help`):
+
+| Command | What it does |
+|---|---|
+| `ashen update` / `ashen check` | update, or only ask whether there is a newer release |
+| `ashen version` | installed version, latest release, current commit |
+| `ashen restart` | restart the shell cleanly, duplicates included |
+| `ashen doctor` | missing programs, a stuck or doubled shell, the probes |
+| `ashen logs` | the shell's log, live |
+| `ashen wallpaper <file\|next\|prev\|random>` | change the wallpaper |
+| `ashen bar …` / `ashen ipc …` | anything the shell answers over IPC |
 
 One thing the installer cannot do for you: if you use one of the **fixed colour
 schemes** instead of Dynamic, pick it again in Settings > Look after updating.
 That palette is written by the shell itself, so a script cannot regenerate it.
 
-### Coming from a much older version
-
-Installs from before **1.5.1** rewrote the working tree at install time (an
-install-time `sed` that is long gone), so their clone is dirty — and a dirty
-tree is exactly what makes the self-update above skip itself, quietly leaving
-you on the old code. Throw those local edits away first:
-
-```bash
-cd ~/ashen
-git status                       # anything listed here is about to be discarded
-git fetch origin
-git reset --hard origin/main     # or `git stash` if you actually wrote something
-bash install/run.sh
-```
-
-Two things to expect on that first run:
-
-- **Your own config files are kept, not overwritten.** Where a real file — not
-  a symlink — sits where a config belongs (`~/.zshrc` is the usual one), the
-  installer moves it to `<name>.bak` and says so. Copy back whatever you want
-  from it.
-- **Log out and back in** afterwards if the bar looks half-dressed: an old
-  session is still holding the previous Hyprland config and the old
-  environment.
+**A checkout with local changes is not updated.** `ashen update` stops and
+says so rather than overwrite your edits; `git -C ~/ashen status` shows what
+is in the way. Commit or stash it, then run the update again.
 
 ## Usage
 
@@ -336,7 +354,9 @@ Two things to expect on that first run:
 | `SUPER` (tap) | launcher |
 | `SUPER + SHIFT + W` | wallpaper picker (drives dynamic theming) |
 | `SUPER + I` | settings |
-| `SUPER + T` | terminal |
+| `SUPER + T / E / W / C` | terminal, files, browser, editor |
+| `SUPER + Q` | close the window |
+| `SUPER + F` / `SUPER + SHIFT + F` | fullscreen / float |
 | `SUPER + N` | notifications |
 | `SUPER + SHIFT + V` | clipboard |
 | `SUPER + SHIFT + S` | screenshot |
@@ -348,10 +368,15 @@ Two things to expect on that first run:
 | `ALT + Tab` | window switcher |
 | `SUPER + L` | lock |
 | `SUPER + Escape` | power menu |
-| `SUPER + M / D / O / X` | show or hide the music, discord, notes and fav special workspaces |
-| `SUPER + ALT + M / D / O / X` | send the focused window to that special workspace |
+| `SUPER + 1…0` / `SUPER + ALT + 1…0` | go to / send the window to a workspace |
+| `SUPER + M / D / O / X / S` | show or hide the music, discord, notes, fav and scratchpad special workspaces |
+| `SUPER + ALT + M / D / O / X / S` | send the focused window to that special workspace |
 
 Every one of these can be changed from **Settings → Input**.
+
+On a touchpad, three fingers sideways change workspace, up opens the launcher
+and down shows the scratchpad; four fingers move the window. They live in
+`hypr/.config/hypr/conf/gestures.lua`, and Settings → Input lists them.
 
 The keyboard layout pill in the bar is **read-only**. Layouts are declared in
 `hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`, or what the installer was
@@ -363,8 +388,10 @@ including one that is plugged in or wakes up later.
 - The Hyprland config is **Lua** (`hyprland.lua` + `conf/*.lua`), not `hyprland.conf`.
   `hyprctl keyword` does **not** work against it — use `hyprctl eval '<lua>'` to try
   things at runtime.
-- Shell IPC: `qs -c ashen ipc show` lists every callable target.
-- Reload the shell with `pkill -x quickshell; setsid -f quickshell -c ashen`.
+- Shell IPC: `qs -c ashen ipc show` lists every callable target, and
+  `ashen ipc <target> <function>` calls one.
+- Restart the shell with `ashen restart`; `ashen doctor` says what is wrong
+  when it misbehaves.
 - Window opacity: a `windowrule` opacity value is **multiplied** by
   `active_opacity`/`inactive_opacity` unless you append `override`. That is why the
   browser rule reads `opacity 0.85 override 0.80 override`.
@@ -381,7 +408,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.5.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
+3.6.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
