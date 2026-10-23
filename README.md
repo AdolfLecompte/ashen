@@ -327,6 +327,18 @@ version needs arrive with it. Re-running the install line does the same. A
 `git pull` alone brings new configs without their packages, which is a shell
 that half-starts.
 
+**Coming from 3.5.0 or older, update once by hand.** In those versions the
+Update button reruns the installer without pulling, so it reinstalls the
+version you already have and keeps offering the update. Run this once and the
+button works from then on:
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/AdolfLecompte/ashen/main/install/boot.sh)"
+```
+
+Those versions also relaunch a dead `powerprofilesctl monitor` several times a
+second, which keeps the CPU busy at idle; updating fixes that too.
+
 The `ashen` command also does the rest from a terminal (`ashen help`):
 
 | Command | What it does |
