@@ -24,6 +24,8 @@ check "no framed left outside the migration" \
 check "BarSpec exists and is registered" "[ -f $r/services/BarSpec.qml ] && grep -q '^BarSpec ' $r/services/qmldir"
 check "Sizes has the bar's spec" "grep -q 'property BarSpec first' $r/services/Sizes.qml"
 check "Sizes answers edgeAt" "grep -q 'function edgeAt' $r/services/Sizes.qml"
+check "hang is a plate flush with the edge" "grep -q 'root.style === \"solid\" || root.hang' $r/services/BarSpec.qml && grep -q 'root.spec.hang &&' $r/modules/bar/Bar.qml"
+check "hang flares into the edge" "[ -f $r/modules/bar/components/HangCorners.qml ] && grep -q 'HangCorners {' $r/modules/bar/Bar.qml"
 check "barFramed is gone" "! grep -rq 'barFramed' $r/services $r/modules $r/shell.qml"
 
 # ── Bars ──
@@ -40,6 +42,7 @@ check "every painted pill knows its bar${missing:+ (missing:$missing)}" "[ -z '$
 # ── Settings ──
 for l in en es de ru; do
     check "$l names docked" "grep -q '\"settings.bar.docked\"' $r/i18n/$l.json"
+    check "$l names hang" "grep -q '\"settings.bar.hang\"' $r/i18n/$l.json"
     check "$l dropped framed" "! grep -q '\"settings.bar.framed\"' $r/i18n/$l.json"
     check "$l dropped the second bar" "! grep -q '\"settings.bar.second\"' $r/i18n/$l.json"
 done

@@ -434,9 +434,9 @@ ShellRoot {
             if (["full", "compact", "icon"].indexOf(mode) === -1) return
             Services.Prefs.setContent(pill, mode)
         }
-        // The look, from a keybind. Same four the Bar tab offers.
+        // The look, from a keybind. Same five the Bar tab offers.
         function style(name: string) {
-            if (["pills", "island", "solid", "docked"].indexOf(name) === -1) return
+            if (["pills", "island", "solid", "hang", "docked"].indexOf(name) === -1) return
             Services.Prefs.barStyle = name
         }
     }

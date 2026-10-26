@@ -42,7 +42,7 @@ Singleton {
     // stacked layout (see Sizes.barVertical).
     property string barPosition: "top"
 
-    // "pills" | "island" | "solid" | "docked"
+    // "pills" | "island" | "solid" | "hang" | "docked"
     property string barStyle: "pills"
     // How much of its edge the bar takes, as a percentage. 100 is the whole
     // side; anything less pulls both ends in and leaves the corners to the

@@ -30,6 +30,7 @@ var entries = [
     ["shape", "settings.bar.autohide"],
     ["shape", "settings.bar.bottom"],
     ["shape", "settings.bar.docked"],
+    ["shape", "settings.bar.hang"],
     ["shape", "settings.bar.island"],
     ["shape", "settings.bar.left"],
     ["shape", "settings.bar.length"],

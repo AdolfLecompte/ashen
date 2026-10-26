@@ -304,6 +304,11 @@ Scope {
                     z: -2
                     visible: root.spec.plate || root.spec.docked
                     radius: root.spec.docked ? 0 : Services.Sizes.barR
+                    // Hang: the two corners on the screen edge stay square.
+                    topLeftRadius: root.spec.hang && (bar.edge === "top" || bar.edge === "left") ? 0 : radius
+                    topRightRadius: root.spec.hang && (bar.edge === "top" || bar.edge === "right") ? 0 : radius
+                    bottomLeftRadius: root.spec.hang && (bar.edge === "bottom" || bar.edge === "left") ? 0 : radius
+                    bottomRightRadius: root.spec.hang && (bar.edge === "bottom" || bar.edge === "right") ? 0 : radius
                     // Outline is the plate's business in this style: the whole
                     // bar becomes a frame, rather than fifteen little ones.
                     color: root.spec.outline ? Services.Colors.surfaceGlass
@@ -321,6 +326,19 @@ Scope {
                     thick: root.spec.thick
                     r: Services.Sizes.dockedR
                     fill: root.spec.outline ? Services.Colors.surfaceGlass : Services.Colors.surfaceBar
+                    stroke: Services.Colors.fillOutline
+                    strokeW: root.spec.outline ? Services.Sizes.outlineW : 0
+                }
+
+                // Hang: the screen edge flaring out into both ends of the plate.
+                HangCorners {
+                    visible: root.spec.hang
+                    edge: bar.edge
+                    start: bar.vertical ? solidPlate.y : solidPlate.x
+                    len: bar.vertical ? solidPlate.height : solidPlate.width
+                    thick: root.spec.thick
+                    r: Services.Sizes.dockedR
+                    fill: solidPlate.color
                     stroke: Services.Colors.fillOutline
                     strokeW: root.spec.outline ? Services.Sizes.outlineW : 0
                 }

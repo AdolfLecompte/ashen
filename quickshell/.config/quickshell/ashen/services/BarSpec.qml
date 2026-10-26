@@ -20,7 +20,9 @@ QtObject {
     // Docked: the whole edge, flush, no air around it.
     readonly property bool docked: root.style === "docked"
     readonly property bool island: root.style === "island"
-    readonly property bool plate: root.style === "solid"
+    // Hang: one plate like solid, flush with the screen edge, rounded only inward.
+    readonly property bool hang: root.style === "hang"
+    readonly property bool plate: root.style === "solid" || root.hang
     // On a plate of some kind, rather than loose capsules on the wallpaper.
     readonly property bool solid: root.plate || root.island || root.docked
     readonly property int length: root.docked ? 100 : Math.max(50, Math.min(100, root.lengthPref))
@@ -35,8 +37,8 @@ QtObject {
     // Air between the plate and the long sides; none when docked.
     // How deep the bar is. Docked fills its band edge to edge, so it keeps
     // only a sliver of air round the pills: at the full 56 it read as a slab.
-    readonly property int thick: root.docked ? Sizes.pillH + 4 : Sizes.barH
-    readonly property int plateCross: root.docked ? 0 : (Sizes.barH - Sizes.pillH) / 2
+    readonly property int thick: (root.docked || root.hang) ? Sizes.pillH + 4 : Sizes.barH
+    readonly property int plateCross: (root.docked || root.hang) ? 0 : (Sizes.barH - Sizes.pillH) / 2
 
     // Where this bar's window starts on screen `s` (see Sizes.barOriginX).
     function originX(s) { return (s && root.edge === "right") ? s.width - root.thick - Sizes.barSpill : 0 }
