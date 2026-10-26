@@ -120,6 +120,21 @@ Singleton {
             const bare = cmd.replace(/^sh -c '/, "").replace(/'$/, "")
             return bare.split(" ")[0]
         }
+        m = expr.match(/^W\.(\w+)$/)
+        if (m) {
+            const helpers = {
+                "float": "Toggle floating", "pin": "Pin window",
+                "cycleSize": "Cycle size (1/3 · 1/2 · 2/3)", "toggleLayout": "Layout: tiles / columns"
+            }
+            if (helpers[m[1]] !== undefined) return root.say(m[1], helpers[m[1]])
+        }
+        m = expr.match(/window\.move\(\s*\{\s*direction\s*=\s*"(\w+)"/)
+        if (m) return root.say("moveDir", "Move window {dir}", { dir: root.say("dir." + m[1], m[1]) })
+        if (expr.indexOf('layout("togglesplit")') !== -1) return root.say("flipSplit", "Flip split")
+        if (expr.indexOf('layout("swapsplit")') !== -1) return root.say("swapSplit", "Swap split halves")
+        if (expr.indexOf("group.toggle") !== -1) return root.say("group", "Group as tabs / ungroup")
+        if (expr.indexOf("group.next") !== -1) return root.say("tabNext", "Next tab")
+        if (expr.indexOf("group.prev") !== -1) return root.say("tabPrev", "Previous tab")
         if (expr.indexOf("window.close") !== -1) return root.say("close", "Close window")
         if (expr.indexOf("window.fullscreen") !== -1) return root.say("fullscreen", "Fullscreen")
         if (expr.indexOf("window.float") !== -1) return root.say("float", "Toggle floating")
