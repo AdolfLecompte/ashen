@@ -3,6 +3,39 @@
 Traducción de las notas de CHANGELOG.md. Solo hace falta la versión actual:
 si falta, la bienvenida las enseña en inglés.
 
+## 3.7.0
+
+### Añadido
+- **Colgada**, un estilo de barra: un plato colgado del borde de la
+  pantalla, recto donde lo toca, redondeado hacia dentro, y el borde
+  curvándose hacia sus dos extremos. Respeta el ajuste de longitud.
+- **Acomodar ventanas con el teclado.** `SUPER+SHIFT+flechas` mueve una
+  ventana (entrando y saliendo de grupos), `SUPER+J`/`SUPER+K` giran e
+  intercambian una división, `SUPER+R` pasa la ventana por 1/3, 1/2 y 2/3, y
+  `SUPER+CTRL+P` la fija en todos los escritorios.
+- **Pestañas**: `SUPER+G` agrupa ventanas en pestañas, `SUPER+Tab` y
+  `SUPER+SHIFT+Tab` las recorren. La barra de pestañas lleva el acento del
+  fondo.
+- **Columnas**: `SUPER+SHIFT+L` cambia el escritorio entre mosaico y la
+  distribución en columnas, hasta que Hyprland recarga.
+- Las ventanas flotantes se pegan a los bordes y entre sí.
+
+### Cambiado
+- `SUPER+SHIFT+F` flota una ventana centrada al 60 % por 70 % de la
+  pantalla, quitándole antes el maximizado.
+- El panel de tiempo de pantalla habla el idioma del panel del reloj: sin
+  platos, líneas finas entre secciones, filas de apps como el widget y una
+  curva por horas escalada a la hora más ocupada. Cambiar de día se corre
+  hacia donde te moviste y luego crecen la curva y las barras; una semana
+  nueva sube todas las barras, un día nuevo solo la suya.
+- El estilo blur es más cristal: un velo más fino en barra, paneles,
+  píldoras y widgets, y un blur del compositor que ya no oscurece lo de
+  detrás (ventanas incluidas).
+
+### Arreglado
+- Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
+  salían pixelados, y más borrosos al crecer en el dock con el puntero.
+
 ## 3.6.0
 
 ### Añadido

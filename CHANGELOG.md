@@ -1,5 +1,38 @@
 # Changelog
 
+## 3.7.0
+
+### Added
+- **Hanging**, a bar style: one plate hung from the screen edge, square
+  where it touches it, rounded towards the screen, with the edge curving out
+  into both ends. It keeps the length setting.
+- **Arranging windows from the keyboard.** `SUPER+SHIFT+arrows` moves a
+  window (in and out of tab groups), `SUPER+J`/`SUPER+K` flip and swap a
+  split, `SUPER+R` steps a window through 1/3, 1/2 and 2/3, and
+  `SUPER+CTRL+P` pins it on every workspace.
+- **Tab groups**: `SUPER+G` groups windows as tabs, `SUPER+Tab` and
+  `SUPER+SHIFT+Tab` step through them. The tab bar wears the wallpaper's
+  accent.
+- **Columns**: `SUPER+SHIFT+L` switches the workspace between tiles and the
+  scrolling layout, until Hyprland reloads.
+- Floating windows snap to screen edges and to each other.
+
+### Changed
+- `SUPER+SHIFT+F` floats a window centred at 60 % by 70 % of the screen,
+  un-maximizing it first.
+- The screen time panel speaks the clock panel's language: no plates,
+  hairlines between sections, app rows like the widget, an hours curve
+  scaled to the busiest hour. Changing day slides the way you moved, then
+  the curve and the bars grow; a new week raises every bar, a new day only
+  its own.
+- The blur style is glassier: a thinner veil on the bar, panels, pills and
+  widgets, and a compositor blur that no longer darkens what is behind it
+  (windows included).
+
+### Fixed
+- Application icons in the dock, Settings and the launcher are sharp; they
+  were pixelated, and blurred further when the dock grew them on hover.
+
 ## 3.6.0
 
 ### Added

@@ -3,6 +3,39 @@
 Übersetzung der Notizen aus CHANGELOG.md. Nur die aktuelle Version wird
 gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 
+## 3.7.0
+
+### Hinzugefügt
+- **Hängend**, ein Leistenstil: eine Platte, die vom Bildschirmrand hängt,
+  gerade, wo sie ihn berührt, nach innen gerundet, und der Rand biegt sich
+  in beide Enden hinein. Die Längeneinstellung gilt weiter.
+- **Fenster per Tastatur anordnen.** `SUPER+SHIFT+Pfeile` verschiebt ein
+  Fenster (auch in Gruppen hinein und heraus), `SUPER+J`/`SUPER+K` drehen
+  und tauschen eine Teilung, `SUPER+R` schaltet durch 1/3, 1/2 und 2/3, und
+  `SUPER+CTRL+P` heftet es an alle Arbeitsflächen.
+- **Tabs**: `SUPER+G` gruppiert Fenster als Tabs, `SUPER+Tab` und
+  `SUPER+SHIFT+Tab` wechseln zwischen ihnen. Die Tableiste trägt die
+  Akzentfarbe des Hintergrunds.
+- **Spalten**: `SUPER+SHIFT+L` wechselt die Arbeitsfläche zwischen Kacheln
+  und dem Spaltenlayout, bis Hyprland neu lädt.
+- Schwebende Fenster rasten an Rändern und aneinander ein.
+
+### Geändert
+- `SUPER+SHIFT+F` lässt ein Fenster zentriert bei 60 % mal 70 % schweben
+  und hebt vorher die Maximierung auf.
+- Das Bildschirmzeit-Panel spricht die Sprache des Uhr-Panels: keine
+  Platten, Haarlinien zwischen den Bereichen, App-Zeilen wie im Widget und
+  eine Stundenkurve, skaliert auf die vollste Stunde. Ein Tageswechsel
+  gleitet in die Richtung, in die du gehst, dann wachsen Kurve und Balken;
+  eine neue Woche hebt alle Balken, ein neuer Tag nur seinen.
+- Der Blur-Stil ist gläserner: ein dünnerer Schleier auf Leiste, Panels,
+  Pillen und Widgets, und ein Compositor-Blur, der das Dahinter nicht mehr
+  abdunkelt (Fenster eingeschlossen).
+
+### Behoben
+- App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
+  sie waren verpixelt und im Dock beim Überfahren noch unschärfer.
+
 ## 3.6.0
 
 ### Neu
