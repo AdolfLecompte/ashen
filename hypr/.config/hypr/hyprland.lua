@@ -11,6 +11,7 @@ require("conf/general")
 -- Appearance
 require("conf/decoration")
 require("conf/animations")
+require("conf/windows")
 
 -- Input
 require("conf/input")

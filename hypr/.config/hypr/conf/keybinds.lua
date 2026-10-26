@@ -17,6 +17,8 @@ local function K(id, default)
     return v
 end
 
+local W = require("conf/windows")
+
 -- Shell
 hl.bind(K("wallpaper", mod .. " + SHIFT + W"), hl.dsp.exec_cmd("qs ipc -c ashen call wallpaper toggle"))
 hl.bind(K("notifications", mod .. " + N"),         hl.dsp.exec_cmd("qs ipc -c ashen call notifications toggle"))
@@ -58,8 +60,24 @@ hl.bind(K("launcher", "SUPER + SUPER_L"), hl.dsp.exec_cmd("qs ipc -c ashen call 
 -- Windows
 hl.bind(K("close", mod .. " + Q"),       hl.dsp.window.close())
 hl.bind(K("fullscreen", mod .. " + F"),       hl.dsp.window.fullscreen())
-hl.bind(K("float", mod .. " + SHIFT + F"), hl.dsp.window.float({ action = "toggle" }))
+hl.bind(K("float", mod .. " + SHIFT + F"), W.float)
 hl.bind(K("pseudo", mod .. " + P"),       hl.dsp.window.pseudo())
+hl.bind(K("pin", mod .. " + CTRL + P"),    W.pin)
+
+-- Arrange windows
+hl.bind(K("moveLeft", mod .. " + SHIFT + left"),   hl.dsp.window.move({ direction = "left",  group_aware = true }))
+hl.bind(K("moveRight", mod .. " + SHIFT + right"), hl.dsp.window.move({ direction = "right", group_aware = true }))
+hl.bind(K("moveUp", mod .. " + SHIFT + up"),       hl.dsp.window.move({ direction = "up",    group_aware = true }))
+hl.bind(K("moveDown", mod .. " + SHIFT + down"),   hl.dsp.window.move({ direction = "down",  group_aware = true }))
+hl.bind(K("flipSplit", mod .. " + J"),             hl.dsp.layout("togglesplit"))
+hl.bind(K("swapSplit", mod .. " + K"),             hl.dsp.layout("swapsplit"))
+hl.bind(K("cycleSize", mod .. " + R"),             W.cycleSize)
+hl.bind(K("toggleLayout", mod .. " + SHIFT + L"),  W.toggleLayout)
+
+-- Tabs
+hl.bind(K("group", mod .. " + G"),             hl.dsp.group.toggle())
+hl.bind(K("tabNext", mod .. " + Tab"),         hl.dsp.group.next())
+hl.bind(K("tabPrev", mod .. " + SHIFT + Tab"), hl.dsp.group.prev())
 
 -- Focus
 hl.bind(K("focusLeft", mod .. " + left"),  hl.dsp.focus({ direction = "left"  }))

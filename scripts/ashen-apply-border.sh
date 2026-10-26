@@ -29,3 +29,5 @@ sed -i "s/active_border = { colors = {\"rgba([^)]*)\"} }/active_border = { color
     export HYPRLAND_INSTANCE_SIGNATURE="$(ls -t "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/hypr" 2>/dev/null | head -1)"
 
 hyprctl eval "hl.config({ general = { col = { active_border = { colors = {'rgba(${hex}ff)'} } } } })" >/dev/null 2>&1 || true
+# Tab groups read the same accent file (conf/windows.lua).
+hyprctl eval 'require("conf/windows").paintGroups()' >/dev/null 2>&1 || true
