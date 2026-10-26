@@ -245,19 +245,11 @@ Section {
                             font.pixelSize: 18
                             font.family: "Material Symbols Rounded"
                         }
-                        Image {
+                        // A pin whose .desktop is gone keeps its slot with the generic icon.
+                        Widgets.AppIcon {
                             Layout.preferredWidth: 22
                             Layout.preferredHeight: 22
-                            fillMode: Image.PreserveAspectFit
-                            // A pin whose .desktop is gone still holds its slot, and
-                            // the generic icon is what says so -- a blank gap would
-                            // leave nothing to drag away.
-                            source: {
-                                const ic = pinRow.entry ? pinRow.entry.icon : ""
-                                if (!ic) return Quickshell.iconPath("application-x-executable")
-                                return ic.startsWith("/") ? ("file://" + ic)
-                                                          : Quickshell.iconPath(ic, "application-x-executable")
-                            }
+                            icon: pinRow.entry ? pinRow.entry.icon : ""
                         }
                         Text {
                             textFormat: Text.PlainText
@@ -402,16 +394,10 @@ Section {
                 Layout.fillWidth: true
                 spacing: 10
 
-                Image {
+                Widgets.AppIcon {
                     Layout.preferredWidth: 20
                     Layout.preferredHeight: 20
-                    fillMode: Image.PreserveAspectFit
-                    source: {
-                        const ic = hit.modelData.icon
-                        if (!ic) return Quickshell.iconPath("application-x-executable")
-                        return ic.startsWith("/") ? ("file://" + ic)
-                                                  : Quickshell.iconPath(ic, "application-x-executable")
-                    }
+                    icon: hit.modelData.icon || ""
                 }
                 Text {
                     textFormat: Text.PlainText

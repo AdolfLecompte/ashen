@@ -26,24 +26,12 @@ Item {
 
     // Centred on the tile, not on the room above the dot: the plate centres
     // the tile, so anything else sits off its middle. The dot fits under it.
-    Image {
+    // A pin whose .desktop is gone keeps its slot with the generic icon.
+    Widgets.AppIcon {
         anchors.centerIn: parent
         width: parent.width - 14
         height: parent.height - 14
-        // iconPath is (icon), (icon, check: bool) or (icon, fallback: string):
-        // a size passed as the second argument lands on `check`. A missing icon
-        // loads as Ready with Qt's placeholder rather than failing, so the
-        // theme's generic icon is the honest fallback, not an Image.status one.
-        source: {
-            // A pin whose .desktop is gone -- uninstalled, renamed -- still
-            // holds its slot and shows the generic icon. A blank gap says
-            // nothing and leaves nothing to click to get rid of it.
-            const ic = root.entry ? root.entry.icon : ""
-            if (!ic) return Quickshell.iconPath("application-x-executable")
-            return ic.startsWith("/") ? ("file://" + ic)
-                                      : Quickshell.iconPath(ic, "application-x-executable")
-        }
-        fillMode: Image.PreserveAspectFit
+        icon: root.entry ? root.entry.icon : ""
         opacity: root.warm ? 1.0 : 0.88
         Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msMicro } }
     }

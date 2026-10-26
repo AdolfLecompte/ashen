@@ -404,26 +404,13 @@ Scope {
                                     radius: 10
                                     color: Services.Colors.fillLine
 
-                                    Image {
+                                    Widgets.AppIcon {
                                         id: appImg
                                         anchors.fill: parent
                                         anchors.margins: 6
-                                        // No size overload exists -- iconPath is
-                                        // (icon), (icon, check: bool) or (icon,
-                                        // fallback: string), so the 48 that used
-                                        // to sit here was landing on `check`.
-                                        // A missing icon loads as Ready with Qt's
-                                        // placeholder rather than failing, so the
-                                        // glyph behind this never got its turn:
-                                        // the theme's generic app icon is the
-                                        // honest fallback.
-                                        source: modelData.icon
-                                            ? (modelData.icon.startsWith("/")
-                                               ? ("file://" + modelData.icon)
-                                               : Quickshell.iconPath(modelData.icon, "application-x-executable"))
-                                            : ""
-                                        fillMode: Image.PreserveAspectFit
-                                        visible: status === Image.Ready
+                                        icon: modelData.icon || ""
+                                        // No icon at all: the glyph behind answers instead.
+                                        visible: !!modelData.icon && status === Image.Ready
                                         opacity: 0.85
                                     }
 
@@ -434,7 +421,7 @@ Scope {
                                         color: Services.Colors.ghost
                                         font.pixelSize: 22
                                         font.family: "Material Symbols Rounded"
-                                        visible: appImg.status !== Image.Ready
+                                        visible: !appImg.visible
                                     }
                                 }
 
