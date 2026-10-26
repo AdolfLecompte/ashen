@@ -50,10 +50,9 @@ Singleton {
     // is a page. At 0.55 the Settings panel over a detailed wallpaper was a
     // sheet of text with a train showing through it. Outlined, a panel is
     // thinner than filled and still a surface you can read on.
-    // Blur style: every shell surface is glass like the terminal -- its
-    // background at Hyprland's active_opacity, the compositor blur behind.
+    // Blur style: every shell surface is glass, a thin veil over the compositor blur.
     readonly property bool frosted: Prefs.surfaceStyle === "blur"
-    readonly property color frost: Qt.rgba(abyss.r, abyss.g, abyss.b, 0.60)
+    readonly property color frost: Qt.rgba(abyss.r, abyss.g, abyss.b, 0.45)
     readonly property color surfacePanel: root.frosted ? root.frost
         : Prefs.panelOutline
         ? Qt.rgba(surface.r, surface.g, surface.b, 0.88)
