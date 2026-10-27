@@ -29,6 +29,8 @@ Item {
     property real boxAmt: 0
     property real contentAmt: 0
     property real fade: 0
+    // Contents wait for the box to have most of its room; a plateless panel has no box to wait for.
+    property bool waitForBox: true
 
     readonly property int openMs: root.plain ? 280 : Services.Sizes.panelFlowInMs
     readonly property int closeMs: root.plain ? 210 : Services.Sizes.panelFadeMs + Services.Sizes.panelFlowOutMs
@@ -107,7 +109,7 @@ Item {
             easing.bezierCurve: Services.Sizes.panelFlowCurve
         }
         SequentialAnimation {
-            PauseAnimation { duration: root.plain ? 0 : Services.Sizes.panelFlowInMs / 2 }
+            PauseAnimation { duration: root.plain || !root.waitForBox ? 0 : Services.Sizes.panelFlowInMs / 2 }
             NumberAnimation {
                 target: root; property: "contentAmt"; to: 1
                 duration: root.plain ? root.openMs : Services.Sizes.panelFlowInMs / 2

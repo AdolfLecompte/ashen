@@ -916,10 +916,11 @@ Scope {
                                                 if (implicitHeight > 0)
                                                     win.noteRatio(img.path, implicitWidth / implicitHeight)
 
-                                            // Width only: pinning both fits the thumb
-                                            // inside that box and threw away the
-                                            // resolution the cache had just baked.
-                                            sourceSize.width: 1400
+                                            // Width only (both would fit the thumb in
+                                            // that box), and no wider than the front
+                                            // card at 16:9: decoding the 1400 px thumb
+                                            // on every open held the cards back.
+                                            sourceSize.width: Math.round(win.cardH * 1.8)
                                             fillMode: Image.PreserveAspectCrop
                                             smooth: true
                                             asynchronous: true

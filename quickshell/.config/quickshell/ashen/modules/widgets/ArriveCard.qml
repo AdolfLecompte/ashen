@@ -74,6 +74,7 @@ Item {
     PanelArrive {
         id: arrive
         shown: root.shown
+        waitForBox: !root.plateless
         rise: root.rise
     }
 
