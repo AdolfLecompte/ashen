@@ -16,6 +16,12 @@
 - **Columns**: `SUPER+SHIFT+L` switches the workspace between tiles and the
   scrolling layout, until Hyprland reloads.
 - Floating windows snap to screen edges and to each other.
+- **Tooltips** on icon-only buttons, after a short rest, and a ripple from
+  where you press.
+- **Privacy indicator**: a pill that shows the microphone, camera and
+  screen while something uses them, and leaves when they are free.
+- **Rounded screen corners**, in Settings > Display.
+- `ashen rollback` returns to where the last `ashen update` started.
 
 ### Changed
 - `SUPER+SHIFT+F` floats a window centred at 60 % by 70 % of the screen,
@@ -28,10 +34,18 @@
 - The blur style is glassier: a thinner veil on the bar, panels, pills and
   widgets, and a compositor blur that no longer darkens what is behind it
   (windows included).
+- Settings > Network is cards, like the rest of Settings; the password
+  opens under its network instead of covering the page.
+- The desktop edit bar is icons with the chosen mode named, and the widget
+  tray is grouped, with a check instead of a full accent fill.
+- The wallpaper picker opens in about half the time.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they
   were pixelated, and blurred further when the dock grew them on hover.
+- A polkit agent starts with the session; apps asking for root had no one
+  to ask.
+- Docker's virtual ports no longer show in the Ethernet panel.
 
 ## 3.6.0
 

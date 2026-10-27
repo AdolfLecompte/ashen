@@ -19,6 +19,12 @@ si falta, la bienvenida las enseña en inglés.
 - **Columnas**: `SUPER+SHIFT+L` cambia el escritorio entre mosaico y la
   distribución en columnas, hasta que Hyprland recarga.
 - Las ventanas flotantes se pegan a los bordes y entre sí.
+- **Tooltips** en los botones de solo icono, tras una pausa breve, y una
+  onda desde donde pulsas.
+- **Indicador de privacidad**: una píldora que enseña el micrófono, la
+  cámara y la pantalla mientras algo los usa, y se va al soltarlos.
+- **Esquinas de pantalla redondeadas**, en Ajustes > Pantalla.
+- `ashen rollback` vuelve a donde empezó el último `ashen update`.
 
 ### Cambiado
 - `SUPER+SHIFT+F` flota una ventana centrada al 60 % por 70 % de la
@@ -31,10 +37,19 @@ si falta, la bienvenida las enseña en inglés.
 - El estilo blur es más cristal: un velo más fino en barra, paneles,
   píldoras y widgets, y un blur del compositor que ya no oscurece lo de
   detrás (ventanas incluidas).
+- Ajustes > Red son tarjetas, como el resto de Ajustes; la contraseña se
+  abre bajo su red en vez de tapar la página.
+- La barra de edición del escritorio son iconos con el modo elegido
+  nombrado, y el selector de widgets va agrupado, con una marca en vez de
+  relleno de acento.
+- El selector de fondos abre en la mitad de tiempo.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
   salían pixelados, y más borrosos al crecer en el dock con el puntero.
+- Un agente de polkit arranca con la sesión; las apps que pedían root no
+  tenían quién preguntara.
+- Los puertos virtuales de Docker ya no salen en el panel de Ethernet.
 
 ## 3.6.0
 

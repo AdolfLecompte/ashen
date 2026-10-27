@@ -19,6 +19,12 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - **Spalten**: `SUPER+SHIFT+L` wechselt die Arbeitsfläche zwischen Kacheln
   und dem Spaltenlayout, bis Hyprland neu lädt.
 - Schwebende Fenster rasten an Rändern und aneinander ein.
+- **Tooltips** an reinen Symbol-Schaltflächen nach kurzer Pause, und eine
+  Welle von der Stelle, an der du drückst.
+- **Privatsphäre-Anzeige**: eine Pille zeigt Mikrofon, Kamera und
+  Bildschirm, solange etwas sie nutzt.
+- **Abgerundete Bildschirmecken**, unter Einstellungen > Anzeige.
+- `ashen rollback` kehrt dorthin zurück, wo das letzte `ashen update` begann.
 
 ### Geändert
 - `SUPER+SHIFT+F` lässt ein Fenster zentriert bei 60 % mal 70 % schweben
@@ -31,10 +37,18 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Der Blur-Stil ist gläserner: ein dünnerer Schleier auf Leiste, Panels,
   Pillen und Widgets, und ein Compositor-Blur, der das Dahinter nicht mehr
   abdunkelt (Fenster eingeschlossen).
+- Einstellungen > Netzwerk besteht aus Karten; das Passwort öffnet sich
+  unter seinem Netz, statt die Seite zu verdecken.
+- Die Bearbeitungsleiste des Desktops sind Symbole mit benanntem Modus,
+  die Widget-Auswahl ist gruppiert, mit Haken statt Akzentfüllung.
+- Die Hintergrundauswahl öffnet etwa doppelt so schnell.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
   sie waren verpixelt und im Dock beim Überfahren noch unschärfer.
+- Ein polkit-Agent startet mit der Sitzung; Apps, die root brauchten,
+  konnten nicht fragen.
+- Dockers virtuelle Ports erscheinen nicht mehr im Ethernet-Panel.
 
 ## 3.6.0
 
