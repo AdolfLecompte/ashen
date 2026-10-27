@@ -60,11 +60,16 @@ Rectangle {
         Behavior on color { ColorAnimation { duration: Services.Sizes.pillHoverMs } }
     }
 
-    Ripple {
+    // Built on the first press, not with every button on every page.
+    Loader {
         id: ripple
         anchors.fill: parent
-        radius: btn.radius
-        tint: btn.active ? Services.Colors.accentText : Services.Colors.snow
+        active: false
+        sourceComponent: Ripple {
+            radius: btn.radius
+            tint: btn.active ? Services.Colors.accentText : Services.Colors.snow
+        }
+        function burst(x, y) { ripple.active = true; ripple.item.burst(x, y) }
     }
 
     MouseArea {
@@ -77,5 +82,9 @@ Rectangle {
         onClicked: btn.activated()
     }
 
-    Tip { target: btn; text: btn.tip; show: hover.containsMouse }
+    // Only exists while the pointer is on the button.
+    Loader {
+        active: btn.tip !== "" && hover.containsMouse
+        sourceComponent: Tip { target: btn; text: btn.tip; show: true }
+    }
 }

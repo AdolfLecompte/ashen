@@ -68,11 +68,16 @@ Rectangle {
         Behavior on color { ColorAnim {} }
     }
 
-    Ripple {
+    // Built on the first press, not with every chip on every page.
+    Loader {
         id: ripple
         anchors.fill: parent
-        radius: chip.radius
-        tint: chip.lit && !Services.Pills.rings ? Services.Colors.accentText : Services.Colors.snow
+        active: false
+        sourceComponent: Ripple {
+            radius: chip.radius
+            tint: chip.lit && !Services.Pills.rings ? Services.Colors.accentText : Services.Colors.snow
+        }
+        function burst(x, y) { ripple.active = true; ripple.item.burst(x, y) }
     }
 
     MouseArea {
@@ -85,5 +90,9 @@ Rectangle {
         onClicked: chip.triggered()
     }
 
-    Tip { target: chip; text: chip.tip; show: hover.containsMouse && !chip.inert }
+    // Only exists while the pointer is on the chip.
+    Loader {
+        active: chip.tip !== "" && hover.containsMouse && !chip.inert
+        sourceComponent: Tip { target: chip; text: chip.tip; show: true }
+    }
 }
