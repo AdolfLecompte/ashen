@@ -468,6 +468,7 @@ PanelWindow {
             readonly property real m: root.ctlInPill ? card.morph : 1
             opacity: root.ctlInPill ? 1 : card.contentAmt
             glyph: "\ue045"
+            tip: Services.I18n.t("kb.prevTrack")
             size: card.lerp(root.chipSm, panelRef.chipLg, flyPrev.m)
             glyphSize: card.lerp(18, 20, flyPrev.m)
             available: root.activePlayer !== null && root.activePlayer.canGoPrevious
@@ -497,6 +498,7 @@ PanelWindow {
             readonly property real m: root.ctlInPill ? card.morph : 1
             opacity: root.ctlInPill ? 1 : card.contentAmt
             glyph: "\ue044"
+            tip: Services.I18n.t("kb.nextTrack")
             size: card.lerp(root.chipSm, panelRef.chipLg, flyNext.m)
             glyphSize: card.lerp(18, 20, flyNext.m)
             available: root.activePlayer !== null && root.activePlayer.canGoNext

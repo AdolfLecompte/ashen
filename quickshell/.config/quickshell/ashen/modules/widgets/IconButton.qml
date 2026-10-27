@@ -16,6 +16,8 @@ Rectangle {
     property bool active: false
     // There but not usable: dimmed, and it does not react.
     property bool available: true
+    // Its name, shown after a rest; empty for none.
+    property string tip: ""
 
     // For a row that only reveals its button on hover: the row has to keep the
     // button shown while the pointer is on the button itself.
@@ -58,12 +60,22 @@ Rectangle {
         Behavior on color { ColorAnimation { duration: Services.Sizes.pillHoverMs } }
     }
 
+    Ripple {
+        id: ripple
+        anchors.fill: parent
+        radius: btn.radius
+        tint: btn.active ? Services.Colors.accentText : Services.Colors.snow
+    }
+
     MouseArea {
         id: hover
         anchors.fill: parent
         hoverEnabled: true
         enabled: btn.available
         cursorShape: Qt.PointingHandCursor
+        onPressed: mouse => ripple.burst(mouse.x, mouse.y)
         onClicked: btn.activated()
     }
+
+    Tip { target: btn; text: btn.tip; show: hover.containsMouse }
 }

@@ -107,6 +107,7 @@ Item {
                 size: 22
                 glyphSize: 13
                 glyph: rd.playing ? "" : ""
+                tip: Services.I18n.t("kb.playPause")
                 active: rd.playing
                 onTriggered: rd.toggled()
             }
@@ -115,6 +116,7 @@ Item {
                 size: 22
                 glyphSize: 13
                 glyph: ""
+                tip: Services.I18n.t("tip.reset")
                 available: rd.canReset
                 onTriggered: rd.cleared()
             }

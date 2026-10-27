@@ -700,6 +700,7 @@ Item {
                         size: root.chipLg
                         glyphSize: 20
                         glyph: "\ue045"
+                        tip: Services.I18n.t("kb.prevTrack")
                         available: root.activePlayer !== null && root.activePlayer.canGoPrevious
                         onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(-1); root.activePlayer.previous() }
                     }
@@ -723,6 +724,7 @@ Item {
                         size: root.chipLg
                         glyphSize: 20
                         glyph: "\ue044"
+                        tip: Services.I18n.t("kb.nextTrack")
                         available: root.activePlayer !== null && root.activePlayer.canGoNext
                         onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(1); root.activePlayer.next() }
                     }

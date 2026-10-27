@@ -336,11 +336,13 @@ Item {
 
                 Widgets.CtlChip {
                     glyph: "\ue045"
+                    tip: Services.I18n.t("kb.prevTrack")
                     available: root.activePlayer !== null && root.activePlayer.canGoPrevious
                     onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(-1); root.activePlayer.previous() }
                 }
                 Widgets.CtlChip {
                     glyph: root.activePlayer !== null && root.activePlayer.isPlaying ? "\ue034" : "\ue037"
+                    tip: Services.I18n.t("kb.playPause")
                     glyphSize: 20
                     available: root.hasPlayer
                     active: root.activePlayer !== null && root.activePlayer.isPlaying
@@ -348,6 +350,7 @@ Item {
                 }
                 Widgets.CtlChip {
                     glyph: "\ue044"
+                    tip: Services.I18n.t("kb.nextTrack")
                     available: root.activePlayer !== null && root.activePlayer.canGoNext
                     onTriggered: if (root.activePlayer) { Services.AppState.mediaStep(1); root.activePlayer.next() }
                 }

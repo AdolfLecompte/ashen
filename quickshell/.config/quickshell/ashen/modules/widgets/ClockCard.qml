@@ -674,16 +674,19 @@ Item {
                             spacing: 8
                             CtlChip {
                                 glyph: Services.Stopwatch.running ? "" : ""
+                                tip: Services.I18n.t("kb.playPause")
                                 active: Services.Stopwatch.running
                                 onTriggered: Services.Stopwatch.toggle()
                             }
                             CtlChip {
                                 glyph: ""
+                                tip: Services.I18n.t("tip.lap")
                                 available: Services.Stopwatch.running
                                 onTriggered: Services.Stopwatch.lap()
                             }
                             CtlChip {
                                 glyph: ""
+                                tip: Services.I18n.t("tip.reset")
                                 available: !Services.Stopwatch.idle
                                 onTriggered: Services.Stopwatch.reset()
                             }
@@ -823,12 +826,14 @@ Item {
                             spacing: 8
                             CtlChip {
                                 glyph: Services.Countdown.running ? "" : ""
+                                tip: Services.I18n.t("kb.playPause")
                                 active: Services.Countdown.running
                                 available: Services.Countdown.remaining > 0
                                 onTriggered: Services.Countdown.toggle()
                             }
                             CtlChip {
                                 glyph: ""
+                                tip: Services.I18n.t("tip.reset")
                                 available: Services.Countdown.active
                                 onTriggered: Services.Countdown.reset()
                             }
@@ -889,12 +894,14 @@ Item {
                         // it is the middle of what they move you away from.
                         CtlChip {
                             glyph: "\ue5cb"
+                            tip: Services.I18n.t("tip.prev")
                             size: 28
                             glyphSize: 17
                             onTriggered: grid.monthIndex--
                         }
                         CtlChip {
                             glyph: "\ue8df"
+                            tip: Services.I18n.t("tip.today")
                             size: 28
                             glyphSize: 15
                             // Lit while you are already looking at this month.
@@ -905,6 +912,7 @@ Item {
                         }
                         CtlChip {
                             glyph: "\ue5cc"
+                            tip: Services.I18n.t("tip.next")
                             size: 28
                             glyphSize: 17
                             onTriggered: grid.monthIndex++
@@ -996,6 +1004,7 @@ Item {
                 CtlChip {
                     anchors.verticalCenter: parent.verticalCenter
                     glyph: ""
+                    tip: Services.I18n.t("tip.prev")
                     size: 26
                     glyphSize: 16
                     available: root.selDay > 0
@@ -1025,6 +1034,7 @@ Item {
                 CtlChip {
                     anchors.verticalCenter: parent.verticalCenter
                     glyph: ""
+                    tip: Services.I18n.t("tip.next")
                     size: 26
                     glyphSize: 16
                     available: root.selDay < root.fcDays.length - 1

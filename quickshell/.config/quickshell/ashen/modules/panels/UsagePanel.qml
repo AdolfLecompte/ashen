@@ -214,6 +214,7 @@ PanelWindow {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         glyph: ""
+                        tip: Services.I18n.t("tip.prev")
                         size: 26
                         glyphSize: 16
                         onTriggered: win.selected = win.shift(win.day, -1)
@@ -234,6 +235,7 @@ PanelWindow {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         glyph: ""
+                        tip: Services.I18n.t("tip.next")
                         size: 26
                         glyphSize: 16
                         available: !win.isToday
@@ -625,12 +627,14 @@ PanelWindow {
                                     spacing: Services.Sizes.btnGap
                                     Widgets.CtlChip {
                                         glyph: ""
+                                        tip: Services.I18n.t("tip.prev")
                                         size: 28
                                         glyphSize: 17
                                         onTriggered: win.selected = win.shiftMonth(win.day, -1)
                                     }
                                     Widgets.CtlChip {
                                         glyph: ""
+                                        tip: Services.I18n.t("tip.today")
                                         size: 28
                                         glyphSize: 15
                                         active: win.isToday
@@ -638,6 +642,7 @@ PanelWindow {
                                     }
                                     Widgets.CtlChip {
                                         glyph: ""
+                                        tip: Services.I18n.t("tip.next")
                                         size: 28
                                         glyphSize: 17
                                         available: grid.monthIndex < monthCol.nowIndex

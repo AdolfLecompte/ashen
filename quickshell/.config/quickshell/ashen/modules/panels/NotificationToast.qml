@@ -355,6 +355,7 @@ PanelWindow {
                     Widgets.IconButton {
                         size: 24
                         glyph: "\ue5cd"
+                        tip: Services.I18n.t("tip.dismiss")
                         anchors.top: parent.top
                         anchors.right: parent.right
                         anchors.margins: 8

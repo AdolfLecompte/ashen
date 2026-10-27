@@ -245,6 +245,7 @@ Scope {
                         Widgets.IconButton {
                             size: 24
                             glyph: "\ue5cd"
+                            tip: Services.I18n.t("tip.clear")
                             visible: searchField.text.length > 0
                             onActivated: searchField.text = ""
                         }
@@ -253,12 +254,14 @@ Scope {
                         Widgets.IconButton {
                             size: 24
                             glyph: "\ue1bc"      // wallpaper
+                            tip: Services.I18n.t("kb.ipc.wallpaper")
                             visible: searchField.text.length === 0
                             onActivated: Services.AppState.togglePanel("wallpaperVisible")
                         }
                         Widgets.IconButton {
                             size: 24
                             glyph: "\ue8b8"      // settings
+                            tip: Services.I18n.t("kb.ipc.settings")
                             visible: searchField.text.length === 0
                             onActivated: Services.AppState.togglePanel("settingsVisible")
                         }

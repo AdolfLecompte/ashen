@@ -13,6 +13,8 @@ Rectangle {
     property real glyphSize: 18
     property bool available: true
     property bool active: false
+    // Its name, shown after a rest; empty for none.
+    property string tip: ""
     // Laid out but not operated: the media morph parks an invisible copy in the
     // card's layout to reserve the slot, and that copy must not react to
     // anything — the real chip is flying above it.
@@ -66,12 +68,22 @@ Rectangle {
         Behavior on color { ColorAnim {} }
     }
 
+    Ripple {
+        id: ripple
+        anchors.fill: parent
+        radius: chip.radius
+        tint: chip.lit && !Services.Pills.rings ? Services.Colors.accentText : Services.Colors.snow
+    }
+
     MouseArea {
         id: hover
         anchors.fill: parent
         hoverEnabled: !chip.inert
         cursorShape: Qt.PointingHandCursor
         enabled: chip.available && !chip.inert
+        onPressed: mouse => ripple.burst(mouse.x, mouse.y)
         onClicked: chip.triggered()
     }
+
+    Tip { target: chip; text: chip.tip; show: hover.containsMouse && !chip.inert }
 }

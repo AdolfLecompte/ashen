@@ -257,6 +257,7 @@ DesktopWidget {
                     Widgets.CtlChip {
                         size: 28
                         glyph: (root.player && root.player.isPlaying) ? "\ue034" : "\ue037"
+                        tip: Services.I18n.t("kb.playPause")
                         active: root.player !== null && root.player.isPlaying
                         onTriggered: Services.Media.playPause()
                     }

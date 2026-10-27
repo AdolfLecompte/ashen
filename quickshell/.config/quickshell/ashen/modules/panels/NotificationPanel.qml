@@ -327,6 +327,7 @@ Scope {
                 }
                 Widgets.IconButton {
                     glyph: "\ue5cd"
+                    tip: Services.I18n.t("tip.close")
                     onActivated: Services.AppState.notificationsVisible = false
                 }
             }
@@ -497,6 +498,7 @@ Scope {
                             Widgets.IconButton {
                                 size: 24
                                 glyph: group.open ? "\ue5ce" : "\ue5cf"
+                                tip: Services.I18n.t("tip.expand")
                                 onActivated: win.toggleGroup(group.modelData.app)
                             }
                             Widgets.IconButton {

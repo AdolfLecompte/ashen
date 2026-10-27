@@ -70,6 +70,7 @@ Rectangle {
             Layout.preferredHeight: 28
             visible: row.known
             glyph: "\ue5cd"
+            tip: Services.I18n.t("tip.forget")
             onActivated: row.forget()
         }
     }

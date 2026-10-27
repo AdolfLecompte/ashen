@@ -154,11 +154,13 @@ PanelWindow {
                     spacing: 6
                     Widgets.IconButton {
                         glyph: "\ue5d8"
+                        tip: Services.I18n.t("tip.up")
                         size: 28
                         onActivated: Services.Picker.up()
                     }
                     Widgets.IconButton {
                         glyph: "\ue5cd"
+                        tip: Services.I18n.t("tip.close")
                         size: 28
                         onActivated: Services.Picker.close()
                     }

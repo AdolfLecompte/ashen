@@ -99,6 +99,7 @@ Rectangle {
             Layout.preferredHeight: 28
             visible: row.remembered
             glyph: "\ue5cd"
+            tip: Services.I18n.t("tip.forget")
             onActivated: row.device.forget()
         }
     }
