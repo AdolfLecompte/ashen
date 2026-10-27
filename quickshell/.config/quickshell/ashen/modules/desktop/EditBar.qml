@@ -3,8 +3,8 @@ import QtQuick
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
-// While the desktop is being arranged: how things land, and the way out. It is
-// also where you learn that Escape works.
+// While the desktop is being arranged: how things land, the widget tray, and
+// the way out. Modes are icons; only the chosen one says its name.
 Item {
     id: root
 
@@ -19,25 +19,24 @@ Item {
     visible: opacity > 0
     opacity: root.shown ? 1 : 0
     Behavior on opacity { Widgets.Anim {} }
-    transform: Translate { y: root.shown ? 0 : -16 }
+    transform: Translate { y: root.shown ? 0 : -16; Behavior on y { Widgets.Anim {} } }
 
     Rectangle {
         id: plate
-        width: row.width + 20
+        width: row.width + 16
         height: 44
         radius: Services.Sizes.pillR
         color: Services.Colors.surfacePanel
         border.width: Services.Colors.panelEdgeW
         border.color: Services.Colors.panelEdgeColor
 
-        // Behind the chosen mode, travelling between them. A child of the plate
-        // and of no Row at all: a Row lays out everything it holds, so a marker
-        // inside one takes a slot of its own and shoves the first mode aside.
+        // Behind the chosen mode, travelling between them. A child of the plate,
+        // not of a Row: a Row would give the marker a slot of its own.
         Rectangle {
             x: row.x + modes.x + (modes.activeItem ? modes.activeItem.x : 0)
             y: row.y + modes.y
             width: modes.activeItem ? modes.activeItem.width : 0
-            height: 28
+            height: 30
             radius: Services.Sizes.innerR
             color: Services.Colors.ghost
             gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
@@ -49,7 +48,7 @@ Item {
         Row {
             id: row
             anchors.centerIn: parent
-            spacing: 14
+            spacing: 8
 
             Row {
                 id: modes
@@ -58,35 +57,52 @@ Item {
                 property Item activeItem: null
 
                 Repeater {
-                    model: [{ id: "free", label: Services.I18n.t("widget.free") },
-                            { id: "grid", label: Services.I18n.t("widget.grid") },
-                            { id: "magnet", label: Services.I18n.t("widget.magnet") }]
+                    model: [{ id: "free", glyph: "", label: Services.I18n.t("widget.free") },
+                            { id: "grid", glyph: "", label: Services.I18n.t("widget.grid") },
+                            { id: "magnet", glyph: "", label: Services.I18n.t("widget.magnet") }]
 
                     Item {
                         id: mode
                         required property var modelData
                         readonly property bool active: Services.Desktop.snap === mode.modelData.id
-                        width: modeText.implicitWidth + 24
-                        height: 28
+                        width: mode.active ? modeRow.implicitWidth + 24 : 34
+                        height: 30
+                        clip: true
+                        Behavior on width { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
 
                         onActiveChanged: if (active) modes.activeItem = mode
                         Component.onCompleted: if (active) modes.activeItem = mode
 
-                        Text {
-                            textFormat: Text.PlainText
-                            id: modeText
+                        Row {
+                            id: modeRow
                             anchors.centerIn: parent
-                            text: mode.modelData.label
-                            color: mode.active ? Services.Colors.accentText
-                                 : modeHover.containsMouse ? Services.Colors.snow
-                                 : Services.Colors.mist
-                            font.pixelSize: Services.Sizes.fsBody
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+                            spacing: 6
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: mode.modelData.glyph
+                                color: mode.active ? Services.Colors.accentText
+                                     : modeHover.containsMouse ? Services.Colors.snow
+                                     : Services.Colors.mist
+                                font.pixelSize: 17
+                                font.family: "Material Symbols Rounded"
+                                Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+                            }
+                            Text {
+                                textFormat: Text.PlainText
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: mode.active
+                                text: mode.modelData.label
+                                color: Services.Colors.accentText
+                                font.pixelSize: Services.Sizes.fsBody
+                                font.bold: true
+                                font.family: "JetBrainsMono NF"
+                            }
                         }
                         scale: Services.Sizes.hoverScale(modeHover.containsMouse, modeHover.pressed)
                         Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
+
+                        Widgets.Tip { target: mode; text: mode.modelData.label; show: modeHover.containsMouse && !mode.active }
 
                         MouseArea {
                             id: modeHover
@@ -106,55 +122,39 @@ Item {
                 color: Services.Colors.fillLine
             }
 
-            // The tray of widgets: what is out, and what could be. It hangs
-            // below this bar rather than inside it -- see WidgetTray.
+            // The widget tray (it hangs below this bar -- see WidgetTray). The
+            // plus turns into a cross while it is open.
             Item {
                 id: tray
                 anchors.verticalCenter: parent.verticalCenter
-                width: trayRow.implicitWidth + 24
-                height: 28
-
+                width: 34
+                height: 30
                 readonly property bool open: Services.Desktop.trayOpen
 
                 Rectangle {
                     anchors.fill: parent
                     radius: Services.Sizes.innerR
                     color: tray.open ? Services.Colors.ghost : Services.Colors.fillRest
-                    gradient: Services.Prefs.useGradients && tray.open
-                        ? Services.Colors.accentGradient : null
+                    gradient: Services.Prefs.useGradients && tray.open ? Services.Colors.accentGradient : null
                     Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
-                Row {
-                    id: trayRow
+                Text {
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
-                    spacing: 6
-
-                    Text {
-                        textFormat: Text.PlainText
-                        text: "\ue1bd"
-                        color: tray.open ? Services.Colors.accentText
-                             : trayHover.containsMouse ? Services.Colors.snow
-                             : Services.Colors.ash
-                        font.pixelSize: 14
-                        font.family: "Material Symbols Rounded"
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                    }
-                    Text {
-                        textFormat: Text.PlainText
-                        text: Services.I18n.t("widget.widgets")
-                        color: tray.open ? Services.Colors.accentText
-                             : trayHover.containsMouse ? Services.Colors.snow
-                             : Services.Colors.mist
-                        font.pixelSize: Services.Sizes.fsBody
-                        font.bold: true
-                        font.family: "JetBrainsMono NF"
-                        anchors.verticalCenter: parent.verticalCenter
-                        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
-                    }
+                    text: ""
+                    rotation: tray.open ? 45 : 0
+                    Behavior on rotation { Widgets.Anim {} }
+                    color: tray.open ? Services.Colors.accentText
+                         : trayHover.containsMouse ? Services.Colors.snow
+                         : Services.Colors.mist
+                    font.pixelSize: 20
+                    font.family: "Material Symbols Rounded"
+                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
                 }
                 scale: Services.Sizes.hoverScale(trayHover.containsMouse, trayHover.pressed)
                 Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
+
+                Widgets.Tip { target: tray; text: Services.I18n.t("widget.widgets"); show: trayHover.containsMouse }
 
                 MouseArea {
                     id: trayHover
@@ -165,36 +165,41 @@ Item {
                 }
             }
 
-            Text {
-                textFormat: Text.PlainText
-                anchors.verticalCenter: parent.verticalCenter
-                text: Services.I18n.t("widget.escapeDone")
-                color: Services.Colors.ash
-                font.pixelSize: Services.Sizes.fsMeta
-                font.family: "JetBrainsMono NF"
-            }
-
+            // The way out, with the key that does the same.
             Item {
                 id: done
                 anchors.verticalCenter: parent.verticalCenter
-                width: doneText.implicitWidth + 26
-                height: 28
+                width: doneRow.implicitWidth + 20
+                height: 30
 
                 Rectangle {
                     anchors.fill: parent
                     radius: Services.Sizes.innerR
-                    color: Services.Colors.fillRest
+                    color: Services.Colors.ghost
+                    gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
                 }
-                Text {
-                    textFormat: Text.PlainText
-                    id: doneText
+                Row {
+                    id: doneRow
                     anchors.centerIn: parent
-                    text: Services.I18n.t("common.done")
-                    color: doneHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
-                    font.pixelSize: Services.Sizes.fsBody
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                    Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+                    spacing: 8
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Services.I18n.t("common.done")
+                        color: Services.Colors.accentText
+                        font.pixelSize: Services.Sizes.fsBody
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "esc"
+                        color: Services.Colors.accentText
+                        opacity: 0.6
+                        font.pixelSize: Services.Sizes.fsMeta
+                        font.family: "JetBrainsMono NF"
+                    }
                 }
                 scale: Services.Sizes.hoverScale(doneHover.containsMouse, doneHover.pressed)
                 Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }

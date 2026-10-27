@@ -122,15 +122,15 @@ DesktopWidget {
             }
         }
 
-        // While framing, the edges of the picture are what you are aiming, so
-        // the frame says where it ends.
+        // The grab edge every widget wears while arranging, drawn here because
+        // the picture covers the plate's; while framing it marks where it ends.
         Rectangle {
             anchors.fill: parent
             color: "transparent"
             // The frame's own number, not `parent.radius`: a ClippingRectangle
             // does not publish one, and reading it hands back undefined.
             radius: Services.Sizes.panelR
-            border.width: root.cropping ? 2 : 0
+            border.width: root.editing ? 2 : 0
             border.color: Services.Colors.ghost
             Behavior on border.width { Widgets.Anim { speed: Services.Sizes.msMicro } }
         }

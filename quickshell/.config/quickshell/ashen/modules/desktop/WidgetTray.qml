@@ -27,11 +27,11 @@ Item {
     visible: opacity > 0
     opacity: root.shown ? 1 : 0
     Behavior on opacity { Widgets.Anim {} }
-    transform: Translate { y: root.shown ? 0 : -12 }
+    transform: Translate { y: root.shown ? 0 : -12; Behavior on y { Widgets.Anim {} } }
 
     // A tile in the tray: the widget's face over its name, and under that the
-    // shape it is wearing. Out = the accent fill, the same mark the shapes use;
-    // idle is a bare plate that only brightens under the pointer.
+    // shape it is wearing. Out = accent glyph and a check; the plate never fills,
+    // so a desktop with ten widgets out is not a wall of accent.
     component Tile: Item {
         id: tile
         property string glyph: ""
@@ -51,10 +51,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: Services.Sizes.cardR
-            color: tile.lit ? Services.Colors.ghost : Services.Colors.fillRest
-            gradient: Services.Prefs.useGradients && tile.lit
-                ? Services.Colors.accentGradient : null
-            Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
+            color: Services.Colors.fillRest
         }
 
         // The photo over that plate rather than as its colour: a
@@ -92,7 +89,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible: !tile.shows
                 text: tile.glyph
-                color: tile.lit ? Services.Colors.accentText
+                color: tile.lit ? Services.Colors.ghost
                      : tile.warm ? Services.Colors.snow : Services.Colors.ash
                 font.pixelSize: 24
                 font.family: "Material Symbols Rounded"
@@ -105,8 +102,7 @@ Item {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 text: tile.label
-                color: tile.lit ? Services.Colors.accentText
-                     : tile.warm ? Services.Colors.snow : Services.Colors.mist
+                color: tile.lit || tile.warm ? Services.Colors.snow : Services.Colors.mist
                 font.pixelSize: Services.Sizes.fsBody
                 font.bold: true
                 font.family: "JetBrainsMono NF"
@@ -126,11 +122,29 @@ Item {
                 // widget you cannot read off its own tile.
                 text: tile.note
                 visible: tile.note !== ""
-                color: tile.lit ? Services.Colors.accentText : Services.Colors.ash
-                opacity: tile.lit ? 0.75 : 1
+                color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
                 elide: Text.ElideMiddle
+            }
+        }
+
+        // Out on the desktop.
+        Rectangle {
+            visible: tile.lit
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: 6
+            width: 16; height: 16; radius: 8
+            color: Services.Colors.ghost
+            Text {
+                textFormat: Text.PlainText
+                anchors.centerIn: parent
+                text: "\ue5ca"
+                color: Services.Colors.accentText
+                font.pixelSize: 12
+                font.bold: true
+                font.family: "Material Symbols Rounded"
             }
         }
 
@@ -146,81 +160,110 @@ Item {
         }
     }
 
+    readonly property int cols: Math.max(1, Math.min(7, Math.floor((root.maxWidth + 8) / 104)))
+    readonly property int blockW: root.cols * 96 + (root.cols - 1) * 8
+
     Rectangle {
         id: plate
-        width: grid.width + 24
-        height: grid.height + 24
+        width: groups.width + 24
+        height: groups.height + 24
         radius: Services.Sizes.panelR
         color: Services.Colors.surfacePanel
         border.width: Services.Colors.panelEdgeW
         border.color: Services.Colors.panelEdgeColor
 
-        // One grid for everything -- the widgets, the pictures you have, and
-        // the way to add another. Two grids left the last widget alone on a row
-        // and the pictures stranded on another; a palette is a block or it is
-        // nothing.
-        Grid {
-            id: grid
+        // A block per kind (Desktop.groupOrder), each under its name; pictures
+        // close the tray with the tile that adds one.
+        Column {
+            id: groups
             x: 12
             y: 12
-            columns: Math.max(1, Math.min(7, Math.floor((root.maxWidth + 8) / 104)))
-            spacing: 8
+            width: root.blockW
+            spacing: 12
 
             Repeater {
-                model: {
-                    let out = []
-                    for (const w of Services.Desktop.trayOrder)
-                        out.push({ kind: "widget", id: w.id, glyph: w.glyph, label: Services.I18n.tr("desktop.w." + w.id, w.label) })
-                    for (const id of Services.Desktop.idsOf("image"))
-                        out.push({ kind: "picture", id: id, glyph: "\ue3f4", label: Services.I18n.t("widget.picture") })
-                    out.push({ kind: "add", id: "", glyph: "\ue145", label: Services.I18n.t("widget.picture") })
-                    return out
-                }
+                model: Services.Desktop.groupOrder
 
-                Item {
-                    id: cell
-                    required property var modelData
-                    readonly property bool isPic: cell.modelData.kind === "picture"
-                    readonly property string src: cell.isPic
-                        ? Services.Desktop.entry(cell.modelData.id).src : ""
-
-                    width: 96
-                    height: 72
-
-                    Tile {
-                        anchors.fill: parent
-                        glyph: cell.modelData.glyph
-                        label: cell.modelData.label
-                        // A picture is on by existing, so the accent here would
-                        // be saying something untrue; the "add" tile is a verb.
-                        lit: cell.modelData.kind === "widget"
-                             && Services.Desktop.shown(cell.modelData.id)
-                        note: cell.modelData.kind === "add" ? "add"
-                            : cell.isPic ? ""
-                            : (lit ? Services.Desktop.styleLabel(cell.modelData.id) : "")
-                        // The photo itself, behind its own tile: "Picture" over
-                        // a filename told you nothing about which one it was.
-                        thumb: cell.src
-                        onPicked: {
-                            if (cell.modelData.kind === "add")
-                                Services.Desktop.pickInto(Services.Desktop.add("image"))
-                            else if (cell.isPic)
-                                Services.Desktop.pickInto(cell.modelData.id)
-                            else
-                                Services.Desktop.toggle(cell.modelData.id)
+                Column {
+                    id: group
+                    required property string modelData
+                    readonly property var items: {
+                        if (group.modelData === "picture") {
+                            let out = []
+                            for (const id of Services.Desktop.idsOf("image"))
+                                out.push({ kind: "picture", id: id, glyph: "\ue3f4", label: Services.I18n.t("widget.picture") })
+                            out.push({ kind: "add", id: "", glyph: "\ue145", label: Services.I18n.t("widget.picture") })
+                            return out
                         }
+                        return Services.Desktop.trayOrder.filter(w => w.group === group.modelData)
+                            .map(w => ({ kind: "widget", id: w.id, glyph: w.glyph,
+                                         label: Services.I18n.tr("desktop.w." + w.id, w.label) }))
                     }
+                    width: groups.width
+                    spacing: 6
+                    visible: group.items.length > 0
 
-                    // Taking one away is the same cross as everywhere else in
-                    // the shell; there is no bin in this project.
-                    Widgets.IconButton {
-                        visible: cell.isPic
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: 3
-                        glyph: "\ue5cd"
-                        size: 22
-                        onActivated: Services.Desktop.remove(cell.modelData.id)
+                    Text {
+                        textFormat: Text.PlainText
+                        leftPadding: 2
+                        text: Services.I18n.t("widget.group." + group.modelData)
+                        color: Services.Colors.ash
+                        font.pixelSize: Services.Sizes.fsMeta
+                        font.bold: true
+                        font.letterSpacing: 1
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Flow {
+                        width: groups.width
+                        spacing: 8
+                        Repeater {
+                            model: group.items
+                            // One cell: a widget, a picture you have, or the way to add one.
+                            Item {
+                                id: cell
+                                required property var modelData
+                                readonly property var item: modelData
+                                readonly property bool isPic: cell.item.kind === "picture"
+                                readonly property string src: cell.isPic ? Services.Desktop.entry(cell.item.id).src : ""
+
+                                width: 96
+                                height: 72
+
+                                Tile {
+                                    anchors.fill: parent
+                                    glyph: cell.item.glyph
+                                    label: cell.item.label
+                                    // A picture is on by existing, and "add" is a verb: neither is lit.
+                                    lit: cell.item.kind === "widget" && Services.Desktop.shown(cell.item.id)
+                                    note: cell.item.kind === "add" ? Services.I18n.t("widget.add")
+                                        : cell.isPic ? ""
+                                        : (lit ? Services.Desktop.styleLabel(cell.item.id) : "")
+                                    // The photo itself, behind its own tile.
+                                    thumb: cell.src
+                                    onPicked: {
+                                        if (cell.item.kind === "add")
+                                            Services.Desktop.pickInto(Services.Desktop.add("image"))
+                                        else if (cell.isPic)
+                                            Services.Desktop.pickInto(cell.item.id)
+                                        else
+                                            Services.Desktop.toggle(cell.item.id)
+                                    }
+                            }
+
+                            // Taking one away is the same cross as everywhere else in the shell.
+                            Widgets.IconButton {
+                                visible: cell.isPic
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.margins: 3
+                                glyph: "\ue5cd"
+                                tip: Services.I18n.t("tip.remove")
+                                size: 22
+                                onActivated: Services.Desktop.remove(cell.item.id)
+                            }
+
+                            }
+                        }
                     }
                 }
             }
