@@ -7,17 +7,18 @@ import "root:/modules/widgets" as Widgets
 import "root:/modules/settings/components"
 import "root:/modules/net" as Net
 
-Item {
+// Bluetooth as cards, the way Wi-Fi is: the radio and what is connected, the
+// devices you own, and the ones nearby.
+TabPage {
     id: tab
-    anchors.fill: parent
 
     property var adapter: Bluetooth.defaultAdapter
+    readonly property bool radioOn: tab.adapter !== null && tab.adapter.enabled
+    readonly property bool scanning: tab.adapter !== null && tab.adapter.discovering
+    readonly property bool connected: Services.Network.btDevice !== ""
 
-    // Split the way Wi-Fi splits. BlueZ hands back one list with the mouse you
-    // have owned for a year next to a stranger's headphones walking past, and
-    // the thing you came here for is the one you already own. Same test the
-    // row itself uses for its forget button: BlueZ remembers a device as
-    // paired, bonded or trusted, and controllers are often trusted-only.
+    // BlueZ remembers a device as paired, bonded or trusted, and controllers
+    // are often trusted-only -- the same test the row uses for its forget button.
     readonly property var allDevices: tab.adapter ? tab.adapter.devices.values : []
     readonly property var knownDevices:
         tab.allDevices.filter(d => d.paired || d.bonded || d.trusted)
@@ -53,133 +54,99 @@ Item {
         }
     }
 
-    ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: 28
-        spacing: 14
+    // ── The radio, and what is connected ─────────────────────────────────
+    Card {
+        glyph: ""
+        title: Services.I18n.t("settings.tab.bluetooth")
 
         RowLayout {
             Layout.fillWidth: true
-            Text {
-                textFormat: Text.PlainText
-                visible: false   // the drawer header carries the section name
-                text: Services.I18n.t("settings.tab.bluetooth")
-                color: Services.Colors.snow
-                font.pixelSize: Services.Sizes.fsPanelTitle
-                font.bold: true
-                font.family: "JetBrainsMono NF"
+            spacing: 10
+
+            RowGlyph { glyph: !tab.radioOn ? "" : tab.connected ? "" : "" }
+            ColumnLayout {
+                spacing: 0
                 Layout.fillWidth: true
+                Text {
+                    textFormat: Text.PlainText
+                    Layout.fillWidth: true
+                    text: !tab.adapter ? Services.I18n.t("settings.bt.noAdapter")
+                        : tab.connected ? Services.Network.btDevice
+                        : tab.radioOn ? Services.I18n.t("settings.net.notConnected")
+                        : Services.I18n.t("settings.net.off")
+                    color: tab.connected ? Services.Colors.snow : Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.bold: tab.connected
+                    font.family: "JetBrainsMono NF"
+                    elide: Text.ElideRight
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    visible: tab.connected
+                    text: Services.I18n.t("settings.net.connected")
+                    color: Services.Colors.ghost
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
             }
-            Widgets.IconButton {
-                glyph: ""
-                active: tab.adapter && tab.adapter.discovering
-                onActivated: tab.startScan()
-            }
-            Item { Layout.fillWidth: true }
             Toggle {
-                checked: tab.adapter !== null && tab.adapter.enabled
+                checked: tab.radioOn
                 enabled: tab.adapter !== null
                 onToggled: if (tab.adapter) tab.adapter.enabled = !tab.adapter.enabled
             }
         }
+    }
 
-        Rectangle {
-            Layout.fillWidth: true
-            height: Services.Network.btDevice !== "" ? 64 : 0
-            visible: Services.Network.btDevice !== ""
-            radius: Services.Sizes.innerR
-            // Filled, not outlined: the accent border read as a glow and
-            // nothing else in the shell outlines a selection.
-            color: Services.Colors.fillRest
-            border.width: 0
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 10
-                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
-                Column {
-                    Layout.fillWidth: true
-                    spacing: 2
-                    Text { textFormat: Text.PlainText; text: Services.Network.btDevice; color: Services.Colors.snow; font.pixelSize: Services.Sizes.fsCardTitle; font.family: "JetBrainsMono NF"; font.bold: true }
-                    Text { textFormat: Text.PlainText; text: Services.I18n.t("settings.net.connected"); color: Services.Colors.ghost; font.pixelSize: Services.Sizes.fsBody; font.family: "JetBrainsMono NF" }
-                }
-                Text { textFormat: Text.PlainText; text: ""; color: Services.Colors.ghost; font.pixelSize: 22; font.family: "Material Symbols Rounded" }
+    // ── Devices you own ──────────────────────────────────────────────────
+    Card {
+        visible: tab.radioOn && tab.knownDevices.length > 0
+        glyph: ""
+        title: Services.I18n.t("settings.bt.known")
+
+        Repeater {
+            model: tab.knownDevices
+            delegate: Net.BtDeviceRow {
+                required property var modelData
+                Layout.fillWidth: true
+                device: modelData
             }
         }
+    }
 
-        ColumnLayout {
+    // ── Nearby ───────────────────────────────────────────────────────────
+    Card {
+        visible: tab.radioOn
+        glyph: ""
+        title: Services.I18n.t("settings.bt.available")
+
+        RowLayout {
             Layout.fillWidth: true
-            spacing: 4
-            visible: tab.knownDevices.length > 0
+            spacing: 10
             Text {
                 textFormat: Text.PlainText
-                text: Services.I18n.t("settings.bt.known")
-                color: Services.Colors.mist
+                Layout.fillWidth: true
+                text: tab.scanning ? Services.I18n.t("common.scanning")
+                    : tab.newDevices.length === 0 ? Services.I18n.t("settings.bt.noDevices")
+                    : Services.I18n.t("settings.net.found", { n: tab.newDevices.length })
+                color: Services.Colors.ash
                 font.pixelSize: Services.Sizes.fsMeta
                 font.family: "JetBrainsMono NF"
-                leftPadding: 4
             }
-            Repeater {
-                model: tab.knownDevices
-                delegate: Net.BtDeviceRow {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    device: modelData
-                }
+            Widgets.IconButton {
+                glyph: ""
+                tip: Services.I18n.t("tip.refresh")
+                active: tab.scanning
+                onActivated: tab.startScan()
             }
         }
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            spacing: 4
-            visible: tab.newDevices.length > 0
-            Text {
-                textFormat: Text.PlainText
-                text: tab.adapter && tab.adapter.discovering ? Services.I18n.t("common.scanning") : Services.I18n.t("settings.bt.available")
-                color: Services.Colors.mist
-                font.pixelSize: Services.Sizes.fsMeta
-                font.family: "JetBrainsMono NF"
-                leftPadding: 4
-            }
-            Repeater {
-                model: tab.newDevices
-                delegate: Net.BtDeviceRow {
-                    required property var modelData
-                    Layout.fillWidth: true
-                    device: modelData
-                }
+        Repeater {
+            model: tab.newDevices
+            delegate: Net.BtDeviceRow {
+                required property var modelData
+                Layout.fillWidth: true
+                device: modelData
             }
         }
-
-        Rectangle {
-            Layout.fillWidth: true
-            height: 60
-            radius: Services.Sizes.innerR
-            color: Services.Colors.fillInset
-            visible: !tab.adapter || tab.allDevices.length === 0
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 10
-                Text {
-                    textFormat: Text.PlainText
-                    text: tab.adapter && tab.adapter.discovering ? "" : ""
-                    color: Services.Colors.ash
-                    font.pixelSize: 22
-                    font.family: "Material Symbols Rounded"
-                }
-                Text {
-                    textFormat: Text.PlainText
-                    text: tab.adapter && tab.adapter.discovering ? Services.I18n.t("common.scanning") : (tab.adapter ? Services.I18n.t("settings.bt.noDevices") : Services.I18n.t("settings.bt.noAdapter"))
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsInput
-                    font.family: "JetBrainsMono NF"
-                    Layout.fillWidth: true
-                }
-            }
-        }
-
-        Item { Layout.fillHeight: true }
     }
 }
