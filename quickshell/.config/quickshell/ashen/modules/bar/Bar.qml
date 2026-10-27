@@ -366,6 +366,7 @@ Scope {
                 Component { id: cClipboard;     ClipboardPill {} }
                 Component { id: cScreenshot;    ScreenshotPill {} }
                 Component { id: cWindow;        WindowPill {} }
+                Component { id: cPrivacy;       PrivacyPill {} }
 
                 // What a section actually shows. Almost always what the layout
                 // says -- but a pill taken OFF the bar can still be the only
@@ -381,6 +382,10 @@ Scope {
                 function plateKey(k) { return k }
                 function pillsIn(section) {
                     const base = Services.Prefs.barPills(section)
+                    // Parked, the privacy pill waits at the start of the right
+                    // section and only shows while something is in use.
+                    if (section === "right")
+                        return Services.Prefs.barSectionOf("privacy") !== "" ? base : ["privacy"].concat(base)
                     if (section !== "left") return base
                     if (Services.Prefs.barSectionOf("recording") !== "") return base
                     // FIRST on the bar, always: the start of the left section,
@@ -413,6 +418,7 @@ Scope {
                     case "mic":           return cMic
                     case "clipboard":     return cClipboard
                     case "screenshot":    return cScreenshot
+                    case "privacy":       return cPrivacy
                     }
                     return null
                 }
@@ -441,7 +447,7 @@ Scope {
                     id: sweepSeen
                     interval: 0
                     onTriggered: content.seen = content.seen.filter(
-                        id => Services.Prefs.barSectionOf(id) !== "" || id === "recording")
+                        id => Services.Prefs.barSectionOf(id) !== "" || id === "recording" || id === "privacy")
                 }
 
                 // A pill arriving swells into place instead of blinking in; a

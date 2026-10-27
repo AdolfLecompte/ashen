@@ -39,6 +39,7 @@ Singleton {
         mic:           { label: "Microphone",    glyph: "\ue029", opens: "" },
         clipboard:     { label: "Clipboard",     glyph: "\ue14f", opens: "clipboardVisible" },
         screenshot:    { label: "Screenshot",    glyph: "\uf7d2", opens: "" },
+        privacy:       { label: "Privacy",       glyph: "\uf0dc", opens: "" },
 
     })
 
@@ -48,7 +49,7 @@ Singleton {
         "launcher", "notifications", "workspaces", "media", "clock",
         "usb", "recording", "tray", "network", "bluetooth", "volume",
         "battery", "keyboard", "sys", "window", "power", "usage",
-        "mic", "clipboard", "screenshot"
+        "mic", "clipboard", "screenshot", "privacy"
     ]
 
     // Has this panel got a capsule on screen to come out of?
