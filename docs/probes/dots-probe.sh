@@ -88,4 +88,9 @@ sum2=$(find "$T" -type f -exec md5sum {} + | sort -k2 | md5sum)
 [ "$sum1" = "$sum2" ] && say ok "idempotent" \
                       || { say FAIL "a second run changed the home"; fail=1; }
 
+# ── A polkit agent starts with the session ────────────────────────────────
+grep -q 'ashen-polkit.sh' hypr/.config/hypr/conf/autostart.lua && [ -x scripts/ashen-polkit.sh ] && bash -n scripts/ashen-polkit.sh \
+  && say ok "autostart launches a polkit agent" \
+  || { say FAIL "no polkit agent in autostart"; fail=1; }
+
 exit $fail
