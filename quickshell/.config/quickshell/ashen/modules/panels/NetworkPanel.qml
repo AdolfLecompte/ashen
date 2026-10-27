@@ -202,7 +202,9 @@ PanelWindow {
                 const out = []
                 for (const line of text.split("\n")) {
                     const f = line.split(":")
-                    if (f.length < 4 || f[0] !== "ethernet")
+                    // Unmanaged ports (Docker's veth pairs and the like) are
+                    // not NetworkManager's to connect, so they are not listed.
+                    if (f.length < 4 || f[0] !== "ethernet" || f[2] === "unmanaged")
                         continue
                     const state = f[2]
                     out.push({
