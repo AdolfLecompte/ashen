@@ -20,10 +20,12 @@ run() { HOME="$T/home" ASHEN_DIR="$R" PATH="$T/bin:$PATH" bash scripts/ashen rol
 run && say FAIL "rolled back with no update recorded" || say ok "nothing to roll back says so"
 
 prev=$(git -C "$R" rev-parse HEAD~1); echo "$prev" > "$T/home/.cache/ashen-before-update"
-echo "local edit" >> "$R/README.md"
+# A tracked file the rollback does not touch, so the local edit cannot collide.
+keep=$(comm -23 <(git -C "$R" ls-files | sort) <(git -C "$R" diff --name-only HEAD~1 HEAD | sort) | grep -m1 -E '^(LICENSE|docs/DESIGN.md)$' || git -C "$R" ls-files | head -1)
+echo "local edit" >> "$R/$keep"
 run && [ "$(git -C "$R" rev-parse HEAD)" = "$prev" ] && say ok "goes back to the recorded commit" \
     || { say FAIL "did not go back"; fail=1; }
-tail -1 "$R/README.md" | grep -q "local edit" && say ok "local edits survive" \
+tail -1 "$R/$keep" | grep -q "local edit" && say ok "local edits survive" \
     || { say FAIL "local edit lost"; fail=1; }
 
 git -C "$R" reset -q --hard 'HEAD@{1}'
