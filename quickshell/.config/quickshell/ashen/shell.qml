@@ -496,6 +496,10 @@ ShellRoot {
         model: Services.Screens.barScreens
         DesktopLayer {}
     }
+    Variants {
+        model: Services.Prefs.screenCorners ? Quickshell.screens : []
+        ScreenCorners {}
+    }
     OsdPanel {}
     NotificationToast {}
     LockScreen {}

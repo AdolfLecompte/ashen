@@ -54,6 +54,8 @@ Singleton {
 
     // Audio visualiser. Off stops cava itself, not just the drawing.
     property bool visualizer: true
+    // Black rounded corners drawn over the screen's own corners.
+    property bool screenCorners: false
 
     // The sung line on the media card. Kept because it is a thing you turn
     // off for a while (someone is reading over your shoulder, the words are
@@ -471,7 +473,7 @@ Singleton {
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications", "updateNotify",
         "workspaceStyle", "idleLockSecs",
-        "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle",
+        "screenCorners", "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle",
         "barLength", "barAutohide", "visualizer", "mediaLyrics", "mediaWidgetLyrics",
         "nightLightEnabled", "nightLightScheduled", "nightLightTemp",
         "nightLightFrom", "nightLightTo"

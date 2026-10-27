@@ -661,6 +661,31 @@ TabPage {
             onMoved: pct => Services.Brightness.setLevel(pct)
         }
 
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+            Text {
+                textFormat: Text.PlainText
+                text: "\ue920"
+                font.family: "Material Symbols Rounded"
+                font.pixelSize: 20
+                color: Services.Prefs.screenCorners ? Services.Colors.ghost : Services.Colors.mist
+            }
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: Services.I18n.t("settings.display.corners")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+            }
+            Toggle {
+                checked: Services.Prefs.screenCorners
+                onToggled: Services.Prefs.screenCorners = !Services.Prefs.screenCorners
+            }
+        }
+
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 12
