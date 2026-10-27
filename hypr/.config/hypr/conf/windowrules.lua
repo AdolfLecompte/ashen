@@ -8,7 +8,13 @@ hl.window_rule({ match = { class = "discord"        }, workspace = "special:disc
 hl.window_rule({ match = { class = "obsidian"        }, workspace = "special:notes" })
 
 -- Floating
-hl.window_rule({ match = { class = "pavucontrol"     }, float = true })
+hl.window_rule({ match = { class = "^(pavucontrol|org.pulseaudio.pavucontrol)$" }, float = true })
+
+-- Picture-in-picture: small, above everything, out of the way.
+hl.window_rule({ match = { title = "^(Picture-in-Picture|Picture in picture|Imagen en imagen)$" },
+    float = true, pin = true, keep_aspect_ratio = true, size = "480 270", move = "100%-500 100%-350" })
+-- The portal's file chooser floats centred instead of tiling.
+hl.window_rule({ match = { class = "^(xdg-desktop-portal-gtk)$" }, float = true, center = true, size = "60% 70%" })
 
 -- Opacity: global active/inactive_opacity from decoration.lua drives every
 -- window, except browsers: their content is dense enough that the frosted
@@ -26,6 +32,8 @@ hl.window_rule({ match = { class = "^(nemo|thunar|org.gnome.Nautilus|xdg-desktop
 
 -- Shell blur: the bar, panels and toasts (their layer is plain "quickshell")
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })
+-- The shell animates its own surfaces; Hyprland's fade on top doubled it.
+hl.layer_rule({ match = { namespace = "^quickshell.*" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignore_alpha = 0.3 })
 -- Desktop widgets live on their own layer ("ashen:desktop"): same glass.
 hl.layer_rule({ match = { namespace = "^ashen:.*" }, blur = true })

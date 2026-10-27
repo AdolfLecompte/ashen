@@ -8,6 +8,8 @@ hl.config({
         -- turns it milky instead of showing a sharp background.
         active_opacity = 0.60,
         inactive_opacity = 0.50,
+        -- A special workspace stands apart from what it covers.
+        dim_special = 0.5,
         shadow = {
             enabled = true,
             range = 20,
