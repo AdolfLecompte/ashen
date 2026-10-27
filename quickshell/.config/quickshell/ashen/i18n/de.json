@@ -302,6 +302,8 @@
   "game.onTitle": "SPIELMODUS AN",
   "game.offTitle": "SPIELMODUS AUS",
   "settings.system.game": "Spielmodus",
+  "settings.system.hooks": "Hooks",
+  "settings.system.openFolder": "Ordner öffnen",
   "settings.system.gameHint": "Flacher Compositor, stille Shell",
   "wall.set": "HINTERGRUND GESETZT",
   "wall.search": "Suchen…",

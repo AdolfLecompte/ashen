@@ -47,3 +47,4 @@ singleton Sprites 1.0 Sprites.qml
 BarSpec 1.0 BarSpec.qml
 singleton DockItems 1.0 DockItems.qml
 singleton Privacy 1.0 Privacy.qml
+singleton Hooks 1.0 Hooks.qml

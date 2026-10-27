@@ -26,5 +26,6 @@ QtObject {
         Services.NightLight.arm()      // wlsunset, if the filter was left on
         Services.Game.arm()            // a flat compositor left behind mid-game
         Services.Usage.arm()           // screen time only counts while it is awake
+        Services.Hooks.arm()           // your commands on the shell's events
     }
 }

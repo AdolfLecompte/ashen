@@ -383,6 +383,12 @@ is in the way. Commit or stash it, then run the update again.
 | `SUPER + 1…0` / `SUPER + ALT + 1…0` | go to / send the window to a workspace |
 | `SUPER + M / D / O / X / S` | show or hide the music, discord, notes, fav and scratchpad special workspaces |
 | `SUPER + ALT + M / D / O / X / S` | send the focused window to that special workspace |
+| `SUPER + SHIFT + arrows` | move the window (in and out of tab groups) |
+| `SUPER + J` / `SUPER + K` | flip / swap the split |
+| `SUPER + R` | window size: 1/3, 1/2, 2/3 |
+| `SUPER + CTRL + P` | pin the window on every workspace |
+| `SUPER + SHIFT + L` | this workspace: tiles or columns |
+| `SUPER + G` / `SUPER + Tab` | group as tabs / next tab |
 
 Every one of these can be changed from **Settings → Input**.
 
@@ -394,6 +400,28 @@ The keyboard layout pill in the bar is **read-only**. Layouts are declared in
 `hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`, or what the installer was
 told) and switched from **Settings → Input**. Every keyboard follows the pick,
 including one that is plugged in or wakes up later.
+
+### Hooks
+
+An executable at `~/.config/ashen/hooks/<event>` runs when that event happens,
+with its details as arguments. No file, nothing runs.
+
+| Event | When | Arguments |
+|---|---|---|
+| `startup` | the shell has started | |
+| `wallpaper` | the wallpaper changed | its path |
+| `lock` / `unlock` | the session was locked / unlocked | |
+| `theme` | light or dark mode was switched | `light` or `dark` |
+| `power` | the charger was plugged / unplugged | `ac` or `battery` |
+| `battery-low` | the low-battery warning | the level |
+| `usb` | a drive came or went | `added` / `removed`, its name |
+| `game` | game mode | `on` or `off` |
+
+```sh
+mkdir -p ~/.config/ashen/hooks
+printf '#!/bin/sh\nnotify-send "wallpaper" "$1"\n' > ~/.config/ashen/hooks/wallpaper
+chmod +x ~/.config/ashen/hooks/wallpaper
+```
 
 ## Notes
 
