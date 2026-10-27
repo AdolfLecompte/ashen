@@ -141,6 +141,49 @@ Singleton {
         }
     }
 
+    // ── Daily limits ─────────────────────────────────────────────────────
+    // Minutes per app class; a warning 5 minutes before and one on reaching it.
+    readonly property var limits: {
+        const out = {}
+        for (const part of (Prefs.usageLimits || "").split(",")) {
+            const at = part.lastIndexOf("=")
+            if (at > 0) out[part.slice(0, at)] = parseInt(part.slice(at + 1)) || 0
+        }
+        return out
+    }
+    function limitOf(key) { return root.limits[key] || 0 }
+    // Off -> 30 min -> 1 h -> 2 h -> 3 h -> off.
+    readonly property var limitSteps: [0, 30, 60, 120, 180]
+    function cycleLimit(key) {
+        const i = root.limitSteps.indexOf(root.limitOf(key))
+        const next = Object.assign({}, root.limits)
+        const v = root.limitSteps[(i + 1) % root.limitSteps.length]
+        if (v > 0) next[key] = v; else delete next[key]
+        Prefs.usageLimits = Object.keys(next).map(k => k + "=" + next[k]).join(",")
+        root.checkLimits()
+    }
+
+    // Which warnings went out today, "day|key|soon" / "day|key|over".
+    property var warned: ({})
+    function checkLimits() {
+        const today = root.dayKey(new Date())
+        const d = root.day(today)
+        for (const a of d.apps) {
+            const lim = root.limitOf(a.key) * 60
+            if (lim <= 0) continue
+            const name = root.nameOf(a.key)
+            if (a.secs >= lim) root.warnOnce(today, a.key, "over", I18n.t("usage.limitReached", { app: name }))
+            else if (a.secs >= lim - 300) root.warnOnce(today, a.key, "soon", I18n.t("usage.limitSoon", { app: name }))
+        }
+    }
+    function warnOnce(day, key, kind, text) {
+        const id = day + "|" + key + "|" + kind
+        if (root.warned[id]) return
+        root.warned[id] = true
+        Notifications.addSystemToast(text, "\uea5b", false, "usage-limit")
+    }
+    Timer { interval: 60000; running: root.loaded && Prefs.usageLimits !== ""; repeat: true; onTriggered: root.checkLimits() }
+
     function prune() {
         const cutoff = root.dayKey(new Date(Date.now() - root.keepDays * 86400000))
         let changed = false

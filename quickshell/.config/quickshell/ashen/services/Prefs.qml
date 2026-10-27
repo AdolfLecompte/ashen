@@ -214,6 +214,8 @@ Singleton {
     // same reason barLayout is one: the adapter drops sibling writes made in the
     // same tick.
     property string dockPins: ""
+    // Daily limits per app, "class=minutes" comma separated (Services.Usage).
+    property string usageLimits: ""
     readonly property var dockPinList: (root.dockPins || "").split(",").filter(x => x !== "")
 
     function dockPin(id) {
@@ -466,7 +468,7 @@ Singleton {
         "language", "doNotDisturb", "keepAwakeMode", "notifySound",
         "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
         "toastSeconds", "maxToasts", "toastWidth", "osdMs", "lockIntro", "switcherScope", "workspaceMode", "hiddenPills", "barLayout", "barContent",
-        "barOutline", "panelOutline", "widgetOutline", "dockPins", "dockEdge",
+        "barOutline", "panelOutline", "widgetOutline", "dockPins", "usageLimits", "dockEdge",
         "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockIconSize", "dockPills", "dockLinks", "dockPillsSide", "dockLinksSide",
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",

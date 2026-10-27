@@ -468,10 +468,56 @@ PanelWindow {
                                         font.family: "JetBrainsMono NF"
                                         elide: Text.ElideRight
                                     }
+                                    // The app's daily limit: press to step through off, 30m, 1h, 2h, 3h.
+                                    Item {
+                                        id: limitChip
+                                        readonly property int limit: Services.Usage.limitOf(row.modelData.key)
+                                        anchors.right: parent.right
+                                        anchors.top: parent.top
+                                        anchors.topMargin: -2
+                                        width: limitRow.implicitWidth + 8
+                                        height: 18
+                                        scale: Services.Sizes.hoverScale(limitHover.containsMouse, limitHover.pressed)
+                                        Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
+                                        Row {
+                                            id: limitRow
+                                            anchors.centerIn: parent
+                                            spacing: 2
+                                            Text {
+                                                textFormat: Text.PlainText
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: "\uea5b"
+                                                color: limitChip.limit > 0 ? Services.Colors.ghost
+                                                     : limitHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
+                                                opacity: limitChip.limit > 0 || limitHover.containsMouse ? 1 : 0.5
+                                                font.pixelSize: 13
+                                                font.family: "Material Symbols Rounded"
+                                            }
+                                            Text {
+                                                textFormat: Text.PlainText
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                visible: limitChip.limit > 0
+                                                text: Services.Usage.span(limitChip.limit * 60)
+                                                color: Services.Colors.ghost
+                                                font.pixelSize: Services.Sizes.fsCaption
+                                                font.bold: true
+                                                font.family: "JetBrainsMono NF"
+                                            }
+                                        }
+                                        Widgets.Tip { target: limitChip; text: Services.I18n.t("usage.limit"); show: limitHover.containsMouse }
+                                        MouseArea {
+                                            id: limitHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: Services.Usage.cycleLimit(row.modelData.key)
+                                        }
+                                    }
                                     Text {
                                         textFormat: Text.PlainText
                                         id: appTime
-                                        anchors.right: parent.right
+                                        anchors.right: limitChip.left
+                                        anchors.rightMargin: 4
                                         anchors.top: parent.top
                                         text: Services.Usage.span(row.modelData.secs)
                                         color: Services.Colors.mist
