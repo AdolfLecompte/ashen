@@ -40,9 +40,13 @@ Scope {
         property var pinned: null
         screen: win.pinned || Services.Screens.active
         onVisibleChanged: win.pinned = visible ? Services.Screens.active : null
-        implicitWidth: 90
+        // Room for the box past whatever the bar takes on this edge; a fixed 90
+        // clipped the box once the bar's margin passed 42 px.
+        implicitWidth: osdBox.anchors.rightMargin + osdBox.width + 20
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
+        // A readout: clicks go through to the bar under it.
+        mask: Region {}
         visible: shown || unmapDelay.running
 
         readonly property real drawLevel: root.volumeOsd
@@ -60,16 +64,19 @@ Scope {
         Timer {
             id: hideTimer
             interval: Services.Prefs.osdMs
-            onTriggered: { win.shown = false; unmapDelay.restart() }
+            // The hold first: `visible` is shown || unmapDelay.running, and the
+            // other order unmapped the window for a frame and mapped it again.
+            onTriggered: { unmapDelay.restart(); win.shown = false }
         }
         // keep the window mapped a bit longer so the fade-out is visible,
         // then actually unmap it so it does not block clicks
         Timer {
             id: unmapDelay
-            interval: 250
+            interval: Services.Sizes.msStandard + 80
         }
 
         Rectangle {
+            id: osdBox
             // Clears whichever edge the bar is on
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -84,7 +91,7 @@ Scope {
             opacity: win.shown ? 1.0 : 0.0
             scale: win.shown ? 1.0 : 0.85
             Behavior on opacity { Widgets.Anim {} }
-            Behavior on scale { NumberAnimation { duration: Services.Sizes.msStandard; easing.type: Easing.OutBack; easing.overshoot: Services.Sizes.overshoot } }
+            Behavior on scale { Widgets.Anim {} }
 
             Column {
                 anchors.fill: parent
