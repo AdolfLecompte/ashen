@@ -76,7 +76,7 @@ Section {
     // rather than beside the bar because, like the widgets, it is furniture the
     // windows have to live with rather than part of the bar's own shape.
     Card {
-        glyph: "\ue30e"
+        glyph: "\uf7e6"   // dock_to_bottom
         title: Services.I18n.t("settings.dock.title")
 
         // First, because everything under it is moot if this is off.
