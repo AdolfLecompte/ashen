@@ -34,7 +34,7 @@ PanelWindow {
 
     property bool wifiEnabled: true
     property var networks: []
-    property var knownNetworks: []
+    readonly property var knownNetworks: Services.Network.knownSsids
     property string connectingTo: ""
     property string password: ""
     property bool showPassword: false
@@ -50,7 +50,7 @@ PanelWindow {
     // The saved-profile list barely ever changes, and resolving it costs one
     // nmcli per profile. It is not part of a poll: opening the card and
     // connecting are the only things that can move it.
-    function refreshKnown() { knownProc.running = true }
+    function refreshKnown() { Services.Network.refreshKnown() }
     // Ask the radio for a real sweep. Ghost networks are NetworkManager's own
     // cache of APs it has not seen for a while; only a fresh scan prunes them.
     // What the graph says while a sweep is out. Picked when the sweep starts,
@@ -219,21 +219,6 @@ PanelWindow {
         }
     }
 
-    Process {
-        id: knownProc
-        // Each saved wifi profile's SSID, not its profile name: NetworkManager
-        // calls the second profile for a network "SSID 1", so comparing names
-        // against SSIDs said nothing was known and the ring came up empty.
-        // Settings resolves it the same way.
-        command: ["sh", "-c",
-            'nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; nmcli -g 802-11-wireless.ssid connection show "$n"; done']
-        running: Services.AppState.networkVisible
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.knownNetworks = text.trim().split("\n").filter(l => l.length > 0)
-            }
-        }
-    }
 
     // Reading the cache is cheap, so it happens often; a real sweep every other
     // turn, which is what retires an AP that has gone away.
@@ -536,25 +521,14 @@ PanelWindow {
                                     active: false
                                 }))
 
-                                // `nmcli dev wifi connect SSID` builds a SECOND profile for a network you
-                                // already have one for, is asked for a password it never got, and fails.
-                                // Bring the saved profile up by name (NM calls it "SSID 1") and only fall
-                                // back to a fresh connect when there is no profile.
+                                // The saved profile comes up rather than a second one being built.
                                 onNodeActivated: function(id) {
-                                    Quickshell.execDetached(["sh", "-c",
-                                        'ssid="$1"; prof=$(nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; s=$(nmcli -g 802-11-wireless.ssid connection show "$n"); if [ "$s" = "$ssid" ]; then printf %s "$n"; break; fi; done); if [ -n "$prof" ]; then nmcli connection up id "$prof"; else nmcli device wifi connect "$ssid"; fi',
-                                        "sh", id])
+                                    Services.Network.connectSaved(id)
                                     settleTimer.start()
                                 }
-                                // Right-click a saved network to drop it for good. The
-                                // profile name is NOT the SSID -- on duplicates NM makes
-                                // "SSID 1", so `connection delete id <ssid>` fails in
-                                // silence -- so resolve SSID->profile and delete every
-                                // match, the same walk Settings does.
+                                // Right-click a saved network to drop it for good.
                                 onNodeForgotten: function(id) {
-                                    Quickshell.execDetached(["sh", "-c",
-                                        'nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; s=$(nmcli -g 802-11-wireless.ssid connection show "$n"); [ "$s" = "$1" ] && nmcli connection delete "$n"; done',
-                                        "sh", id])
+                                    Services.Network.forget(id)
                                     settleTimer.start()
                                 }
                                 // Clicking what you are connected to drops it.

@@ -150,4 +150,7 @@ Singleton {
         triggeredOnStart: true
         onTriggered: root.poll()
     }
+
+    // The one place a power profile is set; Settings and the battery panel call it.
+    function setPowerProfile(name) { Quickshell.execDetached(["powerprofilesctl", "set", name]) }
 }

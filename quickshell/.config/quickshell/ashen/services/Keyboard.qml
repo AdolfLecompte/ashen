@@ -167,7 +167,9 @@ Singleton {
         }
     }
     Timer {
-        interval: 500
+        // Without LED files the fallback is a whole `hyprctl devices -j`: ten
+        // times rarer, not twice a second for as long as the shell runs.
+        interval: root.ledsFound ? 500 : 5000
         running: true
         repeat: true
         onTriggered: {

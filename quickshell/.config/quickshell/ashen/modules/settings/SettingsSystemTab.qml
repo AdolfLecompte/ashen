@@ -36,7 +36,7 @@ Section {
 
     function setProfile(name) {
         if (!availableProfiles.includes(name)) return
-        Quickshell.execDetached(["sh", "-c", "powerprofilesctl set " + name])
+        Services.Battery.setPowerProfile(name)
         activeProfile = name
     }
 

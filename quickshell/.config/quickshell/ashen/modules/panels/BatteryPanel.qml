@@ -69,7 +69,7 @@ PanelWindow {
 
     function setProfile(name) {
         if (!win.availableProfiles.includes(name)) return
-        Quickshell.execDetached(["sh", "-c", "powerprofilesctl set " + name])
+        Services.Battery.setPowerProfile(name)
         win.activeProfile = name
     }
 

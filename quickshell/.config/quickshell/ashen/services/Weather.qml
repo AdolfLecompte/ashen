@@ -245,7 +245,7 @@ Singleton {
             + ",apparent_temperature_max"
             + ",wind_speed_10m_max,wind_direction_10m_dominant"
             + "&timezone=auto&forecast_days=5"
-        fcProc.command = ["sh", "-c", "curl -s --max-time 10 '" + url + "'"]
+        fcProc.command = ["curl", "-s", "--max-time", "10", url]
         fcProc.running = true
     }
 
@@ -260,7 +260,8 @@ Singleton {
         root.searching = true
         let url = "https://geocoding-api.open-meteo.com/v1/search?name="
             + encodeURIComponent(q) + "&count=5&language=en"
-        searchProc.command = ["sh", "-c", "curl -s --max-time 10 '" + url + "'"]
+        // argv, not sh: encodeURIComponent leaves ' alone, and L'Aquila broke the quoting.
+        searchProc.command = ["curl", "-s", "--max-time", "10", url]
         searchProc.running = true
     }
     // Commit one chosen candidate (exact coords, no re-geocode): save + activate.

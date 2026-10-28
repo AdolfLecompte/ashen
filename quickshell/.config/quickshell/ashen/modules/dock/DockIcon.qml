@@ -90,13 +90,15 @@ Item {
             // argument: `hyprctl dispatch focuswindow class:^(x)$` answers
             // "')' expected near 'class'" and the dock quietly did nothing --
             // which is exactly how it behaved before this was found.
+            // The class is the app's own choice: quoted, never pasted into the Lua.
+            const target = JSON.stringify("class:" + cls)
             if (root.focused)
                 Quickshell.execDetached(["hyprctl", "dispatch",
-                    "hl.dsp.window.move({ window = \"class:" + cls
-                    + "\", workspace = \"special:hidden\", silent = true })"])
+                    "hl.dsp.window.move({ window = " + target
+                    + ", workspace = \"special:hidden\", silent = true })"])
             else
                 Quickshell.execDetached(["hyprctl", "dispatch",
-                    "hl.dsp.focus({ window = \"class:" + cls + "\" })"])
+                    "hl.dsp.focus({ window = " + target + " })"])
         }
         // Nothing to launch and nothing to say about it: a dead pin is a
         // pointer that does not change, which is the honest affordance.

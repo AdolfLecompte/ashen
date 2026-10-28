@@ -42,9 +42,10 @@ Singleton {
         // Desktop audio is opt-out: the sink monitor is what makes a recording
         // of a video usable, but a silent capture must stay possible.
         let audio = Prefs.recordAudio ? " --audio=\"$(pactl get-default-sink).monitor\"" : ""
+        // The folder and file as argv ($1, $2): a name with a quote must not break the command.
         Quickshell.execDetached(["sh", "-c",
-            "mkdir -p '" + dir + "'; wf-recorder" + audio + " -c libx264 -x yuv420p -p color_range=tv -p colorspace=bt709 -p color_primaries=bt709 -p color_trc=bt709 -f '" + path + "' & echo $! > \"$HOME\"/.cache/ashen_recording.pid; echo " + startMs + " > \"$HOME\"/.cache/ashen_recording_start"
-        ])
+            'mkdir -p "$1"; wf-recorder' + audio + ' -c libx264 -x yuv420p -p color_range=tv -p colorspace=bt709 -p color_primaries=bt709 -p color_trc=bt709 -f "$2" & echo $! > "$HOME"/.cache/ashen_recording.pid; echo "$3" > "$HOME"/.cache/ashen_recording_start',
+            "sh", dir, path, String(startMs)])
         root.recording = true
         root.recordingStartTime = startMs
     }

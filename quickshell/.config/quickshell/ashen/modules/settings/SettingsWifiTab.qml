@@ -13,7 +13,7 @@ TabPage {
     id: tab
 
     property var networks: []
-    property var knownNetworks: []
+    readonly property var knownNetworks: Services.Network.knownSsids
     // The secured network whose password row is open, "" for none.
     property string connectingTo: ""
     property string password: ""
@@ -26,16 +26,10 @@ TabPage {
 
     function refreshNetworks() {
         scanProc.running = true
-        knownProc.running = true
+        Services.Network.refreshKnown()
     }
 
-    // Forget a network by SSID. An NM profile name isn't always the SSID: on
-    // duplicates NM makes "SSID 1", so `connection delete id <ssid>` fails
-    // silently. Resolve SSID->profile and delete every match. SSID as argv.
-    function forgetSsid(ssid) {
-        forgetProc.ssid = ssid
-        forgetProc.running = true
-    }
+    function forgetSsid(ssid) { Services.Network.forget(ssid) }
 
     // argv, not a shell string: an SSID or password holding a quote would
     // otherwise close it and run the rest as shell.
@@ -55,16 +49,6 @@ TabPage {
 
     function wifiGlyph(signal) {
         return signal >= 75 ? "" : signal >= 50 ? "" : signal >= 25 ? "" : ""
-    }
-
-    Process {
-        id: forgetProc
-        property string ssid: ""
-        running: false
-        command: ["sh", "-c",
-            'nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; s=$(nmcli -g 802-11-wireless.ssid connection show "$n"); [ "$s" = "$1" ] && nmcli connection delete "$n"; done',
-            "_", ssid]
-        onExited: tab.refreshNetworks()
     }
 
     Component.onCompleted: refreshNetworks()
@@ -98,20 +82,6 @@ TabPage {
                     }
                 }
                 tab.networks = unique
-            }
-        }
-    }
-
-    Process {
-        id: knownProc
-        // Emit each saved wifi profile's SSID (not the profile name, which may be
-        // "SSID 1"), so known/available classification compares SSID against SSID.
-        command: ["sh", "-c",
-            'nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; nmcli -g 802-11-wireless.ssid connection show "$n"; done']
-        running: false
-        stdout: StdioCollector {
-            onStreamFinished: {
-                tab.knownNetworks = text.trim().split("\n").filter(l => l.length > 0)
             }
         }
     }
@@ -208,7 +178,7 @@ TabPage {
                 Layout.fillWidth: true
                 net: modelData
                 known: true
-                onActivate: Quickshell.execDetached(["nmcli", "dev", "wifi", "connect", modelData.ssid])
+                onActivate: Services.Network.connectSaved(modelData.ssid)
                 onForget: tab.forgetSsid(modelData.ssid)
             }
         }

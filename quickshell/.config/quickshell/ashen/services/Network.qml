@@ -152,4 +152,35 @@ Singleton {
         repeat: true
         onTriggered: { wifiProc.running = true; radioProc.running = true }
     }
+
+    // ── Saved Wi-Fi, one walk for the panel and Settings ─────────────────
+    // A profile's name is not its SSID: on duplicates NetworkManager makes
+    // "SSID 1". So everything goes SSID -> profile, never by name.
+    readonly property string walk:
+        'nmcli -t -f NAME,TYPE connection show | while IFS=: read -r n t; do [ "$t" = 802-11-wireless ] || continue; '
+    property var knownSsids: []
+    function refreshKnown() { knownProc.running = true }
+    Process {
+        id: knownProc
+        command: ["sh", "-c", root.walk + 'nmcli -g 802-11-wireless.ssid connection show "$n"; done']
+        stdout: StdioCollector {
+            onStreamFinished: root.knownSsids = text.trim().split("\n").filter(l => l.length > 0)
+        }
+    }
+    // Brings the saved profile up; a fresh connect only when there is none,
+    // since `dev wifi connect` on a saved network builds a second profile.
+    function connectSaved(ssid) {
+        Quickshell.execDetached(["sh", "-c",
+            'prof=$(' + root.walk + 's=$(nmcli -g 802-11-wireless.ssid connection show "$n"); if [ "$s" = "$1" ]; then printf %s "$n"; break; fi; done); '
+            + 'if [ -n "$prof" ]; then nmcli connection up id "$prof"; else nmcli device wifi connect "$1"; fi',
+            "sh", ssid])
+    }
+    // Deletes every profile for that SSID, then re-reads what is saved.
+    function forget(ssid) {
+        forgetProc.command = ["sh", "-c",
+            root.walk + 's=$(nmcli -g 802-11-wireless.ssid connection show "$n"); [ "$s" = "$1" ] && nmcli connection delete "$n"; done',
+            "sh", ssid]
+        forgetProc.running = true
+    }
+    Process { id: forgetProc; onExited: root.refreshKnown() }
 }

@@ -500,13 +500,10 @@ Singleton {
         onTriggered: root.save()
     }
 
-    // The text travels as an argv entry, never through the shell's parser: a
-    // wallpaper path or an SSID can hold a quote and this file is full of both.
-    // Same write Idle uses for hypridle.conf, and for the same reason.
+    // Atomic and in order: a temp file renamed over the old one, so a crash
+    // mid-write never leaves it empty, and the last save is the one that lands.
     function save() {
-        Quickshell.execDetached(["sh", "-c",
-            'mkdir -p "$(dirname "$2")" && printf %s "$1" > "$2"',
-            "sh", JSON.stringify(root.snapshot, null, 4) + "\n", prefsFile.path])
+        prefsFile.setText(JSON.stringify(root.snapshot, null, 4) + "\n")
     }
 
     // A key the file does not carry keeps the code default. Assigning
@@ -551,6 +548,7 @@ Singleton {
     FileView {
         id: prefsFile
         path: root.configDir + "/prefs.json"
+        atomicWrites: true
         // Deliberately NOT watchChanges: nothing writes this but us, and
         // re-reading our own write lands the old values back on the new ones.
         //

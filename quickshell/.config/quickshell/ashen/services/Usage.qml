@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import QtQuick
+import "usageBook.js" as Book
 
 // How long each application had you, per day. Nothing is polled: the time runs
 // from one change to the next -- focus moving, going idle, locking, the day
@@ -75,10 +76,7 @@ Singleton {
     property string bookedKey: ""
     property double bookedSince: 0
 
-    function dayKey(d) {
-        const p = n => (n < 10 ? "0" : "") + n
-        return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate())
-    }
+    function dayKey(d) { return Book.dayKey(d) }
 
     // Everything since the last change goes to the app that had it, split at
     // midnight. A gap longer than the flush interval with nothing in between is
@@ -89,31 +87,7 @@ Singleton {
         root.bookedSince = now
         if (key === "" || from <= 0 || now <= from) return
         if (now - from > flush.interval * 3) return
-        const next = Object.assign({}, root.days)
-        while (from < now) {
-            const d = new Date(from)
-            const midnight = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime()
-            const to = Math.min(now, midnight)
-            const dk = root.dayKey(d)
-            const day = next[dk] ? Object.assign({}, next[dk]) : { total: 0, apps: {}, hours: [] }
-            day.apps = Object.assign({}, day.apps)
-            day.hours = day.hours && day.hours.length === 24 ? day.hours.slice() : new Array(24).fill(0)
-            // Hours get their share by walking the span an hour at a time.
-            let t = from
-            while (t < to) {
-                const h = new Date(t)
-                const hourEnd = new Date(h.getFullYear(), h.getMonth(), h.getDate(), h.getHours() + 1).getTime()
-                const chunk = Math.min(to, hourEnd) - t
-                day.hours[h.getHours()] += chunk / 1000
-                t += chunk
-            }
-            const secs = (to - from) / 1000
-            day.total += secs
-            day.apps[key] = (day.apps[key] || 0) + secs
-            next[dk] = day
-            from = to
-        }
-        root.days = next
+        root.days = Book.book(root.days, key, from, now)
         root.revision++
         root.dirty = true
     }

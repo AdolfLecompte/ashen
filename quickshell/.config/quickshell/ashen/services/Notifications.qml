@@ -326,11 +326,13 @@ Singleton {
         const key = de !== "" ? de.replace(/\.desktop$/, "")
                               : String(ent.appName || "").toLowerCase()
         if (key === "") return
+        // The sender names itself: quoted as a Lua string, never pasted into the Lua.
+        const focus = "hl.dsp.focus({ window = " + JSON.stringify("class:(?i)" + key) + " })"
         root.senderProc.command = ["sh", "-c",
-            'out=$(hyprctl dispatch \'hl.dsp.focus({ window = "class:(?i)\'"$1"\'" })\' 2>&1); ' +
+            'out=$(hyprctl dispatch "$2" 2>&1); ' +
             'case "$out" in ok*) exit 0 ;; esac; ' +
             'gtk-launch "$1" >/dev/null 2>&1 || gtk-launch "$1.desktop" >/dev/null 2>&1',
-            "sh", key]
+            "sh", key, focus]
         root.senderProc.running = true
     }
     property alias senderProc: senderProcess
