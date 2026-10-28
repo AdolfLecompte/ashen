@@ -22,6 +22,15 @@
   screen while something uses them, and leaves when they are free.
 - **Rounded screen corners**, in Settings > Display.
 - `ashen rollback` returns to where the last `ashen update` started.
+- **Daily limits** in the screen time panel: the hourglass on an app's row
+  steps through 30 min, 1, 2 and 3 hours. A notice comes five minutes before
+  and when the time is up.
+- **Hooks**: an executable at `~/.config/ashen/hooks/<event>` runs on
+  startup, wallpaper, lock, unlock, theme, power, battery-low, usb and game.
+  See the README.
+- **Keys in panels**: Escape closes them; the arrows change the volume, the
+  day or the track, Space plays and pauses, M mutes, and `Ctrl+Tab` walks
+  the Settings tabs.
 
 ### Changed
 - `SUPER+SHIFT+F` floats a window centred at 60 % by 70 % of the screen,
@@ -39,6 +48,10 @@
 - The desktop edit bar is icons with the chosen mode named, and the widget
   tray is grouped, with a check instead of a full accent fill.
 - The wallpaper picker opens in about half the time.
+- The music progress is a wave that travels while it plays and settles
+  flat when paused.
+- Windows open and move on a settling spring; the special workspace dims
+  what is behind it.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they
@@ -46,6 +59,14 @@
 - A polkit agent starts with the session; apps asking for root had no one
   to ask.
 - Docker's virtual ports no longer show in the Ethernet panel.
+- The volume and brightness display was cut off with the bar on the
+  right, and flickered as it left.
+- Settings are written in one step; a crash while saving no longer leaves
+  them empty.
+- Weather for a city with an apostrophe in its name (L'Aquila).
+- A window class or notification holding a quote could run commands
+  through the dock or the notification's focus action.
+- The camera indicator and the keyboard layout cost less while idle.
 
 ## 3.6.0
 

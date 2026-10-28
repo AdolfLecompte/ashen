@@ -25,6 +25,15 @@ si falta, la bienvenida las enseña en inglés.
   cámara y la pantalla mientras algo los usa, y se va al soltarlos.
 - **Esquinas de pantalla redondeadas**, en Ajustes > Pantalla.
 - `ashen rollback` vuelve a donde empezó el último `ashen update`.
+- **Límites diarios** en el panel de tiempo de pantalla: el reloj de arena
+  de la fila de una app pasa por 30 min, 1, 2 y 3 horas. Avisa cinco
+  minutos antes y al llegar.
+- **Hooks**: un ejecutable en `~/.config/ashen/hooks/<evento>` corre al
+  arrancar y con wallpaper, lock, unlock, theme, power, battery-low, usb y
+  game. Más en el README.
+- **Teclas en los paneles**: Escape los cierra; las flechas cambian el
+  volumen, el día o la pista, Espacio reproduce y pausa, M silencia, y
+  `Ctrl+Tab` recorre las pestañas de Ajustes.
 
 ### Cambiado
 - `SUPER+SHIFT+F` flota una ventana centrada al 60 % por 70 % de la
@@ -43,6 +52,10 @@ si falta, la bienvenida las enseña en inglés.
   nombrado, y el selector de widgets va agrupado, con una marca en vez de
   relleno de acento.
 - El selector de fondos abre en la mitad de tiempo.
+- El progreso de la música es una onda que avanza mientras suena y se
+  aplana en pausa.
+- Las ventanas abren y se mueven con un muelle que se asienta; el
+  escritorio especial atenúa lo de detrás.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
@@ -50,6 +63,15 @@ si falta, la bienvenida las enseña en inglés.
 - Un agente de polkit arranca con la sesión; las apps que pedían root no
   tenían quién preguntara.
 - Los puertos virtuales de Docker ya no salen en el panel de Ethernet.
+- El indicador de volumen y brillo salía recortado con la barra a la
+  derecha, y parpadeaba al irse.
+- Los ajustes se guardan de una vez; un cierre a mitad de guardado ya no
+  los deja vacíos.
+- El clima de una ciudad con apóstrofo en el nombre (L'Aquila).
+- Una clase de ventana o una notificación con comillas podía ejecutar
+  órdenes desde el dock o la acción de enfocar de la notificación.
+- El indicador de cámara y la distribución del teclado gastan menos en
+  reposo.
 
 ## 3.6.0
 

@@ -25,6 +25,15 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Bildschirm, solange etwas sie nutzt.
 - **Abgerundete Bildschirmecken**, unter Einstellungen > Anzeige.
 - `ashen rollback` kehrt dorthin zurück, wo das letzte `ashen update` begann.
+- **Tageslimits** im Bildschirmzeit-Panel: die Sanduhr in der Zeile einer
+  App schaltet durch 30 Min., 1, 2 und 3 Stunden. Ein Hinweis kommt fünf
+  Minuten vorher und wenn die Zeit um ist.
+- **Hooks**: eine ausführbare Datei unter `~/.config/ashen/hooks/<Ereignis>`
+  läuft bei startup, wallpaper, lock, unlock, theme, power, battery-low, usb
+  und game. Mehr im README.
+- **Tasten in Panels**: Escape schließt sie; die Pfeile ändern Lautstärke,
+  Tag oder Titel, Leertaste spielt und pausiert, M schaltet stumm, und
+  `Strg+Tab` geht durch die Tabs der Einstellungen.
 
 ### Geändert
 - `SUPER+SHIFT+F` lässt ein Fenster zentriert bei 60 % mal 70 % schweben
@@ -42,6 +51,10 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Die Bearbeitungsleiste des Desktops sind Symbole mit benanntem Modus,
   die Widget-Auswahl ist gruppiert, mit Haken statt Akzentfüllung.
 - Die Hintergrundauswahl öffnet etwa doppelt so schnell.
+- Der Musikfortschritt ist eine Welle, die beim Abspielen wandert und in
+  der Pause flach wird.
+- Fenster öffnen und bewegen sich mit einer ausschwingenden Feder; der
+  Spezial-Arbeitsbereich dunkelt ab, was dahinter liegt.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
@@ -49,6 +62,14 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Ein polkit-Agent startet mit der Sitzung; Apps, die root brauchten,
   konnten nicht fragen.
 - Dockers virtuelle Ports erscheinen nicht mehr im Ethernet-Panel.
+- Die Anzeige für Lautstärke und Helligkeit war bei rechter Leiste
+  abgeschnitten und flackerte beim Ausblenden.
+- Einstellungen werden in einem Schritt geschrieben; ein Absturz beim
+  Speichern lässt sie nicht mehr leer zurück.
+- Wetter für eine Stadt mit Apostroph im Namen (L'Aquila).
+- Eine Fensterklasse oder Benachrichtigung mit Anführungszeichen konnte
+  über das Dock oder die Fokus-Aktion Befehle ausführen.
+- Kamera-Anzeige und Tastaturlayout kosten im Leerlauf weniger.
 
 ## 3.6.0
 
