@@ -490,8 +490,7 @@ PanelWindow {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: "\uea5b"
                                                 color: limitChip.limit > 0 ? Services.Colors.ghost
-                                                     : limitHover.containsMouse ? Services.Colors.snow : Services.Colors.ash
-                                                opacity: limitChip.limit > 0 || limitHover.containsMouse ? 1 : 0.5
+                                                     : limitHover.containsMouse ? Services.Colors.snow : Services.Colors.mist
                                                 font.pixelSize: 13
                                                 font.family: "Material Symbols Rounded"
                                             }
@@ -506,7 +505,12 @@ PanelWindow {
                                                 font.family: "JetBrainsMono NF"
                                             }
                                         }
-                                        Widgets.Tip { target: limitChip; text: Services.I18n.t("usage.limit"); show: limitHover.containsMouse }
+                                        Widgets.Tip {
+                                            target: limitChip
+                                            text: Services.I18n.t("usage.limit") + ": "
+                                                + (limitChip.limit > 0 ? Services.Usage.span(limitChip.limit * 60) : Services.I18n.t("usage.noLimit"))
+                                            show: limitHover.containsMouse
+                                        }
                                         MouseArea {
                                             id: limitHover
                                             anchors.fill: parent

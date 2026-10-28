@@ -438,6 +438,7 @@
   "usage.yesterday": "Yesterday",
   "usage.average": "Daily average",
   "usage.limit": "Daily limit",
+  "usage.noLimit": "no limit",
   "usage.limitSoon": "5 minutes left in {app}",
   "usage.limitReached": "{app} reached its daily limit",
   "usage.apps": "Apps",
