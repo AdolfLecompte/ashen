@@ -555,4 +555,10 @@ PanelWindow {
             }
         }
     }
+
+    // Escape closes it.
+    Widgets.PanelKeys {
+        shown: Services.AppState.processVisible
+        onCloseRequested: Services.AppState.processVisible = false
+    }
 }

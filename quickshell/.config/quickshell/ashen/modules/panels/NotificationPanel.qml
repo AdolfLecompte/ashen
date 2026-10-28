@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
@@ -11,6 +12,7 @@ Scope {
 
     PanelWindow {
     id: win
+    WlrLayershell.keyboardFocus: win.shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     anchors { top: true; left: true; right: true; bottom: true }
     screen: Services.Screens.active
     exclusionMode: ExclusionMode.Ignore

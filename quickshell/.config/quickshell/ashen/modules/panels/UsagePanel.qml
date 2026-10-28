@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
@@ -13,6 +14,7 @@ PanelWindow {
     color: "transparent"
     mask: Widgets.ShellMask { winW: win.width; winH: win.height; keepRect: card.restRect }
     readonly property bool shown: Services.AppState.usageVisible
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: shown || closeDelay.running
     Timer { id: closeDelay; interval: card.closeMs }
 
@@ -745,5 +747,13 @@ PanelWindow {
                 }
             }
         }
+    }
+
+    // Escape closes it; the arrows act on what it shows.
+    Widgets.PanelKeys {
+        shown: Services.AppState.usageVisible
+        onCloseRequested: Services.AppState.usageVisible = false
+        onStepLeft: win.selected = win.shift(win.day, -1)
+        onStepRight: if (!win.isToday) win.selected = win.shift(win.day, 1)
     }
 }

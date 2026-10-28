@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
@@ -25,6 +26,7 @@ PanelWindow {
     mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: btCard.restRect }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.bluetoothVisible
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: shown || closeDelay.running
     // Mapped until the drop is all the way home; see DropCard.closeMs.
     Timer { id: closeDelay; interval: btCard.closeMs }
@@ -270,5 +272,11 @@ PanelWindow {
                 }
             }
         }
+    }
+
+    // Escape closes it.
+    Widgets.PanelKeys {
+        shown: Services.AppState.bluetoothVisible
+        onCloseRequested: Services.AppState.bluetoothVisible = false
     }
 }

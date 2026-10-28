@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
@@ -19,6 +20,7 @@ PanelWindow {
     mask: Widgets.ShellMask { winW: win.width; winH: win.height; keepRect: card.restRect }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.volumeVisible
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: shown || closeDelay.running
     // Opening resyncs the body with the tab: a cross-fade cut short by closing
     // used to leave the panel showing the side you were not on.
@@ -421,5 +423,14 @@ PanelWindow {
                 }
             }
         }
+    }
+
+    // Escape closes it; the arrows act on what it shows.
+    Widgets.PanelKeys {
+        shown: Services.AppState.volumeVisible
+        onCloseRequested: Services.AppState.volumeVisible = false
+        onStepUp: Services.Audio.setVolume(Services.Audio.volume + 5)
+        onStepDown: Services.Audio.setVolume(Services.Audio.volume - 5)
+        onMutePressed: Services.Audio.toggleMute()
     }
 }

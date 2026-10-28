@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Effects
@@ -19,6 +20,7 @@ PanelWindow {
     mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: card.restRect }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.mediaVisible
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: shown || card.closing
 
     // The pill stands aside while its panel is wearing its face.
@@ -77,6 +79,9 @@ PanelWindow {
         anchors.fill: parent
         focus: root.shown
         Keys.onEscapePressed: Services.AppState.mediaVisible = false
+        Keys.onSpacePressed: Services.Media.playPause()
+        Keys.onLeftPressed: Services.Media.previous()
+        Keys.onRightPressed: Services.Media.next()
     }
 
     Widgets.MorphCard {

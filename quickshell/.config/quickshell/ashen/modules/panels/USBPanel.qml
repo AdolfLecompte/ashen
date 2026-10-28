@@ -322,4 +322,10 @@ PanelWindow {
             }
         }
     }
+
+    // Escape closes it.
+    Widgets.PanelKeys {
+        shown: Services.AppState.usbVisible
+        onCloseRequested: Services.AppState.usbVisible = false
+    }
 }

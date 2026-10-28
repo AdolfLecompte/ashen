@@ -233,6 +233,14 @@ PanelWindow {
         anchors.fill: parent
         focus: win.shown
         Keys.onEscapePressed: Services.AppState.settingsVisible = false
+        // Ctrl+Tab / Ctrl+Shift+Tab walk the rail, wrapping at the ends.
+        Keys.onPressed: e => {
+            if (!(e.modifiers & Qt.ControlModifier) || (e.key !== Qt.Key_Tab && e.key !== Qt.Key_Backtab)) return
+            const n = win.categories.length
+            const step = e.key === Qt.Key_Backtab ? -1 : 1
+            Services.AppState.settingsTab = win.categories[(win.tabIndex + step + n) % n].id
+            e.accepted = true
+        }
     }
 
     // Out of the settings chip on the utility pill, like Process and Clipboard;

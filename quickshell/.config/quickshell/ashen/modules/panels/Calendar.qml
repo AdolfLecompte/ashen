@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
@@ -16,6 +17,7 @@ PanelWindow {
     // or changing panels costs two. See widgets/ShellMask.qml.
     mask: Widgets.ShellMask { winW: root.width; winH: root.height; keepRect: card.restRect }
     readonly property bool shown: Services.AppState.calendarVisible
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: shown || card.closing
 
     // A day picked in the weather strip lives only as long as the panel is up:

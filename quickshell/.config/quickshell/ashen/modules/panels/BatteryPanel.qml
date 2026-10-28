@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
@@ -17,6 +18,7 @@ PanelWindow {
     mask: Widgets.ShellMask { winW: win.width; winH: win.height; keepRect: card.restRect }
     // stays mapped through the close animation, so the exit plays in reverse
     readonly property bool shown: Services.AppState.batteryVisible
+    WlrLayershell.keyboardFocus: shown ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     visible: shown || closeDelay.running
     // Mapped until the drop is all the way home; see DropCard.closeMs.
     Timer { id: closeDelay; interval: card.closeMs }
@@ -360,5 +362,11 @@ PanelWindow {
                 }
             }
         }
+    }
+
+    // Escape closes it.
+    Widgets.PanelKeys {
+        shown: Services.AppState.batteryVisible
+        onCloseRequested: Services.AppState.batteryVisible = false
     }
 }
