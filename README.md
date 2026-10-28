@@ -96,7 +96,7 @@ Then it draws five steps and rewrites them in place as it goes:
   the repo and there is no second copy to keep in sync. A real file already
   sitting where a config belongs (`~/.zshrc` is the usual one) is moved to
   `<name>.bak`, never overwritten. The three answers are applied here too: the
-  shell's language, the layout in `input.lua` and `localectl`, and the locale.
+  shell's language, the layout in `~/.config/ashen/hypr/layout.lua` and `localectl`, and the locale.
 - **The login screen**, if `sddm` is installed. It is never switched blind: the
   theme has to declare `QtVersion=6`, the Qt6 greeter has to exist **and resolve
   its libraries**, and only then is `/etc/sddm.conf` repointed — with a backup,
@@ -359,6 +359,31 @@ That palette is written by the shell itself, so a script cannot regenerate it.
 says so rather than overwrite your edits; `git -C ~/ashen status` shows what
 is in the way. Commit or stash it, then run the update again.
 
+### Your own changes
+
+Keep them out of `~/ashen`, and updates never meet them. Everything Ashen
+writes for this machine already lives in `~/.config/ashen/`:
+
+| File | What it holds |
+|---|---|
+| `prefs.json` | every setting from Settings |
+| `hypr/layout.lua` | your keyboard layouts (Settings > Input, the installer) |
+| `hypr/border.lua` | the window border colour (the theme) |
+| `hypr/user.lua` | **yours**: any Hyprland config, loaded last so it wins |
+| `hooks/<event>` | your commands on the shell's events (see Hooks) |
+
+`hypr/user.lua` takes the same Lua as `~/.config/hypr/conf/*.lua`:
+
+```lua
+hl.config({ general = { gaps_out = 12 } })
+hl.bind("SUPER + B", hl.dsp.exec_cmd("firefox"))
+```
+
+**Coming from 3.6.0 or older**, the layout and border were written into
+`conf/input.lua` and `conf/general.lua` inside the checkout. Once the new
+files exist (change the layout or the wallpaper once), put those two back:
+`git -C ~/ashen checkout -- hypr/.config/hypr/conf/input.lua hypr/.config/hypr/conf/general.lua`.
+
 ## Usage
 
 | Keys | Action |
@@ -396,9 +421,9 @@ On a touchpad, three fingers sideways change workspace, up opens the launcher
 and down shows the scratchpad; four fingers move the window. They live in
 `hypr/.config/hypr/conf/gestures.lua`, and Settings → Input lists them.
 
-The keyboard layout pill in the bar is **read-only**. Layouts are declared in
-`hypr/.config/hypr/conf/input.lua` (`kb_layout = "us"`, or what the installer was
-told) and switched from **Settings → Input**. Every keyboard follows the pick,
+The keyboard layout pill in the bar is **read-only**. Layouts are kept in
+`~/.config/ashen/hypr/layout.lua` (what the installer was told, `us` if
+nothing) and switched from **Settings → Input**. Every keyboard follows the pick,
 including one that is plugged in or wakes up later.
 
 ### Hooks
@@ -448,7 +473,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.6.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
+3.7.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

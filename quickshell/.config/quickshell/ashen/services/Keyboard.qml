@@ -25,11 +25,6 @@ Singleton {
 
     function refresh() { devProc.running = true }
 
-    // Resolved from $HOME at runtime, and via the stowed config location rather
-    // than the repo path, so it holds no matter where the repo was cloned.
-    readonly property string inputConf:
-        (Quickshell.env("HOME") || "") + "/.config/hypr/conf/input.lua"
-
     // XKB only has 4 groups. Hyprland will happily accept and echo back a 5th
     // layout, but switchxkblayout answers "layout idx out of range of 4", so it
     // can never be selected -- a phantom entry. Refuse to create one.
@@ -59,7 +54,8 @@ Singleton {
     }
 
     // hyprctl *keyword* does not work on this Lua config ("non-legacy parsers,
-    // use eval"), so: eval applies it live, sed makes it survive the next login.
+    // use eval"), so: eval applies it live, layout.lua (outside the checkout,
+    // loaded last by hyprland.lua) makes it survive the next login.
     function applyLayouts(list) {
         // Codes come from evdev.lst and are [a-z0-9_], but this string is
         // interpolated into a shell command -- so validate rather than trust.
@@ -68,7 +64,8 @@ Singleton {
         let joined = clean.join(",")
         Quickshell.execDetached(["sh", "-c",
             "hyprctl eval 'hl.config({ input = { kb_layout = \"" + joined + "\" } })' >/dev/null 2>&1; " +
-            "sed -i 's/kb_layout = \"[^\"]*\"/kb_layout = \"" + joined + "\"/' " + root.inputConf
+            "mkdir -p \"$HOME/.config/ashen/hypr\" && " +
+            "printf 'hl.config({ input = { kb_layout = \"%s\" } })\\n' '" + joined + "' > \"$HOME/.config/ashen/hypr/layout.lua\""
         ])
         refreshLater.restart()
     }

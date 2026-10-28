@@ -41,8 +41,9 @@ choices_default_lang() {
 
 # The layout the machine already types with: X11 first, the console keymap after.
 choices_default_kb() {
-    local kb="" input="$HOME/.config/hypr/conf/input.lua"
-    kb=$(sed -n 's/.*kb_layout = "\([^",]*\).*/\1/p' "$input" 2>/dev/null | head -1)
+    local kb=""
+    kb=$(sed -n 's/.*kb_layout = "\([^",]*\).*/\1/p' "$HOME/.config/ashen/hypr/layout.lua" \
+        "$HOME/.config/hypr/conf/input.lua" 2>/dev/null | head -1)
     [ "$kb" = us ] && kb=""
     [ -z "$kb" ] && kb=$(localectl status 2>/dev/null | awk -F': *' '/X11 Layout/ { print $2 }' | cut -d, -f1)
     if [ -z "$kb" ] && [ -r /etc/vconsole.conf ]; then
@@ -194,7 +195,7 @@ choices_ask_locale() {
 choices_apply() {
     local lang=${ASHEN_LANG_PICK:-en} kb=${ASHEN_KB_PICK:-us}
     local prefs="$HOME/.config/ashen/prefs.json"
-    local input="$HOME/.config/hypr/conf/input.lua"
+    local input="$HOME/.config/ashen/hypr/layout.lua"
 
     if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
         printf '  would set      language %s, keyboard %s, system %s\n' "$lang" "$kb" "${ASHEN_LOCALE_PICK:-unchanged}"
@@ -211,8 +212,13 @@ choices_apply() {
     fi
     printf '  language       %s\n' "$lang"
 
-    # sed -i turns a linked input.lua into a file of its own: the layout is
-    # this machine's, not the repo's.
+    # The layout is this machine's, so it lives outside the checkout
+    # (hyprland.lua loads it last); the first run seeds it from input.lua.
+    if [ ! -e "$input" ]; then
+        mkdir -p "${input%/*}"
+        printf 'hl.config({ input = { kb_layout = "%s" } })\n' "$(sed -n 's/.*kb_layout = "\([^"]*\)".*/\1/p' \
+            "$HOME/.config/hypr/conf/input.lua" 2>/dev/null | head -1)" >"$input"
+    fi
     # The pick goes first; layouts already added in Settings stay after it.
     # The shipped "us" is a placeholder, not a choice, so it is replaced.
     if [ -e "$input" ]; then

@@ -52,6 +52,9 @@
   flat when paused.
 - Windows open and move on a settling spring; the special workspace dims
   what is behind it.
+- Your keyboard layouts and the window border colour are kept in
+  `~/.config/ashen/hypr/`, outside the checkout, and `user.lua` there takes
+  your own Hyprland config, loaded last. Updates no longer meet them.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they

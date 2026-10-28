@@ -116,7 +116,8 @@ Singleton {
             // the border kept whichever wallpaper wrote it last.
             "printf %s '" + c.ghost.replace("#", "") + "' > \"$HOME/.cache/ashen_accent.txt\" && " +
             "hyprctl eval \"hl.config({ general = { col = { active_border = { colors = {'rgba(" + borderHex + ")'} } } } })\" && " +
-            "sed -i 's/active_border = { colors = {\"rgba([^)]*)\"} }/active_border = { colors = {\"rgba(" + borderHex + ")\"} }/' \"$HOME/.config/hypr/conf/general.lua\"",
+            "mkdir -p \"$HOME/.config/ashen/hypr\" && " +
+            "printf 'hl.config({ general = { col = { active_border = { colors = {\"rgba(%s)\"} } } } })\\n' '" + borderHex + "' > \"$HOME/.config/ashen/hypr/border.lua\"",
             "sh", json
         ])
         root.applyGtkTheme(c)

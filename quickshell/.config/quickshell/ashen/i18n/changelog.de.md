@@ -55,6 +55,10 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   der Pause flach wird.
 - Fenster öffnen und bewegen sich mit einer ausschwingenden Feder; der
   Spezial-Arbeitsbereich dunkelt ab, was dahinter liegt.
+- Tastaturlayouts und die Farbe des Fensterrahmens liegen in
+  `~/.config/ashen/hypr/`, außerhalb des Checkouts, und eine `user.lua` dort
+  nimmt deine eigene Hyprland-Konfiguration auf, zuletzt geladen. Updates
+  stoßen nicht mehr mit ihnen zusammen.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;

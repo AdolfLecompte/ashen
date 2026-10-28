@@ -56,6 +56,10 @@ si falta, la bienvenida las enseña en inglés.
   aplana en pausa.
 - Las ventanas abren y se mueven con un muelle que se asienta; el
   escritorio especial atenúa lo de detrás.
+- Tus distribuciones de teclado y el color del borde de ventana se guardan
+  en `~/.config/ashen/hypr/`, fuera del repo, y un `user.lua` ahí recibe tu
+  propia configuración de Hyprland, cargada al final. Las actualizaciones ya
+  no chocan con ellos.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
