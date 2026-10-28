@@ -28,14 +28,16 @@ Item {
     // Pac-Man eats the row: he is where you are, a ghost haunts every
     // workspace with windows, and the empty ones are pellets. No plates.
     readonly property bool pacman: root.wsStyle === "pacman"
-    readonly property bool bare: root.marks || root.pacman
+    // Icons are bare too: the app's own glyph, the one you are on in the accent.
+    readonly property bool icons: root.wsStyle === "icons"
+    readonly property bool bare: root.marks || root.pacman || root.icons
+    // Pac-Man and icons colour the glyph instead of drawing a plate.
+    readonly property bool inked: root.pacman || root.icons
     readonly property string glyphPacman: "\udb82\udfaf"
     readonly property string glyphGhost: "\udb80\udea0"
     readonly property string glyphPellet: "\u2022"
     // A tick per window under each chip: a switch, not a style.
     readonly property bool counted: Services.Prefs.workspaceTicks
-    // What an icons chip shows when nothing is open on it: an empty ring.
-    readonly property string glyphEmpty: "\ue836"
     readonly property var kanjiDigits: ["\u3007", "\u4e00", "\u4e8c", "\u4e09", "\u56db", "\u4e94",
                                         "\u516d", "\u4e03", "\u516b", "\u4e5d", "\u5341"]
     function kanjiOf(n) {
@@ -365,7 +367,7 @@ Item {
                     // bar lying across a column only one pill wide.
                     readonly property int along: root.alongOf(wsId, isActive)
                     readonly property int wins: (root.counted && !root.marks) ? Math.min(3, Services.Windows.windowCount(wsId)) : 0
-                    readonly property color ink: root.pacman
+                    readonly property color ink: root.inked
                         ? (isActive ? Services.Colors.ghost : warm ? Services.Colors.snow
                            : winCount > 0 ? Services.Colors.mist : Services.Colors.ash)
                         : isActive
@@ -436,11 +438,8 @@ Item {
                     }
 
                     // A workspace with something on it shows what that is; an
-                    // empty one keeps its number, which is the only thing left
-                    // to identify it by.
-                    readonly property string appIcon: root.wsStyle !== "icons" ? ""
-                        : Services.Windows.workspaceIcon(wsId) !== "" ? Services.Windows.workspaceIcon(wsId)
-                        : root.glyphEmpty
+                    // empty one is a dot.
+                    readonly property string appIcon: root.icons ? Services.Windows.workspaceIcon(wsId) : ""
 
                     Text {
                         textFormat: Text.PlainText
@@ -453,9 +452,10 @@ Item {
                         text: root.pacman ? (parent.isActive ? ""
                                              : parent.winCount > 0 ? root.glyphGhost : root.glyphPellet)
                             : parent.appIcon !== "" ? parent.appIcon
+                            : root.icons ? root.glyphPellet
                             : root.kanji ? root.kanjiOf(wsId) : wsId
                         color: parent.ink
-                        font.pixelSize: root.pacman ? 18 : parent.appIcon !== "" ? 15 : root.kanji ? 14 : 13
+                        font.pixelSize: root.inked && parent.appIcon === "" ? 18 : parent.appIcon !== "" ? 15 : root.kanji ? 14 : 13
                         font.family: parent.appIcon !== "" ? "Material Symbols Rounded"
                                    : root.kanji ? "Noto Sans CJK JP" : "JetBrainsMono NF"
                         font.bold: true
@@ -518,7 +518,7 @@ Item {
                         : root.kanji ? root.specialKanji(shortName) : root.specialGlyph(modelData.id, shortName)
                     readonly property int along: root.innerH
                     readonly property int wins: root.counted ? Math.min(3, Services.Windows.windowCount(modelData.id)) : 0
-                    readonly property color ink: root.pacman
+                    readonly property color ink: root.inked
                         ? (isShown ? Services.Colors.ghost : warm ? Services.Colors.snow : Services.Colors.mist)
                         : isShown
                                  ? (!root.spec.rings ? Services.Colors.accentText : Services.Colors.ghost)
@@ -537,8 +537,8 @@ Item {
                     Rectangle {
                         anchors.fill: parent
                         radius: root.innerR
-                        // Pac-Man draws no blocks, not even under a special.
-                        visible: !root.pacman
+                        // Pac-Man and icons draw no blocks, not even under a special.
+                        visible: !root.inked
                         color: root.spec.rings ? "transparent"
                              : parent.isShown ? Services.Colors.ghost : Services.Colors.fillRest
                         border.width: (root.spec.rings && parent.isShown)

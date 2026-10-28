@@ -55,6 +55,8 @@
 - Your keyboard layouts and the window border colour are kept in
   `~/.config/ashen/hypr/`, outside the checkout, and `user.lua` there takes
   your own Hyprland config, loaded last. Updates no longer meet them.
+- The icons workspace style has no plates: the app's own icon, the one you
+  are on in the accent, and an empty workspace is a dot.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they

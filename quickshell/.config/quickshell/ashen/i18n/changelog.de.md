@@ -59,6 +59,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   `~/.config/ashen/hypr/`, außerhalb des Checkouts, und eine `user.lua` dort
   nimmt deine eigene Hyprland-Konfiguration auf, zuletzt geladen. Updates
   stoßen nicht mehr mit ihnen zusammen.
+- Der Symbolstil der Arbeitsbereiche kommt ohne Kacheln aus: das Symbol der
+  App, der aktuelle in der Akzentfarbe, ein leerer ist ein Punkt.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;

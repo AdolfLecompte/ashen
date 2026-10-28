@@ -60,6 +60,8 @@ si falta, la bienvenida las enseña en inglés.
   en `~/.config/ashen/hypr/`, fuera del repo, y un `user.lua` ahí recibe tu
   propia configuración de Hyprland, cargada al final. Las actualizaciones ya
   no chocan con ellos.
+- El estilo de iconos de los escritorios va sin losetas: el icono de la app,
+  el escritorio en el que estás en el acento, y uno vacío es un punto.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
