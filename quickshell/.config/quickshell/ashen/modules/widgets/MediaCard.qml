@@ -434,12 +434,8 @@ Item {
                     width: parent.width
                     height: 38
 
-                    // Snake progress: a sine wave whose played portion glows in
-                    // the accent and scrolls while the track plays; the rest is
-                    // a dim straight rule. The playhead is a dot: the wave is
-                    // tapered flat where it lands (so it meets the rule without
-                    // a step), and a tapered end is too thin to say where you
-                    // are on its own.
+                    // Material You's wavy progress (WaveProgress): travels while
+                    // it plays, flat when paused, a pill where you are.
                     Item {
                         id: snake
                         anchors.top: parent.top
@@ -450,150 +446,12 @@ Item {
                         property real progress: (root.activePlayer !== null && root.activePlayer.length > 0)
                             ? Math.max(0, Math.min(1, root.activePlayer.position / root.activePlayer.length)) : 0
                         Behavior on progress { Anim { speed: Services.Sizes.msEmphasis } }
-                        property real phase: 0
-                        readonly property bool playing: root.activePlayer !== null && root.activePlayer.isPlaying
 
-                        // 0 = flat line (paused), 1 = full wave (playing). Animated
-                        // so the straight<->snake transition morphs smoothly.
-                        property real ampFactor: playing ? 1 : 0
-                        Behavior on ampFactor { NumberAnimation { duration: 550; easing.type: Services.Sizes.easeInOut } }
-
-                        // How loud it actually is, 0..1, smoothed. The wave is
-                        // the song and not a decoration, so its height is the
-                        // sound rather than a constant: a quiet passage flattens
-                        // it and the drop swells it. Without cava running there
-                        // is nothing to ask, and it holds its full height.
-                        property real level: 0
-                        readonly property real loudness: root.hearing
-                            ? (0.35 + 0.65 * snake.level) : 1
-                        Connections {
-                            target: Services.Cava
-                            enabled: snake.playing && root.hearing
-                            function onBarValuesChanged() {
-                                const src = Services.Cava.barValues
-                                if (!src || src.length === 0) return
-                                let v = 0
-                                for (let i = 0; i < src.length; i++) v = Math.max(v, src[i] || 0)
-                                // Smoothed towards the reading, never set to it:
-                                // raw cava jitters every frame and the wave
-                                // would buzz rather than breathe.
-                                snake.level = snake.level * 0.72 + Math.min(1, v / 100) * 0.28
-                            }
-                            // Silence arrives as one frame; ease the rest of the way down.
-                            function onIsActiveChanged() {
-                                if (!Services.Cava.isActive) levelDrop.restart()
-                            }
-                        }
-                        NumberAnimation {
-                            id: levelDrop
-                            target: snake
-                            property: "level"
-                            to: 0
-                            duration: 400
-                        }
-                        onLevelChanged: waveCanvas.requestPaint()
-
-                        onProgressChanged: waveCanvas.requestPaint()
-                        onPhaseChanged: waveCanvas.requestPaint()
-                        onAmpFactorChanged: waveCanvas.requestPaint()
-                        NumberAnimation on phase {
-                            running: snake.playing
-                            from: 0; to: 2 * Math.PI
-                            duration: 1600; loops: Animation.Infinite
-                        }
-
-                        Canvas {
-                            id: waveCanvas
+                        WaveProgress {
                             anchors.fill: parent
-                            // Straight segments every 2 px put a corner at every
-                            // crest -- small, but a 5 px stroke turns each one
-                            // into a nick in the curve. Smoothed and sampled
-                            // finer, the wave has no flat spots to nick.
-                            antialiasing: true
-                            smooth: true
-                            renderTarget: Canvas.Image
-                            readonly property real amp: height * 0.30
-                            readonly property real waves: 3.5
-                            readonly property real step: 1
-                            // How far the playhead is, in pixels. The wave has to
-                            // KNOW it: its height is tapered to nothing there so
-                            // it lands ON the dim rule instead of stopping in mid
-                            // crest -- that step was the nick that read as the
-                            // line breaking, and no round cap can hide it.
-                            readonly property real headX: width * parent.progress
-                            readonly property real taper: 30
-                            function envAt(px) {
-                                const d = headX - px
-                                if (d <= 0) return 0
-                                return Math.min(1, d / taper)
-                            }
-                            function yAt(px) {
-                                return height / 2 + amp * parent.ampFactor * parent.loudness
-                                     * envAt(px)
-                                     * Math.sin((px / width) * waves * 2 * Math.PI + parent.phase)
-                            }
-                            // Drawn up to a length rather than clipped to one:
-                            // a clip cuts the played end square, and the whole
-                            // point of a round cap is that both ends are round.
-                            // Quadratics through the midpoints: each sample bends
-                            // the line instead of breaking it.
-                            function trace(ctx, until) {
-                                var end = Math.min(width, until)
-                                ctx.beginPath()
-                                ctx.moveTo(0, yAt(0))
-                                var px = step
-                                for (; px < end; px += step) {
-                                    var prev = px - step
-                                    ctx.quadraticCurveTo(prev, yAt(prev),
-                                                         (prev + px) / 2, (yAt(prev) + yAt(px)) / 2)
-                                }
-                                // The last sample lands ON the playhead, so the
-                                // round cap sits where the time says it does.
-                                ctx.lineTo(end, yAt(end))
-                            }
-                            onPaint: {
-                                var ctx = getContext("2d")
-                                ctx.reset()
-                                ctx.lineWidth = 5
-                                ctx.lineCap = "round"
-                                ctx.lineJoin = "round"
-                                // What is still to come is a STRAIGHT dim rule,
-                                // never a second wave: two waves read as one
-                                // long ripple and the playhead disappears into
-                                // it. Only what has been played moves.
-                                // And it starts AT the playhead, not at zero: a
-                                // rule running under the wave crosses it twice
-                                // per crest and reads as a seam.
-                                ctx.strokeStyle = Services.Colors.ghostAlpha(0.18)
-                                ctx.beginPath()
-                                ctx.moveTo(Math.max(0, waveCanvas.headX), height / 2)
-                                ctx.lineTo(width, height / 2)
-                                ctx.stroke()
-                                // Accent wave, as far as the playhead
-                                var pw = width * parent.progress
-                                if (pw > 0) {
-                                    ctx.strokeStyle = Services.Colors.ghost
-                                    trace(ctx, pw); ctx.stroke()
-                                }
-                                // The head itself. The wave is tapered to
-                                // nothing where it lands, so without this the
-                                // end of it is the thinnest part of the line --
-                                // exactly where the eye is looking for "you are
-                                // here". A ring of plate under the dot keeps it
-                                // off the rule it sits on.
-                                if (pw > 0.5) {
-                                    ctx.beginPath()
-                                    ctx.arc(pw, height / 2, 6, 0, 2 * Math.PI)
-                                    ctx.fillStyle = Services.Colors.surfacePanel
-                                    ctx.fill()
-                                    ctx.beginPath()
-                                    ctx.arc(pw, height / 2, 4.5, 0, 2 * Math.PI)
-                                    ctx.fillStyle = Services.Colors.ghost
-                                    ctx.fill()
-                                }
-                            }
+                            progress: snake.progress
+                            playing: root.activePlayer !== null && root.activePlayer.isPlaying
                         }
-
                     }
 
                     Item {
