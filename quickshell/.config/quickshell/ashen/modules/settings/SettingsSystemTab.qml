@@ -241,42 +241,6 @@ Section {
         }
     }
 
-    // Your commands on the shell's events: the door to the folder.
-    Card {
-        glyph: "\ueb92"
-        title: Services.I18n.t("settings.system.hooks")
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-            RowGlyph { glyph: "\ueb8e" }
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
-                Text {
-                    textFormat: Text.PlainText
-                    text: Services.Hooks.dir.replace(Services.Paths.home, "~") + "/<event>"
-                    color: Services.Colors.snow
-                    font.pixelSize: Services.Sizes.fsInput
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    textFormat: Text.PlainText
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    text: Services.Hooks.events.join("  \u00b7  ")
-                    color: Services.Colors.ash
-                    font.pixelSize: Services.Sizes.fsMeta
-                    font.family: "JetBrainsMono NF"
-                }
-            }
-            ActionBtn {
-                label: Services.I18n.t("settings.system.openFolder")
-                onGo: Quickshell.execDetached(["sh", "-c", 'mkdir -p "$1" && xdg-open "$1"', "_", Services.Hooks.dir])
-            }
-        }
-    }
-
     Card {
         glyph: "\ue88d"
         title: Services.I18n.t("settings.system.lockScreen")

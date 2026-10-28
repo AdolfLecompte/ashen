@@ -302,8 +302,6 @@
   "game.onTitle": "MODO JUEGO",
   "game.offTitle": "MODO JUEGO FUERA",
   "settings.system.game": "Modo juego",
-  "settings.system.hooks": "Ganchos",
-  "settings.system.openFolder": "Abrir carpeta",
   "settings.system.gameHint": "Compositor plano, shell en silencio",
   "wall.set": "FONDO PUESTO",
   "wall.search": "Buscar…",

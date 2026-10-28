@@ -302,8 +302,6 @@
   "game.onTitle": "GAME MODE ON",
   "game.offTitle": "GAME MODE OFF",
   "settings.system.game": "Game mode",
-  "settings.system.hooks": "Hooks",
-  "settings.system.openFolder": "Open folder",
   "settings.system.gameHint": "Flat compositor, quiet shell",
   "wall.set": "WALLPAPER SET",
   "wall.search": "Search…",
