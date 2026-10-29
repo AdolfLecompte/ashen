@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import QtQuick
+import QtQuick.Effects
 
 import "root:/modules/desktop"
 import "root:/modules/widgets" as Widgets
@@ -16,9 +17,6 @@ DesktopWidget {
     // The one piece of desktop furniture you actually press: the layer cuts a
     // hole for this box so its transport works without arranging first.
     wantsInput: true
-    // The words open beside the card: the plate eases out to them.
-    easeSize: true
-
     // Its own sticky read, so the compact shape does not have to mount
     // the whole card to know what is on. Same drop-guard as MediaCard: MPRIS
     // goes null for a few ms between tracks.
@@ -70,7 +68,7 @@ DesktopWidget {
         }
     }
 
-    // The words beside the card: opened by the card's lyric chip, only on the
+    // The words on the cover: opened by the card's lyric chip, only on the
     // desktop (the lock screen lays its columns out itself).
     readonly property bool wordsOpen: root.managed && Services.Prefs.mediaWidgetLyrics
                                       && Services.Lyrics.has
@@ -91,12 +89,133 @@ DesktopWidget {
     Component {
         id: fullShape
         Row {
+            spacing: card.gap
+
+            // The cover stands the whole height of the card and the strip; the
+            // words sit on it, blurred, the way the media panel shows them.
+            ClippingRectangle {
+                id: big
+                width: main.height
+                height: main.height
+                radius: 28
+                color: Services.Colors.fillInset
+                opacity: card.swapFade
+                transform: Translate { x: card.swapOffX }
+                property real face: root.wordsOpen ? 1 : 0
+                Behavior on face { NumberAnimation { duration: 620; easing.type: Easing.InOutCubic } }
+
+                Image {
+                    id: bigImg
+                    anchors.fill: parent
+                    source: root.art
+                    sourceSize: Qt.size(512, 512)
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    // The player reuses its temp file name: never serve a cached picture.
+                    cache: false
+                    visible: status === Image.Ready
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.centerIn: parent
+                    visible: bigImg.status !== Image.Ready
+                    text: "\ue405"
+                    font.family: "Material Symbols Rounded"
+                    font.pixelSize: parent.width * 0.3
+                    color: Services.Colors.ash
+                }
+
+                Item {
+                    id: words
+                    anchors.fill: parent
+                    visible: big.face > 0.01
+                    readonly property int live: Services.Lyrics.indexAt(root.position + 0.35)
+                    // The text reads the committed index, so the new line does not
+                    // both leave and arrive.
+                    Widgets.SlideSwap {
+                        id: lineSlide
+                        index: words.live
+                        axis: "vertical"
+                        travel: 18
+                        onCommit: words.at = words.live
+                    }
+                    property int at: -1
+                    Component.onCompleted: words.at = words.live
+                    function lineOf(i) {
+                        const l = Services.Lyrics.lines
+                        return i >= 0 && i < l.length ? l[i].text : ""
+                    }
+
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: bigImg
+                        visible: bigImg.status === Image.Ready
+                        blurEnabled: true
+                        blurMax: 48
+                        blur: big.face
+                        scale: 1 + 0.06 * big.face
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.rgba(Services.Colors.abyss.r, Services.Colors.abyss.g,
+                                       Services.Colors.abyss.b, 0.55 * big.face)
+                    }
+                    Column {
+                        anchors.centerIn: parent
+                        width: parent.width - 32
+                        spacing: 12
+                        opacity: lineSlide.fade * Math.max(0, (big.face - 0.35) / 0.65)
+                        transform: Translate { y: lineSlide.offY + (1 - big.face) * 12 }
+                        Text {
+                            textFormat: Text.PlainText
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                            text: words.lineOf(words.at - 1)
+                            color: Services.Colors.ash
+                            font.pixelSize: Services.Sizes.fsInput
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 3
+                            elide: Text.ElideRight
+                            text: words.at < 0 ? "\u2026" : words.lineOf(words.at)
+                            color: Services.Colors.snow
+                            font.pixelSize: Services.Sizes.fsSectionTitle
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                            elide: Text.ElideRight
+                            text: words.lineOf(words.at + 1)
+                            color: Services.Colors.ash
+                            font.pixelSize: Services.Sizes.fsInput
+                            font.family: "JetBrainsMono NF"
+                        }
+                    }
+                }
+            }
+
             Column {
                 id: main
                 spacing: 12
                 Widgets.MediaCard {
                     followSwitch: !root.managed
                     id: card
+                    showArt: false
+                    // The column keeps the width it had beside the small cover.
+                    contentW: 630 - 160 - card.gap
                     // Its own column of bars would say the same thing as the strip
                     // below, in a tenth of the room.
                     showSpectrum: false
@@ -111,102 +230,6 @@ DesktopWidget {
                     // The accent straight, like the panel's column: mixed into the
                     // plate it read as a picture of a visualiser rather than one.
                     color_: Services.Colors.ghost
-                }
-            }
-
-            // Takes its room at once, so the plate eases there in one motion;
-            // what is drawn is revealed by `reveal` on the plate's beat.
-            Item {
-                id: side
-                readonly property real gap: 24
-                // ~300 for the words, rounded so the open plate keeps the same
-                // grid slack as the closed one: the card then stays put.
-                readonly property real room: root.toGrid(main.width + root.padH + side.gap + 300)
-                                             - root.toGrid(main.width + root.padH)
-                readonly property real wordsW: side.room - side.gap
-                property real amt: root.wordsOpen ? 1 : 0
-                Behavior on amt { Widgets.Anim { speed: Services.Sizes.msPanel } }
-                width: root.wordsOpen ? side.room : 0
-                height: main.height
-
-                readonly property int live: Services.Lyrics.indexAt(root.position + 0.35)
-                // The text reads the committed index, so the new line does not
-                // both leave and arrive.
-                Widgets.SlideSwap {
-                    id: lineSlide
-                    index: side.live
-                    axis: "vertical"
-                    travel: 18
-                    onCommit: side.at = side.live
-                }
-                property int at: -1
-                Component.onCompleted: side.at = side.live
-                function lineOf(i) {
-                    const l = Services.Lyrics.lines
-                    return i >= 0 && i < l.length ? l[i].text : ""
-                }
-
-                Item {
-                    id: reveal
-                    width: side.room * side.amt
-                    height: parent.height
-                    visible: side.amt > 0.01
-                    clip: true
-
-                    Rectangle {
-                        x: side.gap / 2 - width / 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: parent.height * 0.6
-                        color: Services.Colors.fillLine
-                        opacity: side.amt
-                    }
-
-                    Column {
-                        x: side.gap
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: side.wordsW
-                        spacing: 14
-                        opacity: lineSlide.fade * Math.max(0, (side.amt - 0.4) / 0.6)
-                        transform: Translate { y: lineSlide.offY }
-                        Text {
-                            textFormat: Text.PlainText
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                            elide: Text.ElideRight
-                            text: side.lineOf(side.at - 1)
-                            color: Services.Colors.ash
-                            font.pixelSize: Services.Sizes.fsInput
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 3
-                            elide: Text.ElideRight
-                            text: side.at < 0 ? "…" : side.lineOf(side.at)
-                            color: Services.Colors.snow
-                            font.pixelSize: Services.Sizes.fsSectionTitle
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                        }
-                        Text {
-                            textFormat: Text.PlainText
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 2
-                            elide: Text.ElideRight
-                            text: side.lineOf(side.at + 1)
-                            color: Services.Colors.ash
-                            font.pixelSize: Services.Sizes.fsInput
-                            font.family: "JetBrainsMono NF"
-                        }
-                    }
                 }
             }
         }

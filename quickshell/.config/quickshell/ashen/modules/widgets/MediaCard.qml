@@ -25,7 +25,7 @@ Item {
     readonly property real cavaW: 100
     readonly property real gap: 18
     readonly property real pad: 20
-    readonly property real contentW: root.stacked ? 340 : 630
+    property real contentW: root.stacked ? 340 : 630
     readonly property real chipLg: 40
     readonly property real playLg: 48
     // The words, when this copy of the card is offering them and the track has
@@ -67,6 +67,8 @@ Item {
 
     // Off where the surface draws its own, bigger one (the desktop widget).
     property bool showSpectrum: true
+    // Off when the caller draws the cover itself (the desktop widget's tall one).
+    property bool showArt: true
     // A desktop widget hears the music whatever the visualiser switch says.
     property bool followSwitch: true
     readonly property bool hearing: root.followSwitch ? Services.Cava.enabled : Services.Cava.needed
@@ -272,6 +274,7 @@ Item {
 
         ClippingRectangle {
             id: artSlot
+            visible: root.showArt
             Layout.preferredWidth: root.artSize
             Layout.preferredHeight: root.artSize
             Layout.alignment: Qt.AlignVCenter
