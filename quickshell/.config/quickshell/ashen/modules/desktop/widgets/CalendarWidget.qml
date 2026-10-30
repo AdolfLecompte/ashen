@@ -12,14 +12,36 @@ DesktopWidget {
     readonly property var now: Services.Time.now
     readonly property int monthIndex: root.now.getFullYear() * 12 + root.now.getMonth()
 
-    component Head: Text {
-        textFormat: Text.PlainText
-        text: Services.Time.fmt("MMMM yyyy").toUpperCase()
-        color: Services.Colors.mist
-        font.pixelSize: Services.Sizes.fsCaption
-        font.bold: true
-        font.letterSpacing: 1.4
-        font.family: "JetBrainsMono NF"
+    // ISO week: Thursday's week decides the year.
+    readonly property int weekNo: {
+        const d = new Date(root.now.getFullYear(), root.now.getMonth(), root.now.getDate())
+        d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+        const jan4 = new Date(d.getFullYear(), 0, 4)
+        return 1 + Math.round(((d - jan4) / 86400000 - 3 + (jan4.getDay() + 6) % 7) / 7)
+    }
+
+    component Head: Item {
+        implicitHeight: month.implicitHeight
+        Text {
+            id: month
+            textFormat: Text.PlainText
+            text: Services.Time.fmt("MMMM yyyy").toUpperCase()
+            color: Services.Colors.mist
+            font.pixelSize: Services.Sizes.fsCaption
+            font.bold: true
+            font.letterSpacing: 1.4
+            font.family: "JetBrainsMono NF"
+        }
+        Text {
+            textFormat: Text.PlainText
+            anchors.right: parent.right
+            text: Services.I18n.t("widget.weekNo", { n: root.weekNo }).toUpperCase()
+            color: Services.Colors.ash
+            font.pixelSize: Services.Sizes.fsCaption
+            font.bold: true
+            font.letterSpacing: 1.4
+            font.family: "JetBrainsMono NF"
+        }
     }
 
     // Sunday first, as the grid counts them.
@@ -45,7 +67,7 @@ DesktopWidget {
         id: monthShape
         Column {
             spacing: 8
-            Head {}
+            Head { width: 7 * 30 + 6 * 3 }
             DayNames { cell: 30 }
             Widgets.MonthGrid {
                 width: 7 * 30 + 6 * 3
@@ -53,6 +75,8 @@ DesktopWidget {
                 cellSize: 30
                 monthIndex: root.monthIndex
                 interactive: false
+                // Only the weeks the month has: a sixth empty row was dead plate.
+                reserveRows: false
             }
         }
     }
@@ -63,7 +87,7 @@ DesktopWidget {
         id: weekShape
         Column {
             spacing: 8
-            Head {}
+            Head { width: 7 * 34 + 6 * 4 }
 
             Row {
                 spacing: 4

@@ -4,7 +4,8 @@ import "root:/modules/desktop"
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
-// The day's light: where the sun is on its way between the two ends of it.
+// Tonight's moon, drawn, with the month's phases under it and the sun's two
+// times beside it.
 DesktopWidget {
     id: root
     wid: "sun"
@@ -56,34 +57,62 @@ DesktopWidget {
     }
 
     Column {
-        spacing: 4
-
-        Text {
-            textFormat: Text.PlainText
-            text: root.lightLeft + (root.daytime ? " OF LIGHT LEFT" : " UNTIL SUNRISE")
-            visible: root.lightLeft !== ""
-            color: Services.Colors.mist
-            font.pixelSize: Services.Sizes.fsCaption
-            font.bold: true
-            font.letterSpacing: 1.4
-            font.family: "JetBrainsMono NF"
-        }
-
-        Widgets.SunArc {
-            width: 320
-            height: 132
-            sunUp: root.upFrac
-            sunDown: root.downFrac
-            // To the minute: a fraction that moves every second repaints the
-            // whole path to shift a dot by nothing.
-            nowFrac: Math.floor(root.dayFrac * 1440) / 1440
-        }
+        spacing: 16
 
         Row {
-            spacing: 16
-            Stamp { glyph: "\ue518"; value: Services.Weather.sunrise }
-            Stamp { glyph: "\ue51c"; value: Services.Weather.sunset }
+            spacing: 18
+
+            Widgets.MoonPhase { id: moon; size: 84 }
+
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+                Text {
+                    textFormat: Text.PlainText
+                    text: Services.I18n.t("moon." + moon.phaseKey)
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsInput
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    text: Math.round(moon.illum * 100) + "%  \u00b7  "
+                        + (moon.frac < 0.5 ? Services.I18n.t("moon.fullIn", { n: moon.daysToFull })
+                                           : Services.I18n.t("moon.newIn", { n: moon.daysToNew }))
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
+                Row {
+                    spacing: 14
+                    topPadding: 6
+                    Stamp { glyph: "\ue518"; value: Services.Weather.sunrise }
+                    Stamp { glyph: "\ue51c"; value: Services.Weather.sunset }
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    visible: root.lightLeft !== ""
+                    text: root.lightLeft + " " + Services.I18n.t(root.daytime ? "clock.lightLeft" : "clock.untilSunrise").toLowerCase()
+                    color: Services.Colors.ash
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
+            }
         }
 
+        // The month at a glance: eight phases, tonight's lit.
+        Row {
+            spacing: 8
+            Repeater {
+                model: 8
+                delegate: Widgets.MoonPhase {
+                    required property int index
+                    size: 20
+                    frac: index / 8
+                    opacity: Math.round(moon.frac * 8) % 8 === index ? 1 : 0.35
+                }
+            }
+        }
     }
 }

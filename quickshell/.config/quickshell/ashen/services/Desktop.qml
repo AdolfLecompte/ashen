@@ -30,7 +30,7 @@ Singleton {
         { id: "weather", group: "time", label: "Weather", glyph: "\uf172", x: 80, y: 420, styles: [
             { id: "full", label: "Full" },
             { id: "compact", label: "Compact" },
-            { id: "hourly", label: "Curve" }] },
+            { id: "hourly", label: "Hours" }] },
         { id: "media", group: "media", label: "Music", glyph: "\ue405", x: 80, y: 640, styles: [
             { id: "full", label: "Full" },
             { id: "compact", label: "Compact" }] },
@@ -49,14 +49,13 @@ Singleton {
             { id: "compact", label: "Compact" }] },
         { id: "battery", group: "machine", label: "Battery", glyph: "\ue1a4", x: 460, y: 120, styles: [
             { id: "vessel", label: "Ticks" },
-            { id: "ring", label: "Ring" },
             { id: "plain", label: "Plain" }] },
         { id: "calendar", group: "time", label: "Calendar", glyph: "\uebcc", x: 460, y: 300, styles: [
             { id: "month", label: "Month" },
             { id: "week", label: "Week" }] },
         // One shape, so it is never offered a row of chips.
         { id: "sun", group: "time", label: "Daylight", glyph: "\ue518", x: 460, y: 700, styles: [
-            { id: "arc", label: "Arc" }] },
+            { id: "arc", label: "Moon" }] },
         // Both clocks the shell already keeps running: the panel closes, the
         // count does not stop, and out here you can see it without opening it.
         // Where the day went: the same numbers as the screen-time panel.

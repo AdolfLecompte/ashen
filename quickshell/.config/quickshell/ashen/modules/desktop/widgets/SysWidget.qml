@@ -114,143 +114,116 @@ DesktopWidget {
         }
     }
 
-    // Wide, not tall: a board reads across, and the past is the thing that
-    // wants the room. The left column is what the machine is doing right now;
-    // the right is everything else it has to say.
-    Component {
-        id: largeShape
-        Row {
-            id: board
-            spacing: 18
+    // KB/s as the shortest honest figure.
+    function rate(kb) { return kb >= 1024 ? (kb / 1024).toFixed(1) + "M" : Math.round(kb) + "K" }
 
-            Column {
-                id: main
-                width: 320
-                spacing: 8
-                anchors.verticalCenter: parent.verticalCenter
+    // Medium: the compact vocabulary with the CPU's last minute under its level.
+    component Rows: Column {
+        id: rows
+        width: 300
+        spacing: 8
 
-                WidgetHead {
-                    width: main.width
-                    glyph: ""
-                    name: Services.I18n.t("widget.cpu")
-                    note: ""
-                }
-                Text {
-                    textFormat: Text.PlainText
-                    text: Math.round(Services.SysMon.cpuPercent) + "%"
-                    color: Services.Colors.snow
-                    font.pixelSize: Services.Sizes.fsHero
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-                Past {
-                    width: main.width
-                    height: 96
-                    samples: Services.SysMon.cpuHistory
-                    reading: root.cpuTempText
-                }
-            }
-
-            Column {
-                id: side
-                width: 210
-                spacing: 10
-                anchors.verticalCenter: parent.verticalCenter
-
-                // Only when there is one awake to talk about: the laptop's
-                // discrete card sleeps, and a row of empty ticks says nothing.
-                WidgetHead {
-                    width: side.width
-                    visible: Services.SysMon.gpuPercent > 0
-                    glyph: ""
-                    name: Services.I18n.t("widget.gpu")
-                    note: Math.round(Services.SysMon.gpuPercent) + "%"
-                }
-                Past {
-                    width: side.width
-                    height: 46
-                    visible: Services.SysMon.gpuPercent > 0
-                    samples: Services.SysMon.gpuHistory
-                    reading: root.gpuTempText
-                    tone: Services.Colors.neutral
-                }
-
-                WidgetHead {
-                    width: side.width
-                    glyph: ""
-                    name: Services.I18n.t("widget.memory")
-                    note: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
-                }
-                Level {
-                    width: side.width
-                    reading: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G / "
-                             + (Services.SysMon.ramTotalMB / 1024).toFixed(0) + "G"
-                    value: root.ramFrac
-                }
-
-                WidgetHead {
-                    width: side.width
-                    glyph: ""
-                    name: Services.I18n.t("widget.storage")
-                    note: Services.SysMon.diskPercent + "%"
-                }
-                Level {
-                    width: side.width
-                    reading: Math.round(Services.SysMon.diskUsedGB) + " / "
-                             + Math.round(Services.SysMon.diskTotalGB) + " GB"
-                    value: Services.SysMon.diskPercent / 100
-                    tone: Services.Colors.neutral
-                }
-            }
+        WidgetHead {
+            width: rows.width
+            glyph: ""
+            name: Services.I18n.t("widget.system")
+            note: root.cpuTempText
+        }
+        Level {
+            width: rows.width
+            glyph: ""
+            reading: Math.round(Services.SysMon.cpuPercent) + "%"
+            value: Services.SysMon.cpuPercent / 100
+        }
+        Past {
+            width: rows.width
+            height: 34
+            samples: Services.SysMon.cpuHistory
+        }
+        Level {
+            width: rows.width
+            glyph: ""
+            reading: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G / "
+                     + (Services.SysMon.ramTotalMB / 1024).toFixed(0) + "G"
+            value: root.ramFrac
+        }
+        Level {
+            width: rows.width
+            glyph: ""
+            reading: Services.SysMon.diskPercent + "%"
+            value: Services.SysMon.diskPercent / 100
+            tone: Services.Colors.neutral
         }
     }
 
-    Component {
-        id: mediumShape
-        Column {
-            id: mid
-            width: 300
-            spacing: 10
+    // Large: a board read across. Left, the CPU large with its minute; right,
+    // everything else, the network with its own past.
+    component Board: Row {
+        spacing: 24
 
+        Column {
+            id: left
+            width: 270
+            spacing: 6
             WidgetHead {
-                width: mid.width
+                width: left.width
                 glyph: ""
                 name: Services.I18n.t("widget.cpu")
-                note: Math.round(Services.SysMon.cpuPercent) + "%"
+                note: root.cpuTempText
+            }
+            Text {
+                textFormat: Text.PlainText
+                text: Math.round(Services.SysMon.cpuPercent) + "%"
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsHero
+                font.bold: true
+                font.family: "JetBrainsMono NF"
             }
             Past {
-                width: mid.width
-                height: 62
+                width: left.width
+                height: 70
                 samples: Services.SysMon.cpuHistory
-                reading: root.cpuTempText
             }
+        }
 
-            WidgetHead {
-                width: mid.width
-                glyph: ""
-                name: Services.I18n.t("widget.memory")
-                note: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
+        Column {
+            id: right
+            width: 250
+            spacing: 10
+            anchors.verticalCenter: parent.verticalCenter
+            Level {
+                width: right.width
+                visible: Services.SysMon.gpuPercent > 0
+                glyph: ""
+                reading: Math.round(Services.SysMon.gpuPercent) + "%"
+                value: Services.SysMon.gpuPercent / 100
+                tone: Services.Colors.neutral
             }
             Level {
-                width: mid.width
+                width: right.width
+                glyph: ""
                 reading: (Services.SysMon.ramUsedMB / 1024).toFixed(1) + "G"
                 value: root.ramFrac
             }
-
-            WidgetHead {
-                width: mid.width
-                glyph: ""
-                name: Services.I18n.t("widget.storage")
-                note: Services.SysMon.diskPercent + "%"
-            }
             Level {
-                width: mid.width
-                reading: Math.round(Services.SysMon.diskUsedGB) + " GB"
+                width: right.width
+                glyph: ""
+                reading: Services.SysMon.diskPercent + "%"
                 value: Services.SysMon.diskPercent / 100
+                tone: Services.Colors.neutral
+            }
+            Past {
+                width: right.width
+                height: 46
+                samples: Services.SysMon.netHistory
+                reading: "↓ " + root.rate(Services.SysMon.netRxKBs) + "  ↑ " + root.rate(Services.SysMon.netTxKBs)
                 tone: Services.Colors.neutral
             }
         }
     }
+
+    Component { id: largeShape; Board {} }
+    Component { id: mediumShape; Rows {} }
 
     // Three levels on three lines: each one carries its glyph, or they would be
     // three identical rows of ticks with a number in front.

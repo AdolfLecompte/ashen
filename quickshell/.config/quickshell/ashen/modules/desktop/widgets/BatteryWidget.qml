@@ -4,7 +4,7 @@ import "root:/modules/desktop"
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
 
-// The charge, in the three ways the rest of the shell already draws a level.
+// The charge: a reading with its level in ticks, or the reading alone.
 // Never red at the bottom: the accent says it at any level, here as everywhere.
 DesktopWidget {
     id: root
@@ -37,23 +37,18 @@ DesktopWidget {
 
     Component {
         id: vesselShape
-        // The level as a row of ticks under the reading. It was a vessel of
-        // liquid; the ticks say the same fraction without repainting a wave.
-        Rectangle {
-            width: 200
-            height: 96
-            radius: Services.Sizes.cardLgR
-            color: Services.Colors.fillInset
-            border.width: 1
-            border.color: Services.Colors.fillRest
+        // The reading and the level as a row of ticks, straight on the plate:
+        // a card inside the widget was the box-in-a-box.
+        Column {
+            width: 248
+            spacing: 12
 
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: 14
-                spacing: 10
-
+            Item {
+                width: parent.width
+                height: pct.implicitHeight
                 Text {
                     textFormat: Text.PlainText
+                    id: glyphText
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.glyph
                     color: Services.Battery.charging ? Services.Colors.ghost : Services.Colors.snow
@@ -62,36 +57,32 @@ DesktopWidget {
                 }
                 Text {
                     textFormat: Text.PlainText
-                    anchors.verticalCenter: parent.verticalCenter
+                    id: pct
+                    anchors.left: glyphText.right
+                    anchors.leftMargin: 8
                     text: Services.Battery.level + "%"
                     color: Services.Colors.snow
                     font.pixelSize: Services.Sizes.fsReadout
                     font.bold: true
                     font.family: "JetBrainsMono NF"
                 }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.untilFull
+                    color: Services.Colors.mist
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                }
             }
 
             Widgets.TickMeter {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                anchors.margins: 16
+                width: parent.width
                 height: 20
                 mode: "level"
                 value: root.frac
             }
-        }
-    }
-
-    Component {
-        id: ringShape
-        Widgets.DialGauge {
-            size: 132
-            value: root.frac
-            glyph: root.glyph
-            label: Services.Battery.level + "%"
-            caption: root.untilFull
-            glow: Services.Battery.charging
         }
     }
 
@@ -132,8 +123,7 @@ DesktopWidget {
     }
 
     Loader {
-        sourceComponent: root.style === "ring" ? ringShape
-                       : root.style === "plain" ? plainShape
+        sourceComponent: root.style === "plain" ? plainShape
                        : vesselShape
     }
 }

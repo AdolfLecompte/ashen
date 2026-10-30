@@ -101,8 +101,8 @@ DesktopWidget {
     // going by is three rotations the GPU does for nothing.
     component Analog: Item {
         id: dial
-        width: 196
-        height: 196
+        width: 232
+        height: 232
 
         readonly property real cx: width / 2
         readonly property real cy: height / 2
@@ -130,22 +130,22 @@ DesktopWidget {
                     ctx.fillStyle = quarter ? Services.Colors.ghost : Services.Colors.mist
                     ctx.beginPath()
                     ctx.arc(dial.cx + Math.sin(a) * (dial.r - 10), dial.cy - Math.cos(a) * (dial.r - 10),
-                            quarter ? 3 : 2, 0, Math.PI * 2)
+                            quarter ? 4 : 2.5, 0, Math.PI * 2)
                     ctx.fill()
                 }
             }
         }
 
-        Hand { px: dial.cx; py: dial.cy; width: 5;   len: dial.r * 0.50
+        Hand { px: dial.cx; py: dial.cy; width: 7;   len: dial.r * 0.50
                color: Services.Colors.snow; deg: (dial.h + dial.m / 60) * 30 }
-        Hand { px: dial.cx; py: dial.cy; width: 3.5; len: dial.r * 0.74
+        Hand { px: dial.cx; py: dial.cy; width: 5;   len: dial.r * 0.74
                color: Services.Colors.snow; deg: (dial.m + dial.s / 60) * 6 }
-        Hand { px: dial.cx; py: dial.cy; width: 1.5; len: dial.r * 0.80
+        Hand { px: dial.cx; py: dial.cy; width: 2.5; len: dial.r * 0.80
                color: Services.Colors.ghost; deg: dial.s * 6 }
 
         Rectangle {
-            width: 8; height: 8; radius: 4
-            x: dial.cx - 4; y: dial.cy - 4
+            width: 10; height: 10; radius: 5
+            x: dial.cx - 5; y: dial.cy - 5
             color: Services.Colors.ghost
             antialiasing: true
         }

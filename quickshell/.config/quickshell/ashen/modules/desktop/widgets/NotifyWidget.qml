@@ -14,6 +14,11 @@ DesktopWidget {
 
 
     readonly property var log: Services.Notifications.history || []
+    readonly property var topApps: {
+        const n = {}
+        for (const e of root.log) { const a = e.appName || "?"; n[a] = (n[a] || 0) + 1 }
+        return Object.keys(n).map(a => ({ app: a, n: n[a] })).sort((x, y) => y.n - x.n).slice(0, 3)
+    }
 
     // "just now", "12m", "3h", "2d" -- a notification's age is the only part of
     // its time anyone reads.
@@ -41,6 +46,17 @@ DesktopWidget {
         property var entry: null
         implicitWidth: 340
         implicitHeight: 42
+        scale: Services.Sizes.hoverScale(lineArea.containsMouse, lineArea.pressed)
+        Behavior on scale { Widgets.Anim { speed: Services.Sizes.pillHoverMs } }
+
+        // A press opens what it was about; hovering offers to drop it.
+        MouseArea {
+            id: lineArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: if (ln.entry) Services.Notifications.activateFromHistory(ln.entry.id)
+        }
 
         // The sender's own icon where there is one; its first letter otherwise.
         Rectangle {
@@ -111,6 +127,7 @@ DesktopWidget {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.topMargin: 4
+            visible: !lineArea.containsMouse && !dropArea.containsMouse
             text: {
                 root.agoTick
                 return ln.entry ? root.ago(ln.entry.timestamp) : ""
@@ -118,6 +135,24 @@ DesktopWidget {
             color: Services.Colors.ash
             font.pixelSize: Services.Sizes.fsMeta
             font.family: "JetBrainsMono NF"
+        }
+        Text {
+            textFormat: Text.PlainText
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            visible: lineArea.containsMouse || dropArea.containsMouse
+            text: "\ue5cd"
+            color: dropArea.containsMouse ? Services.Colors.snow : Services.Colors.mist
+            font.pixelSize: 16
+            font.family: "Material Symbols Rounded"
+            MouseArea {
+                id: dropArea
+                anchors.fill: parent
+                anchors.margins: -6
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: if (ln.entry) Services.Notifications.removeById(ln.entry.id)
+            }
         }
     }
 
@@ -173,12 +208,33 @@ DesktopWidget {
             implicitHeight: 18
             WidgetHead {
                 anchors.left: parent.left
-                anchors.right: chevron.left
+                anchors.right: clearAll.left
                 anchors.rightMargin: 6
                 anchors.verticalCenter: parent.verticalCenter
                 glyph: "\ue7f4"
                 name: Services.I18n.t("widget.notifications")
                 note: root.log.length
+            }
+            Text {
+                textFormat: Text.PlainText
+                id: clearAll
+                anchors.right: chevron.left
+                anchors.rightMargin: root.log.length > 0 ? 10 : 0
+                anchors.verticalCenter: parent.verticalCenter
+                // Empty rather than hidden: no width left behind next to the chevron.
+                text: root.log.length > 0 ? "\ue0b8" : ""
+                color: clearArea.containsMouse ? Services.Colors.snow : Services.Colors.ghost
+                font.pixelSize: 16
+                font.family: "Material Symbols Rounded"
+                z: 1
+                MouseArea {
+                    id: clearArea
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Services.Notifications.clearAll()
+                }
             }
             Text {
                 textFormat: Text.PlainText
@@ -280,6 +336,35 @@ DesktopWidget {
             font.letterSpacing: 1.6
             font.family: "JetBrainsMono NF"
             topPadding: 10
+            bottomPadding: 14
+        }
+        // Who is asking the most.
+        Repeater {
+            model: root.topApps
+            delegate: Item {
+                required property var modelData
+                width: 180
+                // 20 px a row once the Column's -6 has been taken off.
+                height: 26
+                Text {
+                    textFormat: Text.PlainText
+                    width: parent.width - 40
+                    text: modelData.app
+                    color: Services.Colors.snow
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.family: "JetBrainsMono NF"
+                    elide: Text.ElideRight
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    anchors.right: parent.right
+                    text: modelData.n
+                    color: Services.Colors.ghost
+                    font.pixelSize: Services.Sizes.fsMeta
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
+            }
         }
     }
 

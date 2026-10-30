@@ -195,7 +195,7 @@ DesktopWidget {
         Row {
             id: cols
             width: root.boxW
-            height: 104
+            height: 124
             Repeater {
                 model: root.week
                 delegate: Item {
@@ -219,12 +219,27 @@ DesktopWidget {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottom: dayName.top
                         anchors.bottomMargin: 6
-                        readonly property real room: parent.height - dayName.height - 6
-                        width: 10
+                        // Room above for the day's figure, riding on its bar.
+                        readonly property real room: parent.height - dayName.height - 6 - 18
+                        width: 22
                         height: room
-                        radius: 5
+                        radius: 7
                         color: Services.Colors.fillLine
+                        Text {
+                            textFormat: Text.PlainText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: fill.top
+                            anchors.bottomMargin: 4
+                            visible: modelData.total >= 60
+                            text: modelData.total >= 3600 ? Math.round(modelData.total / 3600) + "h"
+                                                          : Math.floor(modelData.total / 60) + "m"
+                            color: parent.parent.isToday ? Services.Colors.snow : Services.Colors.mist
+                            font.pixelSize: Services.Sizes.fsCaption
+                            font.bold: parent.parent.isToday
+                            font.family: "JetBrainsMono NF"
+                        }
                         Rectangle {
+                            id: fill
                             anchors.bottom: parent.bottom
                             width: parent.width
                             height: modelData.total < 60 ? 0 : Math.max(parent.width, parent.room * modelData.total / root.weekMax)

@@ -27,7 +27,8 @@ DesktopWidget {
         // a stopwatch counts up forever and has no end to draw.
         property bool tracked: true
 
-        implicitWidth: 268
+        // Wide enough that the buttons stand clear of the figure.
+        implicitWidth: 340
         implicitHeight: fc.tracked ? 88 : 76
 
         Text {
@@ -90,8 +91,8 @@ DesktopWidget {
         spacing: 6
     }
     component Btn: Widgets.CtlChip {
-        size: 26
-        glyphSize: 15
+        size: 30
+        glyphSize: 17
     }
 
     component Timer_: Face {
@@ -108,8 +109,12 @@ DesktopWidget {
                 active: Services.Countdown.running
                 onTriggered: Services.Countdown.toggle()
             }
-            // Aim it without opening the panel: a minute at a time is what a
-            // timer on the wall is ever asked for.
+            // Aim it without opening the panel: a minute at a time, either way.
+            Btn {
+                glyph: "\ue15b"
+                available: Services.Countdown.remaining > 60000
+                onTriggered: Services.Countdown.bump(-60000)
+            }
             Btn {
                 glyph: "\ue145"
                 onTriggered: Services.Countdown.bump(60000)
@@ -150,7 +155,7 @@ DesktopWidget {
     component Both: Column {
         spacing: 16
         Timer_ {}
-        Widgets.Divider { width: 268 }
+        Widgets.Divider { width: 340 }
         Watch {}
     }
 

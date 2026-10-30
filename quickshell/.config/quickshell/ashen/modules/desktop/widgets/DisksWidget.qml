@@ -78,6 +78,28 @@ DesktopWidget {
             glyph: "\ue1db"
             name: Services.I18n.t("widget.disks")
         }
+        // Root as the headline: what is left, large, and of how much.
+        Row {
+            visible: root.mounts.length > 0
+            spacing: 8
+            Text {
+                textFormat: Text.PlainText
+                text: root.mounts.length > 0 ? Services.Disks.human(root.mounts[0].size - root.mounts[0].used) : ""
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsReadout
+                font.bold: true
+                font.family: "JetBrainsMono NF"
+            }
+            Text {
+                textFormat: Text.PlainText
+                anchors.baseline: parent.children[0].baseline
+                text: root.mounts.length > 0
+                    ? Services.I18n.t("widget.diskFreeOf", { t: Services.Disks.human(root.mounts[0].size) }) : ""
+                color: Services.Colors.mist
+                font.pixelSize: Services.Sizes.fsMeta
+                font.family: "JetBrainsMono NF"
+            }
+        }
         Repeater {
             model: root.mounts.length
             Bar_ { required property int index; mount: root.mounts[index] }
