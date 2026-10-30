@@ -68,8 +68,9 @@
   medium that differ again.
 - The daylight widget is now the Moon: tonight's phase, flat, with the
   month's phases under it and the sun's two times.
-- The clock panel shows a bigger clock with the tabs at the bottom; the sun
-  curve is gone.
+- The clock panel: a big stacked clock, hour over minute; the stopwatch and
+  the timer larger and on their own; the tabs at the bottom. The sun curve
+  is gone.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they

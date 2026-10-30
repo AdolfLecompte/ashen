@@ -74,8 +74,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Maschinenkarte; System groß und mittel unterscheiden sich wieder.
 - Das Tageslicht-Widget ist jetzt der Mond: die Phase heute Nacht, flach,
   darunter die Phasen des Monats und die zwei Sonnenzeiten.
-- Das Uhr-Panel zeigt eine größere Uhr mit den Tabs unten; die Sonnenkurve
-  ist weg.
+- Das Uhr-Panel: eine große gestapelte Uhr, Stunde über Minute; Stoppuhr
+  und Timer größer und für sich; die Tabs unten. Die Sonnenkurve ist weg.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;

@@ -76,7 +76,8 @@ si falta, la bienvenida las enseña en inglés.
   mediano que vuelven a distinguirse.
 - El widget de luz del día ahora es la Luna: la fase de esta noche, plana,
   con las fases del mes debajo y las dos horas del sol.
-- El panel del reloj enseña un reloj más grande con las pestañas abajo; la
+- El panel del reloj: un reloj grande y apilado, hora sobre minutos; el
+  cronómetro y el temporizador más grandes y solos; las pestañas abajo. La
   curva del sol desaparece.
 
 ### Arreglado
