@@ -58,6 +58,10 @@ Item {
     }
     readonly property real clockPx: Math.max(20,
         Math.floor(100 * (clockW - 30) / Math.max(1, probe.width)))
+    // Larger on the clock tab, where the column has the room. The panel's
+    // flying copy reads this too, so both are the same size.
+    property real shownPx: clockPx * (tab === 0 ? 1.3 : 1)
+    Behavior on shownPx { Anim { speed: Services.Sizes.msPanel } }
 
     // ── Where the shared pieces sit, in this item's coordinates ─────────
     readonly property real timeCX: row.x + clockCol.x + timeT.x + timeT.width / 2
@@ -73,12 +77,6 @@ Item {
     // readout can open the panel straight on its tool, and so a tool you left
     // running is where you left it next time.
     property int tab: Services.AppState.clockTab
-
-    // How far through the day it is -- what is left of the light is measured
-    // against it. Off `now`, so it ticks with everything else on this card
-    // rather than keeping a clock of its own.
-    readonly property real dayFrac:
-        (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400
 
     // Which day of the strip the weather column is showing. 0 is today, and
     // today is the live reading -- every other day is a forecast summary.
@@ -222,32 +220,6 @@ Item {
         for (const l of Services.Stopwatch.laps)
             if (b < 0 || l.split < b) b = l.split
         return b
-    }
-
-    // What the middle of the day ring says: how much light is left, or how long
-    // until it comes back. A number nobody else on the card is already giving.
-    readonly property real sunUpFrac: Services.Weather.sunriseMin < 0
-        ? -1 : Services.Weather.sunriseMin / 1440
-    readonly property real sunDownFrac: Services.Weather.sunsetMin < 0
-        ? -1 : Services.Weather.sunsetMin / 1440
-    function spanText(frac) {
-        const mins = Math.max(0, Math.round(frac * 1440))
-        const h = Math.floor(mins / 60), m = mins % 60
-        return h > 0 ? Services.I18n.t("time.hours", { n: h }) + " "
-                     + Services.I18n.t("time.mins", { n: m })
-                     : Services.I18n.t("time.mins", { n: m })
-    }
-    readonly property string daylightLeft: {
-        if (sunUpFrac < 0 || sunDownFrac < 0) return "—"
-        if (dayFrac < sunUpFrac) return spanText(sunUpFrac - dayFrac)
-        if (dayFrac < sunDownFrac) return spanText(sunDownFrac - dayFrac)
-        return spanText(1 - dayFrac + sunUpFrac)
-    }
-    readonly property string daylightCaption: {
-        if (sunUpFrac < 0 || sunDownFrac < 0) return ""
-        if (dayFrac < sunUpFrac) return Services.I18n.t("clock.untilSunrise")
-        if (dayFrac < sunDownFrac) return Services.I18n.t("clock.lightLeft")
-        return Services.I18n.t("clock.untilSunrise")
     }
 
     // The whole strip, today included: today's card is the way back from a day
@@ -399,9 +371,12 @@ Item {
                 id: timeT
                 opacity: root.sharedOpacity
                 anchors.top: parent.top
+                // Down into the room the clock tab leaves, and larger there.
+                anchors.topMargin: root.tab === 0 ? 70 : 0
+                Behavior on anchors.topMargin { Anim { speed: Services.Sizes.msPanel } }
                 anchors.horizontalCenter: parent.horizontalCenter
                 time: root.timeText
-                px: root.clockPx
+                px: root.shownPx
             }
 
             Column {
@@ -426,12 +401,12 @@ Item {
                 }
             }
 
-            // Category strip: one container pill holding the mode pills, the
-            // whole thing centred under the clock it belongs to.
+            // Category strip at the foot of the column, so switching sits with
+            // the other panels' controls and the clock gets the room.
             Item {
                 id: tabsWrap
-                anchors.top: head.bottom
-                anchors.topMargin: 16
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 18
                 width: parent.width
                 height: 34
                 opacity: root.beat(0)
@@ -534,9 +509,10 @@ Item {
             // ── Tool area: all three stacked, one showing ───────────────
             Item {
                 id: tools
-                anchors.top: tabsWrap.bottom
+                anchors.top: head.bottom
                 anchors.topMargin: 14
-                anchors.bottom: parent.bottom
+                anchors.bottom: tabsWrap.top
+                anchors.bottomMargin: 14
                 width: parent.width
 
                 // -- Clock: what today is, in plain rows --
@@ -546,60 +522,6 @@ Item {
                     Item {
                         anchors.fill: parent
 
-                        // The sun's own path. The headline sits ABOVE the
-                        // curve, not inside its bowl: the box has to reserve
-                        // room for a noon peak, and the band left over at the
-                        // top is exactly where a line of text belongs (the
-                        // shape iOS's solar module settled on).
-                        Row {
-                            id: sunLine
-                            anchors.bottom: clockHead.top
-                            anchors.bottomMargin: 10
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 8
-                            Text {
-                                textFormat: Text.PlainText
-                                anchors.baseline: sunCap.baseline
-                                text: root.daylightLeft
-                                color: Services.Colors.snow
-                                font.pixelSize: 16
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                            Text {
-                                textFormat: Text.PlainText
-                                id: sunCap
-                                text: root.daylightCaption
-                                color: Services.Colors.mist
-                                font.pixelSize: 9
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
-
-                        Item {
-                            id: clockHead
-                            // Hung off the figures rather than centred with
-                            // them: the arc can change height without dragging
-                            // the row of numbers down the column with it.
-                            anchors.bottom: clockRow.top
-                            anchors.bottomMargin: 22
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            height: 132
-
-                            SunArc {
-                                id: sunArc
-                                anchors.fill: parent
-                                sunUp: root.sunUpFrac
-                                sunDown: root.sunDownFrac
-                                // To the minute, not to the second: the dot
-                                // moves a pixel an hour, and the canvas has no
-                                // reason to repaint sixty times a minute.
-                                nowFrac: Math.floor(root.dayFrac * 1440) / 1440
-                            }
-                        }
-
                         // The day's four figures, on one line and in the same
                         // shape the weather column uses: glyph and number on
                         // top, what they are underneath. Stacked rows put two
@@ -607,7 +529,6 @@ Item {
                         Grid {
                             id: clockRow
                             anchors.bottom: parent.bottom
-                            anchors.bottomMargin: 24
                             anchors.left: parent.left
                             anchors.right: parent.right
                             columns: 4

@@ -141,9 +141,9 @@ PanelWindow {
         // the whole thing is scaled down to pill size anyway.
         Widgets.ClockText {
             id: flyTime
-            readonly property real s: card.lerp(15 / panelRef.clockPx, 1, card.morph)
+            readonly property real s: card.lerp(15 / panelRef.shownPx, 1, card.morph)
             time: panelRef.timeText
-            px: panelRef.clockPx
+            px: panelRef.shownPx
             x: card.lerp(pillRef.x + refTime.x + refTime.width / 2,
                          panelRef.x + panelRef.timeCX, card.morph) - width / 2
             y: card.lerp(pillRef.y + refTime.y + refTime.height / 2,
