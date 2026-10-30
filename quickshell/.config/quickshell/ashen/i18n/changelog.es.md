@@ -62,6 +62,8 @@ si falta, la bienvenida las enseña en inglés.
   no chocan con ellos.
 - El estilo de iconos de los escritorios va sin losetas: el icono de la app,
   el escritorio en el que estás en el acento, y uno vacío es un punto.
+- El selector de ventanas (`ALT+Tab`) enseña las ventanas más grandes,
+  hasta cuatro por fila.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
@@ -78,6 +80,8 @@ si falta, la bienvenida las enseña en inglés.
   órdenes desde el dock o la acción de enfocar de la notificación.
 - El indicador de cámara y la distribución del teclado gastan menos en
   reposo.
+- Hyprland 0.57 avisaba de una opción de animación obsoleta (`dampening`,
+  ahora `damping`).
 
 ## 3.6.0
 

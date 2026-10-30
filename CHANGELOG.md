@@ -57,6 +57,7 @@
   your own Hyprland config, loaded last. Updates no longer meet them.
 - The icons workspace style has no plates: the app's own icon, the one you
   are on in the accent, and an empty workspace is a dot.
+- The window switcher (`ALT+Tab`) shows bigger windows, up to four a row.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they
@@ -72,6 +73,8 @@
 - A window class or notification holding a quote could run commands
   through the dock or the notification's focus action.
 - The camera indicator and the keyboard layout cost less while idle.
+- Hyprland 0.57 warned about a deprecated animation option (`dampening`,
+  now `damping`).
 
 ## 3.6.0
 

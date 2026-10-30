@@ -61,6 +61,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   stoßen nicht mehr mit ihnen zusammen.
 - Der Symbolstil der Arbeitsbereiche kommt ohne Kacheln aus: das Symbol der
   App, der aktuelle in der Akzentfarbe, ein leerer ist ein Punkt.
+- Der Fensterumschalter (`ALT+Tab`) zeigt die Fenster größer, bis zu vier
+  pro Reihe.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
@@ -76,6 +78,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Eine Fensterklasse oder Benachrichtigung mit Anführungszeichen konnte
   über das Dock oder die Fokus-Aktion Befehle ausführen.
 - Kamera-Anzeige und Tastaturlayout kosten im Leerlauf weniger.
+- Hyprland 0.57 warnte vor einer veralteten Animationsoption (`dampening`,
+  jetzt `damping`).
 
 ## 3.6.0
 
