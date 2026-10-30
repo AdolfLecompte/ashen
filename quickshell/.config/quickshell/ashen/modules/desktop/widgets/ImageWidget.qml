@@ -22,6 +22,7 @@ DesktopWidget {
     // A frame pulled by hand lands where it was let go; rounding it up to the
     // grid here would take the last few pixels back every time.
     onGrid: false
+    easeSize: false
 
     readonly property string src: root.entry.src
     readonly property bool empty: root.src === ""

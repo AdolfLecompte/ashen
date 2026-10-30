@@ -71,12 +71,12 @@ Item {
         return root.onGrid ? Math.ceil(v / step) * step : v
     }
 
-    // Where the plate is going. A widget whose content opens and closes
-    // (easeSize) eases the plate there in one motion instead of stepping
-    // through the grid, and keeps its content placed by the end size so it
-    // does not slide while the plate catches up.
+    // Where the plate is going. It eases there in one motion -- a fold opening
+    // or a new shape -- and keeps its content placed by the end size so it
+    // does not slide while the plate catches up. Off where the plate must
+    // follow the hand (a picture pulled by its corners).
     readonly property real targetW: root.toGrid(body.implicitWidth + root.padH)
-    property bool easeSize: false
+    property bool easeSize: true
     // How much of the height is a fold the widget has opened (lyrics, more
     // notifications, the battery line), and the height it has without them:
     // the lock's columns stand on that, so a fold grows down and moves nothing.
@@ -156,6 +156,17 @@ Item {
         Services.Desktop.dropInputRect(root.wid)
     }
 
+    property real swapIn: 1
+    NumberAnimation {
+        id: swapAnim
+        target: root; property: "swapIn"
+        from: 0; to: 1
+        duration: Services.Sizes.msPanel
+        easing.type: Services.Sizes.easeOut
+    }
+    onStyleChanged: swapAnim.restart()
+    onSkinChanged: swapAnim.restart()
+
     Rectangle {
         id: plate
         anchors.fill: parent
@@ -195,6 +206,8 @@ Item {
         // there to be pulled. Items that are not MouseAreas do not take events,
         // so dragging the widget by its plate still works.
         z: 1
+        // A new shape fades in rather than replacing the old one in one frame.
+        opacity: root.swapIn
         // Controls inside (a calendar's day cells, media buttons) took the
         // press and the widget could only be grabbed by its rim.
         enabled: !root.editing || root.bodyWhileEditing
