@@ -91,8 +91,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Eine Fensterklasse oder Benachrichtigung mit Anführungszeichen konnte
   über das Dock oder die Fokus-Aktion Befehle ausführen.
 - Kamera-Anzeige und Tastaturlayout kosten im Leerlauf weniger.
-- Hyprland 0.57 warnte vor einer veralteten Animationsoption (`dampening`,
-  jetzt `damping`).
+- Hyprland 0.57 warnte vor veralteten Optionen: `dampening` der Animation
+  (jetzt `damping`) und `on_created_empty` der Spezial-Arbeitsbereiche (jetzt
+  ein `workspace.created`-Handler).
 
 ## 3.6.0
 

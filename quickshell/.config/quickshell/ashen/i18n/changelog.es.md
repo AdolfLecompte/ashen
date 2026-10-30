@@ -95,8 +95,9 @@ si falta, la bienvenida las enseña en inglés.
   órdenes desde el dock o la acción de enfocar de la notificación.
 - El indicador de cámara y la distribución del teclado gastan menos en
   reposo.
-- Hyprland 0.57 avisaba de una opción de animación obsoleta (`dampening`,
-  ahora `damping`).
+- Hyprland 0.57 avisaba de opciones obsoletas: el `dampening` de la animación
+  (ahora `damping`) y el `on_created_empty` de los escritorios especiales
+  (ahora un manejador de `workspace.created`).
 
 ## 3.6.0
 

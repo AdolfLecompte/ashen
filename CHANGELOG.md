@@ -86,8 +86,9 @@
 - A window class or notification holding a quote could run commands
   through the dock or the notification's focus action.
 - The camera indicator and the keyboard layout cost less while idle.
-- Hyprland 0.57 warned about a deprecated animation option (`dampening`,
-  now `damping`).
+- Hyprland 0.57 warned about deprecated options: the animation's `dampening`
+  (now `damping`) and the special workspaces' `on_created_empty` (now a
+  `workspace.created` handler).
 
 ## 3.6.0
 
