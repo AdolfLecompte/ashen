@@ -171,17 +171,21 @@ PanelWindow {
         readonly property int gap: 18
         readonly property int pad: 18
         readonly property int count: Math.max(1, root.wins.length)
-        // Room for every window at once: with many open the tiles shrink
-        // rather than the strip running off the edge.
-        readonly property int maxRow: root.width - 160
-        readonly property int tileW: Math.max(150, Math.min(240,
-            (host.maxRow - host.pad * 2 - host.gap * (host.count - 1)) / host.count))
-        readonly property int shotH: Math.round(tileW * 9 / 16)
-        readonly property int tileH: shotH + 26
-
-        openW: host.count * tileW + (host.count - 1) * gap + pad * 2
+        // Up to four a row; past twelve windows the rows widen instead of
+        // adding a fourth. Tiles are as big as the screen allows, capped.
+        readonly property int cols: count <= 4 ? count : Math.max(4, Math.ceil(count / 3))
+        readonly property int rows: Math.ceil(count / cols)
+        readonly property int labelH: 30
         readonly property int scopeH: 30
-        openH: scopeH + 12 + tileH + pad * 2
+        readonly property int fitW: (root.width - 160 - pad * 2 - gap * (cols - 1)) / cols
+        readonly property int fitH: ((root.height - 200 - scopeH - 12 - pad * 2 - gap * (rows - 1)) / rows
+                                     - labelH) * 16 / 9
+        readonly property int tileW: Math.max(160, Math.min(400, fitW, fitH))
+        readonly property int shotH: Math.round(tileW * 9 / 16)
+        readonly property int tileH: shotH + labelH
+
+        openW: cols * tileW + (cols - 1) * gap + pad * 2
+        openH: scopeH + 12 + rows * tileH + (rows - 1) * gap + pad * 2
         // Tiles standing on their own, like the power menu: no plate around
         // them and none under the chosen one. What marks it is that it grew.
         cardColor: "transparent"
@@ -239,10 +243,10 @@ PanelWindow {
                     }
                 }
 
-                Row {
+                Item {
                     x: host.pad
                     y: host.pad + host.scopeH + 12
-                    spacing: host.gap
+                    width: parent.width - host.pad * 2
 
                     Repeater {
                         model: root.wins
@@ -256,6 +260,12 @@ PanelWindow {
 
                             width: host.tileW
                             height: host.tileH
+                            // Row by row, the last one centred under the rest.
+                            readonly property int row: Math.floor(index / host.cols)
+                            readonly property int inRow: Math.min(host.cols, root.wins.length - row * host.cols)
+                            x: (parent.width - inRow * host.tileW - (inRow - 1) * host.gap) / 2
+                               + (index - row * host.cols) * (host.tileW + host.gap)
+                            y: row * (host.tileH + host.gap)
 
                             opacity: card.stage(index)
                             // The shell's one hover language, and the chosen
@@ -283,7 +293,7 @@ PanelWindow {
                                 id: frame
                                 width: parent.width
                                 height: host.shotH
-                                radius: 12
+                                radius: 14
                                 color: Services.Colors.abyss
                                 // A hairline, not a plate: with four shots side
                                 // by side, growing alone does not say which one
@@ -313,21 +323,21 @@ PanelWindow {
                                     text: Services.Windows.iconForClass(tile.io ? tile.io["class"] : "")
                                     color: Services.Colors.ghost
                                     font.family: "Material Symbols Rounded"
-                                    font.pixelSize: 28
+                                    font.pixelSize: 40
                                 }
                             }
 
                             Text {
                                 textFormat: Text.PlainText
                                 anchors.top: frame.bottom
-                                anchors.topMargin: 7
+                                anchors.topMargin: 9
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 width: parent.width - 8
                                 horizontalAlignment: Text.AlignHCenter
                                 text: (tile.io && tile.io.title) ? tile.io.title
                                                                  : (tile.io ? tile.io["class"] : "")
-                                color: tile.picked ? Services.Colors.snow : Services.Colors.ash
-                                font.pixelSize: 10
+                                color: tile.picked ? Services.Colors.snow : Services.Colors.mist
+                                font.pixelSize: 12
                                 font.bold: tile.picked
                                 font.family: "JetBrainsMono NF"
                                 elide: Text.ElideRight
