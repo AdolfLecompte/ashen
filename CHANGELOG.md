@@ -58,6 +58,18 @@
 - The icons workspace style has no plates: the app's own icon, the one you
   are on in the accent, and an empty workspace is a dot.
 - The window switcher (`ALT+Tab`) shows bigger windows, up to four a row.
+- Desktop widgets ease to a new shape in one motion and fade the new face in.
+- The time and machine widgets, reworked: battery without the ring or the
+  box in a box; calendar with the week number and no empty row; timer with
+  a minute off; screen-time week as thick bars with their hours; a larger
+  analog clock; weather as the hours ahead and the next three days; disks
+  with what is free up front; notifications you can open, dismiss or clear,
+  and the apps that send most; a shorter machine card; system large and
+  medium that differ again.
+- The daylight widget is now the Moon: tonight's phase, flat, with the
+  month's phases under it and the sun's two times.
+- The clock panel shows a bigger clock with the tabs at the bottom; the sun
+  curve is gone.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they

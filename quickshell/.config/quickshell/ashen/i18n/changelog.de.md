@@ -63,6 +63,19 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   App, der aktuelle in der Akzentfarbe, ein leerer ist ein Punkt.
 - Der Fensterumschalter (`ALT+Tab`) zeigt die Fenster größer, bis zu vier
   pro Reihe.
+- Desktop-Widgets wechseln in einer Bewegung zur neuen Form und blenden die
+  neue Ansicht ein.
+- Die Zeit- und Maschinen-Widgets, überarbeitet: Akku ohne Ring und ohne
+  Kasten im Kasten; Kalender mit Kalenderwoche und ohne leere Zeile; Timer
+  mit einer Minute weniger; die Bildschirmzeit-Woche als dicke Balken mit
+  Stunden; eine größere Analoguhr; Wetter als die nächsten Stunden und drei
+  Tage; Datenträger mit dem freien Platz vorn; Benachrichtigungen zum Öffnen,
+  Verwerfen oder Leeren, mit den Apps, die am meisten senden; eine kürzere
+  Maschinenkarte; System groß und mittel unterscheiden sich wieder.
+- Das Tageslicht-Widget ist jetzt der Mond: die Phase heute Nacht, flach,
+  darunter die Phasen des Monats und die zwei Sonnenzeiten.
+- Das Uhr-Panel zeigt eine größere Uhr mit den Tabs unten; die Sonnenkurve
+  ist weg.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;

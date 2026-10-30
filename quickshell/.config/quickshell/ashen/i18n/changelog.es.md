@@ -64,6 +64,20 @@ si falta, la bienvenida las enseña en inglés.
   el escritorio en el que estás en el acento, y uno vacío es un punto.
 - El selector de ventanas (`ALT+Tab`) enseña las ventanas más grandes,
   hasta cuatro por fila.
+- Los widgets del escritorio pasan a su nueva forma en un solo movimiento y
+  la cara nueva entra con un fundido.
+- Los widgets de tiempo y de máquina, rehechos: batería sin anillo ni caja
+  dentro de caja; calendario con número de semana y sin fila vacía;
+  temporizador con botón para restar un minuto; la semana del tiempo de
+  pantalla en barras gruesas con sus horas; un reloj analógico más grande; el
+  clima con las próximas horas y los tres días siguientes; discos con lo
+  libre en grande; notificaciones que se abren, se descartan o se vacían, con
+  las apps que más avisan; una ficha de máquina más corta; sistema grande y
+  mediano que vuelven a distinguirse.
+- El widget de luz del día ahora es la Luna: la fase de esta noche, plana,
+  con las fases del mes debajo y las dos horas del sol.
+- El panel del reloj enseña un reloj más grande con las pestañas abajo; la
+  curva del sol desaparece.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
