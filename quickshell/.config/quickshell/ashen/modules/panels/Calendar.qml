@@ -141,9 +141,12 @@ PanelWindow {
         // the whole thing is scaled down to pill size anyway.
         Widgets.ClockText {
             id: flyTime
-            readonly property real s: card.lerp(15 / panelRef.shownPx, 1, card.morph)
+            readonly property real s: card.lerp(15 / panelRef.clockPx, 1, card.morph)
             time: panelRef.timeText
-            px: panelRef.shownPx
+            px: panelRef.clockPx
+            // It lands into the stack on the clock tab and into nothing on the
+            // tools: either way it is gone once the card is open.
+            opacity: 1 - card.morph
             x: card.lerp(pillRef.x + refTime.x + refTime.width / 2,
                          panelRef.x + panelRef.timeCX, card.morph) - width / 2
             y: card.lerp(pillRef.y + refTime.y + refTime.height / 2,
@@ -171,6 +174,8 @@ PanelWindow {
             font.letterSpacing: card.lerp(0, 2, card.morph)
             font.bold: true
             font.family: "JetBrainsMono NF"
+            // The tools have no date: it fades as the card lands there.
+            opacity: panelRef.stacked ? panelRef.toolFade : 1 - card.morph
             x: card.lerp(pillRef.x + refDate.x + refDate.width / 2,
                          panelRef.x + panelRef.dateCX, card.morph) - width / 2
             y: card.lerp(pillRef.y + refDate.y + refDate.height / 2,

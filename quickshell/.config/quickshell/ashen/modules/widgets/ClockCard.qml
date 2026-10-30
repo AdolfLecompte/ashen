@@ -58,10 +58,16 @@ Item {
     }
     readonly property real clockPx: Math.max(20,
         Math.floor(100 * (clockW - 30) / Math.max(1, probe.width)))
-    // Larger on the clock tab, where the column has the room. The panel's
-    // flying copy reads this too, so both are the same size.
-    property real shownPx: clockPx * (tab === 0 ? 1.3 : 1)
-    Behavior on shownPx { Anim { speed: Services.Sizes.msPanel } }
+    // The clock tab's stacked face: hour over minute, the meridiem beside.
+    readonly property var timeParts: {
+        const m = root.timeText.match(/^(\d+):(\d+)/)
+        const ap = root.timeText.match(/[AaPp]\.?[Mm]\.?/)
+        return { h: m ? m[1] : "", m: m ? m[2] : "", ap: ap ? ap[0].toUpperCase() : "" }
+    }
+    // Follows the slide, not the press: the face swaps while the slide is
+    // faded out, then rides back in with the tools.
+    readonly property bool stacked: shownTool === 0
+    readonly property real toolFade: toolSlide.fade
 
     // ── Where the shared pieces sit, in this item's coordinates ─────────
     readonly property real timeCX: row.x + clockCol.x + timeT.x + timeT.width / 2
@@ -369,27 +375,69 @@ Item {
             // a footnote to its own label.
             ClockText {
                 id: timeT
-                opacity: root.sharedOpacity
+                // Only a landing spot now: the clock tab shows the stack, the
+                // tools show no clock at all.
+                opacity: 0
                 anchors.top: parent.top
-                // Down into the room the clock tab leaves, and larger there.
-                anchors.topMargin: root.tab === 0 ? 70 : 0
-                Behavior on anchors.topMargin { Anim { speed: Services.Sizes.msPanel } }
                 anchors.horizontalCenter: parent.horizontalCenter
                 time: root.timeText
-                px: root.shownPx
+                px: root.clockPx
+            }
+
+            // The clock tab's face: big, hour over minute, as on the lock screen.
+            Row {
+                id: stackT
+                anchors.top: parent.top
+                anchors.topMargin: 0
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 10
+                opacity: root.stacked ? root.beat(0) * toolSlide.fade : 0
+                visible: opacity > 0.01
+                transform: Translate { x: toolSlide.offX }
+                Column {
+                    spacing: -30
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.timeParts.h
+                        color: Services.Colors.snow
+                        font.pixelSize: 104
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: root.timeParts.m
+                        color: Services.Colors.ghost
+                        font.pixelSize: 104
+                        font.bold: true
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
+                Text {
+                    textFormat: Text.PlainText
+                    visible: text !== ""
+                    y: 32
+                    text: root.timeParts.ap
+                    color: Services.Colors.mist
+                    font.pixelSize: 18
+                    font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
             }
 
             Column {
                 id: head
-                anchors.top: timeT.bottom
-                anchors.topMargin: 2
+                anchors.top: root.stacked ? stackT.bottom : timeT.bottom
+                anchors.topMargin: root.stacked ? 4 : 2
                 width: parent.width
                 spacing: 2
 
                 Text {
                     textFormat: Text.PlainText
                     id: dateT
-                    opacity: root.sharedOpacity
+                    opacity: root.stacked ? root.sharedOpacity * toolSlide.fade : 0
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: root.dateText.toUpperCase()
@@ -509,7 +557,8 @@ Item {
             // ── Tool area: all three stacked, one showing ───────────────
             Item {
                 id: tools
-                anchors.top: head.bottom
+                // The tools take the whole column: no clock above them.
+                anchors.top: root.stacked ? head.bottom : parent.top
                 anchors.topMargin: 14
                 anchors.bottom: tabsWrap.top
                 anchors.bottomMargin: 14
@@ -585,7 +634,7 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: Services.Stopwatch.display
                             color: Services.Colors.snow
-                            font.pixelSize: 46
+                            font.pixelSize: 66
                             font.bold: true
                             font.family: "JetBrainsMono NF"
                         }
@@ -674,13 +723,14 @@ Item {
                         // what is left.
                         Item {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: wheels.width
-                            height: 114
+                            width: wheels.width * wheels.scale
+                            height: 154
 
                             Row {
                                 id: wheels
                                 anchors.centerIn: parent
                                 spacing: 2
+                                scale: 1.35
                                 opacity: Services.Countdown.active ? 0 : 1
                                 visible: opacity > 0.01
                                 Behavior on opacity { Anim {} }
@@ -697,7 +747,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: Services.Countdown.display
                                 color: Services.Countdown.running ? Services.Colors.snow : Services.Colors.mist
-                                font.pixelSize: 46
+                                font.pixelSize: 66
                                 font.bold: true
                                 font.family: "JetBrainsMono NF"
                                 opacity: Services.Countdown.active ? 1 : 0
