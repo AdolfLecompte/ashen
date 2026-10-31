@@ -4,6 +4,7 @@ import Quickshell.Hyprland
 import QtQuick
 
 import "root:/services" as Services
+import "root:/modules/widgets" as Widgets
 
 // Applications on an edge: the ones pinned, and the ones open. It measures
 // nothing -- an icon's position is the one thing a dock has to keep still.
@@ -53,18 +54,26 @@ Scope {
                 t => t.workspace && t.workspace.id === dock.activeWs)
             readonly property bool peeking: Services.Prefs.dockAutohide
                 && (!Services.Prefs.dockSmart || dock.occupied)
-            readonly property bool revealed: Services.AppState.dockWanted
+            // Is the pointer on the dock? The thread at the edge never moves, so
+            // it can wake a dock that has slid off screen; the plate keeps it out.
+            readonly property bool pointerOn: lane.hovered || onDock.hovered
             // A minimum stay, copied from Bar.qml's `stayOut`: giving the room
             // back reflows the windows, and a reflow under the pointer can cost
             // the surface its hover for an instant, which reads as a shiver.
             Timer { id: stayOut; interval: 420 }
             // Grace after leaving: overshooting the icons by a few pixels hid it
-            // at once, and only the 4 px sliver could bring it back.
+            // at once, and only the thread could bring it back.
             Timer { id: linger; interval: 600 }
-            onRevealedChanged: revealed ? stayOut.restart() : linger.restart()
+            // Room is given back only once the slide has finished, or the
+            // windows grow into a dock still on its way out.
+            Timer { id: zoneHold; interval: Services.Sizes.msEmphasis }
+            onPointerOnChanged: pointerOn ? stayOut.restart() : linger.restart()
 
-            readonly property bool out: !dock.peeking || dock.revealed || stayOut.running || linger.running
-            visible: Services.Prefs.dockEnabled && dock.out
+            readonly property bool out: !dock.peeking || dock.pointerOn || stayOut.running || linger.running
+            onOutChanged: if (!out) zoneHold.restart()
+            // Never unmapped while enabled, like the bar: mapping a surface under
+            // the pointer lost its hover and the dock failed to come out.
+            visible: Services.Prefs.dockEnabled
 
             anchors {
                 top: dock.edge !== "bottom"
@@ -77,13 +86,30 @@ Scope {
 
             color: "transparent"
             exclusionMode: ExclusionMode.Normal
-            // Like the bar: out, it takes its room and the windows step aside;
-            // hidden, the window is unmapped and the edge goes back to them.
-            exclusiveZone: dock.thick
+            exclusiveZone: (dock.out || zoneHold.running) ? dock.thick : 0
             WlrLayershell.layer: WlrLayer.Top
-            // Input only on the plate: the rest of the edge-wide band ate the
-            // clicks meant for the windows under it.
-            mask: Region { item: plate }
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            // The thread at the edge always, plus the plate while out -- never the
+            // edge-wide band, which ate the clicks meant for the windows. Numbers,
+            // not `item:`: the plate carries the slide Translate.
+            mask: Region {
+                x: thread.x; y: thread.y; width: thread.width; height: thread.height
+                Region {
+                    intersection: Intersection.Combine
+                    x: plate.x; y: plate.y
+                    width: dock.out ? plate.width : 0
+                    height: dock.out ? plate.height : 0
+                }
+            }
+
+            Item {
+                id: thread
+                width: dock.vertical ? Services.Sizes.peekPx : dock.width
+                height: dock.vertical ? dock.height : Services.Sizes.peekPx
+                x: dock.edge === "right" ? dock.width - Services.Sizes.peekPx : 0
+                y: dock.edge === "bottom" ? dock.height - Services.Sizes.peekPx : 0
+                HoverHandler { id: lane }
+            }
 
             Rectangle {
                 id: plate
@@ -110,9 +136,16 @@ Scope {
 
                 // Keeps the dock out while the pointer is on it, not only while
                 // it is on the sliver underneath.
-                HoverHandler {
-                    id: onDock
-                    onHoveredChanged: Services.AppState.dockHovered = onDock.hovered
+                HoverHandler { id: onDock }
+
+                // Auto-hide is a slide, like the bar: the plate walks out through
+                // the edge and the surface clips what is past it.
+                readonly property int off: dock.out ? 0 : dock.thick
+                transform: Translate {
+                    x: !dock.vertical ? 0 : (dock.edge === "right" ? plate.off : -plate.off)
+                    y: dock.vertical ? 0 : (dock.edge === "bottom" ? plate.off : -plate.off)
+                    Behavior on x { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
+                    Behavior on y { Widgets.Anim { speed: Services.Sizes.msEmphasis } }
                 }
 
                 Grid {
@@ -222,41 +255,6 @@ Scope {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    // The peek. A sliver at the dock's edge that is always there and never seen:
-    // rest the pointer on it and the dock comes out. Its own surface because the
-    // dock itself is not on screen to be hovered when it is hidden.
-    Variants {
-        model: Services.Screens.barScreens
-
-        PanelWindow {
-            id: peek
-            property var modelData
-            screen: modelData
-
-            readonly property string edge: root.edge
-            readonly property bool vertical: peek.edge === "left" || peek.edge === "right"
-            visible: Services.Prefs.dockEnabled && Services.Prefs.dockAutohide
-
-            anchors {
-                top: peek.edge !== "bottom"
-                bottom: peek.edge !== "top"
-                left: peek.edge !== "right"
-                right: peek.edge !== "left"
-            }
-            implicitHeight: peek.vertical ? 0 : 4
-            implicitWidth: peek.vertical ? 4 : 0
-            color: "transparent"
-            exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-            HoverHandler {
-                id: lane
-                onHoveredChanged: Services.AppState.dockPeeked = lane.hovered
             }
         }
     }

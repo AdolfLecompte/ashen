@@ -198,12 +198,6 @@ Singleton {
     property string keepAwakeMode: "off"
     readonly property bool keepAwake: root.keepAwakeMode !== "off"
 
-    // The pointer is on the dock's edge, or on the dock itself. Two surfaces
-    // report into one flag: the sliver cannot see the dock's own hover and the
-    // dock is not on screen to be hovered while it is hidden.
-    property bool dockPeeked: false
-    property bool dockHovered: false
-    readonly property bool dockWanted: root.dockPeeked || root.dockHovered
     property real faceVersion: 0
 
     // Identity, resolved once at startup: nothing here may be hardcoded, the
