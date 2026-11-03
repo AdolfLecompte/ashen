@@ -23,7 +23,11 @@ Item {
     parent: root.target && root.target.Window.contentItem ? root.target.Window.contentItem : root.target
     z: 1000
     visible: opacity > 0.01
-    opacity: root.resting ? 1 : 0
+    // A tip that falls outside its window is cut by the compositor -- on the
+    // bar, a dark sliver under the button. No room either side: no tip.
+    readonly property bool fits: root.parent !== null && root.y >= 0
+                                 && root.y + root.height <= root.parent.height
+    opacity: root.resting && root.fits ? 1 : 0
     Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
 
     width: label.implicitWidth + 16
