@@ -13,6 +13,8 @@ Item {
     property bool live: true
     // The screen this slot's layer is on; the widget shows only on its own.
     property string hostKey: ""
+    // Which of the screen's two layers this slot is on.
+    property bool bare: false
 
     anchors.fill: parent
     // An open menu sits above every other widget.
@@ -20,6 +22,7 @@ Item {
 
     readonly property bool wanted: Services.Desktop.shown(slot.wid)
         && Services.Desktop.screenOf(slot.wid) === slot.hostKey
+        && Services.Desktop.onBareLayer(slot.wid) === slot.bare
 
     Loader {
         id: holder
@@ -40,6 +43,7 @@ Item {
             item.fieldH = Qt.binding(() => slot.height)
             item.live = Qt.binding(() => slot.live)
             item.hostKey = slot.hostKey
+            item.bareCopy = slot.bare
         }
     }
 

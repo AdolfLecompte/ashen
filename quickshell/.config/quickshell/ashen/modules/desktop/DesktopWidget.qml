@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 
 import "root:/modules/widgets" as Widgets
 import "root:/services" as Services
@@ -32,6 +33,7 @@ Item {
     // how it draws. Every widget picks its face off these and nothing else.
     readonly property string style: root.styleOverride !== "" ? root.styleOverride : root.entry.style
     readonly property string skin: root.skinOverride !== "" ? root.skinOverride : root.entry.skin
+    readonly property bool bare: root.managed && root.entry.bare
 
     // Where the record says it goes, kept on screen and off the bar. Dragging
     // writes straight to x/y (that is what drag does), so the binding is
@@ -132,6 +134,8 @@ Item {
     property bool wantsInput: false
     // Set by its slot: which screen this copy is drawn on.
     property string hostKey: ""
+    // Set by its slot: whether this copy is on the bare layer.
+    property bool bareCopy: false
 
     // The magnet reads these when something is dropped, so they have to be
     // current -- including while a widget is being dragged past its neighbours.
@@ -151,7 +155,8 @@ Item {
     // A widget that only moved to another screen keeps its boxes: the copy
     // there has already published them.
     Component.onDestruction: if (root.managed
-                                 && (root.hostKey === "" || Services.Desktop.screenOf(root.wid) === root.hostKey)) {
+                                 && (root.hostKey === "" || Services.Desktop.screenOf(root.wid) === root.hostKey)
+                                 && Services.Desktop.onBareLayer(root.wid) === root.bareCopy) {
         Services.Desktop.dropRect(root.wid)
         Services.Desktop.dropInputRect(root.wid)
     }
@@ -171,16 +176,18 @@ Item {
         id: plate
         anchors.fill: parent
         radius: Services.Sizes.panelR
-        color: Services.Prefs.widgetOutline ? Services.Colors.surfaceGlass
+        color: root.bare ? "transparent"
+             : Services.Prefs.widgetOutline ? Services.Colors.surfaceGlass
                                             : Services.Colors.surfacePill
+        Behavior on color { Widgets.ColorAnim { speed: Services.Sizes.msMicro } }
         // Two reasons for a border, and arranging wins: while you are dragging
         // boxes around, the accent edge says which ones are grabbable. The rest
         // of the time it is the widget outline, or nothing.
         border.color: root.editing ? Services.Colors.ghost
-                    : Services.Prefs.widgetOutline ? Services.Colors.fillOutline
+                    : Services.Prefs.widgetOutline && !root.bare ? Services.Colors.fillOutline
                     : "transparent"
         border.width: root.editing ? 2
-                    : Services.Prefs.widgetOutline ? Services.Sizes.outlineW : 0
+                    : Services.Prefs.widgetOutline && !root.bare ? Services.Sizes.outlineW : 0
         Behavior on border.width { Widgets.Anim { speed: Services.Sizes.msMicro } }
     }
 
@@ -208,6 +215,17 @@ Item {
         z: 1
         // A new shape fades in rather than replacing the old one in one frame.
         opacity: root.swapIn
+        // Bare, the wallpaper is the background: a soft shadow keeps text
+        // and glyphs readable on a bright one. Only bare widgets pay for it.
+        layer.enabled: root.bare
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: "black"
+            shadowOpacity: 0.85
+            shadowBlur: 0.45
+            blurMax: 12
+            shadowVerticalOffset: 1
+        }
         // Controls inside (a calendar's day cells, media buttons) took the
         // press and the widget could only be grabbed by its rim.
         enabled: !root.editing || root.bodyWhileEditing

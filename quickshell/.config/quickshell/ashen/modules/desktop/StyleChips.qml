@@ -180,6 +180,12 @@ Item {
                     onPicked: Services.Desktop.moveToNextScreen(root.wid)
                 }
                 ActionChip {
+                    readonly property bool bare: Services.Desktop.entry(root.wid).bare
+                    glyph: bare ? "\ue53b" : "\ue53c"      // layers / layers_clear
+                    label: Services.I18n.t(bare ? "desktop.menu.plate" : "desktop.menu.bare")
+                    onPicked: Services.Desktop.setBare(root.wid, !bare)
+                }
+                ActionChip {
                     glyph: "\ue872"      // delete
                     label: Services.I18n.t("desktop.menu.remove")
                     onPicked: Services.Desktop.takeAway(root.wid)

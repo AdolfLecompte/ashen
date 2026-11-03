@@ -59,7 +59,7 @@ DesktopWidget {
         width: root.boxW
         height: root.boxH
         radius: Services.Sizes.panelR
-        color: Services.Colors.fillInset
+        color: root.bare && !root.empty ? "transparent" : Services.Colors.fillInset
 
         // The item is sized to COVER the frame and then slid, rather than being
         // told to crop itself: a picture cropped in place is always cropped

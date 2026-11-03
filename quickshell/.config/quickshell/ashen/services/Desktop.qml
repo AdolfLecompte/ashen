@@ -269,7 +269,9 @@ Singleton {
             zoom: e.zoom === undefined ? d.zoom : e.zoom,
             ox: e.ox === undefined ? d.ox : e.ox,
             oy: e.oy === undefined ? d.oy : e.oy,
-            scr: e.scr === undefined ? "" : e.scr
+            scr: e.scr === undefined ? "" : e.scr,
+            // No plate behind it: a transparent PNG stands on the wallpaper.
+            bare: e.bare === true
         }
     }
 
@@ -377,6 +379,11 @@ Singleton {
         root.write(id, root.typeOf(id) === "image"
             ? { style: style, w: 0, h: 0 } : { style: style })
     }
+    function setBare(id, on) { root.write(id, { bare: on }) }
+    // Bare widgets rest on a layer of their own with no compositor blur (blur
+    // around antialiased edges cut them ragged). Arranging, or with its menu
+    // open, it comes back to the main layer, which owns all of that.
+    function onBareLayer(id) { return root.entry(id).bare && !root.editMode && root.menuFor !== id }
     function setSkin(id, skin) {
         if (!root.skinsOf(id).some(s => s.id === skin)) return
         root.write(id, { skin: skin })

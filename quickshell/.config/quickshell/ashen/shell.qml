@@ -165,14 +165,19 @@ ShellRoot {
         function style(name: string, shape: string) { Services.Desktop.setStyle(name, shape) }
         // The second axis, for the widgets that have one.
         function skin(name: string, which: string) { Services.Desktop.setSkin(name, which) }
+        // Plate behind the widget, or none.
+        function bare(name: string) { Services.Desktop.setBare(name, !Services.Desktop.entry(name).bare) }
         function snap(mode: string) { Services.Desktop.setSnap(mode) }
         // The one you can have several of: add, point at a file, take away.
         function add(type: string): string { return Services.Desktop.add(type) }
         function drop(name: string) { Services.Desktop.remove(name) }
         function src(name: string, path: string) { Services.Desktop.setSrc(name, path) }
         function list(): string {
+            // hushed and primary: the two things that leave the desktop empty.
             let out = ["editing=" + Services.Desktop.editMode
-                       + " snap=" + Services.Desktop.snap]
+                       + " snap=" + Services.Desktop.snap
+                       + " hushed=" + Services.Desktop.hushed
+                       + " primary=" + Services.Desktop.primaryScreen]
             // The copies, not the template they came from.
             let ids = []
             for (const w of Services.Desktop.catalogue) {
@@ -495,6 +500,11 @@ ShellRoot {
     Variants {
         model: Services.Screens.barScreens
         DesktopLayer {}
+    }
+    // Second, so it stacks above: widgets without a plate, at rest.
+    Variants {
+        model: Services.Screens.barScreens
+        DesktopLayer { bare: true }
     }
     Variants {
         model: Services.Prefs.screenCorners ? Quickshell.screens : []

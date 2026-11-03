@@ -36,8 +36,10 @@ hl.layer_rule({ match = { namespace = "^quickshell.*" }, blur = true })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, no_anim = true })
 hl.layer_rule({ match = { namespace = "^quickshell.*" }, ignore_alpha = 0.3 })
 -- Desktop widgets live on their own layer ("ashen:desktop"): same glass.
-hl.layer_rule({ match = { namespace = "^ashen:.*" }, blur = true })
-hl.layer_rule({ match = { namespace = "^ashen:.*" }, ignore_alpha = 0.3 })
+-- Not "ashen:bare": widgets without a plate, where blur and the alpha cut
+-- left the antialiased edges of text and icons ragged.
+hl.layer_rule({ match = { namespace = "^ashen:desktop$" }, blur = true })
+hl.layer_rule({ match = { namespace = "^ashen:desktop$" }, ignore_alpha = 0.3 })
 
 -- The screenshot selection must not animate OUT. grimblast asks for exactly
 -- this itself -- `hyprctl keyword layerrule "match:selection, no_anim on"` --

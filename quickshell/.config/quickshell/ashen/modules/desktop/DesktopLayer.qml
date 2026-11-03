@@ -21,18 +21,21 @@ PanelWindow {
     readonly property string hostKey: desk.screen ? Services.Displays.keyFor(desk.screen.name) : ""
     readonly property bool isPrimary: desk.hostKey === Services.Desktop.primaryScreen
     WlrLayershell.layer: WlrLayer.Bottom
-    WlrLayershell.namespace: "ashen:desktop"
+    // The bare twin: widgets without a plate, at rest. It has no blur rule in
+    // Hyprland and draws nothing of its own -- no wave, guides or editor.
+    property bool bare: false
+    WlrLayershell.namespace: desk.bare ? "ashen:bare" : "ashen:desktop"
     // Furniture claims no room: windows tile over the whole screen as before.
     exclusionMode: ExclusionMode.Ignore
     // Arranging is the only time the desktop wants the keyboard, and only to
     // hear Escape.
-    WlrLayershell.keyboardFocus: Services.Desktop.editMode
+    WlrLayershell.keyboardFocus: Services.Desktop.editMode && !desk.bare
         ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     color: "transparent"
 
     anchors { top: true; bottom: true; left: true; right: true }
 
-    readonly property bool editing: Services.Desktop.editMode
+    readonly property bool editing: Services.Desktop.editMode && !desk.bare
 
     // The hole one widget cuts in the layer's deafness, named by its record.
     component Hole: Region {
@@ -63,7 +66,11 @@ PanelWindow {
 
     // Game mode takes them down the same way a fullscreen window does: their
     // canvases are the shell's only permanent painters.
-    visible: desk.editing || (!desk.covered && !Services.Game.on)
+    // The bare twin only exists while it holds a widget: with no holes its
+    // mask is empty, and an empty mask took the pointer over the whole screen
+    // -- above the main layer, so nothing could be dragged while arranging.
+    visible: (!desk.bare || holes.count > 0)
+             && (desk.editing || (!desk.covered && !Services.Game.on))
     // What the widgets ask before running anything on a clock.
     // Every Item has a `layer` group of its own, and inside a Component that
     // one wins over an outer id -- which is why this window is not called that.
@@ -73,14 +80,15 @@ PanelWindow {
     // arranging, or an open widget menu, takes the whole screen. Numbers, never
     // `item:` -- a region following an animated item commits once and then
     // goes quiet.
-    readonly property bool menuOpen: Services.Desktop.menuFor !== ""
+    readonly property bool menuOpen: Services.Desktop.menuFor !== "" && !desk.bare
     Instantiator {
         id: holes
         // Only the widgets that live on this screen cut holes in it.
         model: ["clock", "weather", "media", "system", "battery", "calendar", "sun",
                 "timer", "usage", "notify", "updates", "disks", "machine", "visualizer", "lyrics"]
                .concat(Services.Desktop.idsOf("image"))
-               .filter(id => Services.Desktop.screenOf(id) === desk.hostKey)
+               .filter(id => Services.Desktop.screenOf(id) === desk.hostKey
+                             && Services.Desktop.onBareLayer(id) === desk.bare)
         delegate: Hole {
             required property string modelData
             wid: modelData
@@ -110,7 +118,7 @@ PanelWindow {
         y: edge === "bottom" ? parent.height - depth : 0
         width: vertical ? depth : parent.width
         height: vertical ? parent.height : depth
-        visible: desk.screen !== null
+        visible: desk.screen !== null && !desk.bare
                  && Services.Screens.barScreens.some(s => s.name === desk.screen.name)
         opacity: Services.Sizes.hidden ? 0 : 1
         Behavior on opacity {
@@ -131,7 +139,7 @@ PanelWindow {
         focus: desk.editing
         Keys.onEscapePressed: Services.Desktop.editMode = false
 
-        Guides { anchors.fill: parent }
+        Guides { anchors.fill: parent; visible: !desk.bare }
 
         // A click anywhere off the open menu closes it.
         MouseArea {
@@ -144,21 +152,21 @@ PanelWindow {
         // A slot each rather than a Repeater: they are four different things,
         // not four rows of one. The slot fills the field so a widget's own row
         // of shapes still lands inside its ancestors' bounds.
-        WidgetSlot { wid: "clock";   hostKey: desk.hostKey; live: desk.awake; source: Component { ClockWidget {} } }
-        WidgetSlot { wid: "weather"; hostKey: desk.hostKey; live: desk.awake; source: Component { WeatherWidget {} } }
-        WidgetSlot { wid: "media";   hostKey: desk.hostKey; live: desk.awake; source: Component { MediaWidget {} } }
-        WidgetSlot { wid: "system";  hostKey: desk.hostKey; live: desk.awake; source: Component { SysWidget {} } }
-        WidgetSlot { wid: "battery";  hostKey: desk.hostKey; live: desk.awake; source: Component { BatteryWidget {} } }
-        WidgetSlot { wid: "calendar"; hostKey: desk.hostKey; live: desk.awake; source: Component { CalendarWidget {} } }
-        WidgetSlot { wid: "sun";      hostKey: desk.hostKey; live: desk.awake; source: Component { SunWidget {} } }
-        WidgetSlot { wid: "timer";    hostKey: desk.hostKey; live: desk.awake; source: Component { TimerWidget {} } }
-        WidgetSlot { wid: "usage";    hostKey: desk.hostKey; live: desk.awake; source: Component { UsageWidget {} } }
-        WidgetSlot { wid: "notify";   hostKey: desk.hostKey; live: desk.awake; source: Component { NotifyWidget {} } }
-        WidgetSlot { wid: "updates";  hostKey: desk.hostKey; live: desk.awake; source: Component { UpdatesWidget {} } }
-        WidgetSlot { wid: "disks";    hostKey: desk.hostKey; live: desk.awake; source: Component { DisksWidget {} } }
-        WidgetSlot { wid: "machine";  hostKey: desk.hostKey; live: desk.awake; source: Component { MachineWidget {} } }
-        WidgetSlot { wid: "visualizer"; hostKey: desk.hostKey; live: desk.awake; source: Component { VisualizerWidget {} } }
-        WidgetSlot { wid: "lyrics";   hostKey: desk.hostKey; live: desk.awake; source: Component { LyricsWidget {} } }
+        WidgetSlot { wid: "clock";   hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { ClockWidget {} } }
+        WidgetSlot { wid: "weather"; hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { WeatherWidget {} } }
+        WidgetSlot { wid: "media";   hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { MediaWidget {} } }
+        WidgetSlot { wid: "system";  hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { SysWidget {} } }
+        WidgetSlot { wid: "battery";  hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { BatteryWidget {} } }
+        WidgetSlot { wid: "calendar"; hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { CalendarWidget {} } }
+        WidgetSlot { wid: "sun";      hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { SunWidget {} } }
+        WidgetSlot { wid: "timer";    hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { TimerWidget {} } }
+        WidgetSlot { wid: "usage";    hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { UsageWidget {} } }
+        WidgetSlot { wid: "notify";   hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { NotifyWidget {} } }
+        WidgetSlot { wid: "updates";  hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { UpdatesWidget {} } }
+        WidgetSlot { wid: "disks";    hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { DisksWidget {} } }
+        WidgetSlot { wid: "machine";  hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { MachineWidget {} } }
+        WidgetSlot { wid: "visualizer"; hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { VisualizerWidget {} } }
+        WidgetSlot { wid: "lyrics";   hostKey: desk.hostKey; bare: desk.bare; live: desk.awake; source: Component { LyricsWidget {} } }
 
         // The one you can have several of: a slot per record, not per entry in
         // the catalogue.
@@ -169,6 +177,7 @@ PanelWindow {
                 required property string modelData
                 wid: modelData
                 hostKey: desk.hostKey
+                bare: desk.bare
                 live: desk.awake
                 // The Component captures this delegate's scope, so the copy it
                 // builds knows which record it is.
@@ -179,7 +188,7 @@ PanelWindow {
         // Adding widgets is done from the main screen only.
         EditBar {
             id: editBar
-            visible: desk.isPrimary && opacity > 0
+            visible: desk.isPrimary && !desk.bare && opacity > 0
             anchors.horizontalCenter: parent.horizontalCenter
             y: Services.Sizes.barPosition === "top" ? Services.Sizes.barH + 16 : 24
         }
@@ -187,7 +196,7 @@ PanelWindow {
         // Below the bar, never inside it: a row painted outside its ancestors'
         // bounds gets no clicks at all.
         WidgetTray {
-            visible: desk.isPrimary && opacity > 0
+            visible: desk.isPrimary && !desk.bare && opacity > 0
             anchors.horizontalCenter: parent.horizontalCenter
             y: editBar.y + editBar.height + 10
             // Capped rather than "as wide as the screen": thirteen tiles in one
