@@ -171,16 +171,17 @@ PanelWindow {
         readonly property int gap: 18
         readonly property int pad: 18
         readonly property int count: Math.max(1, root.wins.length)
-        // Up to four a row; past twelve windows the rows widen instead of
-        // adding a fourth. Tiles are as big as the screen allows, capped.
-        readonly property int cols: count <= 4 ? count : Math.max(4, Math.ceil(count / 3))
+        // One row up to three, 2x2 for four, 3x2 up to six; past that the rows
+        // widen instead of adding a fourth. Tiles as big as the screen allows, capped.
+        readonly property int cols: count <= 3 ? count : count === 4 ? 2
+                                  : count <= 6 ? 3 : Math.max(4, Math.ceil(count / 3))
         readonly property int rows: Math.ceil(count / cols)
         readonly property int labelH: 30
         readonly property int scopeH: 30
         readonly property int fitW: (root.width - 160 - pad * 2 - gap * (cols - 1)) / cols
         readonly property int fitH: ((root.height - 200 - scopeH - 12 - pad * 2 - gap * (rows - 1)) / rows
                                      - labelH) * 16 / 9
-        readonly property int tileW: Math.max(160, Math.min(400, fitW, fitH))
+        readonly property int tileW: Math.max(160, Math.min(600, fitW, fitH))
         readonly property int shotH: Math.round(tileW * 9 / 16)
         readonly property int tileH: shotH + labelH
 
@@ -271,8 +272,10 @@ PanelWindow {
                             // The shell's one hover language, and the chosen
                             // window wears it whether the pointer or the key
                             // put it there.
+                            // Grows by ~16 px, not the pill's 6%: 6% of a 600 px shot is 36.
                             scale: (0.92 + 0.08 * card.stage(index))
-                                   * Services.Sizes.hoverScale(tile.picked, hover.pressed)
+                                   * (hover.pressed ? Services.Sizes.pillPressScale
+                                      : tile.picked ? Math.min(Services.Sizes.pillHoverScale, 1 + 16 / host.tileW) : 1)
                             Behavior on scale {
                                 NumberAnimation {
                                     duration: Services.Sizes.pillHoverMs
