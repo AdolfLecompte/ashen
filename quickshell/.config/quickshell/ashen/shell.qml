@@ -1,3 +1,5 @@
+//@ pragma Env QML_DISABLE_DISTANCEFIELD=1
+// Hinted glyphs instead of distance fields: small text over glass reads crisper.
 // ══════════════════════════════════════════════════════════════════════════
 //   Ashen — a Hyprland + Quickshell rice.   by Adolf — github.com/AdolfLecompte
 //   Root of the shell: wires every module (bar, lock, launcher, …) together.
