@@ -1,5 +1,6 @@
-//@ pragma Env QML_DISABLE_DISTANCEFIELD=1
-// Hinted glyphs instead of distance fields: small text over glass reads crisper.
+//@ pragma Env QSG_DISTANCEFIELD_ANTIALIASING=gray
+// Grey antialiasing: subpixel fringes read rough over glass. Distance fields
+// stay -- hinted glyphs spaced unevenly once text was scaled.
 // ══════════════════════════════════════════════════════════════════════════
 //   Ashen — a Hyprland + Quickshell rice.   by Adolf — github.com/AdolfLecompte
 //   Root of the shell: wires every module (bar, lock, launcher, …) together.
