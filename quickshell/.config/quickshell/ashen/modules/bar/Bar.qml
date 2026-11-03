@@ -526,7 +526,7 @@ Scope {
                         return Qt.rect(p.x, p.y, gp.width, gp.height)
                     }
                     onOnScreenChanged: Services.AppState.setPlate(content.plateKey(gp.key), gp.onScreen)
-                    readonly property int along: Services.Sizes.plateAlong
+                    readonly property int along: Services.Sizes.islandAlong
                     visible: root.spec.island && width > 0 && group && group.visible
                     z: -2
                     radius: Services.Sizes.barR
@@ -551,12 +551,12 @@ Scope {
 
                 // ── Left ────────────────────────────────────────────────
                 // In the island style each group stands on a plate that is
-                // `plateAlong` WIDER than the group on both sides (GroupPlate).
+                // `islandAlong` WIDER than the group on both sides (GroupPlate).
                 // Anchored flush to the strip, that plate hangs off the screen
                 // by exactly that much -- which is what the right-hand island
                 // was doing. The groups step in by the plate's own overhang.
                 readonly property int islandInset: root.spec.island
-                                                   ? Services.Sizes.plateAlong : 0
+                                                   ? Services.Sizes.islandAlong : 0
 
                 BarGroup {
                     id: startGroup

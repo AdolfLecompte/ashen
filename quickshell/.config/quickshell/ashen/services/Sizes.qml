@@ -196,6 +196,9 @@ Singleton {
     readonly property int cavaReach: 56
 
     readonly property int plateAlong: 12
+    // An island's overhang past its pills: the pills already pad their own
+    // ends, so 12 on top made the islands look stretched at the ends.
+    readonly property int islandAlong: 4
     readonly property int plateCross: root.first.plateCross
     readonly property int barR: root.pillR
 
