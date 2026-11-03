@@ -42,8 +42,11 @@ Singleton {
     // stacked layout (see Sizes.barVertical).
     property string barPosition: "top"
 
-    // "pills" | "island" | "solid" | "hang" | "docked"
+    // "pills" | "island" | "solid" | "docked"
     property string barStyle: "pills"
+    // Hung from the edge: square where it meets the screen, flared out into
+    // it. Only solid and island take it (Sizes.wantedStyle).
+    property bool barHang: false
     // How much of its edge the bar takes, as a percentage. 100 is the whole
     // side; anything less pulls both ends in and leaves the corners to the
     // windows. The framed style ignores it: its plate IS the screen border.
@@ -241,6 +244,9 @@ Singleton {
     property bool dockEnabled: true
     // Frosted rather than a solid plate, the same choice the bar's pills have.
     property bool dockGlass: false
+    // "float" (its own plate, off the edge) | "hang" (flush, flared into the
+    // edge) | "docked" (the whole edge, concave corners). Same shapes as the bar.
+    property string dockStyle: "float"
     // With autohide: stay out on an empty workspace, hide once windows arrive.
     property bool dockSmart: false
     // The icon box. Clamped where it is read, so a hand-edited file cannot
@@ -363,7 +369,8 @@ Singleton {
 
     // The framed style became "docked" in 3.6: a profile or file from before still
     // names it.
-    function migrateStyle(s) { return s === "framed" ? "docked" : s }
+    // "hang" used to be a style of its own; it is now solid plus barHang.
+    function migrateStyle(s) { return s === "framed" ? "docked" : s === "hang" ? "solid" : s }
 
     Timer {
         id: barWriteTimer
@@ -469,13 +476,13 @@ Singleton {
         "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
         "toastSeconds", "maxToasts", "toastWidth", "osdMs", "lockIntro", "switcherScope", "workspaceMode", "hiddenPills", "barLayout", "barContent",
         "barOutline", "panelOutline", "widgetOutline", "dockPins", "usageLimits", "dockEdge",
-        "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockIconSize", "dockPills", "dockLinks", "dockPillsSide", "dockLinksSide",
+        "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockStyle", "dockIconSize", "dockPills", "dockLinks", "dockPillsSide", "dockLinksSide",
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
         "lockShowMachine", "lockShowSystem", "lockShowNotifications", "updateNotify",
         "workspaceStyle", "idleLockSecs",
-        "screenCorners", "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle",
+        "screenCorners", "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle", "barHang",
         "barLength", "barAutohide", "visualizer", "mediaLyrics", "mediaWidgetLyrics",
         "nightLightEnabled", "nightLightScheduled", "nightLightTemp",
         "nightLightFrom", "nightLightTo"
@@ -532,6 +539,7 @@ Singleton {
     // syncBarLayout reads hiddenPills and barLayout, and `loaded` is the gate
     // that opens the write path.
     function settle() {
+        if (root.barStyle === "hang") root.barHang = true
         root.barStyle = root.migrateStyle(root.barStyle)
         root.syncHiddenPills()
         root.syncBarLayout()

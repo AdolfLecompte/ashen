@@ -389,6 +389,7 @@
   "settings.bar.wsPacman": "Pac-Man",
   "settings.bar.wsKanji": "Kanji",
   "settings.dock.title": "Dock",
+  "settings.dock.float": "Schwebend",
   "settings.dock.fixed": "Immer",
   "settings.dock.hide": "Versteckt",
   "settings.dock.smart": "Auto",

@@ -32,15 +32,35 @@ Section {
         Segmented {
             options: [
                 // Least to most: bare capsules, a plate per group, one plate
-                // for the bar, that plate hung from the edge, then the whole edge.
+                // for the bar, then the whole edge.
                 { id: "pills", icon: "\ue11f", label: Services.I18n.t("settings.bar.pills") },
                 { id: "island", icon: "\ue8f3", label: Services.I18n.t("settings.bar.island") },
                 { id: "solid", icon: "\ue9f7", label: Services.I18n.t("settings.bar.solid") },
-                { id: "hang", icon: "\ue232", label: Services.I18n.t("settings.bar.hang") },
                 { id: "docked", icon: "\uf7e6", label: Services.I18n.t("settings.bar.docked") },
             ]
             current: Services.Prefs.barStyle
             onPicked: id => Services.Prefs.barStyle = id
+        }
+
+        // Hung from the edge: solid and island only.
+        RowLayout {
+            visible: Services.Prefs.barStyle === "solid" || Services.Prefs.barStyle === "island"
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            spacing: 12
+            RowGlyph { glyph: "\ue232" }
+            Text {
+                textFormat: Text.PlainText
+                Layout.fillWidth: true
+                text: Services.I18n.t("settings.bar.hang")
+                color: Services.Colors.snow
+                font.pixelSize: Services.Sizes.fsInput
+                font.family: "JetBrainsMono NF"
+            }
+            Toggle {
+                checked: Services.Prefs.barHang
+                onToggled: Services.Prefs.barHang = !Services.Prefs.barHang
+            }
         }
 
         // Not for docked: it is the whole edge by definition.

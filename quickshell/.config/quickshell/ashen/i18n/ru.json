@@ -389,6 +389,7 @@
   "settings.bar.wsPacman": "Пакман",
   "settings.bar.wsKanji": "Кандзи",
   "settings.dock.title": "Док",
+  "settings.dock.float": "Плавающий",
   "settings.dock.fixed": "Всегда",
   "settings.dock.hide": "Скрыт",
   "settings.dock.smart": "Авто",

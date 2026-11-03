@@ -530,6 +530,12 @@ Scope {
                     visible: root.spec.island && width > 0 && group && group.visible
                     z: -2
                     radius: Services.Sizes.barR
+                    // Hung: reaches the screen edge and squares the corners there.
+                    readonly property bool hung: root.spec.hang
+                    topLeftRadius: gp.hung && (bar.edge === "top" || bar.edge === "left") ? 0 : radius
+                    topRightRadius: gp.hung && (bar.edge === "top" || bar.edge === "right") ? 0 : radius
+                    bottomLeftRadius: gp.hung && (bar.edge === "bottom" || bar.edge === "left") ? 0 : radius
+                    bottomRightRadius: gp.hung && (bar.edge === "bottom" || bar.edge === "right") ? 0 : radius
                     // Each island outlines as one island. Outlining the pills
                     // inside a filled block reads as a mistake; the block is
                     // the shape that is either filled or drawn.
@@ -537,16 +543,33 @@ Scope {
                                              : Services.Colors.surfaceBar
                     border.width: root.spec.outline ? Services.Sizes.outlineW : 0
                     border.color: Services.Colors.fillOutline
-                    x: group ? (bar.vertical ? group.x : group.x - along) : 0
-                    y: group ? (bar.vertical ? group.y - along : group.y) : 0
+                    x: group ? (bar.vertical ? (gp.hung ? strip.x : group.x) : group.x - along) : 0
+                    y: group ? (bar.vertical ? group.y - along : (gp.hung ? strip.y : group.y)) : 0
                     width: !group || group.width <= 0 ? 0
-                         : (bar.vertical ? group.width : group.width + along * 2)
+                         : (bar.vertical ? (gp.hung ? strip.width : group.width) : group.width + along * 2)
                     height: !group || group.height <= 0 ? 0
-                          : (bar.vertical ? group.height + along * 2 : group.height)
+                          : (bar.vertical ? group.height + along * 2 : (gp.hung ? strip.height : group.height))
                 }
                 GroupPlate { id: startPlate;  group: startGroup; key: "start" }
                 GroupPlate { id: centrePlate; group: centreGroup; key: "centre" }
                 GroupPlate { id: endPlate;    group: endGroup; key: "end" }
+                // Each hung island flares into the screen edge at both ends.
+                Repeater {
+                    model: root.spec.island && root.spec.hang ? [startPlate, centrePlate, endPlate] : []
+                    HangCorners {
+                        required property Item modelData
+                        visible: modelData.visible
+                        z: -2
+                        edge: bar.edge
+                        start: bar.vertical ? modelData.y : modelData.x
+                        len: bar.vertical ? modelData.height : modelData.width
+                        thick: root.spec.thick
+                        r: Services.Sizes.dockedR
+                        fill: modelData.color
+                        stroke: Services.Colors.fillOutline
+                        strokeW: root.spec.outline ? Services.Sizes.outlineW : 0
+                    }
+                }
 
 
                 // ── Left ────────────────────────────────────────────────

@@ -127,6 +127,19 @@ Section {
             wrapMode: Text.WordWrap
         }
 
+        // Its shape: a plate of its own, hung from the edge, or the whole edge.
+        Segmented {
+            Layout.topMargin: 4
+            stacked: true
+            options: [
+                { id: "float", icon: "\ue9f7", label: Services.I18n.t("settings.dock.float") },
+                { id: "hang", icon: "\ue232", label: Services.I18n.t("settings.bar.hang") },
+                { id: "docked", icon: "\uf7e6", label: Services.I18n.t("settings.bar.docked") }
+            ]
+            current: Services.Prefs.dockStyle
+            onPicked: id => Services.Prefs.dockStyle = id
+        }
+
         // How the dock shows: always, only when called, or by itself.
         Segmented {
             Layout.topMargin: 4

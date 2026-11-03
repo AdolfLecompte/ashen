@@ -19,10 +19,11 @@ QtObject {
     readonly property bool vertical: root.edge === "left" || root.edge === "right"
     // Docked: the whole edge, flush, no air around it.
     readonly property bool docked: root.style === "docked"
-    readonly property bool island: root.style === "island"
-    // Hang: one plate like solid, flush with the screen edge, rounded only inward.
-    readonly property bool hang: root.style === "hang"
-    readonly property bool plate: root.style === "solid" || root.hang
+    readonly property bool island: root.style === "island" || root.style === "island-hang"
+    // Hang: flush with the screen edge, rounded only inward -- one plate
+    // (solid) or a plate per group (island).
+    readonly property bool hang: root.style === "hang" || root.style === "island-hang"
+    readonly property bool plate: root.style === "solid" || root.style === "hang"
     // On a plate of some kind, rather than loose capsules on the wallpaper.
     readonly property bool solid: root.plate || root.island || root.docked
     readonly property int length: root.docked ? 100 : Math.max(50, Math.min(100, root.lengthPref))

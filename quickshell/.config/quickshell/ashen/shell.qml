@@ -131,6 +131,11 @@ ShellRoot {
             if (["top", "bottom", "left", "right"].indexOf(side) === -1) return
             Services.Prefs.dockEdge = side
         }
+        // float | hang | docked, the same shapes the Dock settings offer.
+        function style(name: string) {
+            if (["float", "hang", "docked"].indexOf(name) === -1) return
+            Services.Prefs.dockStyle = name
+        }
         function pin(id: string) { Services.Prefs.dockPin(id) }
         function unpin(id: string) { Services.Prefs.dockUnpin(id) }
         // What is pinned, in order, so a script can put it back.
@@ -138,6 +143,7 @@ ShellRoot {
             return "enabled=" + Services.Prefs.dockEnabled
                  + " edge=" + Services.Prefs.dockEdge
                  + " autohide=" + Services.Prefs.dockAutohide
+                 + " style=" + Services.Prefs.dockStyle
                  + " pins=" + Services.Prefs.dockPinList.join(",")
         }
     }
@@ -441,11 +447,15 @@ ShellRoot {
             if (["full", "compact", "icon"].indexOf(mode) === -1) return
             Services.Prefs.setContent(pill, mode)
         }
-        // The look, from a keybind. Same five the Bar tab offers.
+        // The look, from a keybind. Same four the Bar tab offers; "hang" is
+        // still taken, as solid hung from the edge.
         function style(name: string) {
             if (["pills", "island", "solid", "hang", "docked"].indexOf(name) === -1) return
-            Services.Prefs.barStyle = name
+            if (name === "hang") Services.Prefs.barHang = true
+            Services.Prefs.barStyle = Services.Prefs.migrateStyle(name)
         }
+        // Hung from the edge, on solid and island.
+        function hang() { Services.Prefs.barHang = !Services.Prefs.barHang }
     }
     // Recording used to start only from its bar capsule -- take the capsule off
     // the bar and there was no way to record at all.

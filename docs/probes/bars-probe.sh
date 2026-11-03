@@ -24,7 +24,10 @@ check "no framed left outside the migration" \
 check "BarSpec exists and is registered" "[ -f $r/services/BarSpec.qml ] && grep -q '^BarSpec ' $r/services/qmldir"
 check "Sizes has the bar's spec" "grep -q 'property BarSpec first' $r/services/Sizes.qml"
 check "Sizes answers edgeAt" "grep -q 'function edgeAt' $r/services/Sizes.qml"
-check "hang is a plate flush with the edge" "grep -q 'root.style === \"solid\" || root.hang' $r/services/BarSpec.qml && grep -q 'root.spec.hang &&' $r/modules/bar/Bar.qml"
+check "hang is a toggle, not a style" "grep -q 'property bool barHang' $r/services/Prefs.qml && grep -q 'Prefs.barStyle === \"island\" ? \"island-hang\"' $r/services/Sizes.qml && ! grep -q 'id: \"hang\"' $r/modules/settings/BarShapePage.qml"
+check "old hang style migrates to solid + toggle" "grep -q 's === \"hang\" ? \"solid\"' $r/services/Prefs.qml"
+check "hung islands square their edge corners" "grep -q 'gp.hung &&' $r/modules/bar/Bar.qml"
+check "dock wears float, hang or docked" "grep -q 'property string dockStyle' $r/services/Prefs.qml && grep -q 'BarParts.HangCorners' $r/modules/dock/Dock.qml && grep -q 'BarParts.DockedCorners' $r/modules/dock/Dock.qml"
 check "hang flares into the edge" "[ -f $r/modules/bar/components/HangCorners.qml ] && grep -q 'HangCorners {' $r/modules/bar/Bar.qml"
 check "barFramed is gone" "! grep -rq 'barFramed' $r/services $r/modules $r/shell.qml"
 

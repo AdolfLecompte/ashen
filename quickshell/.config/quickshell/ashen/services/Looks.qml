@@ -16,13 +16,13 @@ Singleton {
     // The only list. Adding a setting to what a wallpaper remembers is one
     // line here, and nothing else in the file has to know its name.
     readonly property var keys: [
-        "barStyle", "barPosition", "barLayout",
+        "barHang", "barStyle", "barPosition", "barLayout",
         "useGradients", "visualizer",
         "panelStyle", "themeMode", "desktopLayout",
         "barLength", "barOutline", "workspaceStyle", "barContent",
         "dockEnabled", "dockEdge",
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "barAutohide", "panelOutline", "widgetOutline",
-        "dockAutohide", "dockSmart", "dockGlass", "dockIconSize"
+        "dockAutohide", "dockSmart", "dockGlass", "dockIconSize", "dockStyle"
     ]
 
     // Every key as the shell ships it: Prefs' own defaults, written once more
@@ -33,13 +33,13 @@ Singleton {
     // and dock. Theme mode is not in it: switching somebody's light mode off
     // because a wallpaper is new would be going too far.
     readonly property var shipped: ({
-        barStyle: "pills", barPosition: "top",
+        barStyle: "pills", barHang: false, barPosition: "top",
         barLayout: "", useGradients: false,
         visualizer: true, panelStyle: "morph", desktopLayout: "",
         barLength: 100, barOutline: false, workspaceStyle: "icons", barContent: "",
         dockEnabled: true, dockEdge: "bottom",
         workspaceCount: 5, workspaceHideEmpty: false, workspaceTicks: false, barAutohide: false, panelOutline: false, widgetOutline: false,
-        dockAutohide: true, dockSmart: false, dockGlass: false, dockIconSize: 44
+        dockAutohide: true, dockSmart: false, dockGlass: false, dockIconSize: 44, dockStyle: "float"
     })
 
     // What the shell looks like right now. Every key is read straight out of
@@ -47,6 +47,7 @@ Singleton {
     // be a function call.
     readonly property var live: ({
         barStyle: Prefs.barStyle,
+        barHang: Prefs.barHang,
         barPosition: Prefs.barPosition,
         barLayout: Prefs.barLayout,
         useGradients: Prefs.useGradients,
@@ -70,6 +71,7 @@ Singleton {
         dockSmart: Prefs.dockSmart,
         dockGlass: Prefs.dockGlass,
         dockIconSize: Prefs.dockIconSize,
+        dockStyle: Prefs.dockStyle,
         scheme: Theme.schemeId,
         dynamicType: Theme.dynamicType
     })
@@ -157,7 +159,10 @@ Singleton {
             if (v === undefined && fillMissing) v = root.shipped[name]
             if (v === undefined) continue
             if (name === "themeMode") Theme.stageMode(v)
-            else if (name === "barStyle") Prefs[name] = Prefs.migrateStyle(v)
+            else if (name === "barStyle") {
+                if (v === "hang") Prefs.barHang = true
+                Prefs[name] = Prefs.migrateStyle(v)
+            }
             else Prefs[name] = v
         }
         // barLayout is a packed string; the sections the bar actually reads are

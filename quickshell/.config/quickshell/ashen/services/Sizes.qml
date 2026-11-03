@@ -227,12 +227,16 @@ Singleton {
         function onLoadedChanged() {
             if (!Prefs.loaded) return
             root.applied = Prefs.barPosition
-            root.appliedStyle = Prefs.barStyle
+            root.appliedStyle = root.wantedStyle
         }
     }
 
     // The style rides the same swap as the edge.
-    readonly property string wantedStyle: Prefs.barStyle
+    // Hang folds into the style the bar wears: solid -> "hang", island ->
+    // "island-hang". Elsewhere it does nothing.
+    readonly property string wantedStyle: !Prefs.barHang ? Prefs.barStyle
+        : Prefs.barStyle === "solid" ? "hang"
+        : Prefs.barStyle === "island" ? "island-hang" : Prefs.barStyle
     property string appliedStyle: Prefs.barStyle
 
     onWantedStyleChanged: if (wantedStyle !== appliedStyle) {

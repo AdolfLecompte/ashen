@@ -5,6 +5,7 @@ import QtQuick
 
 import "root:/services" as Services
 import "root:/modules/widgets" as Widgets
+import "root:/modules/bar/components" as BarParts
 
 // Applications on an edge: the ones pinned, and the ones open. It measures
 // nothing -- an icon's position is the one thing a dock has to keep still.
@@ -39,7 +40,15 @@ Scope {
 
             readonly property string edge: root.edge
             readonly property bool vertical: dock.edge === "left" || dock.edge === "right"
-            readonly property int thick: Services.Sizes.dockIcon + Services.Sizes.dockPad * 2
+            // Floating keeps air round its plate; hang and docked sit flush,
+            // so the room taken is the plate itself. Docked's window also holds
+            // the concave curves just past the plate.
+            readonly property bool flush: Services.Prefs.dockStyle !== "float"
+            readonly property bool docked: Services.Prefs.dockStyle === "docked"
+            readonly property int plateThick: Services.Sizes.dockIcon + Services.Sizes.dockPad
+            readonly property int zoneThick: dock.flush ? dock.plateThick
+                                                        : Services.Sizes.dockIcon + Services.Sizes.dockPad * 2
+            readonly property int thick: dock.zoneThick + (dock.docked ? Services.Sizes.dockedR : 0)
 
             // Out of the way, or not. The zone is the whole difference: at 0 the
             // windows own the edge and the dock floats over them when asked.
@@ -86,7 +95,7 @@ Scope {
 
             color: "transparent"
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: (dock.out || zoneHold.running) ? dock.thick : 0
+            exclusiveZone: (dock.out || zoneHold.running) ? dock.zoneThick : 0
             WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             // The thread at the edge always, plus the plate while out -- never the
@@ -113,12 +122,24 @@ Scope {
 
             Rectangle {
                 id: plate
-                anchors.centerIn: parent
-                width: dock.vertical ? Services.Sizes.dockIcon + Services.Sizes.dockPad
-                                     : row.width + Services.Sizes.dockPad * 2
-                height: dock.vertical ? row.height + Services.Sizes.dockPad * 2
-                                      : Services.Sizes.dockIcon + Services.Sizes.dockPad
-                radius: Services.Sizes.pillR
+                // Across the edge: centred in its air when floating, against
+                // the screen edge otherwise. Along it: the icons, or the whole
+                // edge when docked.
+                readonly property real crossPos: !dock.flush ? (dock.zoneThick - dock.plateThick) / 2
+                    : (dock.edge === "top" || dock.edge === "left") ? 0 : dock.thick - dock.plateThick
+                width: dock.vertical ? dock.plateThick
+                     : dock.docked ? dock.width : row.width + Services.Sizes.dockPad * 2
+                height: !dock.vertical ? dock.plateThick
+                      : dock.docked ? dock.height : row.height + Services.Sizes.dockPad * 2
+                x: dock.vertical ? plate.crossPos : (dock.width - width) / 2
+                y: dock.vertical ? (dock.height - height) / 2 : plate.crossPos
+                radius: dock.docked ? 0 : Services.Sizes.pillR
+                // Hang: the corners on the screen edge stay square.
+                readonly property bool hung: Services.Prefs.dockStyle === "hang"
+                topLeftRadius: plate.hung && (dock.edge === "top" || dock.edge === "left") ? 0 : radius
+                topRightRadius: plate.hung && (dock.edge === "top" || dock.edge === "right") ? 0 : radius
+                bottomLeftRadius: plate.hung && (dock.edge === "bottom" || dock.edge === "left") ? 0 : radius
+                bottomRightRadius: plate.hung && (dock.edge === "bottom" || dock.edge === "right") ? 0 : radius
                 // Outlined, not merely see-through: glass with a 1 px line in
                 // `fillRest` is no line at all over a wallpaper, and the dock
                 // read as a smudge instead of a drawn shape.
@@ -137,6 +158,29 @@ Scope {
                 // Keeps the dock out while the pointer is on it, not only while
                 // it is on the sliver underneath.
                 HoverHandler { id: onDock }
+
+                // The bar's own ornaments, riding the plate so they slide with it.
+                BarParts.HangCorners {
+                    visible: plate.hung
+                    edge: dock.edge
+                    start: 0
+                    len: dock.vertical ? plate.height : plate.width
+                    thick: dock.plateThick
+                    r: Services.Sizes.dockedR
+                    fill: plate.color
+                    stroke: Services.Colors.fillOutline
+                    strokeW: plate.border.width
+                }
+                BarParts.DockedCorners {
+                    visible: dock.docked
+                    edge: dock.edge
+                    alongLen: dock.vertical ? plate.height : plate.width
+                    thick: dock.plateThick
+                    r: Services.Sizes.dockedR
+                    fill: plate.color
+                    stroke: Services.Colors.fillOutline
+                    strokeW: plate.border.width
+                }
 
                 // Auto-hide is a slide, like the bar: the plate walks out through
                 // the edge and the surface clips what is past it.
