@@ -97,41 +97,6 @@ PanelWindow {
         openW: root.openW
         openH: root.openH
 
-        // ── Backdrop: the cover itself, blurred and dim, behind everything ──
-        Image {
-            id: backArt
-            anchors.fill: parent
-            source: panelRef.shownArtUrl
-            sourceSize: Qt.size(256, 256)
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            cache: false
-            visible: false
-        }
-        // Rounded like the card, or the blur shows square corners past it.
-        ClippingRectangle {
-            anchors.fill: parent
-            radius: 20
-            color: "transparent"
-            opacity: 0.30 * card.contentAmt
-            visible: backArt.status === Image.Ready
-
-            // Built only while the contents are out, which is before the box
-            // shrinks: a blur left running down to a sliver of height asked
-            // for a texture tens of thousands of pixels tall.
-            Loader {
-                anchors.fill: parent
-                active: card.contentAmt > 0.01
-                sourceComponent: MultiEffect {
-                    source: backArt
-                    blurEnabled: true
-                    blurMax: 64
-                    blur: 1.0
-                    saturation: -0.2
-                }
-            }
-        }
-
         // Grown out of the bar, the side touching it is the bar's own colour
         // and the cover's tint only arrives further out, so the box reads as
         // the bar stretching rather than a card laid over it.
