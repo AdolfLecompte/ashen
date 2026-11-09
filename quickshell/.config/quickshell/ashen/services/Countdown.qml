@@ -19,6 +19,8 @@ Singleton {
     property double preset: 5 * 60000
 
     property int tick: 0
+    // Said when a run reaches zero; the pomodoro hangs its next phase on it.
+    signal rang()
 
     readonly property double remaining: {
         tick
@@ -89,9 +91,12 @@ Singleton {
         }
     }
 
+    // The end is a notification toast; the timer toast leaves because the run
+    // is over.
     function ring() {
         running = false
         leftover = 0
+        root.rang()
         Services.Notifications.addSystemToast(Services.Voice.pick("timer.done"), "\ue425", false,
                                               "countdown", { title: Services.I18n.t("toast.timerDone") })
     }

@@ -42,25 +42,9 @@ Rectangle {
     radius: Services.Sizes.pillR
     border.color: Services.Colors.fillOutline
     border.width: root.outlined ? Services.Sizes.outlineW : 0
-    // While the timer box is hanging off it, the two corners facing it go
-    // square. That join is the whole point: a rounded pill sitting on a squared
-    // box leaves a notch either side of the seam, and the pair reads as two
-    // surfaces that happen to touch. Squared, they are ONE taller capsule.
-    readonly property string boxEdge: {
-        if (!Services.AppState.timerBoxOut) return ""
-        const e = root.spec.edge
-        if (e === "bottom") return "top"
-        if (e === "left") return "right"
-        if (e === "right") return "left"
-        return "bottom"
-    }
-    topLeftRadius:     (root.boxEdge === "top" || root.boxEdge === "left")     ? 0 : root.radius
-    topRightRadius:    (root.boxEdge === "top" || root.boxEdge === "right")    ? 0 : root.radius
-    bottomLeftRadius:  (root.boxEdge === "bottom" || root.boxEdge === "left")  ? 0 : root.radius
-    bottomRightRadius: (root.boxEdge === "bottom" || root.boxEdge === "right") ? 0 : root.radius
     // The weather text still changes width under it (a degree gained, an icon
     // swapped), so the settle stays. What used to widen it -- a live stopwatch --
-    // hangs under the bar now, in TimerDrops.
+    // is a toast now.
     Behavior on width { enabled: !Services.Sizes.hidden; Widgets.Anim { speed: Services.Sizes.msPronounced; curve: Services.Sizes.easeBox } }
     color: root.outlined ? Services.Colors.surfaceGlass : (root.spec.pillPlate)
     // The bar pivots the centre group on this point, so the HOUR sits dead

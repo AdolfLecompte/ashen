@@ -114,7 +114,7 @@ Singleton {
         "notificationsVisible", "settingsVisible", "powerMenuVisible", "calendarVisible",
         "networkVisible", "bluetoothVisible", "usbVisible", "processVisible",
         "clipboardVisible", "launcherVisible", "wallpaperVisible",
-        "trayMenuVisible", "switcherVisible", "usageVisible"]
+        "trayMenuVisible", "switcherVisible", "usageVisible", "timerVisible"]
     // Which screens have their auto-hiding bar out right now. The frame reads it
     // to hand that side over to the bar, so framed looks the same either way.
     property var barRevealed: ({})
@@ -145,21 +145,23 @@ Singleton {
         root.closeOthers(name)
         root[name] = !wasOpen
     }
-    // Which tool the clock panel opens on: 0 clock, 1 stopwatch, 2 timer. Out
-    // here so the bar's readout can aim it, and so the panel comes back to the
-    // tab you left it on instead of always to the clock.
-    // Is the timer box out under the bar? Asked by TimerDrops, which draws it,
-    // and by the clock pill, which has to square the corners it meets so the
-    // two read as one taller capsule instead of two surfaces with a seam.
-    // ONE place, because the day the rule changes it must change for both.
-    readonly property bool timerBoxOut:
-        (!Services.Stopwatch.idle || Services.Countdown.active) && !root.calendarVisible
-
-    property int clockTab: 0
-    function openClockAt(tab) {
-        root.clockTab = tab
-        root.togglePanel("calendarVisible")
+    // The timer panel (stopwatch / countdown / pomodoro). `timerMode` is the
+    // tool it shows: 0 stopwatch, 1 countdown, 2 pomodoro.
+    property int timerMode: 0
+    property bool timerVisible: false
+    // The big toast under the bar can be sent away; closing the panel brings
+    // it back if something is still running.
+    property bool timerDropHidden: false
+    onTimerVisibleChanged: root.timerDropHidden = false
+    function openTimerAt(mode) {
+        root.timerMode = mode
+        if (!root.timerVisible) root.togglePanel("timerVisible")
     }
+    // Is the timer toast in the stack? Asked by TimerToast, which draws it, and
+    // ONE place.
+    readonly property bool timerBoxOut:
+        (!Services.Stopwatch.idle || Services.Countdown.active)
+        && !root.timerVisible && !root.timerDropHidden
 
     // Kept as the name the overlays were written against; the reach is wider now.
     function toggleOverlay(name) { root.togglePanel(name) }
@@ -261,6 +263,10 @@ Singleton {
     // Vertical twins, used when the bar sits on a side edge
     property real volumePillCenterY: 60
     property real batteryPillCenterY: 60
+    property real timerPillCenterX: 960
+    property real timerPillCenterY: 60
+    property real timerPillW: 44
+    property real timerPillH: 32
     property real usagePillCenterX: 960
     property real usagePillCenterY: 60
     property real mediaPillCenterY: 60
@@ -437,6 +443,7 @@ Singleton {
         else if (key === "clock")     { root.clockPillW = w;     root.clockPillH = h }
         else if (key === "volume")     { root.volumePillW = w;     root.volumePillH = h }
         else if (key === "battery")    { root.batteryPillW = w;    root.batteryPillH = h }
+        else if (key === "timer")      { root.timerPillW = w;      root.timerPillH = h }
         else if (key === "usage")      { root.usagePillW = w;      root.usagePillH = h }
         else if (key === "usb")        { root.usbPillW = w;        root.usbPillH = h }
         else if (key === "power")      { root.powerPillW = w;      root.powerPillH = h }
@@ -454,6 +461,7 @@ Singleton {
     function setPillCenter(key, x, y) {
         if (key === "volume")            { root.volumePillCenterX = x;        root.volumePillCenterY = y }
         else if (key === "battery")      { root.batteryPillCenterX = x;       root.batteryPillCenterY = y }
+        else if (key === "timer")        { root.timerPillCenterX = x;         root.timerPillCenterY = y }
         else if (key === "usage")        { root.usagePillCenterX = x;         root.usagePillCenterY = y }
         else if (key === "media")        { root.mediaPillCenterX = x;         root.mediaPillCenterY = y }
         else if (key === "network")      { root.networkPillCenterX = x;       root.networkPillCenterY = y }

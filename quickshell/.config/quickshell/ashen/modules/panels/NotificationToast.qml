@@ -14,6 +14,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     visible: Services.Notifications.activePopups.length > 0
+             || Services.AppState.timerBoxOut || timerToast.amt > 0.01
 
     // The surface spans the whole screen but only the toast column should grab
     // the pointer — otherwise the invisible rest of the window eats clicks meant
@@ -46,6 +47,9 @@ PanelWindow {
         move: Transition {
             NumberAnimation { properties: "x,y"; duration: 260; easing.type: Services.Sizes.easeBox }
         }
+
+        // What is running, first in the stack.
+        Widgets.TimerToast { id: timerToast }
 
         Repeater {
             model: Services.Notifications.shownPopups

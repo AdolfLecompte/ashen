@@ -361,6 +361,7 @@ Scope {
                 Component { id: cKeyboard; KeyboardPill {} }
                 Component { id: cSys;         SysPill {} }
                 Component { id: cUsage;       UsagePill {} }
+                Component { id: cTimer;       TimerPill {} }
                 Component { id: cPower;         PowerPill {} }
                 Component { id: cMic;           MicPill {} }
                 Component { id: cClipboard;     ClipboardPill {} }
@@ -413,6 +414,7 @@ Scope {
                     case "keyboard":      return cKeyboard
                     case "sys":           return cSys
                     case "usage":         return cUsage
+                    case "timer":         return cTimer
                     case "power":         return cPower
                     case "window":        return cWindow
                     case "mic":           return cMic

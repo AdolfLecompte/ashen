@@ -35,6 +35,7 @@ Singleton {
         sys:           { label: "System",        glyph: "\ue322", opens: "processVisible" },
         window:        { label: "Active window", glyph: "\ue8f5", opens: "" },
         power:         { label: "Power",         glyph: "", opens: "powerMenuVisible" },
+        timer:         { label: "Timer",         glyph: "\ue425", opens: "timerVisible" },
         usage:         { label: "Screen time",   glyph: "\uea5b", opens: "usageVisible" },
         mic:           { label: "Microphone",    glyph: "\ue029", opens: "" },
         clipboard:     { label: "Clipboard",     glyph: "\ue14f", opens: "clipboardVisible" },
@@ -48,7 +49,7 @@ Singleton {
     readonly property var arrangeable: [
         "launcher", "notifications", "workspaces", "media", "clock",
         "usb", "recording", "tray", "network", "bluetooth", "volume",
-        "battery", "keyboard", "sys", "window", "power", "usage",
+        "battery", "keyboard", "sys", "window", "power", "usage", "timer",
         "mic", "clipboard", "screenshot", "privacy"
     ]
 

@@ -468,6 +468,27 @@ ShellRoot {
         function toggle() { Services.AppState.togglePanel("usbVisible") }
         function state(): string { return JSON.stringify(Services.USB.drives) }
     }
+    // The timer panel: `toggle` opens it on whichever tool it last showed.
+    IpcHandler {
+        target: "timer"
+        function toggle() { Services.AppState.togglePanel("timerVisible") }
+        // start | skip | reset; anything else toggles.
+        function pomodoro(action: string) {
+            if (action === "start") Services.Pomodoro.begin()
+            else if (action === "skip") Services.Pomodoro.next()
+            else if (action === "reset") Services.Pomodoro.reset()
+            else Services.Pomodoro.toggle()
+        }
+        function state(): string {
+            return "visible " + Services.AppState.timerVisible + " | hidden " + Services.AppState.timerDropHidden
+                + " | out " + Services.AppState.timerBoxOut + " | mode " + Services.AppState.timerMode
+                + " | pomodoro " + Services.Pomodoro.phase + " " + Services.Pomodoro.done + "/4 engaged " + Services.Pomodoro.engaged
+        }
+        function open(mode: string) {
+            const i = ["stopwatch", "countdown", "pomodoro"].indexOf(mode)
+            Services.AppState.openTimerAt(i < 0 ? Services.AppState.timerMode : i)
+        }
+    }
     IpcHandler {
         target: "usage"
         function toggle() { Services.AppState.togglePanel("usageVisible") }
@@ -539,13 +560,13 @@ ShellRoot {
     Widgets.LazyPanel { preloadMs: 2040; shown: Services.AppState.powerMenuVisible;     panel: Component { PowerMenu {} } }
     Widgets.LazyPanel { preloadMs: 2160; shown: Services.AppState.calendarVisible;      panel: Component { Calendar {} } }
     Widgets.LazyPanel { preloadMs: 2400; shown: Services.AppState.wsPreviewId !== 0;   panel: Component { WorkspacePreview {} } }
-    Widgets.LazyPanel { preloadMs: 2520; shown: !Services.Stopwatch.idle || Services.Countdown.active; panel: Component { TimerDrops {} } }
     Widgets.LazyPanel { preloadMs: 2280; shown: Services.AppState.networkVisible;       panel: Component { NetworkPanel {} } }
     Widgets.LazyPanel { preloadMs: 2640; shown: Services.Picker.visible;                panel: Component { ImagePicker {} } }
     Widgets.LazyPanel { preloadMs: 2400; shown: Services.AppState.bluetoothVisible;     panel: Component { BluetoothPanel {} } }
     Widgets.LazyPanel { preloadMs: 2520; shown: Services.AppState.usbVisible;           panel: Component { USBPanel {} } }
     Widgets.LazyPanel { preloadMs: 2640; shown: Services.AppState.trayMenuVisible;      panel: Component { TrayMenu {} } }
     Widgets.LazyPanel { preloadMs: 2760; shown: Services.AppState.processVisible;       panel: Component { ProcessPanel {} } }
+    Widgets.LazyPanel { preloadMs: 3600; shown: Services.AppState.timerVisible;         panel: Component { TimerPanel {} } }
     Widgets.LazyPanel { preloadMs: 3480; shown: Services.AppState.usageVisible;         panel: Component { UsagePanel {} } }
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.switcherVisible;     panel: Component { Switcher {} } }
     Widgets.LazyPanel { preloadMs: 3000; shown: Services.AppState.introVisible;        panel: Component { IntroPanel {} } }
