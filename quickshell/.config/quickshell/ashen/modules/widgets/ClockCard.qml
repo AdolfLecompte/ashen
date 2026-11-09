@@ -66,23 +66,17 @@ Item {
     }
     // Follows the slide, not the press: the face swaps while the slide is
     // faded out, then rides back in with the tools.
-    readonly property bool stacked: shownTool === 0
-    readonly property real toolFade: toolSlide.fade
 
     // ── Where the shared pieces sit, in this item's coordinates ─────────
     readonly property real timeCX: row.x + clockCol.x + timeT.x + timeT.width / 2
     readonly property real timeCY: row.y + clockCol.y + timeT.y + timeT.height / 2
-    readonly property real dateCX: row.x + clockCol.x + head.x + dateT.x + dateT.width / 2
-    readonly property real dateCY: row.y + clockCol.y + head.y + dateT.y + dateT.height / 2
+    readonly property real dateCX: row.x + clockCol.x + foot.x + dateT.x + dateT.width / 2
+    readonly property real dateCY: row.y + clockCol.y + foot.y + dateT.y + dateT.height / 2
     readonly property real wIconCX: row.x + wxCol.x + wxNow.x + wIcon.x + wIcon.width / 2
     readonly property real wIconCY: row.y + wxCol.y + wxNow.y + wIcon.y + wIcon.height / 2
     readonly property real wTempCX: row.x + wxCol.x + wxNow.x + wTemp.x + wTemp.width / 2
     readonly property real wTempCY: row.y + wxCol.y + wxNow.y + wTemp.y + wTemp.height / 2
 
-    // Which tool is showing under the clock. Held in AppState so the bar's
-    // readout can open the panel straight on its tool, and so a tool you left
-    // running is where you left it next time.
-    property int tab: Services.AppState.clockTab
 
     // Which day of the strip the weather column is showing. 0 is today, and
     // today is the live reading -- every other day is a forecast summary.
@@ -215,19 +209,6 @@ Item {
         return t.split(":")[0] + ap
     }
 
-    // Aim the countdown without starting it. A second is the floor: the wheels
-    // can be spun to 00:00:00, and a timer of no length is not a thing to hand
-    // to a service that would just refuse it and leave the wheels lying.
-    function aimAt(ms) { Services.Countdown.setPreset(Math.max(1000, ms)) }
-
-    // The quickest lap taken so far, so the strip can point at it.
-    readonly property real bestSplit: {
-        let b = -1
-        for (const l of Services.Stopwatch.laps)
-            if (b < 0 || l.split < b) b = l.split
-        return b
-    }
-
     // The whole strip, today included: today's card is the way back from a day
     // that was picked, and with it in the row a card's index IS `selDay`.
     readonly property var fcDays: Services.Weather.forecast
@@ -246,119 +227,6 @@ Item {
 
     // One cell of the weather grid: glyph and number on a line, its name under
     // them. No plate and no rule -- the grid is held together by its columns.
-    // One column of a hh:mm:ss picker. A ListView with its highlight range
-    // nailed to the middle row IS a wheel -- no Controls dependency and no
-    // hand-rolled flicking. Nothing here reads `preset` as a binding: the wheel
-    // both follows it and writes it, so the follow has to be an assignment that
-    // can be switched off while it is the one doing the writing.
-    component Wheel: Item {
-        id: wheel
-        property int count: 60
-        property int unitMs: 1000
-        readonly property int rowH: 38
-        // What this column's digits are worth in the current preset.
-        readonly property int value: Math.floor(Services.Countdown.preset / unitMs) % count
-        property bool syncing: false
-        // Nothing this wheel does counts as an instruction until a hand has
-        // moved it. A ListView settles its own currentIndex once it has a
-        // geometry, well after Component.onCompleted -- three wheels each
-        // reporting that settle as a choice is what turned a fresh 5-minute
-        // preset into 01:01:01.
-        property bool touched: false
-
-        width: 66
-        height: rowH * 3
-
-        // Setting currentIndex is enough: StrictlyEnforceRange already drags the
-        // view onto it. Calling positionViewAtIndex as well made the two fight
-        // and land a row off -- three wheels each one step out is where a fresh
-        // 5-minute preset came up as 01:01:01.
-        function sync() {
-            if (view.moving || view.dragging) return
-            wheel.syncing = true
-            view.currentIndex = wheel.value
-            wheel.syncing = false
-        }
-        Component.onCompleted: wheel.sync()
-        Connections {
-            target: Services.Countdown
-            function onPresetChanged() { wheel.sync() }
-        }
-
-        ListView {
-            id: view
-            anchors.fill: parent
-            clip: true
-            model: wheel.count
-            orientation: ListView.Vertical
-            snapMode: ListView.SnapToItem
-            // The selected row is the middle one, always.
-            highlightRangeMode: ListView.StrictlyEnforceRange
-            preferredHighlightBegin: wheel.rowH
-            preferredHighlightEnd: wheel.rowH * 2
-            boundsBehavior: Flickable.StopAtBounds
-
-            onMovementStarted: wheel.touched = true
-            onCurrentIndexChanged: {
-                if (wheel.syncing || !wheel.touched) return
-                const cur = Services.Countdown.preset
-                const mine = Math.floor(cur / wheel.unitMs) % wheel.count
-                if (view.currentIndex === mine) return
-                root.aimAt(cur + (view.currentIndex - mine) * wheel.unitMs)
-            }
-
-            delegate: Item {
-                required property int index
-                width: wheel.width
-                height: wheel.rowH
-                readonly property bool sel: index === view.currentIndex
-                Text {
-                    textFormat: Text.PlainText
-                    anchors.centerIn: parent
-                    text: (parent.index < 10 ? "0" : "") + parent.index
-                    color: parent.sel ? Services.Colors.snow : Services.Colors.ash
-                    opacity: parent.sel ? 1 : 0.55
-                    font.pixelSize: parent.sel ? 34 : 24
-                    font.bold: parent.sel
-                    font.family: "JetBrainsMono NF"
-                    Behavior on font.pixelSize { Anim { speed: Services.Sizes.msMicro } }
-                    Behavior on opacity { Anim { speed: Services.Sizes.msMicro } }
-                }
-            }
-        }
-    }
-
-    component WheelColon: Text {
-        textFormat: Text.PlainText
-        width: 14
-        height: 114
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        text: ":"
-        color: Services.Colors.mist
-        font.pixelSize: 30
-        font.bold: true
-        font.family: "JetBrainsMono NF"
-    }
-
-
-    // Tools slide aside in the direction you moved along the tabs.
-    SlideSwap {
-        id: toolSlide
-        axis: "horizontal"
-        index: root.tab
-        onCommit: root.shownTool = root.tab
-    }
-    property int shownTool: 0
-
-    component Tool: Item {
-        property int index: 0
-        anchors.fill: parent
-        opacity: root.shownTool === index ? root.beat(1) * toolSlide.fade : 0
-        visible: opacity > 0.01
-        transform: Translate { x: toolSlide.offX }
-    }
-
     RowLayout {
         id: row
         anchors.fill: parent
@@ -373,27 +241,22 @@ Item {
             // The clock leads and the day reads under it: the hour is what
             // this column is for, and a date on top made the reading feel like
             // a footnote to its own label.
-            ClockText {
-                id: timeT
-                // Only a landing spot now: the clock tab shows the stack, the
-                // tools show no clock at all.
-                opacity: 0
+            // The time leads at the top of the column; the day and its four
+            // figures sit at the foot (`foot`), so the column fills the card's
+            // height instead of leaving a gap in the middle.
+            Column {
+                id: face
                 anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                time: root.timeText
-                px: root.clockPx
-            }
+                width: parent.width
+                spacing: 14
 
-            // The clock tab's face: big, hour over minute, as on the lock screen.
+            // Big, hour over minute, as on the lock screen.
             Row {
                 id: stackT
-                anchors.top: parent.top
-                anchors.topMargin: 0
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 10
-                opacity: root.stacked ? root.beat(0) * toolSlide.fade : 0
+                opacity: root.beat(0)
                 visible: opacity > 0.01
-                transform: Translate { x: toolSlide.offX }
                 Column {
                     spacing: -30
                     Text {
@@ -426,18 +289,18 @@ Item {
                     font.family: "JetBrainsMono NF"
                 }
             }
+            }
 
             Column {
-                id: head
-                anchors.top: root.stacked ? stackT.bottom : timeT.bottom
-                anchors.topMargin: root.stacked ? 4 : 2
+                id: foot
+                anchors.bottom: parent.bottom
                 width: parent.width
-                spacing: 2
+                spacing: 14
 
                 Text {
                     textFormat: Text.PlainText
                     id: dateT
-                    opacity: root.stacked ? root.sharedOpacity * toolSlide.fade : 0
+                    opacity: root.sharedOpacity
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                     text: root.dateText.toUpperCase()
@@ -447,370 +310,68 @@ Item {
                     font.letterSpacing: 2
                     font.family: "JetBrainsMono NF"
                 }
-            }
-
-            // Category strip at the foot of the column, so switching sits with
-            // the other panels' controls and the clock gets the room.
-            Item {
-                id: tabsWrap
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 18
-                width: parent.width
-                height: 34
-                opacity: root.beat(0)
-                property Item activeTab: null
 
                 Rectangle {
-                    id: tabsPill
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: tabs.width + 8
-                    height: 34
-                    radius: 12
-                    color: Services.Colors.surfacePill
+                    width: parent.width - 40
+                    height: 1
+                    color: Services.Colors.fillInset
+                    opacity: root.beat(1)
+                }
 
-                    // Sliding highlight behind whichever pill is picked
-                    Rectangle {
-                        visible: tabsWrap.activeTab !== null
-                        x: 4 + (tabsWrap.activeTab ? tabsWrap.activeTab.x : 0)
-                        width: tabsWrap.activeTab ? tabsWrap.activeTab.width : 0
-                        height: 26
-                        anchors.verticalCenter: parent.verticalCenter
-                        radius: 9
-                        color: Services.Colors.ghost
-                        gradient: Services.Prefs.useGradients ? Services.Colors.accentGradient : null
-                        Behavior on x { SmoothedAnimation { duration: Services.Sizes.msPronounced } }
-                        Behavior on width { SmoothedAnimation { duration: Services.Sizes.msStandard } }
+                // The day's four figures, two by two: sun up and down on
+                // one line, the week and the day of the year on the other.
+                Grid {
+                    id: clockRow
+                    width: parent.width
+                    columns: 2
+                    rowSpacing: 12
+                    opacity: root.beat(1)
+
+                    WxCell {
+                        width: parent.width / 2
+                        glyph: "\ue1c6"
+                        value: Services.Weather.sunrise || "\u2014"
                     }
-
-                    Row {
-                        id: tabs
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        anchors.leftMargin: 4
-                        spacing: 4
-
-                        Repeater {
-                            model: [
-                                { id: 0, label: Services.I18n.t("clock.tab.clock"),     icon: "" },
-                                { id: 1, label: Services.I18n.t("clock.tab.stopwatch"), icon: "" },
-                                { id: 2, label: Services.I18n.t("clock.tab.timer"),     icon: "" }
-                            ]
-
-                            delegate: Rectangle {
-                                required property var modelData
-                                readonly property bool active: root.tab === modelData.id
-                                onActiveChanged: if (active) tabsWrap.activeTab = this
-                                Component.onCompleted: if (active) tabsWrap.activeTab = this
-
-                                height: 26
-                                width: tabRow.implicitWidth + 18
-                                radius: 9
-                                // Only the sliding indicator carries the active fill;
-                                // idle pills are bare -- hover only brightens them,
-                                // it never paints a plate.
-                                color: "transparent"
-                                Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
-
-                                Row {
-                                    id: tabRow
-                                    anchors.centerIn: parent
-                                    spacing: 5
-
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        text: parent.parent.modelData.icon
-                                        color: parent.parent.active ? Services.Colors.accentText
-                                             : tabHover.containsMouse ? Services.Colors.snow
-                                             : Services.Colors.mist
-                                        font.pixelSize: 13
-                                        font.family: "Material Symbols Rounded"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        text: parent.parent.modelData.label
-                                        color: parent.parent.active ? Services.Colors.accentText
-                                             : tabHover.containsMouse ? Services.Colors.snow
-                                             : Services.Colors.mist
-                                        font.pixelSize: 11
-                                        font.bold: parent.parent.active
-                                        font.family: "JetBrainsMono NF"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: tabHover
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    // Through AppState: assigning root.tab here
-                                    // would break its binding on the first click.
-                                    onClicked: Services.AppState.clockTab = parent.modelData.id
-                                }
-                            }
+                    WxCell {
+                        width: parent.width / 2
+                        glyph: "\ue1f9"
+                        value: Services.Weather.sunset || "\u2014"
+                    }
+                    WxCell {
+                        width: parent.width / 2
+                        glyph: "\ue916"
+                        value: {
+                            // ISO week: the Thursday of this week owns the year
+                            let d = new Date(root.now.getFullYear(), root.now.getMonth(), root.now.getDate())
+                            d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
+                            let jan4 = new Date(d.getFullYear(), 0, 4)
+                            let n = 1 + Math.round(((d - jan4) / 86400000
+                                    - 3 + ((jan4.getDay() + 6) % 7)) / 7)
+                            return Services.I18n.t("clock.weekShort", { n: n })
+                        }
+                    }
+                    WxCell {
+                        width: parent.width / 2
+                        glyph: "\ue88b"
+                        value: {
+                            let start = new Date(root.now.getFullYear(), 0, 0)
+                            return Math.floor((root.now - start) / 86400000)
+                                + "/" + (root.isLeap ? 366 : 365)
                         }
                     }
                 }
             }
 
-            // ── Tool area: all three stacked, one showing ───────────────
-            Item {
-                id: tools
-                // The tools take the whole column: no clock above them.
-                anchors.top: root.stacked ? head.bottom : parent.top
-                anchors.topMargin: 14
-                anchors.bottom: tabsWrap.top
-                anchors.bottomMargin: 14
-                width: parent.width
-
-                // -- Clock: what today is, in plain rows --
-                // No ring, no plates, no rules: a short centred list.
-                Tool {
-                    index: 0
-                    Item {
-                        anchors.fill: parent
-
-                        // The day's four figures, on one line and in the same
-                        // shape the weather column uses: glyph and number on
-                        // top, what they are underneath. Stacked rows put two
-                        // gaps inside every line of a narrow column.
-                        Grid {
-                            id: clockRow
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            columns: 4
-
-                            WxCell {
-                                width: parent.width / 4
-                                glyph: "\ue1c6"
-                                value: Services.Weather.sunrise || "\u2014"
-                            }
-                            WxCell {
-                                width: parent.width / 4
-                                glyph: "\ue916"
-                                value: {
-                                    // ISO week: the Thursday of this week owns the year
-                                    let d = new Date(root.now.getFullYear(), root.now.getMonth(), root.now.getDate())
-                                    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
-                                    let jan4 = new Date(d.getFullYear(), 0, 4)
-                                    let n = 1 + Math.round(((d - jan4) / 86400000
-                                            - 3 + ((jan4.getDay() + 6) % 7)) / 7)
-                                    return Services.I18n.t("clock.weekShort", { n: n })
-                                }
-                            }
-                            WxCell {
-                                width: parent.width / 4
-                                glyph: "\ue88b"
-                                value: {
-                                    let start = new Date(root.now.getFullYear(), 0, 0)
-                                    return Math.floor((root.now - start) / 86400000)
-                                        + "/" + (root.isLeap ? 366 : 365)
-                                }
-                            }
-                            WxCell {
-                                width: parent.width / 4
-                                glyph: "\ue1f9"
-                                value: Services.Weather.sunset || "\u2014"
-                            }
-                        }
-                    }
-                }
-
-                // -- Stopwatch: the number, and nothing around it --
-                // It had a ring for a while. A stopwatch has no end to be a
-                // fraction of, so the ring was drawing a minute nobody asked
-                // about while the digits -- the whole point -- had to shrink to
-                // fit inside it.
-                Tool {
-                    index: 1
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 20
-
-                        Text {
-                            textFormat: Text.PlainText
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: Services.Stopwatch.display
-                            color: Services.Colors.snow
-                            font.pixelSize: 66
-                            font.bold: true
-                            font.family: "JetBrainsMono NF"
-                        }
-
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 8
-                            CtlChip {
-                                glyph: Services.Stopwatch.running ? "" : ""
-                                tip: Services.I18n.t("kb.playPause")
-                                active: Services.Stopwatch.running
-                                onTriggered: Services.Stopwatch.toggle()
-                            }
-                            CtlChip {
-                                glyph: ""
-                                tip: Services.I18n.t("tip.lap")
-                                available: Services.Stopwatch.running
-                                onTriggered: Services.Stopwatch.lap()
-                            }
-                            CtlChip {
-                                glyph: ""
-                                tip: Services.I18n.t("tip.reset")
-                                available: !Services.Stopwatch.idle
-                                onTriggered: Services.Stopwatch.reset()
-                            }
-                        }
-
-                        // Newest on the left, the fastest one wearing the accent:
-                        // which lap was the good one is a comparison, and a
-                        // column of bare numbers never makes it for you.
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 6
-                            Repeater {
-                                model: Services.Stopwatch.laps.slice(-4).reverse()
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    // Nothing is "fastest" until there is
-                                    // something to be faster than.
-                                    readonly property bool best: Services.Stopwatch.laps.length > 1
-                                        && modelData.split === root.bestSplit
-                                    width: 60
-                                    height: 34
-                                    radius: Services.Sizes.innerR
-                                    color: best ? Services.Colors.ghost : Services.Colors.fillInset
-                                    gradient: Services.Prefs.useGradients && best
-                                        ? Services.Colors.accentGradient : null
-                                    Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
-
-                                    Column {
-                                        anchors.centerIn: parent
-                                        spacing: 0
-                                        Text {
-                                            textFormat: Text.PlainText
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            text: "#" + modelData.index
-                                            color: parent.parent.best ? Services.Colors.accentBody : Services.Colors.ash
-                                            font.pixelSize: 9
-                                            font.family: "JetBrainsMono NF"
-                                        }
-                                        Text {
-                                            textFormat: Text.PlainText
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            text: Services.Stopwatch.format(modelData.split)
-                                            color: parent.parent.best ? Services.Colors.accentText : Services.Colors.snow
-                                            font.pixelSize: 11
-                                            font.bold: true
-                                            font.family: "JetBrainsMono NF"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // -- Countdown: pick the time on the wheels, or take a preset --
-                Tool {
-                    index: 2
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 18
-
-                        // Two faces, one slot: the wheels are for setting, and
-                        // once it is counting the only thing worth the space is
-                        // what is left.
-                        Item {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            width: wheels.width * wheels.scale
-                            height: 154
-
-                            Row {
-                                id: wheels
-                                anchors.centerIn: parent
-                                spacing: 2
-                                scale: 1.35
-                                opacity: Services.Countdown.active ? 0 : 1
-                                visible: opacity > 0.01
-                                Behavior on opacity { Anim {} }
-
-                                Wheel { id: wHours;   count: 24; unitMs: 3600000 }
-                                WheelColon { }
-                                Wheel { id: wMins;    count: 60; unitMs: 60000 }
-                                WheelColon { }
-                                Wheel { id: wSecs;    count: 60; unitMs: 1000 }
-                            }
-
-                            Text {
-                                textFormat: Text.PlainText
-                                anchors.centerIn: parent
-                                text: Services.Countdown.display
-                                color: Services.Countdown.running ? Services.Colors.snow : Services.Colors.mist
-                                font.pixelSize: 66
-                                font.bold: true
-                                font.family: "JetBrainsMono NF"
-                                opacity: Services.Countdown.active ? 1 : 0
-                                visible: opacity > 0.01
-                                Behavior on opacity { Anim {} }
-                                Behavior on color { ColorAnim {} }
-                            }
-                        }
-
-                        // The lengths worth a button; the wheels cover everything
-                        // between them.
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 6
-                            Repeater {
-                                model: [1, 5, 10, 25]
-                                delegate: Rectangle {
-                                    required property var modelData
-                                    readonly property bool picked: Services.Countdown.preset === modelData * 60000
-                                    width: 42; height: 24; radius: 8
-                                    color: picked ? Services.Colors.ghost : Services.Colors.fillInset
-                                    gradient: Services.Prefs.useGradients && picked
-                                        ? Services.Colors.accentGradient : null
-                                    Behavior on color { ColorAnim { speed: Services.Sizes.msMicro } }
-                                    Text {
-                                        textFormat: Text.PlainText
-                                        anchors.centerIn: parent
-                                        text: modelData + "m"
-                                        color: parent.picked ? Services.Colors.accentText : Services.Colors.snow
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                        font.family: "JetBrainsMono NF"
-                                    }
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        // A length aims the timer; starting is
-                                        // the one button that starts things.
-                                        onClicked: root.aimAt(modelData * 60000)
-                                    }
-                                }
-                            }
-                        }
-
-                        Row {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 8
-                            CtlChip {
-                                glyph: Services.Countdown.running ? "" : ""
-                                tip: Services.I18n.t("kb.playPause")
-                                active: Services.Countdown.running
-                                available: Services.Countdown.remaining > 0
-                                onTriggered: Services.Countdown.toggle()
-                            }
-                            CtlChip {
-                                glyph: ""
-                                tip: Services.I18n.t("tip.reset")
-                                available: Services.Countdown.active
-                                onTriggered: Services.Countdown.reset()
-                            }
-                        }
-                    }
-                }
+            // Only a landing spot for the flying clock: it settles where the
+            // stacked face is, then the real one fades in.
+            ClockText {
+                id: timeT
+                opacity: 0
+                x: face.x + stackT.x + stackT.width / 2 - width / 2
+                y: face.y + stackT.y + stackT.height / 2 - height / 2
+                time: root.timeText
+                px: root.clockPx
             }
         }
 
