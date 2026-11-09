@@ -72,7 +72,8 @@ Singleton {
                         // dead weight.
                         else if (line.startsWith("Exec=") && app.exec === "")
                             app.exec = line.substring(5).trim()
-                                .replace(/ %[uUfFdDnNickvm]/g, "")
+                                // A whole argument carrying a field code goes, not just the code.
+                                .replace(/%%/g, "\u0000").replace(/ ?\S*%[uUfFdDnNickvm]\S*/g, "").replace(/\u0000/g, "%")
                                 .replace(/ @@[uU]?(?= |$)/g, "")
                         else if (line.startsWith("Icon=") && app.icon === "") app.icon = line.substring(5).trim()
                         else if (line.startsWith("Categories=") && app.cats.length === 0) {
