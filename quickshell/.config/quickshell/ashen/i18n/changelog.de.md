@@ -17,6 +17,12 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   wegschicken. Endet ein Lauf, verschwindet sie und der übliche
   „Fertig“-Toast tritt an ihre Stelle.
 - Das Timer-Widget hat eine Pomodoro-Form.
+- **Ohne Platte**, im Rechtsklick-Menü eines Widgets (und `ashen ipc
+  widgets bare`): Platte und Umriss entfallen, ebenso die Füllung eines
+  Bildes, sodass ein transparentes PNG auf dem Hintergrund steht; ein weicher
+  Schatten hält den Text lesbar.
+- Das Dock hat auch die Looks der Leiste: schwebend, aufgehängt oder
+  bündig.
 
 ### Geändert
 - Desktop-Widgets wechseln in einer Bewegung zur neuen Form und blenden die
@@ -38,6 +44,21 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   eigenes bekommen (oben); unter der Leiste hängt nichts mehr.
 - Das Songtext-Widget wird durchscheinend, solange nichts spielt, auch in
   der Pause.
+- Aufgehängt ist jetzt ein Schalter der Leistenstile Solid und Insel, kein
+  eigener Stil mehr (`ashen bar hang`); die alte Einstellung bleibt
+  erhalten. Eine aufgehängte Insel reicht bis an den Rand, ist dort eckig
+  und läuft in ihn aus.
+- Der Fensterumschalter (`ALT+Tab`) zeigt größere Fenster: vier gehen zu
+  zweit nebeneinander, fünf oder sechs drei mal zwei, und das gewählte
+  wächst sanft.
+- Die volle Form des Musik-Widgets ist ein hohes Cover über die ganze Karte,
+  mit dem Text darauf, während es verschwimmt; das Widget behält eine
+  Größe.
+- Das Musik-Panel trägt die eigene Fläche der Shell: das verschwommene
+  Cover dahinter ist weg (das Vorschaubild eines Videos färbte das ganze
+  Panel).
+- Text wird mit grauer Kantenglättung gezeichnet, ohne die Farbsäume, die er
+  auf Glas hatte.
 
 ### Behoben
 - Die Ebene der plattenlosen Widgets wird beim Anordnen abgemeldet, und
@@ -49,8 +70,16 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Zwei Videos mit gleichem Namen in verschiedenen Ordnern teilen sich keine
   optimierte Kopie mehr, und eine abgebrochene Umwandlung wird nie
   abgespielt.
-- Hyprland 0.57 warnte vor `on_created_empty` der Spezial-Workspaces; sie
-  öffnen ihre App jetzt aus einem `workspace.created`-Handler.
+- Insel-Leisten lassen vor dem ersten Symbol keine etwa 28 px leere Platte
+  mehr.
+- Das Dock verschwindet durch Hinausgleiten wie die Leiste und kommt
+  zuverlässig zurück; vorher verschwand es ohne Bewegung und kam oft nicht
+  wieder.
+- Ein Tooltip, der nicht in sein Fenster passt, wird ausgeblendet statt als
+  dunkler Streifen abgeschnitten.
+- Hyprland 0.57 warnte vor veralteten Optionen: dem `dampening` der Animation
+  (jetzt `damping`) und dem `on_created_empty` der Spezial-Workspaces (jetzt
+  ein `workspace.created`-Handler).
 
 ## 3.7.0
 
@@ -110,8 +139,6 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   stoßen nicht mehr mit ihnen zusammen.
 - Der Symbolstil der Arbeitsbereiche kommt ohne Kacheln aus: das Symbol der
   App, der aktuelle in der Akzentfarbe, ein leerer ist ein Punkt.
-- Der Fensterumschalter (`ALT+Tab`) zeigt die Fenster größer, bis zu vier
-  pro Reihe.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
@@ -127,8 +154,6 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Eine Fensterklasse oder Benachrichtigung mit Anführungszeichen konnte
   über das Dock oder die Fokus-Aktion Befehle ausführen.
 - Kamera-Anzeige und Tastaturlayout kosten im Leerlauf weniger.
-- Hyprland 0.57 warnte vor einer veralteten Animationsoption (`dampening`,
-  jetzt `damping`).
 
 ## 3.6.0
 

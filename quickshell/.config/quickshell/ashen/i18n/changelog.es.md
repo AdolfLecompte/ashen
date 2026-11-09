@@ -17,6 +17,12 @@ si falta, la bienvenida las enseña en inglés.
   cruz. Cuando una cuenta termina se va y ocupa su lugar el aviso de
   «terminado» de siempre.
 - El widget del temporizador tiene una forma Pomodoro.
+- **Sin plato**, en el menú de clic derecho de un widget (y `ashen ipc
+  widgets bare`): se van el plato y el borde, y también el relleno de una
+  imagen, así que un PNG transparente se queda sobre el fondo; una sombra
+  suave mantiene legible el texto.
+- El dock también tiene los aspectos de la barra: flotante, colgado o
+  pegado.
 
 ### Cambiado
 - Los widgets del escritorio pasan a su nueva forma en un solo movimiento y
@@ -39,6 +45,19 @@ si falta, la bienvenida las enseña en inglés.
   a uno propio (arriba); ya no cuelga nada bajo la barra.
 - El widget de letras se vuelve translúcido mientras no suena nada, también
   en pausa.
+- Colgada ahora es un interruptor de los estilos sólido e isla de la barra,
+  no un estilo aparte (`ashen bar hang`); el ajuste viejo se conserva. Una
+  isla colgada llega al borde, recta ahí, y se abre hacia él.
+- El selector de ventanas (`ALT+Tab`) enseña ventanas más grandes: cuatro van
+  de dos en dos, cinco o seis de tres por dos, y la elegida crece suave.
+- La forma completa del widget de música es una carátula alta a lo ancho de
+  la tarjeta, con la letra encima mientras se difumina, y el widget conserva
+  un solo tamaño.
+- El panel de música lleva la superficie del propio shell: ya no hay
+  carátula difuminada detrás (la miniatura de un vídeo teñía todo el
+  panel).
+- El texto se dibuja con suavizado gris, sin los bordes de color que tenía
+  sobre el cristal.
 
 ### Arreglado
 - La capa de widgets sin plato se desmapea al ordenar, y arrastrar un
@@ -48,8 +67,15 @@ si falta, la bienvenida las enseña en inglés.
   código de campo (`%u`, `%F`) ya no pasan el resto de ese argumento.
 - Dos vídeos con el mismo nombre en carpetas distintas ya no comparten una
   copia optimizada, y una conversión cortada nunca se reproduce.
-- Hyprland 0.57 avisaba por el `on_created_empty` de los workspaces
-  especiales; ahora abren su app desde un manejador de `workspace.created`.
+- Las barras en isla ya no dejan unos 28 px de plato vacío antes del primer
+  icono.
+- El dock se oculta deslizándose como la barra y vuelve con fiabilidad;
+  antes desaparecía sin movimiento y a menudo no regresaba.
+- Un consejo que no cabe en su ventana se oculta en lugar de cortarse en
+  una franja oscura.
+- Hyprland 0.57 avisaba de opciones obsoletas: el `dampening` de la
+  animación (ahora `damping`) y el `on_created_empty` de los workspaces
+  especiales (ahora un manejador de `workspace.created`).
 
 ## 3.7.0
 
@@ -110,8 +136,6 @@ si falta, la bienvenida las enseña en inglés.
   no chocan con ellos.
 - El estilo de iconos de los escritorios va sin losetas: el icono de la app,
   el escritorio en el que estás en el acento, y uno vacío es un punto.
-- El selector de ventanas (`ALT+Tab`) enseña las ventanas más grandes,
-  hasta cuatro por fila.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
@@ -128,8 +152,6 @@ si falta, la bienvenida las enseña en inglés.
   órdenes desde el dock o la acción de enfocar de la notificación.
 - El indicador de cámara y la distribución del teclado gastan menos en
   reposo.
-- Hyprland 0.57 avisaba de una opción de animación obsoleta (`dampening`,
-  ahora `damping`).
 
 ## 3.6.0
 

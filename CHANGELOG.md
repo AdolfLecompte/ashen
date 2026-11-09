@@ -12,6 +12,10 @@
   open, comes back when you close it, and can be sent away with its cross.
   When a run ends it leaves and the usual "done" toast takes its place.
 - The timer widget has a Pomodoro shape.
+- **No plate**, in a widget's right-click menu (and `ashen ipc widgets bare`):
+  the plate and outline go, and a picture's inset fill too, so a transparent
+  PNG stands on the wallpaper; a soft shadow keeps text readable.
+- The dock has the bar's looks too: float, hang or docked.
 
 ### Changed
 - Desktop widgets ease to a new shape in one motion and fade the new face in.
@@ -31,6 +35,17 @@
   their own (above); nothing hangs under the bar any more.
 - The lyrics widget goes translucent while nothing is playing, paused
   included.
+- Hanging is now a toggle on the solid and island bar styles, not a style of
+  its own (`ashen bar hang`); the old setting carries over. A hung island
+  reaches the edge, square there, and flares into it.
+- The window switcher (`ALT+Tab`) shows bigger windows: four go two by two,
+  five or six three by two, and the chosen one grows gently.
+- The music widget's full shape is a tall cover across the card, with the
+  words on it as it blurs, so the widget keeps one size.
+- The media panel wears the shell's own surface: the blurred cover behind
+  it is gone (a video's thumbnail tinted the whole panel).
+- Text is drawn with grey antialiasing, without the colour fringes it had
+  over glass.
 
 ### Fixed
 - The bare widget layer unmaps while arranging, and dragging a widget keeps
@@ -40,8 +55,15 @@
   code (`%u`, `%F`) no longer pass the rest of that argument on.
 - Two videos with the same name in different folders no longer share one
   optimized copy, and a transcode cut short is never played.
-- Hyprland 0.57 warned about the special workspaces' `on_created_empty`;
-  they now open their app from a `workspace.created` handler.
+- Island bars no longer leave about 28 px of empty plate before the first
+  icon.
+- The dock hides by sliding out like the bar, and comes back reliably;
+  before it vanished with no motion and often failed to return.
+- A tooltip that does not fit its window is hidden instead of being cut
+  into a dark sliver.
+- Hyprland 0.57 warned about deprecated options: the animation's `dampening`
+  (now `damping`) and the special workspaces' `on_created_empty` (now a
+  `workspace.created` handler).
 
 ## 3.7.0
 
@@ -100,7 +122,6 @@
   your own Hyprland config, loaded last. Updates no longer meet them.
 - The icons workspace style has no plates: the app's own icon, the one you
   are on in the accent, and an empty workspace is a dot.
-- The window switcher (`ALT+Tab`) shows bigger windows, up to four a row.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they
@@ -116,8 +137,6 @@
 - A window class or notification holding a quote could run commands
   through the dock or the notification's focus action.
 - The camera indicator and the keyboard layout cost less while idle.
-- Hyprland 0.57 warned about a deprecated animation option (`dampening`,
-  now `damping`).
 
 ## 3.6.0
 
