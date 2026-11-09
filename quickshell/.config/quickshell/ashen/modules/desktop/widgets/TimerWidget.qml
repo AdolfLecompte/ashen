@@ -152,6 +152,31 @@ DesktopWidget {
         }
     }
 
+    component PomoFace: Face {
+        caption: Services.I18n.t("pomodoro." + Services.Pomodoro.phase).toUpperCase()
+        figure: Services.Pomodoro.engaged ? Services.Countdown.display : Services.Countdown.format(25 * 60000)
+        value: Services.Pomodoro.engaged ? Services.Countdown.progress : 1
+        live_: Services.Countdown.running
+
+        Controls {
+            Btn {
+                glyph: Services.Countdown.running ? "\ue034" : "\ue037"
+                active: Services.Countdown.running
+                onTriggered: Services.Pomodoro.toggle()
+            }
+            Btn {
+                glyph: "\ue044"
+                available: Services.Pomodoro.engaged
+                onTriggered: Services.Pomodoro.next()
+            }
+            Btn {
+                glyph: "\ue042"
+                available: Services.Pomodoro.engaged
+                onTriggered: Services.Pomodoro.reset()
+            }
+        }
+    }
+
     component Both: Column {
         spacing: 16
         Timer_ {}
@@ -162,10 +187,12 @@ DesktopWidget {
     Component { id: timerShape; Timer_ {} }
     Component { id: watchShape; Watch {} }
     Component { id: bothShape; Both {} }
+    Component { id: pomoShape; PomoFace {} }
 
     Loader {
         sourceComponent: root.style === "stopwatch" ? watchShape
                        : root.style === "both" ? bothShape
+                       : root.style === "pomodoro" ? pomoShape
                        : timerShape
     }
 }

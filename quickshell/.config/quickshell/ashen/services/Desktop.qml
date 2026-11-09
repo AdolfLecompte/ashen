@@ -66,7 +66,8 @@ Singleton {
         { id: "timer", group: "time", label: "Timer", glyph: "\ue425", x: 460, y: 880, styles: [
             { id: "timer", label: "Timer" },
             { id: "stopwatch", label: "Stopwatch" },
-            { id: "both", label: "Both" }] },
+            { id: "both", label: "Both" },
+            { id: "pomodoro", label: "Pomodoro" }] },
         { id: "notify", group: "machine", label: "Notifications", glyph: "\ue7f4", x: 1100, y: 120, styles: [
             { id: "list", label: "List" },
             { id: "count", label: "Count" }] },
