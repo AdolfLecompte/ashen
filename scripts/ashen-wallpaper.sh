@@ -114,7 +114,8 @@ state_set() {
 # different sizes are two different downscales of the same clip.
 optimized_video() {
     local src="$1" mw="$2" mh="$3"
-    local cached="$OPT/$(basename "${src%.*}")-${mw}x${mh}-opt.mp4"
+    # The path's cksum keeps two same-named clips in different folders apart.
+    local cached="$OPT/$(basename "${src%.*}")-$(printf '%s' "$src" | cksum | cut -d' ' -f1)-${mw}x${mh}-opt.mp4"
 
     if [ -f "$cached" ] && [ "$cached" -nt "$src" ]; then
         printf '%s' "$cached"
@@ -139,13 +140,14 @@ optimized_video() {
     if ffmpeg -y -loglevel error -i "$src" \
         -vf "scale=${mw}:${mh}:flags=lanczos,fps=30" \
         -c:v libx264 -preset medium -crf 23 -pix_fmt yuv420p -an \
-        -movflags +faststart "$cached" 2>/dev/null
+        -movflags +faststart -f mp4 "$cached.part" 2>/dev/null \
+        && mv -f "$cached.part" "$cached"
     then
         notify-send -a Ashen -i video-x-generic "Wallpaper" "Video optimized" 2>/dev/null
         printf '%s' "$cached"
     else
         # Transcode failed: fall back to the original rather than showing nothing
-        rm -f "$cached"
+        rm -f "$cached" "$cached.part"
         printf '%s' "$src"
     fi
 }
