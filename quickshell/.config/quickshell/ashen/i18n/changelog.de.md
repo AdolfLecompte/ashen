@@ -3,6 +3,55 @@
 Übersetzung der Notizen aus CHANGELOG.md. Nur die aktuelle Version wird
 gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 
+## 3.8.0
+
+### Hinzugefügt
+- **Timer-Panel**: Stoppuhr, Countdown und **Pomodoro** (25 Min Fokus,
+  5 Pause, 15 nach jedem vierten) in einem Panel, geöffnet über die
+  Timer-Pille (geparkt, in Einstellungen > Leiste), `SUPER+SHIFT+T` oder
+  `ashen ipc`. Der Pomodoro läuft auf dem Countdown und wechselt von selbst
+  in die nächste Phase.
+- **Timer-Toast**: Solange etwas läuft, steht eine Karte mit Start- und
+  Reset-Tasten an der Spitze der Benachrichtigungen. Sie weicht, solange das
+  Panel offen ist, kommt beim Schließen zurück und lässt sich mit dem Kreuz
+  wegschicken. Endet ein Lauf, verschwindet sie und der übliche
+  „Fertig“-Toast tritt an ihre Stelle.
+- Das Timer-Widget hat eine Pomodoro-Form.
+
+### Geändert
+- Desktop-Widgets wechseln in einer Bewegung zur neuen Form und blenden die
+  neue Ansicht ein.
+- Die Zeit- und Maschinen-Widgets, überarbeitet: Akku ohne Ring und ohne
+  Kasten im Kasten; Kalender mit Kalenderwoche und ohne leere Zeile; Timer
+  mit einer Minute weniger; die Bildschirmzeit-Woche als dicke Balken mit
+  Stunden; eine größere Analoguhr; Wetter als die nächsten Stunden und drei
+  Tage; Datenträger mit dem freien Platz vorn; Benachrichtigungen zum Öffnen,
+  Verwerfen oder Leeren, mit den Apps, die am meisten senden; eine kürzere
+  Maschinenkarte; System groß und mittel unterscheiden sich wieder.
+- Das Tageslicht-Widget ist jetzt der Mond: die Phase heute Nacht, flach,
+  darunter die Phasen des Monats und die zwei Sonnenzeiten.
+- Das Uhr-Panel ist nur noch die Uhr: große gestapelte Zeit, Stunde über
+  Minute, das Datum und die vier Tageswerte zu zweit am Fuß, neben
+  Kalender und Wetter. Die Sonnenkurve ist weg, ebenso die
+  Werkzeug-Tabs.
+- Stoppuhr, Countdown und Pomodoro haben das Uhr-Panel verlassen und ein
+  eigenes bekommen (oben); unter der Leiste hängt nichts mehr.
+- Das Songtext-Widget wird durchscheinend, solange nichts spielt, auch in
+  der Pause.
+
+### Behoben
+- Die Ebene der plattenlosen Widgets wird beim Anordnen abgemeldet, und
+  das Ziehen eines Widgets bleibt in den Grenzen, in denen es gezeichnet
+  wird; vorher schluckte sie jedes Ziehen und das Widget sprang beim
+  Loslassen.
+- Starter-Einträge, deren Befehl ein ganzes Argument mit Feldcode (`%u`,
+  `%F`) enthält, reichen den Rest dieses Arguments nicht mehr durch.
+- Zwei Videos mit gleichem Namen in verschiedenen Ordnern teilen sich keine
+  optimierte Kopie mehr, und eine abgebrochene Umwandlung wird nie
+  abgespielt.
+- Hyprland 0.57 warnte vor `on_created_empty` der Spezial-Workspaces; sie
+  öffnen ihre App jetzt aus einem `workspace.created`-Handler.
+
 ## 3.7.0
 
 ### Hinzugefügt
@@ -34,17 +83,6 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - **Tasten in Panels**: Escape schließt sie; die Pfeile ändern Lautstärke,
   Tag oder Titel, Leertaste spielt und pausiert, M schaltet stumm, und
   `Strg+Tab` geht durch die Tabs der Einstellungen.
-- **Timer-Panel**: Stoppuhr, Countdown und **Pomodoro** (25 Min Fokus,
-  5 Pause, 15 nach jedem vierten) in einem Panel, geöffnet über die
-  Timer-Pille (geparkt, in Einstellungen > Leiste), `SUPER+SHIFT+T` oder
-  `ashen ipc`. Der Pomodoro läuft auf dem Countdown und wechselt von selbst
-  in die nächste Phase.
-- **Timer-Toast**: Solange etwas läuft, steht eine Karte mit Start- und
-  Reset-Tasten an der Spitze der Benachrichtigungen. Sie weicht, solange das
-  Panel offen ist, kommt beim Schließen zurück und lässt sich mit dem Kreuz
-  wegschicken. Endet ein Lauf, verschwindet sie und der übliche
-  „Fertig“-Toast tritt an ihre Stelle.
-- Das Timer-Widget hat eine Pomodoro-Form.
 
 ### Geändert
 - `SUPER+SHIFT+F` lässt ein Fenster zentriert bei 60 % mal 70 % schweben
@@ -74,25 +112,6 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   App, der aktuelle in der Akzentfarbe, ein leerer ist ein Punkt.
 - Der Fensterumschalter (`ALT+Tab`) zeigt die Fenster größer, bis zu vier
   pro Reihe.
-- Desktop-Widgets wechseln in einer Bewegung zur neuen Form und blenden die
-  neue Ansicht ein.
-- Die Zeit- und Maschinen-Widgets, überarbeitet: Akku ohne Ring und ohne
-  Kasten im Kasten; Kalender mit Kalenderwoche und ohne leere Zeile; Timer
-  mit einer Minute weniger; die Bildschirmzeit-Woche als dicke Balken mit
-  Stunden; eine größere Analoguhr; Wetter als die nächsten Stunden und drei
-  Tage; Datenträger mit dem freien Platz vorn; Benachrichtigungen zum Öffnen,
-  Verwerfen oder Leeren, mit den Apps, die am meisten senden; eine kürzere
-  Maschinenkarte; System groß und mittel unterscheiden sich wieder.
-- Das Tageslicht-Widget ist jetzt der Mond: die Phase heute Nacht, flach,
-  darunter die Phasen des Monats und die zwei Sonnenzeiten.
-- Das Uhr-Panel ist nur noch die Uhr: große gestapelte Zeit, Stunde über
-  Minute, das Datum und die vier Tageswerte zu zweit am Fuß, neben
-  Kalender und Wetter. Die Sonnenkurve ist weg, ebenso die
-  Werkzeug-Tabs.
-- Stoppuhr, Countdown und Pomodoro haben das Uhr-Panel verlassen und ein
-  eigenes bekommen (oben); unter der Leiste hängt nichts mehr.
-- Das Songtext-Widget wird durchscheinend, solange nichts spielt, auch in
-  der Pause.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
@@ -108,9 +127,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Eine Fensterklasse oder Benachrichtigung mit Anführungszeichen konnte
   über das Dock oder die Fokus-Aktion Befehle ausführen.
 - Kamera-Anzeige und Tastaturlayout kosten im Leerlauf weniger.
-- Hyprland 0.57 warnte vor veralteten Optionen: `dampening` der Animation
-  (jetzt `damping`) und `on_created_empty` der Spezial-Arbeitsbereiche (jetzt
-  ein `workspace.created`-Handler).
+- Hyprland 0.57 warnte vor einer veralteten Animationsoption (`dampening`,
+  jetzt `damping`).
 
 ## 3.6.0
 

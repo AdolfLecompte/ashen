@@ -3,6 +3,54 @@
 Traducción de las notas de CHANGELOG.md. Solo hace falta la versión actual:
 si falta, la bienvenida las enseña en inglés.
 
+## 3.8.0
+
+### Añadido
+- **Panel del temporizador**: cronómetro, cuenta atrás y **pomodoro** (25
+  min de enfoque, 5 de descanso, 15 tras cada cuarto), en un solo panel que
+  se abre desde la píldora Temporizador (aparcada, en Ajustes > Barra),
+  con `SUPER+SHIFT+T` o con `ashen ipc`. El pomodoro corre sobre la cuenta
+  atrás y pasa solo a su siguiente fase.
+- **Toast del temporizador**: mientras algo corre, una tarjeta encabeza la
+  pila de notificaciones con sus botones de reproducir y reiniciar. Se aparta
+  mientras el panel está abierto, vuelve al cerrarlo y se puede quitar con su
+  cruz. Cuando una cuenta termina se va y ocupa su lugar el aviso de
+  «terminado» de siempre.
+- El widget del temporizador tiene una forma Pomodoro.
+
+### Cambiado
+- Los widgets del escritorio pasan a su nueva forma en un solo movimiento y
+  la cara nueva entra con un fundido.
+- Los widgets de tiempo y de máquina, rehechos: batería sin anillo ni caja
+  dentro de caja; calendario con número de semana y sin fila vacía;
+  temporizador con botón para restar un minuto; la semana del tiempo de
+  pantalla en barras gruesas con sus horas; un reloj analógico más grande; el
+  clima con las próximas horas y los tres días siguientes; discos con lo
+  libre en grande; notificaciones que se abren, se descartan o se vacían, con
+  las apps que más avisan; una ficha de máquina más corta; sistema grande y
+  mediano que vuelven a distinguirse.
+- El widget de luz del día ahora es la Luna: la fase de esta noche, plana,
+  con las fases del mes debajo y las dos horas del sol.
+- El panel del reloj es solo el reloj: la hora grande apilada, hora sobre
+  minuto, la fecha y las cuatro cifras del día de dos en dos al pie, junto
+  al calendario y el clima. La curva del sol desaparece, y también las
+  pestañas de herramientas.
+- El cronómetro, la cuenta atrás y el pomodoro salieron del panel del reloj
+  a uno propio (arriba); ya no cuelga nada bajo la barra.
+- El widget de letras se vuelve translúcido mientras no suena nada, también
+  en pausa.
+
+### Arreglado
+- La capa de widgets sin plato se desmapea al ordenar, y arrastrar un
+  widget respeta los límites donde se dibuja; antes se comía todos los
+  arrastres y saltaba al soltar.
+- Las entradas del lanzador cuyo comando lleva un argumento entero con un
+  código de campo (`%u`, `%F`) ya no pasan el resto de ese argumento.
+- Dos vídeos con el mismo nombre en carpetas distintas ya no comparten una
+  copia optimizada, y una conversión cortada nunca se reproduce.
+- Hyprland 0.57 avisaba por el `on_created_empty` de los workspaces
+  especiales; ahora abren su app desde un manejador de `workspace.created`.
+
 ## 3.7.0
 
 ### Añadido
@@ -34,17 +82,6 @@ si falta, la bienvenida las enseña en inglés.
 - **Teclas en los paneles**: Escape los cierra; las flechas cambian el
   volumen, el día o la pista, Espacio reproduce y pausa, M silencia, y
   `Ctrl+Tab` recorre las pestañas de Ajustes.
-- **Panel del temporizador**: cronómetro, cuenta atrás y **pomodoro** (25
-  min de enfoque, 5 de descanso, 15 tras cada cuarto), en un solo panel que
-  se abre desde la píldora Temporizador (aparcada, en Ajustes > Barra),
-  con `SUPER+SHIFT+T` o con `ashen ipc`. El pomodoro corre sobre la cuenta
-  atrás y pasa solo a su siguiente fase.
-- **Toast del temporizador**: mientras algo corre, una tarjeta encabeza la
-  pila de notificaciones con sus botones de reproducir y reiniciar. Se aparta
-  mientras el panel está abierto, vuelve al cerrarlo y se puede quitar con su
-  cruz. Cuando una cuenta termina se va y ocupa su lugar el aviso de
-  «terminado» de siempre.
-- El widget del temporizador tiene una forma Pomodoro.
 
 ### Cambiado
 - `SUPER+SHIFT+F` flota una ventana centrada al 60 % por 70 % de la
@@ -75,26 +112,6 @@ si falta, la bienvenida las enseña en inglés.
   el escritorio en el que estás en el acento, y uno vacío es un punto.
 - El selector de ventanas (`ALT+Tab`) enseña las ventanas más grandes,
   hasta cuatro por fila.
-- Los widgets del escritorio pasan a su nueva forma en un solo movimiento y
-  la cara nueva entra con un fundido.
-- Los widgets de tiempo y de máquina, rehechos: batería sin anillo ni caja
-  dentro de caja; calendario con número de semana y sin fila vacía;
-  temporizador con botón para restar un minuto; la semana del tiempo de
-  pantalla en barras gruesas con sus horas; un reloj analógico más grande; el
-  clima con las próximas horas y los tres días siguientes; discos con lo
-  libre en grande; notificaciones que se abren, se descartan o se vacían, con
-  las apps que más avisan; una ficha de máquina más corta; sistema grande y
-  mediano que vuelven a distinguirse.
-- El widget de luz del día ahora es la Luna: la fase de esta noche, plana,
-  con las fases del mes debajo y las dos horas del sol.
-- El panel del reloj es solo el reloj: la hora grande apilada, hora sobre
-  minuto, la fecha y las cuatro cifras del día de dos en dos al pie, junto
-  al calendario y el clima. La curva del sol desaparece, y también las
-  pestañas de herramientas.
-- El cronómetro, la cuenta atrás y el pomodoro salieron del panel del reloj
-  a uno propio (abajo); ya no cuelga nada bajo la barra.
-- El widget de letras se vuelve translúcido mientras no suena nada, también
-  en pausa.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;
@@ -111,9 +128,8 @@ si falta, la bienvenida las enseña en inglés.
   órdenes desde el dock o la acción de enfocar de la notificación.
 - El indicador de cámara y la distribución del teclado gastan menos en
   reposo.
-- Hyprland 0.57 avisaba de opciones obsoletas: el `dampening` de la animación
-  (ahora `damping`) y el `on_created_empty` de los escritorios especiales
-  (ahora un manejador de `workspace.created`).
+- Hyprland 0.57 avisaba de una opción de animación obsoleta (`dampening`,
+  ahora `damping`).
 
 ## 3.6.0
 

@@ -1,5 +1,48 @@
 # Changelog
 
+## 3.8.0
+
+### Added
+- **Timer panel**: stopwatch, countdown and **pomodoro** (25 min focus,
+  5 break, 15 after every fourth), in one panel opened from the Timer pill
+  (parked, offered in Settings > Bar), `SUPER+SHIFT+T`, or `ashen ipc`.
+  The pomodoro runs on the countdown and moves to its next phase by itself.
+- **Timer toast**: while something runs, a card heads the notification
+  stack with its play and reset buttons. It steps aside while the panel is
+  open, comes back when you close it, and can be sent away with its cross.
+  When a run ends it leaves and the usual "done" toast takes its place.
+- The timer widget has a Pomodoro shape.
+
+### Changed
+- Desktop widgets ease to a new shape in one motion and fade the new face in.
+- The time and machine widgets, reworked: battery without the ring or the
+  box in a box; calendar with the week number and no empty row; timer with
+  a minute off; screen-time week as thick bars with their hours; a larger
+  analog clock; weather as the hours ahead and the next three days; disks
+  with what is free up front; notifications you can open, dismiss or clear,
+  and the apps that send most; a shorter machine card; system large and
+  medium that differ again.
+- The daylight widget is now the Moon: tonight's phase, flat, with the
+  month's phases under it and the sun's two times.
+- The clock panel is only the clock: a big stacked clock, hour over minute,
+  the date and the day's four figures two by two at its foot, beside the
+  calendar and the weather. The sun curve is gone, and so are the tool tabs.
+- The stopwatch, the countdown and the pomodoro left the clock panel for
+  their own (above); nothing hangs under the bar any more.
+- The lyrics widget goes translucent while nothing is playing, paused
+  included.
+
+### Fixed
+- The bare widget layer unmaps while arranging, and dragging a widget keeps
+  to the limits it is drawn within; before, it could eat every drag and
+  jump on release.
+- Launcher entries whose command carries a whole argument with a field
+  code (`%u`, `%F`) no longer pass the rest of that argument on.
+- Two videos with the same name in different folders no longer share one
+  optimized copy, and a transcode cut short is never played.
+- Hyprland 0.57 warned about the special workspaces' `on_created_empty`;
+  they now open their app from a `workspace.created` handler.
+
 ## 3.7.0
 
 ### Added
@@ -31,15 +74,6 @@
 - **Keys in panels**: Escape closes them; the arrows change the volume, the
   day or the track, Space plays and pauses, M mutes, and `Ctrl+Tab` walks
   the Settings tabs.
-- **Timer panel**: stopwatch, countdown and **pomodoro** (25 min focus,
-  5 break, 15 after every fourth), in one panel opened from the Timer pill
-  (parked, offered in Settings > Bar), `SUPER+SHIFT+T`, or `ashen ipc`.
-  The pomodoro runs on the countdown and moves to its next phase by itself.
-- **Timer toast**: while something runs, a card heads the notification
-  stack with its play and reset buttons. It steps aside while the panel is
-  open, comes back when you close it, and can be sent away with its cross.
-  When a run ends it leaves and the usual "done" toast takes its place.
-- The timer widget has a Pomodoro shape.
 
 ### Changed
 - `SUPER+SHIFT+F` floats a window centred at 60 % by 70 % of the screen,
@@ -67,23 +101,6 @@
 - The icons workspace style has no plates: the app's own icon, the one you
   are on in the accent, and an empty workspace is a dot.
 - The window switcher (`ALT+Tab`) shows bigger windows, up to four a row.
-- Desktop widgets ease to a new shape in one motion and fade the new face in.
-- The time and machine widgets, reworked: battery without the ring or the
-  box in a box; calendar with the week number and no empty row; timer with
-  a minute off; screen-time week as thick bars with their hours; a larger
-  analog clock; weather as the hours ahead and the next three days; disks
-  with what is free up front; notifications you can open, dismiss or clear,
-  and the apps that send most; a shorter machine card; system large and
-  medium that differ again.
-- The daylight widget is now the Moon: tonight's phase, flat, with the
-  month's phases under it and the sun's two times.
-- The clock panel is only the clock: a big stacked clock, hour over minute,
-  the date and the day's four figures two by two at its foot, beside the
-  calendar and the weather. The sun curve is gone, and so are the tool tabs.
-- The stopwatch, the countdown and the pomodoro left the clock panel for
-  their own (below); nothing hangs under the bar any more.
-- The lyrics widget goes translucent while nothing is playing, paused
-  included.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they
@@ -99,9 +116,8 @@
 - A window class or notification holding a quote could run commands
   through the dock or the notification's focus action.
 - The camera indicator and the keyboard layout cost less while idle.
-- Hyprland 0.57 warned about deprecated options: the animation's `dampening`
-  (now `damping`) and the special workspaces' `on_created_empty` (now a
-  `workspace.created` handler).
+- Hyprland 0.57 warned about a deprecated animation option (`dampening`,
+  now `damping`).
 
 ## 3.6.0
 
