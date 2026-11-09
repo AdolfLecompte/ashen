@@ -24,6 +24,11 @@ DesktopWidget {
     }
     Timer { id: drop; interval: 400; onTriggered: root.player = null }
 
+    // Nothing playing: the whole widget goes translucent, as the visualizer
+    // ring does (0.55), instead of staying at full strength.
+    opacity: root.player !== null && Services.Media.playing ? 1 : 0.55
+    Behavior on opacity { Widgets.Anim { speed: Services.Sizes.msPanel } }
+
     // MPRIS only pushes position on a seek, so it is asked for, while the
     // desktop is being looked at. Every quarter second: at half a second the
     // line changed up to that much after it had started being sung.
