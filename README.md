@@ -186,8 +186,8 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
 
 - **Bar** — launcher, notifications, workspaces (incl. special workspaces), media,
   clock, tray, USB, screen recording, active window, keyboard layout, network,
-  bluetooth, sound, battery, CPU and memory, screen time, microphone, clipboard,
-  screenshot, power. The bar goes on any of the four edges, and every capsule
+  bluetooth, sound, battery, CPU and memory, screen time, timer, microphone,
+  clipboard, screenshot, power. The bar goes on any of the four edges, and every capsule
   can be dragged to either end or its centre; each one chooses how much it
   says — `full`, `compact` or `icon`, offered only where they differ. Four
   shapes for the bar itself — pills, island, solid, and docked (flush with
@@ -227,6 +227,10 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   week, counted only while you are at the machine. A panel, an optional pill and
   a desktop widget with each app's own icon; the numbers never leave
   `~/.config/ashen`.
+- **Timer** — stopwatch, countdown and a pomodoro (25 min focus, 5 break, a
+  long one every fourth) in one panel, from its pill or `SUPER + SHIFT + T`.
+  While something runs, a card heads the notifications with its controls; its
+  end is a notification of its own.
 - **Game mode** — one key flattens the compositor (no animations, blur, shadows,
   rounding or gaps) and quiets the shell, then puts everything back exactly as it
   was, your screen layout included.
@@ -401,6 +405,7 @@ files exist (change the layout or the wallpaper once), put those two back:
 | `SUPER + SHIFT + G` | game mode |
 | `SUPER + SHIFT + P` | process monitor |
 | `SUPER + SHIFT + U` | screen time |
+| `SUPER + SHIFT + T` | timer: stopwatch, countdown, pomodoro |
 | `SUPER + SHIFT + D` | arrange desktop widgets |
 | `ALT + Tab` | window switcher |
 | `SUPER + L` | lock |
@@ -473,7 +478,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.7.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
+3.8.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
