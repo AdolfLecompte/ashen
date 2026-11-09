@@ -260,10 +260,11 @@ Item {
             ? (pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor)
             : Qt.ArrowCursor
         drag.target: root.editing && root.dragEnabled ? root : undefined
-        drag.minimumX: 0
-        drag.minimumY: 0
-        drag.maximumX: Math.max(0, root.fieldW - root.width)
-        drag.maximumY: Math.max(0, root.fieldH - root.height)
+        // The same limits the widget is drawn within, or it jumps on release.
+        drag.minimumX: root.minX
+        drag.minimumY: root.minY
+        drag.maximumX: Math.max(root.minX, root.maxX)
+        drag.maximumY: Math.max(root.minY, root.maxY)
         onReleased: {
             // The service decides where it actually lands: free hand, or on
             // the grid.

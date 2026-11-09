@@ -69,7 +69,7 @@ PanelWindow {
     // The bare twin only exists while it holds a widget: with no holes its
     // mask is empty, and an empty mask took the pointer over the whole screen
     // -- above the main layer, so nothing could be dragged while arranging.
-    visible: (!desk.bare || holes.count > 0)
+    visible: (!desk.bare || holes.model.length > 0)
              && (desk.editing || (!desk.covered && !Services.Game.on))
     // What the widgets ask before running anything on a clock.
     // Every Item has a `layer` group of its own, and inside a Component that
@@ -81,6 +81,9 @@ PanelWindow {
     // `item:` -- a region following an animated item commits once and then
     // goes quiet.
     readonly property bool menuOpen: Services.Desktop.menuFor !== "" && !desk.bare
+    // holes.model, not holes.count: the Instantiator never announces a count
+    // that falls to 0, so the bare layer stayed mapped with an empty mask over
+    // the whole screen while arranging -- above the main layer, eating drags.
     Instantiator {
         id: holes
         // Only the widgets that live on this screen cut holes in it.
