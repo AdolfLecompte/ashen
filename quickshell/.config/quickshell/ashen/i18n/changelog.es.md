@@ -34,6 +34,17 @@ si falta, la bienvenida las enseña en inglés.
 - **Teclas en los paneles**: Escape los cierra; las flechas cambian el
   volumen, el día o la pista, Espacio reproduce y pausa, M silencia, y
   `Ctrl+Tab` recorre las pestañas de Ajustes.
+- **Panel del temporizador**: cronómetro, cuenta atrás y **pomodoro** (25
+  min de enfoque, 5 de descanso, 15 tras cada cuarto), en un solo panel que
+  se abre desde la píldora Temporizador (aparcada, en Ajustes > Barra),
+  con `SUPER+SHIFT+T` o con `ashen ipc`. El pomodoro corre sobre la cuenta
+  atrás y pasa solo a su siguiente fase.
+- **Toast del temporizador**: mientras algo corre, una tarjeta encabeza la
+  pila de notificaciones con sus botones de reproducir y reiniciar. Se aparta
+  mientras el panel está abierto, vuelve al cerrarlo y se puede quitar con su
+  cruz. Cuando una cuenta termina se va y ocupa su lugar el aviso de
+  «terminado» de siempre.
+- El widget del temporizador tiene una forma Pomodoro.
 
 ### Cambiado
 - `SUPER+SHIFT+F` flota una ventana centrada al 60 % por 70 % de la
@@ -76,9 +87,14 @@ si falta, la bienvenida las enseña en inglés.
   mediano que vuelven a distinguirse.
 - El widget de luz del día ahora es la Luna: la fase de esta noche, plana,
   con las fases del mes debajo y las dos horas del sol.
-- El panel del reloj: un reloj grande y apilado, hora sobre minutos; el
-  cronómetro y el temporizador más grandes y solos; las pestañas abajo. La
-  curva del sol desaparece.
+- El panel del reloj es solo el reloj: la hora grande apilada, hora sobre
+  minuto, la fecha y las cuatro cifras del día de dos en dos al pie, junto
+  al calendario y el clima. La curva del sol desaparece, y también las
+  pestañas de herramientas.
+- El cronómetro, la cuenta atrás y el pomodoro salieron del panel del reloj
+  a uno propio (abajo); ya no cuelga nada bajo la barra.
+- El widget de letras se vuelve translúcido mientras no suena nada, también
+  en pausa.
 
 ### Arreglado
 - Los iconos de las apps en el dock, Ajustes y el lanzador se ven nítidos;

@@ -31,6 +31,15 @@
 - **Keys in panels**: Escape closes them; the arrows change the volume, the
   day or the track, Space plays and pauses, M mutes, and `Ctrl+Tab` walks
   the Settings tabs.
+- **Timer panel**: stopwatch, countdown and **pomodoro** (25 min focus,
+  5 break, 15 after every fourth), in one panel opened from the Timer pill
+  (parked, offered in Settings > Bar), `SUPER+SHIFT+T`, or `ashen ipc`.
+  The pomodoro runs on the countdown and moves to its next phase by itself.
+- **Timer toast**: while something runs, a card heads the notification
+  stack with its play and reset buttons. It steps aside while the panel is
+  open, comes back when you close it, and can be sent away with its cross.
+  When a run ends it leaves and the usual "done" toast takes its place.
+- The timer widget has a Pomodoro shape.
 
 ### Changed
 - `SUPER+SHIFT+F` floats a window centred at 60 % by 70 % of the screen,
@@ -68,9 +77,13 @@
   medium that differ again.
 - The daylight widget is now the Moon: tonight's phase, flat, with the
   month's phases under it and the sun's two times.
-- The clock panel: a big stacked clock, hour over minute; the stopwatch and
-  the timer larger and on their own; the tabs at the bottom. The sun curve
-  is gone.
+- The clock panel is only the clock: a big stacked clock, hour over minute,
+  the date and the day's four figures two by two at its foot, beside the
+  calendar and the weather. The sun curve is gone, and so are the tool tabs.
+- The stopwatch, the countdown and the pomodoro left the clock panel for
+  their own (below); nothing hangs under the bar any more.
+- The lyrics widget goes translucent while nothing is playing, paused
+  included.
 
 ### Fixed
 - Application icons in the dock, Settings and the launcher are sharp; they

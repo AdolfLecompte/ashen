@@ -34,6 +34,17 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - **Tasten in Panels**: Escape schließt sie; die Pfeile ändern Lautstärke,
   Tag oder Titel, Leertaste spielt und pausiert, M schaltet stumm, und
   `Strg+Tab` geht durch die Tabs der Einstellungen.
+- **Timer-Panel**: Stoppuhr, Countdown und **Pomodoro** (25 Min Fokus,
+  5 Pause, 15 nach jedem vierten) in einem Panel, geöffnet über die
+  Timer-Pille (geparkt, in Einstellungen > Leiste), `SUPER+SHIFT+T` oder
+  `ashen ipc`. Der Pomodoro läuft auf dem Countdown und wechselt von selbst
+  in die nächste Phase.
+- **Timer-Toast**: Solange etwas läuft, steht eine Karte mit Start- und
+  Reset-Tasten an der Spitze der Benachrichtigungen. Sie weicht, solange das
+  Panel offen ist, kommt beim Schließen zurück und lässt sich mit dem Kreuz
+  wegschicken. Endet ein Lauf, verschwindet sie und der übliche
+  „Fertig“-Toast tritt an ihre Stelle.
+- Das Timer-Widget hat eine Pomodoro-Form.
 
 ### Geändert
 - `SUPER+SHIFT+F` lässt ein Fenster zentriert bei 60 % mal 70 % schweben
@@ -74,8 +85,14 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Maschinenkarte; System groß und mittel unterscheiden sich wieder.
 - Das Tageslicht-Widget ist jetzt der Mond: die Phase heute Nacht, flach,
   darunter die Phasen des Monats und die zwei Sonnenzeiten.
-- Das Uhr-Panel: eine große gestapelte Uhr, Stunde über Minute; Stoppuhr
-  und Timer größer und für sich; die Tabs unten. Die Sonnenkurve ist weg.
+- Das Uhr-Panel ist nur noch die Uhr: große gestapelte Zeit, Stunde über
+  Minute, das Datum und die vier Tageswerte zu zweit am Fuß, neben
+  Kalender und Wetter. Die Sonnenkurve ist weg, ebenso die
+  Werkzeug-Tabs.
+- Stoppuhr, Countdown und Pomodoro haben das Uhr-Panel verlassen und ein
+  eigenes bekommen (oben); unter der Leiste hängt nichts mehr.
+- Das Songtext-Widget wird durchscheinend, solange nichts spielt, auch in
+  der Pause.
 
 ### Behoben
 - App-Symbole im Dock, in den Einstellungen und im Starter sind scharf;
