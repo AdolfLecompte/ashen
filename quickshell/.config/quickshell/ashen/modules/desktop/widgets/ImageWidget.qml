@@ -65,11 +65,14 @@ DesktopWidget {
         // told to crop itself: a picture cropped in place is always cropped
         // down the middle, and choosing which half you keep is the whole point.
         // Zoom 1 is "just covers it", so the frame is never short of picture.
-        Image {
+        // AnimatedImage is an Image that also plays gifs; a still file is one frame.
+        // Paused while the layer sleeps (a window covers it): nobody sees the frames.
+        AnimatedImage {
             id: img
             source: root.empty ? "" : "file://" + root.src
             fillMode: Image.PreserveAspectFit
             asynchronous: true
+            playing: root.live
 
             // The file's own proportions, TAKEN once when it loads rather than
             // read in a binding: an Image's implicit size answers with the size
@@ -93,6 +96,8 @@ DesktopWidget {
             // A wallpaper-sized photo decoded at wallpaper size, to be drawn
             // 200 px wide, is a lot of memory for nothing. Width only: naming
             // both would stretch the picture to the frame's own proportions.
+            // shortcut: AnimatedImage ignores sourceSize, so a big gif decodes
+            // at full size; pre-scale it if one ever costs too much memory.
             sourceSize.width: Math.round(Math.max(root.boxW, root.boxH) * 2)
         }
 

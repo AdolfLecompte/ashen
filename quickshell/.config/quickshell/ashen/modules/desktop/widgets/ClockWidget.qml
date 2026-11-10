@@ -17,6 +17,9 @@ DesktopWidget {
     readonly property string hourFmt: root.h24 ? "HH" : "hh"
     readonly property string timeFmt: root.hourFmt + ":mm" + (root.secs ? ":ss" : "") + (root.h24 ? "" : " AP")
 
+    // Bold is what it always wore; thin is the light cut of the same font.
+    readonly property int weight: root.face === "thin" ? Font.Thin : Font.Bold
+
     // ── Digital: the shell's own clock face, seconds written small ──────
     component Digital: Column {
         spacing: 2
@@ -24,6 +27,7 @@ DesktopWidget {
         Widgets.ClockText {
             time: Services.Time.fmt(root.timeFmt)
             px: 64
+            weight: root.weight
             secRatio: 0.30
             color_: Services.Colors.snow
         }
@@ -46,7 +50,7 @@ DesktopWidget {
             text: Services.Time.fmt(root.hourFmt)
             color: Services.Colors.snow
             font.pixelSize: 96
-            font.bold: true
+            font.weight: root.weight
             font.family: "JetBrainsMono NF"
         }
         Text {
@@ -54,7 +58,7 @@ DesktopWidget {
             text: Services.Time.fmt("mm")
             color: Services.Colors.ghost
             font.pixelSize: 96
-            font.bold: true
+            font.weight: root.weight
             font.family: "JetBrainsMono NF"
         }
         Text {

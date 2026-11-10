@@ -19,6 +19,9 @@ Row {
     property real secRatio: 0.30
     property color color_: Services.Colors.snow
     property real dimAlpha: 0.4
+    // The desktop clock lets you choose; everywhere else keeps the shell's face.
+    property string family: "JetBrainsMono NF"
+    property int weight: Font.Bold
 
     readonly property var parts: String(time).split(" ")
     readonly property var clockParts: String(parts[0] || "").split(":")
@@ -34,8 +37,8 @@ Row {
         text: root.hhmm
         color: root.color_
         font.pixelSize: root.px
-        font.bold: true
-        font.family: "JetBrainsMono NF"
+        font.weight: root.weight
+        font.family: root.family
     }
     // Hung from the bottom of the row and lifted, the way the lockscreen does
     // it: a real baseline anchor would put the small digits on the line of the
@@ -49,8 +52,8 @@ Row {
         text: root.ss
         color: Qt.rgba(root.color_.r, root.color_.g, root.color_.b, root.dimAlpha)
         font.pixelSize: Math.max(7, Math.round(root.px * root.secRatio))
-        font.bold: true
-        font.family: "JetBrainsMono NF"
+        font.weight: root.weight
+        font.family: root.family
     }
     // The meridiem stays the size of the hour: it is part of the reading, not
     // a tick going by.
@@ -61,7 +64,7 @@ Row {
         text: root.ap
         color: root.color_
         font.pixelSize: root.px
-        font.bold: true
-        font.family: "JetBrainsMono NF"
+        font.weight: root.weight
+        font.family: root.family
     }
 }

@@ -26,6 +26,7 @@ Item {
     property bool managed: true
     property string styleOverride: ""
     property string skinOverride: ""
+    property string faceOverride: ""
 
     readonly property bool editing: root.managed && Services.Desktop.editMode
     readonly property var entry: Services.Desktop.entry(root.wid)
@@ -33,6 +34,8 @@ Item {
     // how it draws. Every widget picks its face off these and nothing else.
     readonly property string style: root.styleOverride !== "" ? root.styleOverride : root.entry.style
     readonly property string skin: root.skinOverride !== "" ? root.skinOverride : root.entry.skin
+    // The typeface, for the widgets that write text in a choice of them.
+    readonly property string face: root.faceOverride !== "" ? root.faceOverride : root.entry.face
     readonly property bool bare: root.managed && root.entry.bare
 
     // Where the record says it goes, kept on screen and off the bar. Dragging

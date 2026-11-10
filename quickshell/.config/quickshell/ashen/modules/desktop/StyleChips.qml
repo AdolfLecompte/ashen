@@ -19,6 +19,7 @@ Item {
 
     readonly property var styles: Services.Desktop.stylesOf(root.wid)
     readonly property var skins: Services.Desktop.skinsOf(root.wid)
+    readonly property var faces: Services.Desktop.facesOf(root.wid)
     // One shape is not a choice.
     // Only ever opened by a right-click on its widget, arranging or not.
     readonly property bool menu: Services.Desktop.menuFor === root.wid
@@ -152,6 +153,13 @@ Item {
             model_: root.skins
             current: Services.Desktop.entry(root.wid).skin
             onPicked: id => Services.Desktop.setSkin(root.wid, id)
+        }
+        Bank {
+            anchors.horizontalCenter: parent.horizontalCenter
+            // A dial writes no text, so there is no typeface to choose.
+            model_: Services.Desktop.entry(root.wid).style === "analog" ? [] : root.faces
+            current: Services.Desktop.entry(root.wid).face
+            onPicked: id => Services.Desktop.setFace(root.wid, id)
         }
 
         Rectangle {

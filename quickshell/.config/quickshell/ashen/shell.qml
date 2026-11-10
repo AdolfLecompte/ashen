@@ -174,6 +174,8 @@ ShellRoot {
         function style(name: string, shape: string) { Services.Desktop.setStyle(name, shape) }
         // The second axis, for the widgets that have one.
         function skin(name: string, which: string) { Services.Desktop.setSkin(name, which) }
+        // The typeface, for the widgets that write text.
+        function face(name: string, which: string) { Services.Desktop.setFace(name, which) }
         // Plate behind the widget, or none.
         function bare(name: string) { Services.Desktop.setBare(name, !Services.Desktop.entry(name).bare) }
         function snap(mode: string) { Services.Desktop.setSnap(mode) }

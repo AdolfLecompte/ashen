@@ -26,7 +26,11 @@ Singleton {
             { id: "12", label: "12h" },
             { id: "12s", label: "12h:ss" },
             { id: "24", label: "24h" },
-            { id: "24s", label: "24h:ss" }] },
+            { id: "24s", label: "24h:ss" }],
+          // The weight of the lettering. The first is the one it always wore.
+          faces: [
+            { id: "bold", label: "Bold" },
+            { id: "thin", label: "Thin" }] },
         { id: "weather", group: "time", label: "Weather", glyph: "\uf172", x: 80, y: 420, styles: [
             { id: "full", label: "Full" },
             { id: "compact", label: "Compact" },
@@ -169,6 +173,10 @@ Singleton {
         const w = root.widget(id)
         return (w && w.skins) ? w.skins : []
     }
+    function facesOf(id) {
+        const w = root.widget(id)
+        return (w && w.faces) ? w.faces : []
+    }
 
     // Nothing is on until asked for: a fresh install keeps the desktop it had.
     property var layout: ({})
@@ -243,6 +251,7 @@ Singleton {
             on: false, x: w.x, y: w.y, src: "",
             style: w.styles ? w.styles[0].id : "",
             skin: w.skins ? w.skins[0].id : "",
+            face: w.faces ? w.faces[0].id : "",
             // A frame sized by hand, and which part of the picture it shows.
             // Zero size means "whatever the shape says", so every record
             // written before there was a handle to pull still reads right.
@@ -262,6 +271,7 @@ Singleton {
             // widget drawing nothing at all.
             style: root.stylesOf(id).some(s => s.id === e.style) ? e.style : d.style,
             skin: root.skinsOf(id).some(s => s.id === e.skin) ? e.skin : d.skin,
+            face: root.facesOf(id).some(s => s.id === e.face) ? e.face : d.face,
             // Only an image has one, and it is part of the record so a
             // wallpaper profile carries the picture with everything else.
             src: e.src === undefined ? d.src : e.src,
@@ -388,6 +398,10 @@ Singleton {
     function setSkin(id, skin) {
         if (!root.skinsOf(id).some(s => s.id === skin)) return
         root.write(id, { skin: skin })
+    }
+    function setFace(id, face) {
+        if (!root.facesOf(id).some(s => s.id === face)) return
+        root.write(id, { face: face })
     }
 
     // Where a widget lands when it is let go. The decision lives here and not
