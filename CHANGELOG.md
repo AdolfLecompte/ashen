@@ -1,5 +1,42 @@
 # Changelog
 
+## 3.9.0
+
+### Added
+- **A guided tour**: the welcome now asks whether you want to be shown
+  around. If you do, it opens the real panels one by one (bar, launcher,
+  dock, sound, clock, timer, widgets, wallpaper, settings) while a small card
+  in the corner away from the bar says what each is for, and the rest of the
+  screen dims so the part it talks about stands out. It takes no clicks.
+  `ashen ipc welcome open` asks again; `ashen ipc tour start|next|stop`.
+- **Animated GIFs** in picture widgets; they pause while a window covers the
+  desktop.
+- The clock widget's **lettering**: bold or thin, on the digital and stacked
+  shapes (`ashen ipc widgets face clock thin`).
+- **Timer panel, redesigned** on plates like the screen-time panel: the
+  stopwatch lists its laps with the gap to the fastest and a bar for each;
+  the countdown shows a wavy progress bar and the time it ends, keeps the
+  lengths you save (+ to keep, right-click to forget) and nudges by 1 or 5
+  minutes; the pomodoro has pressable phases, a round of four that fills as
+  it runs, editable lengths, optional auto-start and how much you focused
+  today.
+
+### Changed
+- A fresh install starts with a lighter bar: notifications, workspaces,
+  media, clock, tray, keyboard, network, volume, battery and power. USB,
+  recording and Bluetooth are one drag away in Settings. A bar you never
+  rearranged follows the new one.
+- The dock no longer hides by default, carries the launcher, and puts its
+  pills before the apps. Panels default to the blur surface.
+- The stacked clock in the clock panel is centred as a whole, with the
+  meridiem hanging off the digits, and the four figures at its foot line up
+  in two columns.
+
+### Fixed
+- Cards with no plate (the power menu) no longer keep a dark plate behind
+  them in the morph style.
+- A wallpaper with no saved look put the dock back to auto-hide.
+
 ## 3.8.0
 
 ### Added

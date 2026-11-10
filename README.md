@@ -478,7 +478,7 @@ editor, `ashen-widgets list` says what is out there and where.
 
 ## Status
 
-3.8.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
+3.9.0 — what changed is in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

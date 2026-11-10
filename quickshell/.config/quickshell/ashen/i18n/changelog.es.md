@@ -3,6 +3,46 @@
 Traducción de las notas de CHANGELOG.md. Solo hace falta la versión actual:
 si falta, la bienvenida las enseña en inglés.
 
+## 3.9.0
+
+### Añadido
+- **Un recorrido guiado**: la bienvenida pregunta ahora si quieres que te
+  enseñen el sistema. Si dices que sí, abre los paneles de verdad uno a uno
+  (barra, lanzador, dock, sonido, reloj, temporizador, widgets, fondo,
+  ajustes) mientras una tarjeta en la esquina contraria a la barra explica
+  para qué sirve cada uno, y el resto de la pantalla se oscurece para que
+  destaque lo que menciona. No intercepta clics. `ashen ipc welcome open`
+  vuelve a preguntar; `ashen ipc tour start|next|stop`.
+- **GIFs animados** en los widgets de imagen; se pausan mientras una ventana
+  cubre el escritorio.
+- **Tipografía** del widget del reloj: negrita o delgada, en las formas
+  digital y apilada (`ashen ipc widgets face clock thin`).
+- **Panel del temporizador, rediseñado** con tarjetas como el de tiempo de
+  pantalla: el cronómetro lista las vueltas con la diferencia con la más
+  rápida y una barra por cada una; la cuenta atrás enseña una barra de
+  progreso ondulada y la hora a la que termina, guarda las duraciones que
+  elijas (+ para guardar, clic derecho para olvidar) y ajusta de 1 en 1 o de
+  5 en 5 minutos; el pomodoro tiene fases pulsables, una ronda de cuatro que
+  se llena mientras corre, duraciones editables, inicio automático opcional
+  y lo que has enfocado hoy.
+
+### Cambiado
+- Una instalación nueva empieza con una barra más ligera: notificaciones,
+  espacios de trabajo, música, reloj, bandeja, teclado, red, volumen,
+  batería y apagado. USB, grabación y Bluetooth están a un arrastre en
+  Ajustes. Una barra que nunca reordenaste sigue a la nueva.
+- El dock ya no se oculta por defecto, lleva el lanzador y pone sus píldoras
+  antes de las aplicaciones. Los paneles usan por defecto la superficie con
+  desenfoque.
+- El reloj apilado del panel del reloj se centra entero, con el AM/PM
+  colgando de los dígitos, y las cuatro cifras del pie se alinean en dos
+  columnas.
+
+### Arreglado
+- Las tarjetas sin plato (el menú de apagado) ya no conservan un plato
+  oscuro detrás en el estilo morph.
+- Un fondo sin aspecto guardado devolvía el dock a ocultarse solo.
+
 ## 3.8.0
 
 ### Añadido

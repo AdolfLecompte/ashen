@@ -3,6 +3,46 @@
 Übersetzung der Notizen aus CHANGELOG.md. Nur die aktuelle Version wird
 gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 
+## 3.9.0
+
+### Hinzugefügt
+- **Eine geführte Tour**: Die Begrüßung fragt jetzt, ob man herumgeführt
+  werden möchte. Wenn ja, öffnet sie die echten Panels nacheinander (Leiste,
+  Starter, Dock, Ton, Uhr, Timer, Widgets, Hintergrund, Einstellungen),
+  während eine kleine Karte in der Ecke abseits der Leiste erklärt, wofür
+  jedes da ist; der Rest des Bildschirms wird abgedunkelt, damit das
+  Erwähnte hervorsticht. Sie fängt keine Klicks ab. `ashen ipc welcome open`
+  fragt erneut; `ashen ipc tour start|next|stop`.
+- **Animierte GIFs** in Bild-Widgets; sie pausieren, solange ein Fenster den
+  Desktop verdeckt.
+- Die **Schrift** des Uhr-Widgets: fett oder dünn, in der digitalen und der
+  gestapelten Form (`ashen ipc widgets face clock thin`).
+- **Timer-Panel, neu gestaltet** auf Karten wie das Bildschirmzeit-Panel: Die
+  Stoppuhr listet die Runden mit dem Abstand zur schnellsten und einem
+  Balken je Runde; der Countdown zeigt einen welligen Fortschrittsbalken und
+  die Endzeit, merkt sich gespeicherte Dauern (+ zum Speichern, Rechtsklick
+  zum Vergessen) und lässt sich in 1- oder 5-Minuten-Schritten anpassen; der
+  Pomodoro hat anklickbare Phasen, eine Runde aus vier, die sich füllt,
+  einstellbare Dauern, optionalen Autostart und die heute fokussierte Zeit.
+
+### Geändert
+- Eine frische Installation beginnt mit einer schlankeren Leiste:
+  Benachrichtigungen, Arbeitsbereiche, Medien, Uhr, Tray, Tastatur,
+  Netzwerk, Lautstärke, Akku und Ausschalten. USB, Aufnahme und Bluetooth
+  sind in den Einstellungen einen Zug entfernt. Eine Leiste, die nie
+  umsortiert wurde, folgt der neuen.
+- Das Dock blendet sich standardmäßig nicht mehr aus, trägt den Starter und
+  setzt seine Pillen vor die Apps. Panels nutzen standardmäßig die
+  Unschärfe-Oberfläche.
+- Die gestapelte Uhr im Uhr-Panel ist als Ganzes zentriert, das AM/PM hängt
+  an den Ziffern, und die vier Werte am Fuß richten sich in zwei Spalten aus.
+
+### Behoben
+- Karten ohne Platte (das Ausschaltmenü) behalten im Morph-Stil keine dunkle
+  Platte mehr dahinter.
+- Ein Hintergrund ohne gespeichertes Aussehen stellte das Dock wieder auf
+  automatisches Ausblenden.
+
 ## 3.8.0
 
 ### Hinzugefügt
