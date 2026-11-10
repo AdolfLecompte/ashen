@@ -40,8 +40,8 @@ PanelWindow {
         pillLabel: Services.AppState.pillLabel("timer")
 
         readonly property int pad: 22
-        openW: 400 + pad * 2
-        openH: 400 + pad * 2
+        openW: 520 + pad * 2
+        openH: 420 + pad * 2
         cardRadius: 22
 
         body: Component {

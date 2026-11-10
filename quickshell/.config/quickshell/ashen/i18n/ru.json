@@ -371,6 +371,8 @@
   "pomodoro.short": "Короткий перерыв",
   "pomodoro.long": "Длинный перерыв",
   "pomodoro.skip": "Пропустить",
+  "pomodoro.auto": "Запускать следующую фазу сама",
+  "timer.savePreset": "Сохранить длительность",
   "media.nothing": "Ничего не играет",
   "graph.page": "страница {n} из {m}",
   "lock.enterPassword": "Введите пароль...",

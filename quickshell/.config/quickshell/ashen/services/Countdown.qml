@@ -34,6 +34,23 @@ Singleton {
     // 1 -> 0 as it runs down; drives the ring in the panel
     readonly property real progress: preset > 0 ? Math.max(0, Math.min(1, remaining / preset)) : 0
 
+    // The lengths worth a button, in minutes, saved by the user. Nothing saved
+    // yet reads as the four it always had.
+    readonly property var presets: {
+        const l = (Services.Prefs.timerPresets || "").split(",").map(Number).filter(n => n >= 1)
+        return l.length ? l : [1, 5, 10, 25]
+    }
+    function savePreset() {
+        const m = Math.round(root.preset / 60000)
+        if (m < 1 || root.presets.indexOf(m) !== -1 || root.presets.length >= 6) return
+        Services.Prefs.timerPresets = root.presets.concat([m]).sort((a, b) => a - b).join(",")
+    }
+    function dropPreset(m) {
+        const l = root.presets.filter(x => x !== m)
+        // Never empty: "" would silently bring the defaults back.
+        if (l.length) Services.Prefs.timerPresets = l.join(",")
+    }
+
     // "05:00" / "1:05:00" — no tenths, this is a thing you glance at
     function format(ms) {
         let t = Math.max(0, Math.ceil(ms / 1000))

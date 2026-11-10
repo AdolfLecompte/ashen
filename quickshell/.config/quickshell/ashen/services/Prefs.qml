@@ -219,6 +219,12 @@ Singleton {
     property string dockPins: ""
     // Daily limits per app, "class=minutes" comma separated (Services.Usage).
     property string usageLimits: ""
+    // Timer panel, each packed into one string like the fields above: saved
+    // countdown lengths in minutes ("1,5,10,25"); pomodoro "focus,short,long,auto"
+    // (auto = 1 starts the next phase by itself); focus done today "day|blocks|secs".
+    property string timerPresets: ""
+    property string pomodoroSetup: ""
+    property string pomodoroToday: ""
     readonly property var dockPinList: (root.dockPins || "").split(",").filter(x => x !== "")
 
     function dockPin(id) {
@@ -475,7 +481,7 @@ Singleton {
         "language", "doNotDisturb", "keepAwakeMode", "notifySound",
         "notifySoundFile", "notifySoundCriticalOnly", "soundVolume",
         "toastSeconds", "maxToasts", "toastWidth", "osdMs", "lockIntro", "switcherScope", "workspaceMode", "hiddenPills", "barLayout", "barContent",
-        "barOutline", "panelOutline", "widgetOutline", "dockPins", "usageLimits", "dockEdge",
+        "barOutline", "panelOutline", "widgetOutline", "dockPins", "usageLimits", "timerPresets", "pomodoroSetup", "pomodoroToday", "dockEdge",
         "dockAutohide", "dockSmart", "dockEnabled", "dockGlass", "dockStyle", "dockIconSize", "dockPills", "dockLinks", "dockPillsSide", "dockLinksSide",
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",

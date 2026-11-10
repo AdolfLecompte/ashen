@@ -371,6 +371,8 @@
   "pomodoro.short": "Short break",
   "pomodoro.long": "Long break",
   "pomodoro.skip": "Skip",
+  "pomodoro.auto": "Start next phase automatically",
+  "timer.savePreset": "Save length",
   "media.nothing": "Nothing playing",
   "graph.page": "page {n} of {m}",
   "lock.enterPassword": "Enter password...",
