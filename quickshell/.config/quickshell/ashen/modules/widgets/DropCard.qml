@@ -55,7 +55,8 @@ Item {
     property color startColor: "transparent"
     readonly property color fromColor: root.startColor.a > 0.01 ? root.startColor : root.settleColor
     readonly property color cardColor: card.mix(root.fromColor, root.settleColor, card.relay)
-    readonly property real plateFade: card.plateless ? 0 : 1
+    // root, not card: the inner Rectangle has no `plateless`, so this was always 1.
+    readonly property real plateFade: root.plateless ? 0 : 1
     // A carried piece keeps its own colour the whole way: the one it has where
     // it lands.
     function pieceColor(settled) { return settled }
