@@ -11,15 +11,22 @@ Column {
 
     property string glyph: ""
     property string value: ""
+    // > 0: the cell is a fixed-width slot, glyph in a box of its own and the
+    // reading left-aligned, so a grid of them lines up in columns. 0: the
+    // glyph and reading are centred as one, as the weather rows have always been.
+    property real slotW: 0
 
     spacing: 3
 
     Row {
         anchors.horizontalCenter: parent.horizontalCenter
+        width: cell.slotW > 0 ? cell.slotW : implicitWidth
         spacing: 5
         Text {
             textFormat: Text.PlainText
             anchors.verticalCenter: parent.verticalCenter
+            width: cell.slotW > 0 ? 20 : implicitWidth
+            horizontalAlignment: Text.AlignHCenter
             text: cell.glyph
             color: Services.Colors.ghost
             font.pixelSize: 15

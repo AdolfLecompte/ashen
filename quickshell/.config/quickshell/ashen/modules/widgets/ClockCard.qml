@@ -244,51 +244,60 @@ Item {
             // The time leads at the top of the column; the day and its four
             // figures sit at the foot (`foot`), so the column fills the card's
             // height instead of leaving a gap in the middle.
-            Column {
+            // Centred in the room above the foot, and the digits themselves are
+            // what is centred: the meridiem hangs off their right edge instead of
+            // being counted into the width, which shoved the pair off-centre.
+            Item {
                 id: face
                 anchors.top: parent.top
+                anchors.bottom: foot.top
+                anchors.bottomMargin: 10
                 width: parent.width
-                spacing: 14
 
-            // Big, hour over minute, as on the lock screen.
-            Row {
-                id: stackT
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 10
-                opacity: root.beat(0)
-                visible: opacity > 0.01
-                Column {
-                    spacing: -30
-                    Text {
-                        textFormat: Text.PlainText
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.timeParts.h
-                        color: Services.Colors.snow
-                        font.pixelSize: 104
-                        font.bold: true
-                        font.family: "JetBrainsMono NF"
+                Item {
+                    id: stackT
+                    anchors.centerIn: parent
+                    width: digits.width
+                    height: digits.height
+                    opacity: root.beat(0)
+                    visible: opacity > 0.01
+
+                    // Big, hour over minute, as on the lock screen.
+                    Column {
+                        id: digits
+                        spacing: -30
+                        Text {
+                            textFormat: Text.PlainText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.timeParts.h
+                            color: Services.Colors.snow
+                            font.pixelSize: 104
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Text {
+                            textFormat: Text.PlainText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.timeParts.m
+                            color: Services.Colors.ghost
+                            font.pixelSize: 104
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
                     }
                     Text {
                         textFormat: Text.PlainText
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.timeParts.m
-                        color: Services.Colors.ghost
-                        font.pixelSize: 104
+                        visible: text !== ""
+                        anchors.left: digits.right
+                        anchors.leftMargin: 10
+                        y: 30
+                        text: root.timeParts.ap
+                        color: Services.Colors.mist
+                        font.pixelSize: 18
                         font.bold: true
                         font.family: "JetBrainsMono NF"
                     }
                 }
-                Text {
-                    textFormat: Text.PlainText
-                    visible: text !== ""
-                    y: 32
-                    text: root.timeParts.ap
-                    color: Services.Colors.mist
-                    font.pixelSize: 18
-                    font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-            }
             }
 
             Column {
@@ -330,16 +339,19 @@ Item {
 
                     WxCell {
                         width: parent.width / 2
+                        slotW: 104
                         glyph: "\ue1c6"
                         value: Services.Weather.sunrise || "\u2014"
                     }
                     WxCell {
                         width: parent.width / 2
+                        slotW: 104
                         glyph: "\ue1f9"
                         value: Services.Weather.sunset || "\u2014"
                     }
                     WxCell {
                         width: parent.width / 2
+                        slotW: 104
                         glyph: "\ue916"
                         value: {
                             // ISO week: the Thursday of this week owns the year
@@ -353,6 +365,7 @@ Item {
                     }
                     WxCell {
                         width: parent.width / 2
+                        slotW: 104
                         glyph: "\ue88b"
                         value: {
                             let start = new Date(root.now.getFullYear(), 0, 0)
