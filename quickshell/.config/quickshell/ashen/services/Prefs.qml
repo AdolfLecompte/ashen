@@ -80,7 +80,7 @@ Singleton {
     // transform into the panel. "plain": they simply appear, like a window.
     property string panelStyle: "morph"
     // What a panel is made of: "solid" plate, or "blur" glass over a blurred backdrop.
-    property string surfaceStyle: "solid"
+    property string surfaceStyle: "blur"
 
     // Subtle gradient on active/interactive accents (buttons, pills) when on.
     // Backgrounds never use it. See Colors.accentGradient.
@@ -154,9 +154,9 @@ Singleton {
 
     // The arrangement the bar shipped with, used until the user moves anything.
     readonly property var defaultSections: ({
-        left: ["launcher", "notifications", "workspaces", "media"],
-        centre: ["usb", "clock", "recording"],
-        right: ["tray", "network", "bluetooth", "volume", "battery", "keyboard", "power"]
+        left: ["notifications", "workspaces", "media"],
+        centre: ["clock"],
+        right: ["tray", "keyboard", "network", "volume", "battery", "power"]
     })
 
     // How many workspace chips the bar shows at once. A quantity, not a way of
@@ -243,7 +243,8 @@ Singleton {
 
     // Which edge the dock takes, and whether it stays out of the way.
     property string dockEdge: "bottom"
-    property bool dockAutohide: true
+    // Always out by default: a dock that hides is one a new user never finds.
+    property bool dockAutohide: false
     // Off entirely. Not the same as having no pins: a dock with nothing in it
     // still shows the windows you have open, and that is a thing to be able to
     // say no to.
@@ -261,10 +262,11 @@ Singleton {
     // What the dock carries past the applications, read through DockItems:
     // bar pills by id, drawn as icons; and shortcuts, JSON -- a shell action
     // ({a}) or a command of your own ({l, c, g}).
-    property string dockPills: ""
+    // The launcher rides the dock from the start, since the bar no longer has it.
+    property string dockPills: "launcher"
     property string dockLinks: ""
     // Which side of the applications each group stands on: "before" | "after".
-    property string dockPillsSide: "after"
+    property string dockPillsSide: "before"
     property string dockLinksSide: "after"
 
     // The five pills the system plate became, in the order they sat in it.

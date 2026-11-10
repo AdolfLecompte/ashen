@@ -39,7 +39,7 @@ Singleton {
         barLength: 100, barOutline: false, workspaceStyle: "icons", barContent: "",
         dockEnabled: true, dockEdge: "bottom",
         workspaceCount: 5, workspaceHideEmpty: false, workspaceTicks: false, barAutohide: false, panelOutline: false, widgetOutline: false,
-        dockAutohide: true, dockSmart: false, dockGlass: false, dockIconSize: 44, dockStyle: "float"
+        dockAutohide: false, dockSmart: false, dockGlass: false, dockIconSize: 44, dockStyle: "float"
     })
 
     // What the shell looks like right now. Every key is read straight out of
