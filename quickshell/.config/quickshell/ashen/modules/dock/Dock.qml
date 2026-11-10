@@ -78,7 +78,7 @@ Scope {
             Timer { id: zoneHold; interval: Services.Sizes.msEmphasis }
             onPointerOnChanged: pointerOn ? stayOut.restart() : linger.restart()
 
-            readonly property bool out: !dock.peeking || dock.pointerOn || stayOut.running || linger.running
+            readonly property bool out: !dock.peeking || dock.pointerOn || stayOut.running || linger.running || Services.Tour.dockOut
             onOutChanged: if (!out) zoneHold.restart()
             // Never unmapped while enabled, like the bar: mapping a surface under
             // the pointer lost its hover and the dock failed to come out.
@@ -109,6 +109,19 @@ Scope {
                     width: dock.out ? plate.width : 0
                     height: dock.out ? plate.height : 0
                 }
+            }
+
+            // The tour's spotlight, on the plate where it comes to rest. This
+            // window is only as thick as the dock, so its origin on the screen
+            // is the far edge minus its own size.
+            Binding {
+                target: Services.Tour
+                property: "target"
+                value: Qt.rect((dock.edge === "right" ? dock.screen.width - dock.width : 0) + plate.x,
+                               (dock.edge === "bottom" ? dock.screen.height - dock.height : 0) + plate.y,
+                               plate.width, plate.height)
+                when: Services.Tour.dockOut && dock.screen && dock.screen.name === Services.Screens.activeName
+                restoreMode: Binding.RestoreNone
             }
 
             Item {

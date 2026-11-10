@@ -285,6 +285,13 @@ ShellRoot {
     // The first-run screen and the what-changed screen, on demand. Same card,
     // and `notes` is the only way to read them again once they have been shown.
     IpcHandler {
+        target: "tour"
+        function start() { Services.Tour.start() }
+        function next() { Services.Tour.next() }
+        function stop() { Services.Tour.stop() }
+        function state(): string { return "active=" + Services.Tour.active + " step=" + Services.Tour.index }
+    }
+    IpcHandler {
         target: "welcome"
         // `open`, not `show`: `qs ipc show` is the CLI's own subcommand, and a
         // function by that name is swallowed before it ever reaches the shell.
@@ -572,6 +579,8 @@ ShellRoot {
     Widgets.LazyPanel { preloadMs: 3480; shown: Services.AppState.usageVisible;         panel: Component { UsagePanel {} } }
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.switcherVisible;     panel: Component { Switcher {} } }
     Widgets.LazyPanel { preloadMs: 3000; shown: Services.AppState.introVisible;        panel: Component { IntroPanel {} } }
+    Widgets.LazyPanel { preloadMs: 3150; shown: Services.Tour.active;                   panel: Component { TourSpotlight {} } }
+    Widgets.LazyPanel { preloadMs: 3200; shown: Services.Tour.active;                   panel: Component { TourCard {} } }
     Widgets.LazyPanel { preloadMs: 2880; shown: Services.AppState.launcherVisible;      panel: Component { Launcher {} } }
     Widgets.LazyPanel { preloadMs: 3000; shown: Services.AppState.wallpaperVisible;     panel: Component { WallpaperPicker {} } }
     Widgets.LazyPanel { preloadMs: 3360; shown: Services.AppState.clipboardVisible;     panel: Component { Clipboard {} } }

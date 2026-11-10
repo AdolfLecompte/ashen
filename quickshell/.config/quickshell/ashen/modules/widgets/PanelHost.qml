@@ -76,6 +76,11 @@ Item {
     // that card reaches over the bar.
     readonly property rect restRect: dropLoader.active && dropLoader.item ? dropLoader.item.restRect
                                                                           : Qt.rect(0, 0, 0, 0)
+    // Where the open card rests, whichever way it arrived.
+    readonly property rect spotRect: host.restRect.width > 0 ? host.restRect
+        : (arriveLoader.item ? Qt.rect(arriveLoader.item.openX, arriveLoader.item.openY,
+                                       arriveLoader.item.openW, arriveLoader.item.openH)
+                             : Qt.rect(0, 0, 0, 0))
     readonly property int closeMs: cardItem ? cardItem.closeMs : Services.Sizes.panelCloseMs
     readonly property int holdMs: closeMs + 60
     readonly property real contentAmt: cardItem ? cardItem.contentAmt : 0
@@ -140,5 +145,14 @@ Item {
             readonly property alias bodyItem: bodyHolder2.item
             Loader { id: bodyHolder2; anchors.fill: parent; sourceComponent: host.body }
         }
+    }
+
+    // The tour's spotlight lights whichever panel is open.
+    Binding {
+        target: Services.Tour
+        property: "target"
+        value: host.spotRect
+        when: host.shown && Services.Tour.active && host.spotRect.width > 0
+        restoreMode: Binding.RestoreNone
     }
 }

@@ -262,11 +262,18 @@ PanelWindow {
 
                         // Start shows the keys; enjoy is only offered once there
                         // is nothing left to be shown.
+                        // The question the welcome asks: a walk through the real
+                        // shell, or straight to the desktop.
                         ActionBtn {
-                            label: Services.I18n.t("intro.start")
+                            label: Services.I18n.t("intro.tour")
                             accent: true
                             visible: root.onHome
-                            onGo: Services.AppState.introPage = "about"
+                            onGo: Services.Tour.start()
+                        }
+                        ActionBtn {
+                            label: Services.I18n.t("intro.skip")
+                            visible: root.onHome
+                            onGo: root.dismiss()
                         }
                         ActionBtn {
                             label: Services.I18n.t("intro.enjoy")

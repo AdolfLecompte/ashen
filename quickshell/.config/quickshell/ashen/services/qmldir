@@ -23,6 +23,7 @@ singleton Windows 1.0 Windows.qml
 singleton Stopwatch 1.0 Stopwatch.qml
 singleton Countdown 1.0 Countdown.qml
 singleton Pomodoro 1.0 Pomodoro.qml
+singleton Tour 1.0 Tour.qml
 singleton Displays 1.0 Displays.qml
 singleton Media 1.0 Media.qml
 singleton BtLink 1.0 BtLink.qml

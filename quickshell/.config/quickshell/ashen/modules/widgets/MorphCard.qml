@@ -273,4 +273,13 @@ Item {
         }
     }
     ]
+
+    // The tour's spotlight lights whichever panel is open.
+    Binding {
+        target: Services.Tour
+        property: "target"
+        value: root.restRect
+        when: root.shown && Services.Tour.active && root.restRect.width > 0
+        restoreMode: Binding.RestoreNone
+    }
 }

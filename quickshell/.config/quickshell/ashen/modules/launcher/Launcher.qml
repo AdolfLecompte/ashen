@@ -154,6 +154,15 @@ Scope {
             from: win.srcEdge
         }
 
+        // The tour's spotlight, on the card's final box.
+        Binding {
+            target: Services.Tour
+            property: "target"
+            value: Qt.rect((win.width - card.fullW) / 2, win.openYCalc, card.fullW, card.fullH)
+            when: win.shown && Services.Tour.active
+            restoreMode: Binding.RestoreNone
+        }
+
         Rectangle {
             id: card
             // What it opens to; the box unfolds into these.
