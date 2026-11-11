@@ -201,6 +201,7 @@
   "settings.system.lockPadlock": "Schloss",
   "settings.system.lockFade": "Blende",
   "settings.system.lockNone": "Keine",
+  "settings.system.lockBack": "Zurück zur Uhr",
   "settings.system.lock.machine": "Sitzung und Akku",
   "settings.system.lock.media": "Was gerade läuft",
   "settings.system.idle": "Untätig & Ruhezustand",

@@ -201,6 +201,7 @@
   "settings.system.lockPadlock": "Candado",
   "settings.system.lockFade": "Fundido",
   "settings.system.lockNone": "Nada",
+  "settings.system.lockBack": "Volver al reloj",
   "settings.system.lock.machine": "Sesión y batería",
   "settings.system.lock.media": "Qué suena",
   "settings.system.idle": "Inactividad y suspensión",

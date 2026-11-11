@@ -201,6 +201,7 @@
   "settings.system.lockPadlock": "Замок",
   "settings.system.lockFade": "Плавно",
   "settings.system.lockNone": "Сразу",
+  "settings.system.lockBack": "Назад к часам",
   "settings.system.lock.machine": "Сеанс и батарея",
   "settings.system.lock.media": "Что играет",
   "settings.system.idle": "Простой и сон",

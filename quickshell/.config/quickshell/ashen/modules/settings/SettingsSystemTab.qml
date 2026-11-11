@@ -256,6 +256,18 @@ Section {
             onPicked: id => Services.Prefs.lockIntro = id
         }
 
+        SectionLabel { text: Services.I18n.t("settings.system.lockBack") }
+        Segmented {
+            options: [
+                { id: "0", label: Services.I18n.t("settings.system.lockNone") },
+                { id: "15", label: "15s" },
+                { id: "30", label: "30s" },
+                { id: "60", label: "60s" }
+            ]
+            current: String(Services.Prefs.lockIdleBack)
+            onPicked: id => Services.Prefs.lockIdleBack = parseInt(id)
+        }
+
         // One switch per card out there. The clock and the login are the
         // screen itself, so they are not on the list.
         Repeater {

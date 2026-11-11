@@ -220,6 +220,20 @@ Scope {
                 onTriggered: sessionLock.locked = false
             }
 
+            // Silence on the login hands the screen back to the clock. Any key
+            // or pointer movement restarts it; 0 in prefs turns it off.
+            Timer {
+                id: idleBack
+                interval: Services.Prefs.lockIdleBack * 1000
+                running: surface.authing && !surface.greeting && Services.Prefs.lockIdleBack > 0
+                onTriggered: {
+                    passInput.text = ""
+                    surface.errorMsg = ""
+                    surface.authing = false
+                    surface.showPower = false
+                }
+            }
+
             Timer {
                 id: errorTimer
                 interval: 2500
@@ -334,6 +348,8 @@ Scope {
                     MouseArea {
                         anchors.fill: parent
                         z: -1
+                        hoverEnabled: true
+                        onPositionChanged: idleBack.restart()
                         onClicked: surface.beginAuth()
                     }
 
@@ -815,6 +831,7 @@ Scope {
                                                 surface.beginAuth()
                                                 return
                                             }
+                                            idleBack.restart()
                                             if (Services.Readline.handle(e, passInput)) e.accepted = true
                                         }
                                             width: 1; height: 1
@@ -835,7 +852,6 @@ Scope {
                                                 if (text.length === 0) {
                                                     surface.authing = false
                                                     surface.showPower = false
-                                                    surface.showProfiles = false
                                                 } else {
                                                     text = ""
                                                     surface.errorMsg = ""

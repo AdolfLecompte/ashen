@@ -201,6 +201,7 @@
   "settings.system.lockPadlock": "Padlock",
   "settings.system.lockFade": "Fade",
   "settings.system.lockNone": "None",
+  "settings.system.lockBack": "Back to clock",
   "settings.system.lock.machine": "Session and battery",
   "settings.system.lock.media": "What is playing",
   "settings.system.idle": "Idle & Suspend",

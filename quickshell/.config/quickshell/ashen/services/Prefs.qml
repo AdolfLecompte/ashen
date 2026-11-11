@@ -432,6 +432,8 @@ Singleton {
     // the whole point of a lock screen is reading what happened while you were
     // gone, and anything private is already the notification's own business.
     property bool lockShowNotifications: true
+    // Seconds of silence on the login before the lock returns to the clock. 0 = never.
+    property int lockIdleBack: 30
 
     // Toasts: how long a normal one stays on screen (seconds) and how many may
     // stack before the rest collapse into the "+N" row. System toasts keep their
@@ -488,7 +490,7 @@ Singleton {
         "workspaceCount", "workspaceHideEmpty", "workspaceTicks", "displayLayout", "desktopLayout", "appTerminal",
         "appBrowser", "appFiles", "appEditor", "keyOverrides", "recordAudio",
         "recordDir", "wallpaperDir", "lockShowMedia", "lockShowWeather",
-        "lockShowMachine", "lockShowSystem", "lockShowNotifications", "updateNotify",
+        "lockShowMachine", "lockShowSystem", "lockShowNotifications", "lockIdleBack", "updateNotify",
         "workspaceStyle", "idleLockSecs",
         "screenCorners", "idleScreenOffSecs", "idleSuspendSecs", "lidAction", "barPosition", "barStyle", "barHang",
         "barLength", "barAutohide", "visualizer", "mediaLyrics", "mediaWidgetLyrics",
