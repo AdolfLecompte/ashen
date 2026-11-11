@@ -45,6 +45,9 @@
 - Cards with no plate (the power menu) no longer keep a dark plate behind
   them in the morph style.
 - A wallpaper with no saved look put the dock back to auto-hide.
+- Widgets that say a remark (notifications, updates, media, lyrics) showed
+  it in English in every other language until the next event; they now pick
+  it again when the language's phrase bank loads.
 
 ## 3.8.0
 

@@ -25,6 +25,17 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Pomodoro hat anklickbare Phasen, eine Runde aus vier, die sich füllt,
   einstellbare Dauern, optionalen Autostart und die heute fokussierte Zeit.
 
+- **Anmeldebildschirm neu gezeichnet**: ein flaches Meer in der Dämmerung
+  (Sonne, Hügel, Wasser, Ufer), in QML gezeichnet statt als Foto, in den
+  Farben deines aktuellen Hintergrunds. Der Installer erlaubt dem Benutzer
+  `sddm`, dein Home zu durchqueren und einen einzigen Ordner zu lesen
+  (`~/.cache/ashen-sddm`, eine ACL), damit matugen die Palette aktuell hält;
+  ohne sie behält die Anmeldung ihre eigenen Farben. Rückgängig mit
+  `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
+- **Der Sperrbildschirm kehrt zur Uhr zurück**, nach 30 s Stille bei der
+  Anmeldung (jede Taste oder Zeigerbewegung setzt den Zähler zurück).
+  Einstellungen -> System -> Sperrbildschirm: nie / 15 s / 30 s / 60 s.
+
 ### Geändert
 - Eine frische Installation beginnt mit einer schlankeren Leiste:
   Benachrichtigungen, Arbeitsbereiche, Medien, Uhr, Tray, Tastatur,
@@ -42,6 +53,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Platte mehr dahinter.
 - Ein Hintergrund ohne gespeichertes Aussehen stellte das Dock wieder auf
   automatisches Ausblenden.
+- Widgets mit einer Bemerkung (Benachrichtigungen, Updates, Musik, Lyrics)
+  zeigten sie in allen anderen Sprachen bis zum nächsten Ereignis auf
+  Englisch; jetzt wählen sie neu, sobald die Phrasenbank der Sprache lädt.
 
 ## 3.8.0
 

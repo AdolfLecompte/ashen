@@ -26,6 +26,16 @@ si falta, la bienvenida las enseña en inglés.
   se llena mientras corre, duraciones editables, inicio automático opcional
   y lo que has enfocado hoy.
 
+- **Pantalla de inicio de sesión rehecha**: un mar plano al atardecer (sol,
+  lomas, agua, orilla) dibujado en QML en vez de una foto, con los colores de
+  tu fondo actual. El instalador deja que el usuario `sddm` atraviese tu home
+  y lea una sola carpeta (`~/.cache/ashen-sddm`, una ACL) para que matugen
+  mantenga la paleta al día; sin ella el login conserva sus colores. Se
+  deshace con `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
+- **El bloqueo vuelve al reloj** tras 30 s de silencio en el login (cualquier
+  tecla o movimiento del puntero reinicia la cuenta). Ajustes -> Sistema ->
+  Pantalla de bloqueo: nunca / 15 s / 30 s / 60 s.
+
 ### Cambiado
 - Una instalación nueva empieza con una barra más ligera: notificaciones,
   espacios de trabajo, música, reloj, bandeja, teclado, red, volumen,
@@ -42,6 +52,9 @@ si falta, la bienvenida las enseña en inglés.
 - Las tarjetas sin plato (el menú de apagado) ya no conservan un plato
   oscuro detrás en el estilo morph.
 - Un fondo sin aspecto guardado devolvía el dock a ocultarse solo.
+- Los widgets que dicen una frase (notificaciones, actualizaciones, música,
+  letras) la mostraban en inglés en los demás idiomas hasta el siguiente
+  evento; ahora la eligen de nuevo cuando carga el banco de frases del idioma.
 
 ## 3.8.0
 
