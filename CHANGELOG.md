@@ -20,6 +20,15 @@
   minutes; the pomodoro has pressable phases, a round of four that fills as
   it runs, editable lengths, optional auto-start and how much you focused
   today.
+- **Login screen redrawn**: a flat sea at dusk (sun, hills, water, shore) drawn
+  in QML instead of a photo, in the colours of your current wallpaper. The
+  installer lets the `sddm` user traverse your home and read one folder
+  (`~/.cache/ashen-sddm`, an ACL) so matugen can keep the palette current;
+  without it the login keeps its own colours. Undo with
+  `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
+- **The lock returns to the clock** after 30 s of silence on the login (any
+  key or pointer movement restarts the count). Settings -> System -> Lock
+  Screen: never / 15 s / 30 s / 60 s.
 
 ### Changed
 - A fresh install starts with a lighter bar: notifications, workspaces,
