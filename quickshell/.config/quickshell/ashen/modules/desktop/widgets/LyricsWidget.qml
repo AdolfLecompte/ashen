@@ -176,7 +176,7 @@ DesktopWidget {
         Connections {
             target: Services.Voice
             function onBaseChanged() { if (fol.phrase === "") fol.say() }
-            function onBankChanged() { if (fol.phrase === "") fol.say() }
+            function onBankChanged() { fol.say() }
         }
 
         Widgets.SlideSwap {
@@ -320,7 +320,7 @@ DesktopWidget {
             Connections {
                 target: Services.Voice
                 function onBaseChanged() { if (lyr.phrase === "" && !lyr.shownPlaying) lyr.say() }
-                function onBankChanged() { if (lyr.phrase === "" && !lyr.shownPlaying) lyr.say() }
+                function onBankChanged() { lyr.said = ""; lyr.say() }
             }
 
             // Within the track on screen: the cover still changes, and words

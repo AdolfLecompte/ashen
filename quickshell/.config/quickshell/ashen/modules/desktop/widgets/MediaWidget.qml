@@ -38,7 +38,7 @@ DesktopWidget {
     Connections {
         target: Services.Voice
         function onBaseChanged() { if (root.idleLine === "") root.idleLine = Services.Voice.pick("media.quiet") }
-        function onBankChanged() { if (root.idleLine === "") root.idleLine = Services.Voice.pick("media.quiet") }
+        function onBankChanged() { root.idleLine = Services.Voice.pick("media.quiet") }
     }
 
     readonly property string title: root.player ? (root.player.trackTitle || "") : ""

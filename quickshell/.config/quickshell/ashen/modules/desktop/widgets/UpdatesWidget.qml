@@ -32,6 +32,15 @@ DesktopWidget {
     }
     readonly property bool clean: root.n === 0 && Services.Updates.checkedAt > 0
     onCleanChanged: if (root.clean) root.cleanLine = Services.Voice.pick("updates.none")
+    // The language's own bank lands after the widget: re-pick, or the English
+    // lines picked first stay on screen in every other language.
+    Connections {
+        target: Services.Voice
+        function onBankChanged() {
+            root.cleanLine = Services.Voice.pick("updates.none")
+            root.checkLine = Services.Voice.pick("updates.checking")
+        }
+    }
 
 
     component Row_: Item {

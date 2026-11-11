@@ -160,6 +160,12 @@ DesktopWidget {
     // changed under your eyes would read as a list still moving.
     property string quietLine: Services.Voice.pick("notify.empty")
     onLogChanged: if (root.log.length === 0) root.quietLine = Services.Voice.pick("notify.empty")
+    // The language's own bank lands after the widget: without this the English
+    // line picked first stays on screen in every other language.
+    Connections {
+        target: Services.Voice
+        function onBankChanged() { root.quietLine = Services.Voice.pick("notify.empty") }
+    }
 
     // Nothing waiting is worth saying plainly rather than drawing an empty box.
     component Quiet: Item {
