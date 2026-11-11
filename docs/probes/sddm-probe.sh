@@ -25,7 +25,7 @@ s=io.open('$main',encoding='utf-8').read()
 import re
 lit=sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF)
 print(lit + len(re.findall(r'\\\\u[eEfF][0-9a-fA-F]{3}', s)))")
-[ "$n" -eq 5 ] && say ok "five glyphs survive" || { say FAIL "expected 5 PUA glyphs, found $n"; fail=1; }
+[ "$n" -eq 8 ] && say ok "eight glyphs survive" || { say FAIL "expected 8 PUA glyphs, found $n"; fail=1; }
 
 python3 -c "
 import io,sys,re
@@ -110,8 +110,19 @@ grep -q 'to undo:' install/lib/sddm.sh \
   && say ok "it prints the way back" \
   || { say FAIL "it changes the login screen without saying how to undo it"; fail=1; }
 
+# The backdrop is drawn, not shipped, and the live palette is optional.
+[ -f sddm/ashen/Seascape.qml ] && [ ! -e sddm/ashen/backgrounds ] \
+  && say ok "backdrop is Seascape.qml, no bundled picture" \
+  || { say FAIL "the login backdrop is not the drawn seascape"; fail=1; }
+grep -q 'live.status === Loader.Ready' sddm/ashen/Main.qml \
+  && say ok "palette falls back to theme.conf when the live file is missing" \
+  || { say FAIL "the login would depend on a file it may not be able to read"; fail=1; }
+grep -q 'setfacl -x u:sddm' install/lib/sddm.sh \
+  && say ok "it prints how to close the palette ACL" \
+  || { say FAIL "it opens the home to sddm without saying how to close it"; fail=1; }
+
 # The palette is the shell's, not an invented one.
-for k in surface snow mist ash ghost accentText error background radius; do
+for k in surface snow mist ash ghost accentText error abyss shade neutral palettePath radius; do
     grep -q "^$k=" "$conf" && say ok "theme.conf has $k" \
       || { say FAIL "theme.conf missing $k"; fail=1; }
 done

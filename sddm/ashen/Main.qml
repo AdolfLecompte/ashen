@@ -14,12 +14,12 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     width: 1920; height: 1080
-    color: config.surface
+    color: pal.surface
 
     readonly property int pillH: 44
     readonly property int pillR: 10
     readonly property int gap: 6
-    readonly property color base: Qt.color(config.surface)
+    readonly property color base: Qt.color(pal.surface)
     // A capsule's plate: the surface at 0.82, as everywhere in the session.
     readonly property color plate: Qt.rgba(root.base.r, root.base.g, root.base.b, 0.82)
     readonly property color faint: Qt.rgba(0.91, 0.91, 0.93, 0.4)
@@ -27,8 +27,66 @@ Rectangle {
     QtObject { id: clock; property var now: new Date() }
     Timer { interval: 1000; running: true; repeat: true; onTriggered: clock.now = new Date() }
 
-    Image { anchors.fill: parent; source: config.background; fillMode: Image.PreserveAspectCrop; visible: status === Image.Ready }
-    Rectangle { anchors.fill: parent; color: Qt.rgba(0, 0, 0, 0.55) }
+    // The session's live palette, when sddm is allowed to see it: matugen
+    // writes a QML file into a folder this user can read (see install/lib/
+    // sddm.sh). If it is missing the theme.conf palette stands in, so the
+    // login never depends on it.
+    Loader {
+        id: live
+        visible: false
+        source: config.palettePath ? "file://" + config.palettePath : ""
+    }
+    QtObject {
+        id: pal
+        readonly property var src: live.status === Loader.Ready ? live.item : null
+        property color surface: src ? src.surface : config.surface
+        property color abyss: src ? src.abyss : config.abyss
+        property color elevated: src ? src.elevated : config.elevated
+        property color snow: src ? src.snow : config.snow
+        property color mist: src ? src.mist : config.mist
+        property color ash: src ? src.ash : config.ash
+        property color ghost: src ? src.ghost : config.ghost
+        property color shade: src ? src.shade : config.shade
+        property color neutral: src ? src.neutral : config.neutral
+        property color error: src ? src.error_ : config.error
+        // Text on a snow-coloured chip.
+        property color accentText: src ? src.abyss : config.accentText
+    }
+    function mix(a, b, t) { return Qt.tint(a, Qt.rgba(b.r, b.g, b.b, t)) }
+    // One hue in steps of lightness: the palette's accent, kept soft. Every
+    // layer of the scene is a step on this ramp, never a colour of its own.
+    readonly property real hue: pal.ghost.hslHue >= 0 ? pal.ghost.hslHue : 0.6
+    readonly property real sat: Math.min(0.5, Math.max(0.16, pal.ghost.hslSaturation * 0.6))
+    function tone(l) { return Qt.hsla(root.hue, root.sat, l, 1) }
+
+    Seascape {
+        id: sea
+        anchors.fill: parent
+        skyTop: root.tone(0.22)
+        skyMid: root.tone(0.36)
+        skyHorizon: root.tone(0.84)
+        // The one warm touch: the sun, and the light it throws.
+        sun: root.mix(root.tone(0.95), pal.neutral, 0.22)
+        glow: root.mix(root.tone(0.9), pal.neutral, 0.3)
+        hillFar: root.tone(0.70)
+        hillMid: root.tone(0.55)
+        hillNear: root.tone(0.42)
+        headland: root.tone(0.26)
+        waterTop: root.tone(0.66)
+        waterBottom: root.tone(0.14)
+        shoreHigh: root.tone(0.34)
+        shoreMid: root.tone(0.22)
+        shoreLow: root.tone(0.14)
+    }
+    // Keeps the clock and the field readable over the lightest band.
+    Rectangle {
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(pal.abyss.r, pal.abyss.g, pal.abyss.b, 0.08) }
+            GradientStop { position: 0.55; color: Qt.rgba(pal.abyss.r, pal.abyss.g, pal.abyss.b, 0.16) }
+            GradientStop { position: 1.0; color: Qt.rgba(pal.abyss.r, pal.abyss.g, pal.abyss.b, 0.06) }
+        }
+    }
 
     component Pill: Rectangle {
         radius: root.pillR
@@ -73,7 +131,7 @@ Rectangle {
                         ? modelData[pick.textRole]
                         : model[pick.textRole])
                     : modelData
-                color: row.hovered || pick.currentIndex === index ? config.snow : config.mist
+                color: row.hovered || pick.currentIndex === index ? pal.snow : pal.mist
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
                 font.pixelSize: 12
@@ -87,10 +145,10 @@ Rectangle {
         }
     }
 
-    // ---- The time, who, and the way in ----------------------------------
+    // ---- One column on one axis: time, who, the way in -------------------
     ColumnLayout {
-        anchors.centerIn: parent
-        anchors.verticalCenterOffset: -40
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.height * 0.24
         spacing: 0
 
         // The hour large, the seconds small beside it: the lock's own clock.
@@ -99,41 +157,52 @@ Rectangle {
             spacing: 0
             Text {
                 text: Qt.formatTime(clock.now, "HH:mm")
-                color: config.snow
-                font.pixelSize: 112; font.weight: Font.Bold; font.letterSpacing: -2
+                color: pal.snow
+                font.pixelSize: 104; font.weight: Font.Bold; font.letterSpacing: -2
                 font.family: "JetBrainsMono NF"
             }
             Text {
-                anchors.bottom: parent.bottom; anchors.bottomMargin: 22
+                anchors.bottom: parent.bottom; anchors.bottomMargin: 20
                 leftPadding: 8
                 text: Qt.formatTime(clock.now, "ss")
                 color: root.faint
-                font.pixelSize: 28; font.weight: Font.Bold
+                font.pixelSize: 26; font.weight: Font.Bold
                 font.family: "JetBrainsMono NF"
             }
         }
         Text {
             Layout.alignment: Qt.AlignHCenter
             text: Qt.formatDate(clock.now, "dddd, d MMMM").toLowerCase()
-            color: config.mist
-            font.pixelSize: 16
+            color: pal.mist
+            font.pixelSize: 15
             font.family: "JetBrainsMono NF"
         }
 
-        Item { Layout.preferredHeight: 56 }
+        Item { Layout.preferredHeight: 44 }
 
-        // Who: plain text, and a picker over it when there is a choice.
+        // Who: a glyph and the name; a picker over it when there is a choice.
         Item {
             Layout.alignment: Qt.AlignHCenter
-            implicitWidth: userText.implicitWidth + 24
+            implicitWidth: whoRow.implicitWidth + 24
             implicitHeight: 28
-            Text {
-                id: userText
+            Row {
+                id: whoRow
                 anchors.centerIn: parent
-                text: userList.currentText.toLowerCase()
-                color: config.snow
-                font.pixelSize: 15; font.bold: true
-                font.family: "JetBrainsMono NF"
+                spacing: 8
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue7fd"   // person
+                    color: pal.mist
+                    font.pixelSize: 18; font.family: "Material Symbols Rounded"
+                }
+                Text {
+                    id: userText
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: userList.currentText.toLowerCase()
+                    color: pal.snow
+                    font.pixelSize: 15; font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
             }
             Picker {
                 id: userList
@@ -145,15 +214,16 @@ Rectangle {
             }
         }
 
-        Item { Layout.preferredHeight: 12 }
+        Item { Layout.preferredHeight: 14 }
 
-        // The password capsule, with the way in at its end.
+        // The password capsule: lock at one end, the way in at the other, the
+        // dots and the prompt on the capsule's own centre.
         Pill {
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: 380
-            implicitHeight: 48
+            implicitHeight: 52
             border.width: password.activeFocus ? 2 : 0
-            border.color: config.ghost
+            border.color: pal.ghost
 
             // The field takes the keys but draws nothing: the dots below do.
             TextField {
@@ -170,20 +240,41 @@ Rectangle {
                 Keys.onEscapePressed: password.text = ""
             }
 
-            // One dot per key, the newest brighter.
+            Text {
+                anchors.left: parent.left; anchors.leftMargin: 18
+                anchors.verticalCenter: parent.verticalCenter
+                text: "\ue897"   // lock
+                color: pal.mist
+                font.pixelSize: 18; font.family: "Material Symbols Rounded"
+            }
+
+            // The lock's own dots. The model is a CONSTANT (a number that changes
+            // rebuilds every delegate and replays the entry on all of them): 16
+            // slots, each told whether it is filled. A slot opens, a dash
+            // appears in it and closes into a dot; the row recentres as it grows.
             Row {
                 anchors.centerIn: parent
-                anchors.horizontalCenterOffset: -18
-                spacing: 7
-                visible: password.text !== ""
                 Repeater {
-                    model: Math.min(password.text.length, 16)
-                    Rectangle {
-                        readonly property bool last: index === Math.min(password.text.length, 16) - 1
-                        width: 7; height: 7; radius: 3.5
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: last ? config.snow : root.faint
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                    model: 16
+                    delegate: Item {
+                        required property int index
+                        readonly property bool on: index < Math.min(password.text.length, 16)
+                        readonly property bool last: on && index === Math.min(password.text.length, 16) - 1
+                        width: on ? 17 : 0
+                        height: 11
+                        Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: parent.on ? 11 : 9
+                            height: parent.on ? 11 : 2
+                            radius: height / 2
+                            opacity: parent.on ? 1 : 0
+                            color: parent.last ? pal.snow : root.faint
+                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                            Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                            Behavior on opacity { NumberAnimation { duration: 120 } }
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
                     }
                 }
             }
@@ -191,25 +282,24 @@ Rectangle {
             // this theme a `textConstants`.
             Text {
                 anchors.centerIn: parent
-                anchors.horizontalCenterOffset: -18
                 visible: password.text === ""
                 text: "password"
-                color: config.mist
+                color: pal.mist
                 font.pixelSize: 13
                 font.family: "JetBrainsMono NF"
             }
 
             Rectangle {
-                anchors.right: parent.right; anchors.rightMargin: 6
+                anchors.right: parent.right; anchors.rightMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
                 width: 36; height: 36; radius: 8
-                color: password.text === "" ? "transparent" : config.snow
+                color: password.text === "" ? "transparent" : pal.snow
                 Behavior on color { ColorAnimation { duration: 150 } }
                 Text {
                     anchors.centerIn: parent
-                    text: "→"
-                    color: password.text === "" ? config.ash : config.accentText
-                    font.pixelSize: 18; font.family: "JetBrainsMono NF"
+                    text: "\ue5c8"   // arrow_forward
+                    color: password.text === "" ? pal.ash : pal.accentText
+                    font.pixelSize: 20; font.family: "Material Symbols Rounded"
                 }
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.tryLogin() }
             }
@@ -222,56 +312,71 @@ Rectangle {
             Layout.topMargin: 12
             Layout.preferredHeight: 14
             opacity: text !== "" ? 1 : 0
-            color: config.error
+            color: pal.error
             font.pixelSize: 12; font.family: "JetBrainsMono NF"
         }
     }
 
-    // ---- Bottom left: the session ---------------------------------------
+    // ---- Bottom centre: the session and the ways out, one plate -----------
     Pill {
-        anchors.left: parent.left; anchors.leftMargin: 28
+        anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom; anchors.bottomMargin: 28
-        implicitWidth: sessRow.implicitWidth + 32
+        implicitWidth: sessBox.width + 1 + powerRow.implicitWidth + 16
 
-        RowLayout {
-            id: sessRow
-            anchors.centerIn: parent
-            spacing: 8
-            Text {
-                text: sessionList.currentText; color: config.snow
-                font.pixelSize: 13; font.family: "JetBrainsMono NF"
+        Item {
+            id: sessBox
+            anchors.left: parent.left
+            height: parent.height
+            width: sessRow.implicitWidth + 32
+            Row {
+                id: sessRow
+                anchors.centerIn: parent
+                spacing: 8
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue30a"   // computer
+                    color: pal.mist
+                    font.pixelSize: 17; font.family: "Material Symbols Rounded"
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: sessionList.currentText; color: pal.snow
+                    font.pixelSize: 13; font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue5cf"   // expand_more
+                    color: pal.mist
+                    font.pixelSize: 15; font.family: "Material Symbols Rounded"
+                }
             }
-            Text {
-                text: ""   // expand_more
-                color: config.mist
-                font.pixelSize: 15; font.family: "Material Symbols Rounded"
+            Picker {
+                id: sessionList
+                objectName: "sessionPicker"
+                anchors.fill: parent
+                openUp: true
+                model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
             }
         }
-        Picker {
-            id: sessionList
-            objectName: "sessionPicker"
-            anchors.fill: parent
-            openUp: true
-            model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
+
+        Rectangle {
+            x: sessBox.width
+            anchors.verticalCenter: parent.verticalCenter
+            width: 1; height: 22
+            color: Qt.rgba(1, 1, 1, 0.12)
         }
-    }
 
-    // ---- Bottom right: the ways out, chips in one plate ------------------
-    Pill {
-        anchors.right: parent.right; anchors.rightMargin: 28
-        anchors.bottom: parent.bottom; anchors.bottomMargin: 28
-        implicitWidth: powerRow.implicitWidth + 16
-
+        // The same three the session's power menu offers, with its glyphs.
         Row {
             id: powerRow
-            anchors.centerIn: parent
+            anchors.right: parent.right; anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
             spacing: 2
             Repeater {
                 model: [
-                    { g: "", act: "suspend" },
-                    { g: "", act: "hibernate" },
-                    { g: "", act: "reboot" },
-                    { g: "", act: "poweroff" }
+                    { g: "\uf159", act: "suspend" },
+                    { g: "\uf053", act: "reboot" },
+                    { g: "\uf8c7", act: "poweroff" }
                 ]
                 Rectangle {
                     width: 38; height: 34; radius: 8
@@ -282,7 +387,7 @@ Rectangle {
                     Text {
                         anchors.centerIn: parent
                         text: modelData.g
-                        color: ma.containsMouse ? config.snow : config.mist
+                        color: ma.containsMouse ? pal.snow : pal.mist
                         font.pixelSize: 17; font.family: "Material Symbols Rounded"
                     }
                     MouseArea {
@@ -292,8 +397,7 @@ Rectangle {
                         onClicked: {
                             if (modelData.act === "poweroff") sddm.powerOff()
                             else if (modelData.act === "reboot") sddm.reboot()
-                            else if (modelData.act === "suspend") sddm.suspend()
-                            else sddm.hibernate()
+                            else sddm.suspend()
                         }
                     }
                 }

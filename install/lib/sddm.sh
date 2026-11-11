@@ -17,6 +17,7 @@ sddm_install() {
 
     if [ "${ASHEN_DRY:-0}" -eq 1 ]; then
         printf '  would install   %s\n' "$dst"
+        printf '  would let sddm read ~/.cache/ashen-sddm (ACL, traverse-only on your home)\n'
         printf '  would point     /etc/sddm.conf.d/10-ashen.conf at it\n'
         if [ -f /etc/sddm.conf ] && grep -qE '^[[:space:]]*Current[[:space:]]*=' /etc/sddm.conf; then
             printf '  would repoint   /etc/sddm.conf (it outranks the drop-in), backup kept\n'
@@ -32,6 +33,25 @@ sddm_install() {
     # The greeter runs as the `sddm` user and cannot read a home (drwx------),
     # so everything it needs has to live here, readable by everyone.
     sudo chmod -R a+rX "$dst" >>"$ASHEN_LOG" 2>&1
+
+    # The one exception: the palette. matugen keeps ~/.cache/ashen-sddm/Palette.qml
+    # current and the theme loads it, so the login follows the wallpaper. The
+    # sddm user may only TRAVERSE the home and ~/.cache (--x: it can open a path
+    # it already knows, not list or read anything else) and read that one
+    # folder. Without the ACLs the theme just keeps its theme.conf palette.
+    if command -v setfacl >/dev/null 2>&1; then
+        local pal="$HOME/.cache/ashen-sddm"
+        mkdir -p "$pal"
+        setfacl -m u:sddm:--x "$HOME" "$HOME/.cache" >>"$ASHEN_LOG" 2>&1 \
+            && setfacl -m u:sddm:r-x -m d:u:sddm:r-- "$pal" >>"$ASHEN_LOG" 2>&1 \
+            && { [ ! -f "$pal/Palette.qml" ] || setfacl -m u:sddm:r-- "$pal/Palette.qml" >>"$ASHEN_LOG" 2>&1; } \
+            && sudo sed -i "s#^palettePath=.*#palettePath=$pal/Palette.qml#" "$dst/theme.conf" >>"$ASHEN_LOG" 2>&1 \
+            && printf '  login follows the wallpaper (sddm may traverse your home, nothing more)\n' \
+            || printf '  could not open the palette to sddm -- the login keeps its own colours\n'
+        printf '  to close it again: setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm\n'
+    else
+        printf '  no setfacl here -- the login keeps its own colours\n'
+    fi
 
     # The theme is Qt6 and MUST say so: without `QtVersion=6` in its metadata
     # SDDM starts /usr/bin/sddm-greeter, which is linked against Qt5, and on a
