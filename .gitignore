@@ -48,3 +48,4 @@ docs/probes/sddm/*.png
 # designs that were rejected. They are how a decision was reached, not what
 # the project documents -- docs/ is for the second kind.
 docs/superpowers/
+.superpowers/
