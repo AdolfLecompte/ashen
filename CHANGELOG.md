@@ -48,6 +48,8 @@
 - Widgets that say a remark (notifications, updates, media, lyrics) showed
   it in English in every other language until the next event; they now pick
   it again when the language's phrase bank loads.
+- The privacy indicator no longer lights up as a screen share when alt-tab or
+  the workspace preview opens (their window thumbnails are captures too).
 
 ## 3.8.0
 

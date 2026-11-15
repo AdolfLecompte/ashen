@@ -56,6 +56,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Widgets mit einer Bemerkung (Benachrichtigungen, Updates, Musik, Lyrics)
   zeigten sie in allen anderen Sprachen bis zum nächsten Ereignis auf
   Englisch; jetzt wählen sie neu, sobald die Phrasenbank der Sprache lädt.
+- Die Datenschutzanzeige leuchtet beim Öffnen von Alt-Tab oder der
+  Workspace-Vorschau nicht mehr als Bildschirmfreigabe auf (deren
+  Fenster-Miniaturen sind ebenfalls Aufnahmen).
 
 ## 3.8.0
 

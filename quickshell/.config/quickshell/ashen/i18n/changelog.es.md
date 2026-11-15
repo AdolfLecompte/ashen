@@ -55,6 +55,9 @@ si falta, la bienvenida las enseña en inglés.
 - Los widgets que dicen una frase (notificaciones, actualizaciones, música,
   letras) la mostraban en inglés en los demás idiomas hasta el siguiente
   evento; ahora la eligen de nuevo cuando carga el banco de frases del idioma.
+- El indicador de privacidad ya no se enciende como pantalla compartida al
+  abrir alt-tab o la vista previa del workspace (sus miniaturas también son
+  capturas).
 
 ## 3.8.0
 
