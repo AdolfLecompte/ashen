@@ -28,6 +28,8 @@ A Hyprland + Quickshell rice for Arch, coloured by your wallpaper.
 
 ## Previews
 
+Website and install docs: <https://adolflecompte.github.io/ashen/>
+
 <p align="center">
   <img src="previews/preview1.jpg" alt="Desktop widgets and the battery panel, glass bar on top" width="49%">
   <img src="previews/preview2.jpg" alt="A side bar with the music, machine, calendar, clock and visualiser widgets" width="49%">
