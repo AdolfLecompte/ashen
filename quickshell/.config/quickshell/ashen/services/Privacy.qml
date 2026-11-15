@@ -61,11 +61,20 @@ Singleton {
     }
 
     // Hyprland says when a screencast starts and stops ("screencast>>1,0").
+    // The Switcher and the workspace preview capture windows through
+    // ScreencopyView, which fires the same event: ignore it while they are up.
+    // shortcut: a real share starting/ending during a preview is missed, fine
+    // for a sub-second hover; upgrade if Hyprland ever names the client.
     property bool screen: false
+    readonly property bool selfCapture: AppState.switcherVisible || AppState.wsPreviewId !== 0
+    onSelfCaptureChanged: selfHold.restart()
+    // Stop events land a beat after the panel closes (closeDelay).
+    Timer { id: selfHold; interval: 1500 }
     Connections {
         target: Hyprland
         function onRawEvent(event) {
-            if (event.name === "screencast") root.screen = String(event.data).split(",")[0] === "1"
+            if (event.name !== "screencast" || root.selfCapture || selfHold.running) return
+            root.screen = String(event.data).split(",")[0] === "1"
         }
     }
 
