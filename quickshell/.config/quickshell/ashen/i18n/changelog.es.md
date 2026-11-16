@@ -31,7 +31,7 @@ si falta, la bienvenida las enseña en inglés.
   izquierda: la hora con los dos puntos en el acento, una placa con tu foto
   redonda, tu nombre y el campo de contraseña, las tres acciones una al lado
   de otra y la sesión; el resto es el paisaje. Ya no sigue el fondo de pantalla: lleva una de cinco paletas
-  (`preset=` en `theme.conf`: dusk, forest, midnight, amber o ash). El
+  (`preset=` en `theme.conf`: dusk, forest, midnight, amber o ash). Un botón junto a la sesión lo cambia desde el propio login y recuerda la elección. El
   instalador (y cambiar tu foto en Ajustes) guarda una copia redonda de tu
   cara donde el login puede leerla, lo que pide que el usuario `sddm`
   atraviese tu home y lea una sola carpeta (`~/.cache/ashen-sddm`, una ACL);
@@ -53,8 +53,9 @@ si falta, la bienvenida las enseña en inglés.
   colgando de los dígitos, y las cuatro cifras del pie se alinean en dos
   columnas.
 
-- El nombre y el campo de contraseña del lock ahora comparten una placa, con
-  el relleno y la esquina de los widgets de al lado.
+- La foto, el nombre y el campo de contraseña del lock ahora comparten una
+  placa, con el relleno y la esquina de los widgets de al lado, y las
+  columnas de ambos lados cuelgan de su línea superior.
 ### Arreglado
 - Las tarjetas sin plato (el menú de apagado) ya no conservan un plato
   oscuro detrás en el estilo morph.

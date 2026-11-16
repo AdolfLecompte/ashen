@@ -26,7 +26,7 @@
   the password field, the three ways out side by side and the session; the
   rest is the picture. It no longer follows the
   wallpaper: it wears one of five palettes (`preset=` in `theme.conf`: dusk,
-  forest, midnight, amber or ash). The installer (and changing your photo in
+  forest, midnight, amber or ash). A button beside the session changes it from the login itself and remembers the choice. The installer (and changing your photo in
   Settings) keeps a rounded copy of your face where the login can read it,
   which asks the `sddm` user to traverse your home and read one folder
   (`~/.cache/ashen-sddm`, an ACL); without it the login shows a glyph instead.
@@ -46,8 +46,9 @@
   meridiem hanging off the digits, and the four figures at its foot line up
   in two columns.
 
-- The lock screen's name and password field now share one plate, with the
-  fill and corner of the widgets beside it.
+- The lock screen's face, name and password field now share one plate, with
+  the fill and corner of the widgets beside it, and the columns either side
+  hang from its top line.
 ### Fixed
 - Cards with no plate (the power menu) no longer keep a dark plate behind
   them in the morph style.

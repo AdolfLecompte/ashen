@@ -31,7 +31,7 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   deinem Namen und dem Passwortfeld, die drei Aktionen nebeneinander und die
   Sitzung; der Rest ist das Bild. Er folgt dem Hintergrund nicht mehr: er trägt eine von fünf
   Paletten (`preset=` in `theme.conf`: dusk, forest, midnight, amber oder
-  ash). Der Installer (und das Ändern deines Fotos in den Einstellungen)
+  ash). Eine Schaltfläche neben der Sitzung wechselt sie direkt in der Anmeldung und merkt sich die Wahl. Der Installer (und das Ändern deines Fotos in den Einstellungen)
   legt eine runde Kopie deines Gesichts dort ab, wo die Anmeldung sie lesen
   kann; dafür darf der Benutzer `sddm` dein Home durchqueren und einen
   einzigen Ordner lesen (`~/.cache/ashen-sddm`, eine ACL); ohne sie zeigt die
@@ -53,8 +53,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Die gestapelte Uhr im Uhr-Panel ist als Ganzes zentriert, das AM/PM hängt
   an den Ziffern, und die vier Werte am Fuß richten sich in zwei Spalten aus.
 
-- Name und Passwortfeld des Sperrbildschirms teilen sich jetzt eine Platte,
-  mit Füllung und Ecke der Widgets daneben.
+- Gesicht, Name und Passwortfeld des Sperrbildschirms teilen sich jetzt eine
+  Platte, mit Füllung und Ecke der Widgets daneben, und die Spalten zu beiden
+  Seiten hängen an ihrer Oberkante.
 ### Behoben
 - Karten ohne Platte (das Ausschaltmenü) behalten im Morph-Stil keine dunkle
   Platte mehr dahinter.
