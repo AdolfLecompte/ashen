@@ -331,7 +331,10 @@ Section {
         function onPicked(purpose, path) {
             if (purpose !== "profile") return
             if (path === "" || Services.AppState.homeDir === "") { tab.faceState = ""; return }
-            faceCopyProc.command = ["cp", path, Services.AppState.homeDir + "/.face"]
+            // The login screen shows the same face: rounded into the folder sddm reads.
+            faceCopyProc.command = ["sh", "-c",
+                'cp "$1" "$2/.face" && { "$2/ashen/scripts/ashen-sddm-face.sh" || true; }',
+                "sh", path, Services.AppState.homeDir]
             faceCopyProc.running = true
         }
         // Closed without choosing: not a failure, and not a change.

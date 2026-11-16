@@ -49,6 +49,8 @@ sddm_install() {
             && printf '  login follows the wallpaper (sddm may traverse your home, nothing more)\n' \
             || printf '  could not open the palette to sddm -- the login keeps its own colours\n'
         printf '  to close it again: setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm\n'
+        # The face on the login: after the ACL, so the new file inherits it.
+        "$ASHEN_REPO/scripts/ashen-sddm-face.sh" >>"$ASHEN_LOG" 2>&1 || true
     else
         printf '  no setfacl here -- the login keeps its own colours\n'
     fi

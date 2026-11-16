@@ -25,7 +25,7 @@ s=io.open('$main',encoding='utf-8').read()
 import re
 lit=sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF)
 print(lit + len(re.findall(r'\\\\u[eEfF][0-9a-fA-F]{3}', s)))")
-[ "$n" -eq 8 ] && say ok "eight glyphs survive" || { say FAIL "expected 8 PUA glyphs, found $n"; fail=1; }
+[ "$n" -eq 7 ] && say ok "seven glyphs survive" || { say FAIL "expected 7 PUA glyphs, found $n"; fail=1; }
 
 python3 -c "
 import io,sys,re
@@ -111,9 +111,20 @@ grep -q 'to undo:' install/lib/sddm.sh \
   || { say FAIL "it changes the login screen without saying how to undo it"; fail=1; }
 
 # The backdrop is drawn, not shipped, and the live palette is optional.
-[ -f sddm/ashen/Seascape.qml ] && [ ! -e sddm/ashen/backgrounds ] \
-  && say ok "backdrop is Seascape.qml, no bundled picture" \
-  || { say FAIL "the login backdrop is not the drawn seascape"; fail=1; }
+[ -f sddm/ashen/Ridges.qml ] && [ ! -e sddm/ashen/backgrounds ] && [ ! -e sddm/ashen/Seascape.qml ] \
+  && say ok "backdrop is Ridges.qml, no bundled picture" \
+  || { say FAIL "the login backdrop is not the drawn ridges"; fail=1; }
+
+# The face is rounded by a script, not by the theme: a mask is a shader effect
+# and a greeter on software rendering draws none -- an empty circle where the
+# photo should be.
+grep -qE 'import QtQuick.Effects|MultiEffect|OpacityMask' sddm/ashen/Main.qml \
+  && { say FAIL "the login uses a shader effect; software rendering would draw nothing"; fail=1; } \
+  || say ok "no shader effects in the login"
+[ -x scripts/ashen-sddm-face.sh ] && grep -q 'ashen-sddm-face.sh' install/lib/sddm.sh \
+  && grep -q 'ashen-sddm-face.sh' quickshell/.config/quickshell/ashen/modules/settings/SettingsSystemTab.qml \
+  && say ok "the face is rounded for the login (installer and Settings call the script)" \
+  || { say FAIL "the login's face is not wired to the installer and Settings"; fail=1; }
 grep -q 'live.status === Loader.Ready' sddm/ashen/Main.qml \
   && say ok "palette falls back to theme.conf when the live file is missing" \
   || { say FAIL "the login would depend on a file it may not be able to read"; fail=1; }
