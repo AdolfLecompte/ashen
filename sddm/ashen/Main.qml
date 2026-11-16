@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// Login screen, laid out like the session's own lock screen: three columns, the
-// time and the way in down the middle, the month on one side and the big plates
-// for the session and the ways out on the other. The widgets are the lock's:
+// Login screen: the time huge on the left with who you are and the way in on
+// one plate under it, the ways out in a row at the top right, the month on a
+// big plate, the session at the foot. The widgets are the lock's:
 // plates, a round face with its ring, the sunk dots of the password.
 // The mountains behind are drawn (Ridges.qml).
 //
@@ -95,51 +95,38 @@ Rectangle {
         implicitHeight: root.pillH
     }
 
-    // A big plate for an action: a chip with its glyph, a name and a note.
-    // Hover = grow and brighten, never a fill.
-    component ActionPlate: Rectangle {
-        id: ap
+    // A compact plate for an action: a chip with its glyph and a word. Hover =
+    // grow and brighten, never a fill.
+    component ChipPlate: Rectangle {
+        id: cp
         property string glyph
         property string title
-        property string note
         signal activated()
-        width: 320; height: 92; radius: root.cardR
+        width: 190; height: 60; radius: root.cardR
         color: root.plate
-        scale: hov.hovered ? 1.04 : 1
+        scale: hov.hovered ? 1.05 : 1
         Behavior on scale { NumberAnimation { duration: 150 } }
         HoverHandler { id: hov; cursorShape: Qt.PointingHandCursor }
-        TapHandler { onTapped: ap.activated() }
+        TapHandler { onTapped: cp.activated() }
         Row {
-            anchors.verticalCenter: parent.verticalCenter
-            x: 18
-            spacing: 14
+            anchors.centerIn: parent
+            spacing: 12
             Rectangle {
-                width: 54; height: 54; radius: root.cardR
+                width: 38; height: 38; radius: 10
                 color: root.alpha(pal.ghost, 0.16)
                 Text {
                     anchors.centerIn: parent
-                    text: ap.glyph
+                    text: cp.glyph
                     color: hov.hovered ? pal.snow : pal.ghost
-                    font.pixelSize: 28; font.family: "Material Symbols Rounded"
+                    font.pixelSize: 22; font.family: "Material Symbols Rounded"
                 }
             }
-            Column {
+            Text {
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 2
-                Text {
-                    text: ap.title
-                    color: pal.snow
-                    font.pixelSize: 17; font.bold: true
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    width: 190
-                    elide: Text.ElideRight
-                    text: ap.note
-                    color: pal.mist
-                    font.pixelSize: 12
-                    font.family: "JetBrainsMono NF"
-                }
+                text: cp.title
+                color: hov.hovered ? pal.snow : pal.mist
+                font.pixelSize: 16; font.bold: true
+                font.family: "JetBrainsMono NF"
             }
         }
     }
@@ -203,10 +190,266 @@ Rectangle {
         anchors.centerIn: parent
         scale: Math.min(root.width / 1920, root.height / 1080)
 
-        // ---- Left: the month ----------------------------------------------
+        // ---- Left: the time, the date, and who you are -----------------------
+        Column {
+            x: 170; y: 190
+            spacing: 18
+
+            // The time, huge, its colon in the accent.
+            Item {
+                width: timeRow.width; height: 200
+                Row {
+                    id: timeRow
+                    anchors.verticalCenter: parent.verticalCenter
+                    Text {
+                        text: Qt.formatTime(clock.now, "HH")
+                        color: pal.snow
+                        font.pixelSize: 236; font.weight: Font.Bold; font.letterSpacing: -6
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        text: ":"
+                        color: pal.ghost
+                        font.pixelSize: 236; font.weight: Font.Bold
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        text: Qt.formatTime(clock.now, "mm")
+                        color: pal.snow
+                        font.pixelSize: 236; font.weight: Font.Bold; font.letterSpacing: -6
+                        font.family: "JetBrainsMono NF"
+                    }
+                }
+            }
+
+            Pill {
+                implicitWidth: dateText.implicitWidth + 40
+                Text {
+                    id: dateText
+                    anchors.centerIn: parent
+                    text: Qt.formatDate(clock.now, "dddd · MMM d").toUpperCase()
+                    color: pal.snow
+                    font.pixelSize: 14; font.bold: true; font.letterSpacing: 1.5
+                    font.family: "JetBrainsMono NF"
+                }
+            }
+
+            Item { width: 1; height: 22 }
+
+            // Who you are and the way in: ONE plate, like the lock's.
+            Rectangle {
+                width: 500
+                height: whoCol.implicitHeight + 48
+                radius: root.cardR
+                color: root.plate
+
+                Column {
+                    id: whoCol
+                    x: 26; y: 24
+                    width: parent.width - 52
+                    spacing: 16
+
+                    Row {
+                        spacing: 16
+                        // The face, round, with its ring: at rest a plain edge, the
+                        // accent while it checks, the error when it said no.
+                        Rectangle {
+                            id: faceRing
+                            width: 64; height: 64; radius: width / 2
+                            color: root.alpha(pal.ghost, 0.12)
+                            border.width: 2
+                            border.color: message.text !== "" ? pal.error
+                                : root.loggingIn ? pal.ghost : root.alpha(pal.ghost, 0.20)
+                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                            // Already round (scripts/ashen-sddm-face.sh), so it is only
+                            // shown: a mask would be a shader, and a greeter on software
+                            // rendering draws none -- an empty circle.
+                            Image {
+                                id: faceImg
+                                anchors.fill: parent; anchors.margins: 2
+                                source: root.facePath
+                                sourceSize: Qt.size(256, 256)
+                                fillMode: Image.PreserveAspectFit
+                                cache: false
+                            }
+                            Text {
+                                anchors.centerIn: parent
+                                text: "\ue7fd"   // person
+                                color: pal.ghost
+                                font.pixelSize: 32; font.family: "Material Symbols Rounded"
+                                visible: faceImg.status !== Image.Ready
+                            }
+                        }
+
+                        // Who: the name, and a picker over it when there is a choice.
+                        Item {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 360; height: 40
+                            Text {
+                                id: userText
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: userList.currentText
+                                color: pal.snow
+                                font.pixelSize: 24; font.bold: true; font.letterSpacing: 1
+                                font.family: "JetBrainsMono NF"
+                            }
+                            Picker {
+                                id: userList
+                                objectName: "userPicker"
+                                anchors.fill: parent
+                                // One user is not a choice.
+                                enabled: userModel.count > 1
+                                model: userModel; textRole: "name"; currentIndex: userModel.lastIndex
+                            }
+                        }
+                    }
+
+                    // The way in, sunk into the plate: lock at one end, the way in
+                    // at the other, the dots and the prompt on its own centre. It
+                    // shakes on a wrong password.
+                    Rectangle {
+                        id: passField
+                        width: parent.width; height: 56
+                        radius: root.cardR
+                        color: root.alpha(pal.ghost, 0.08)
+                        border.width: 1
+                        border.color: message.text !== "" ? pal.error
+                            : password.activeFocus ? pal.ghost : root.alpha(pal.ghost, 0.20)
+                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                        transform: Translate { id: shakeT; x: 0 }
+
+                        SequentialAnimation {
+                            id: shakeAnim
+                            NumberAnimation { target: shakeT; property: "x"; to: 9; duration: 55 }
+                            NumberAnimation { target: shakeT; property: "x"; to: -8; duration: 55 }
+                            NumberAnimation { target: shakeT; property: "x"; to: 6; duration: 55 }
+                            NumberAnimation { target: shakeT; property: "x"; to: -4; duration: 55 }
+                            NumberAnimation { target: shakeT; property: "x"; to: 0; duration: 55 }
+                        }
+
+                        // The field takes the keys but draws nothing: the dots below do.
+                        TextField {
+                            id: password
+                            objectName: "password"   // the probe types into it by name
+                            anchors.fill: parent
+                            echoMode: TextInput.Password
+                            color: "transparent"
+                            cursorDelegate: Item {}
+                            font.pixelSize: 1
+                            focus: true
+                            background: null
+                            onAccepted: root.tryLogin()
+                            Keys.onEscapePressed: password.text = ""
+                        }
+
+                        Text {
+                            anchors.left: parent.left; anchors.leftMargin: 20
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "\ue897"   // lock
+                            color: message.text !== "" ? pal.error : pal.ghost
+                            font.pixelSize: 20; font.family: "Material Symbols Rounded"
+                        }
+
+                        // The lock's own dots. The model is a CONSTANT (a number that
+                        // changes rebuilds every delegate and replays the entry on all
+                        // of them): 16 slots, each told whether it is filled. A slot
+                        // opens, a dash appears in it and closes into a dot; the row
+                        // recentres as it grows.
+                        Row {
+                            anchors.centerIn: parent
+                            Repeater {
+                                model: 16
+                                delegate: Item {
+                                    required property int index
+                                    readonly property bool on: index < Math.min(password.text.length, 16)
+                                    width: on ? 17 : 0
+                                    height: 11
+                                    Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                                    Rectangle {
+                                        anchors.centerIn: parent
+                                        width: parent.on ? 11 : 9
+                                        height: parent.on ? 11 : 2
+                                        radius: height / 2
+                                        opacity: parent.on ? 1 : 0
+                                        color: pal.ghost
+                                        Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                                        Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                                        Behavior on opacity { NumberAnimation { duration: 120 } }
+                                    }
+                                }
+                            }
+                        }
+                        // Literal, NOT textConstants: sddm-greeter-qt6 0.21 does not hand
+                        // this theme a `textConstants`.
+                        Text {
+                            anchors.centerIn: parent
+                            visible: password.text === ""
+                            text: "enter password..."
+                            color: pal.mist
+                            font.pixelSize: 14
+                            font.family: "JetBrainsMono NF"
+                        }
+
+                        Text {
+                            anchors.right: parent.right; anchors.rightMargin: 20
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "\ue5c8"   // arrow_forward
+                            color: root.loggingIn || password.text !== "" ? pal.ghost : pal.mist
+                            font.pixelSize: 20; font.family: "Material Symbols Rounded"
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                            MouseArea {
+                                anchors.fill: parent; anchors.margins: -8
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.tryLogin()
+                            }
+                        }
+                    }
+
+                    // Keeps its height either way: a message must not shove the field.
+                    Item {
+                        width: parent.width; height: 16
+                        Text {
+                            id: message
+                            anchors.centerIn: parent
+                            color: pal.error
+                            font.pixelSize: 12; font.family: "JetBrainsMono NF"
+                        }
+                        // Caps Lock is where a password fails without saying why.
+                        Text {
+                            anchors.centerIn: parent
+                            visible: message.text === "" && !!(keyboard && keyboard.capsLock)
+                            text: "caps lock is on"
+                            color: pal.mist
+                            font.pixelSize: 12; font.family: "JetBrainsMono NF"
+                        }
+                    }
+                }
+            }
+        }
+
+        // ---- Top right: the ways out, in a row -------------------------------
+        Row {
+            anchors.right: parent.right; anchors.rightMargin: 170
+            y: 64
+            spacing: 14
+            ChipPlate {
+                glyph: "\uf159"; title: "sleep"
+                onActivated: sddm.suspend()
+            }
+            ChipPlate {
+                glyph: "\uf053"; title: "reboot"
+                onActivated: sddm.reboot()
+            }
+            ChipPlate {
+                glyph: "\uf8c7"; title: "shutdown"
+                onActivated: sddm.powerOff()
+            }
+        }
+
+        // ---- Right: the month, a big plate -----------------------------------
         Rectangle {
             id: cal
-            x: 150; y: 300
+            x: 1430; y: 330
             width: 320; height: calCol.implicitHeight + 46
             radius: root.cardR
             color: root.plate
@@ -268,258 +511,38 @@ Rectangle {
             }
         }
 
-        // ---- Middle: the time, who, the way in -----------------------------
-        ColumnLayout {
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 150
-            spacing: 0
-
-            // The hour large, the seconds small beside it: the lock's own clock.
+        // ---- Bottom left: the session -----------------------------------------
+        Pill {
+            x: 170; y: 1080 - 44 - 44
+            implicitWidth: sessRow.implicitWidth + 36
             Row {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 0
+                id: sessRow
+                anchors.centerIn: parent
+                spacing: 8
                 Text {
-                    text: Qt.formatTime(clock.now, "HH:mm")
-                    color: pal.snow
-                    font.pixelSize: 124; font.weight: Font.Bold; font.letterSpacing: -2
-                    font.family: "JetBrainsMono NF"
-                }
-                Text {
-                    anchors.bottom: parent.bottom; anchors.bottomMargin: 24
-                    leftPadding: 10
-                    text: Qt.formatTime(clock.now, "ss")
-                    color: root.faint
-                    font.pixelSize: 30; font.weight: Font.Bold
-                    font.family: "JetBrainsMono NF"
-                }
-            }
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Qt.formatDate(clock.now, "dddd, d MMMM").toLowerCase()
-                color: pal.snow
-                opacity: 0.8
-                font.pixelSize: 17
-                font.family: "JetBrainsMono NF"
-            }
-
-            Item { Layout.preferredHeight: 52 }
-
-            // The face on a plate: round, with its ring -- at rest a plain edge,
-            // the accent while it checks, the error when it said no.
-            Rectangle {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 108; Layout.preferredHeight: 108
-                radius: 22
-                color: root.plate
-                Rectangle {
-                    id: faceRing
-                    anchors.centerIn: parent
-                    width: 84; height: 84; radius: width / 2
-                    color: root.alpha(pal.ghost, 0.12)
-                    border.width: 2
-                    border.color: message.text !== "" ? pal.error
-                        : root.loggingIn ? pal.ghost : root.alpha(pal.ghost, 0.20)
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
-                    // Already round (scripts/ashen-sddm-face.sh), so it is only
-                    // shown: a mask would be a shader, and a greeter on software
-                    // rendering draws none -- an empty circle.
-                    Image {
-                        id: faceImg
-                        anchors.fill: parent; anchors.margins: 2
-                        source: root.facePath
-                        sourceSize: Qt.size(256, 256)
-                        fillMode: Image.PreserveAspectFit
-                        cache: false
-                    }
-                    Text {
-                        anchors.centerIn: parent
-                        text: ""   // person
-                        color: pal.ghost
-                        font.pixelSize: 42; font.family: "Material Symbols Rounded"
-                        visible: faceImg.status !== Image.Ready
-                    }
-                }
-            }
-
-            Item { Layout.preferredHeight: 14 }
-
-            // Who: the name on its own plate; a picker over it when there is a choice.
-            Pill {
-                Layout.alignment: Qt.AlignHCenter
-                implicitWidth: Math.max(180, userText.implicitWidth + 64)
-                Text {
-                    id: userText
-                    anchors.centerIn: parent
-                    text: userList.currentText
-                    color: pal.snow
-                    font.pixelSize: 18; font.bold: true; font.letterSpacing: 1
-                    font.family: "JetBrainsMono NF"
-                }
-                Picker {
-                    id: userList
-                    objectName: "userPicker"
-                    anchors.fill: parent
-                    // One user is not a choice.
-                    enabled: userModel.count > 1
-                    model: userModel; textRole: "name"; currentIndex: userModel.lastIndex
-                }
-            }
-
-            Item { Layout.preferredHeight: 14 }
-
-            // The way in, on its plate: lock at one end, the way in at the other,
-            // the dots and the prompt on its own centre. It shakes on a wrong
-            // password.
-            Rectangle {
-                id: passField
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 420; Layout.preferredHeight: 58
-                radius: root.cardR
-                color: root.plate
-                border.width: 1
-                border.color: message.text !== "" ? pal.error
-                    : password.activeFocus ? pal.ghost : root.alpha(pal.ghost, 0.20)
-                Behavior on border.color { ColorAnimation { duration: 150 } }
-                transform: Translate { id: shakeT; x: 0 }
-
-                SequentialAnimation {
-                    id: shakeAnim
-                    NumberAnimation { target: shakeT; property: "x"; to: 9; duration: 55 }
-                    NumberAnimation { target: shakeT; property: "x"; to: -8; duration: 55 }
-                    NumberAnimation { target: shakeT; property: "x"; to: 6; duration: 55 }
-                    NumberAnimation { target: shakeT; property: "x"; to: -4; duration: 55 }
-                    NumberAnimation { target: shakeT; property: "x"; to: 0; duration: 55 }
-                }
-
-                // The field takes the keys but draws nothing: the dots below do.
-                TextField {
-                    id: password
-                    objectName: "password"   // the probe types into it by name
-                    anchors.fill: parent
-                    echoMode: TextInput.Password
-                    color: "transparent"
-                    cursorDelegate: Item {}
-                    font.pixelSize: 1
-                    focus: true
-                    background: null
-                    onAccepted: root.tryLogin()
-                    Keys.onEscapePressed: password.text = ""
-                }
-
-                Text {
-                    anchors.left: parent.left; anchors.leftMargin: 22
                     anchors.verticalCenter: parent.verticalCenter
-                    text: ""   // lock
-                    color: message.text !== "" ? pal.error : pal.ghost
-                    font.pixelSize: 20; font.family: "Material Symbols Rounded"
-                }
-
-                // The lock's own dots. The model is a CONSTANT (a number that
-                // changes rebuilds every delegate and replays the entry on all
-                // of them): 16 slots, each told whether it is filled. A slot
-                // opens, a dash appears in it and closes into a dot; the row
-                // recentres as it grows.
-                Row {
-                    anchors.centerIn: parent
-                    Repeater {
-                        model: 16
-                        delegate: Item {
-                            required property int index
-                            readonly property bool on: index < Math.min(password.text.length, 16)
-                            width: on ? 17 : 0
-                            height: 11
-                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.on ? 11 : 9
-                                height: parent.on ? 11 : 2
-                                radius: height / 2
-                                opacity: parent.on ? 1 : 0
-                                color: pal.ghost
-                                Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
-                                Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
-                                Behavior on opacity { NumberAnimation { duration: 120 } }
-                            }
-                        }
-                    }
-                }
-                // Literal, NOT textConstants: sddm-greeter-qt6 0.21 does not hand
-                // this theme a `textConstants`.
-                Text {
-                    anchors.centerIn: parent
-                    visible: password.text === ""
-                    text: "enter password..."
+                    text: "\ue30a"   // computer
                     color: pal.mist
-                    font.pixelSize: 14
-                    font.family: "JetBrainsMono NF"
+                    font.pixelSize: 17; font.family: "Material Symbols Rounded"
                 }
-
                 Text {
-                    anchors.right: parent.right; anchors.rightMargin: 22
                     anchors.verticalCenter: parent.verticalCenter
-                    text: ""   // arrow_forward
-                    color: root.loggingIn || password.text !== "" ? pal.ghost : pal.mist
-                    font.pixelSize: 20; font.family: "Material Symbols Rounded"
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    MouseArea {
-                        anchors.fill: parent; anchors.margins: -8
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.tryLogin()
-                    }
+                    text: sessionList.currentText.toLowerCase(); color: pal.snow
+                    font.pixelSize: 13; font.family: "JetBrainsMono NF"
                 }
-            }
-
-            // Keeps its height either way: a message must not shove the field.
-            Item {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 12
-                Layout.preferredWidth: 420; Layout.preferredHeight: 16
                 Text {
-                    id: message
-                    anchors.centerIn: parent
-                    color: pal.error
-                    font.pixelSize: 12; font.family: "JetBrainsMono NF"
-                }
-                // Caps Lock is where a password fails without saying why.
-                Text {
-                    anchors.centerIn: parent
-                    visible: message.text === "" && !!(keyboard && keyboard.capsLock)
-                    text: "caps lock is on"
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue5cf"   // expand_more
                     color: pal.mist
-                    font.pixelSize: 12; font.family: "JetBrainsMono NF"
+                    font.pixelSize: 15; font.family: "Material Symbols Rounded"
                 }
             }
-        }
-
-        // ---- Right: the session and the ways out, as big plates ------------
-        Column {
-            x: 1450; y: 300
-            spacing: 16
-
-            ActionPlate {
-                glyph: ""; title: "power"; note: "shut down"
-                onActivated: sddm.powerOff()
-            }
-            ActionPlate {
-                glyph: ""; title: "reboot"; note: "restart"
-                onActivated: sddm.reboot()
-            }
-            ActionPlate {
-                glyph: ""; title: "sleep"; note: "suspend"
-                onActivated: sddm.suspend()
-            }
-            // The session: the same plate, with the picker over it.
-            ActionPlate {
-                glyph: ""   // computer
-                title: "session"
-                note: sessionList.currentText.toLowerCase()
-                Picker {
-                    id: sessionList
-                    objectName: "sessionPicker"
-                    anchors.fill: parent
-                    openUp: true
-                    model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
-                }
+            Picker {
+                id: sessionList
+                objectName: "sessionPicker"
+                anchors.fill: parent
+                openUp: true
+                model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
             }
         }
     }

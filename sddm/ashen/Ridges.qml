@@ -6,7 +6,7 @@ import QtQuick.Shapes
 //
 // Depth is the whole trick: six ridges from far to near, each darker than the
 // one behind it, and each filled top to bottom from its own colour into the
-// haze, so the valleys between them read as mist. The two nearest carry pines.
+// haze, so the valleys between them read as mist. The three nearest carry a treeline of spruces.
 // The terrain is a sum of folded sines, not random numbers: the login looks the
 // same every time it comes up.
 Item {
@@ -33,42 +33,59 @@ Item {
     }
     function ridgeY(x, seed, base, amp) { return land.height * base - land.height * amp * relief(x, seed) }
 
-    // One ridge as an SVG path closed along the bottom, plus its pines.
-    function ridge(seed, base, amp, pines, pineSize) {
-        const w = land.width, h = land.height
+    // A spruce as one jagged outline: a sawtooth down each side, tiers that widen
+    // towards the ground, a short trunk. `y` is the ground, `h` the height.
+    function spruce(x, y, h) {
+        const n = 6, hw = h * 0.19, tw = Math.max(1, h * 0.022), top = y - h
+        const tipY = t => top + h * (t / n) * 0.95
+        const L = [[x, top]]
+        for (let t = 1; t <= n; t++) {
+            L.push([x - hw * t / n, tipY(t)])
+            if (t < n) L.push([x - hw * t / n * 0.52, tipY(t)])
+        }
+        let d = "M " + x.toFixed(1) + " " + top.toFixed(1)
+        for (let i = 1; i < L.length; i++) d += " L " + L[i][0].toFixed(1) + " " + L[i][1].toFixed(1)
+        d += " L " + (x - tw).toFixed(1) + " " + tipY(n).toFixed(1)
+           + " L " + (x - tw).toFixed(1) + " " + (y + 3).toFixed(1)
+           + " L " + (x + tw).toFixed(1) + " " + (y + 3).toFixed(1)
+           + " L " + (x + tw).toFixed(1) + " " + tipY(n).toFixed(1)
+        for (let i = L.length - 1; i >= 1; i--) d += " L " + (2 * x - L[i][0]).toFixed(1) + " " + L[i][1].toFixed(1)
+        return d + " Z"
+    }
+
+    // One ridge as an SVG path closed along the bottom, with a treeline on it:
+    // spruces side by side, unevenly spaced and sized, none on the high peaks.
+    function ridge(spec) {
+        const w = land.width, h = land.height, u = h / 1080
+        // Before the first layout the size is 0, and a step of 0 never ends.
+        if (w <= 0 || h <= 0) return ""
         let d = "M -40 " + (h + 4)
         for (let x = -40; x <= w + 40; x += 14)
-            d += " L " + x + " " + ridgeY(x, seed, base, amp).toFixed(1)
+            d += " L " + x + " " + ridgeY(x, spec.seed, spec.base, spec.amp).toFixed(1)
         d += " L " + (w + 40) + " " + (h + 4) + " Z"
-        for (let i = 0; i < pines; i++) {
-            const x = ((i * 0.6180339 + seed * 0.13) % 1) * w
-            const y = ridgeY(x, seed, base, amp) + 4
-            const s = pineSize * (0.7 + 0.6 * ((i * 0.7548776) % 1)) * h / 1080
-            // Three tiers, each a triangle narrower than the one below.
-            for (let t = 0; t < 3; t++) {
-                const top = y - s * (1.0 + t * 0.78)
-                const bot = y - s * (0.28 + t * 0.78)
-                const half = s * (0.46 - t * 0.11)
-                d += " M " + (x - half).toFixed(1) + " " + bot.toFixed(1)
-                  + " L " + x.toFixed(1) + " " + top.toFixed(1)
-                  + " L " + (x + half).toFixed(1) + " " + bot.toFixed(1) + " Z"
+        if (spec.size > 0) {
+            let x = -20
+            for (let i = 0; x < w + 30; i++) {
+                const f = (i * 0.6180339 + spec.seed * 0.37) % 1
+                const g = (i * 0.7548776 + spec.seed * 0.11) % 1
+                x += Math.max(3, spec.gap * u * (0.7 + 0.6 * f))
+                // The treeline stops where the ridge is high.
+                if (relief(x, spec.seed) > spec.cut) continue
+                const hh = spec.size * u * (0.55 + 0.9 * g)
+                d += " " + spruce(x, ridgeY(x, spec.seed, spec.base, spec.amp) + 6 * u, hh)
             }
-            d += " M " + (x - s * 0.05).toFixed(1) + " " + (y + 2).toFixed(1)
-              + " L " + (x - s * 0.05).toFixed(1) + " " + (y - s * 0.3).toFixed(1)
-              + " L " + (x + s * 0.05).toFixed(1) + " " + (y - s * 0.3).toFixed(1)
-              + " L " + (x + s * 0.05).toFixed(1) + " " + (y + 2).toFixed(1) + " Z"
         }
         return d
     }
 
     // Seeds, bases and heights of the six ridges, far to near.
     readonly property var specs: [
-        { seed: 1.3, base: 0.50, amp: 0.24, pines: 0,  size: 0 },
-        { seed: 2.9, base: 0.57, amp: 0.22, pines: 0,  size: 0 },
-        { seed: 4.1, base: 0.64, amp: 0.20, pines: 0,  size: 0 },
-        { seed: 5.7, base: 0.71, amp: 0.17, pines: 0,  size: 0 },
-        { seed: 7.3, base: 0.79, amp: 0.13, pines: 24, size: 40 },
-        { seed: 9.1, base: 0.89, amp: 0.10, pines: 10, size: 74 }
+        { seed: 1.3, base: 0.50, amp: 0.24, size: 0,   gap: 0,  cut: 1 },
+        { seed: 2.9, base: 0.57, amp: 0.22, size: 0,   gap: 0,  cut: 1 },
+        { seed: 4.1, base: 0.64, amp: 0.20, size: 0,   gap: 0,  cut: 1 },
+        { seed: 5.7, base: 0.71, amp: 0.17, size: 46,  gap: 30, cut: 0.48 },
+        { seed: 7.3, base: 0.79, amp: 0.13, size: 80,  gap: 36, cut: 0.60 },
+        { seed: 9.1, base: 0.89, amp: 0.10, size: 138, gap: 58, cut: 1.0 }
     ]
 
     Rectangle {
@@ -82,7 +99,7 @@ Item {
 
     // The sun, and the light it throws: one radial falloff, not stacked discs.
     Shape {
-        x: land.width * 0.68 - width / 2; y: land.height * 0.30 - height / 2
+        x: land.width * 0.56 - width / 2; y: land.height * 0.30 - height / 2
         width: land.height * 1.3; height: width
         ShapePath {
             strokeWidth: -1
@@ -102,7 +119,7 @@ Item {
     }
     Rectangle {
         readonly property real r: land.height * 0.055
-        x: land.width * 0.68 - r; y: land.height * 0.30 - r
+        x: land.width * 0.56 - r; y: land.height * 0.30 - r
         width: r * 2; height: r * 2; radius: r
         color: land.sun
     }
@@ -128,7 +145,7 @@ Item {
                         color: land.mixc(land.ridgeColors[layer.index], land.haze, layer.index < 4 ? 0.62 - layer.index * 0.12 : 0)
                     }
                 }
-                PathSvg { path: land.ridge(layer.spec.seed, layer.spec.base, layer.spec.amp, layer.spec.pines, layer.spec.size) }
+                PathSvg { path: land.ridge(layer.spec) }
             }
         }
     }

@@ -25,7 +25,7 @@ s=io.open('$main',encoding='utf-8').read()
 import re
 lit=sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF)
 print(lit + len(re.findall(r'\\\\u[eEfF][0-9a-fA-F]{3}', s)))")
-[ "$n" -eq 7 ] && say ok "seven glyphs survive" || { say FAIL "expected 7 PUA glyphs, found $n"; fail=1; }
+[ "$n" -eq 8 ] && say ok "eight glyphs survive" || { say FAIL "expected 8 PUA glyphs, found $n"; fail=1; }
 
 python3 -c "
 import io,sys,re
