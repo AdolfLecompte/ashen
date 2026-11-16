@@ -27,11 +27,10 @@ si falta, la bienvenida las enseña en inglés.
   y lo que has enfocado hoy.
 
 - **Pantalla de inicio de sesión rehecha**: seis capas de montañas con bruma
-  y bosques de abetos, dibujadas en QML en vez de una foto. La hora es enorme
-  a la izquierda, con los dos puntos en el acento, y debajo una sola placa
-  guarda tu foto redonda, tu nombre y el campo de contraseña; las acciones
-  van en fila arriba a la derecha, el mes en una placa grande y la sesión al
-  pie. Ya no sigue el fondo de pantalla: lleva una de cinco paletas
+  y grupos de abetos, dibujadas en QML en vez de una foto. Una columna a la
+  izquierda: la hora con los dos puntos en el acento, una placa con tu foto
+  redonda, tu nombre y el campo de contraseña, las tres acciones una al lado
+  de otra y la sesión; el resto es el paisaje. Ya no sigue el fondo de pantalla: lleva una de cinco paletas
   (`preset=` en `theme.conf`: dusk, forest, midnight, amber o ash). El
   instalador (y cambiar tu foto en Ajustes) guarda una copia redonda de tu
   cara donde el login puede leerla, lo que pide que el usuario `sddm`

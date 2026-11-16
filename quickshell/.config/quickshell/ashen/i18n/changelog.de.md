@@ -26,11 +26,10 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   einstellbare Dauern, optionalen Autostart und die heute fokussierte Zeit.
 
 - **Anmeldebildschirm neu gezeichnet**: sechs Schichten Berge mit Dunst und
-  Fichtenwäldern, in QML gezeichnet statt als Foto. Die Uhrzeit ist links
-  riesig, ihr Doppelpunkt im Akzent, und darunter hält eine einzige Platte
-  dein rundes Gesicht, deinen Namen und das Passwortfeld; die Aktionen stehen
-  in einer Reihe oben rechts, der Monat auf einer großen Platte, die Sitzung
-  am Fuß. Er folgt dem Hintergrund nicht mehr: er trägt eine von fünf
+  Fichtengruppen, in QML gezeichnet statt als Foto. Eine Spalte links: die
+  Uhrzeit mit Doppelpunkt im Akzent, eine Platte mit deinem runden Gesicht,
+  deinem Namen und dem Passwortfeld, die drei Aktionen nebeneinander und die
+  Sitzung; der Rest ist das Bild. Er folgt dem Hintergrund nicht mehr: er trägt eine von fünf
   Paletten (`preset=` in `theme.conf`: dusk, forest, midnight, amber oder
   ash). Der Installer (und das Ändern deines Fotos in den Einstellungen)
   legt eine runde Kopie deines Gesichts dort ab, wo die Anmeldung sie lesen

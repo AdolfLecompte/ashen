@@ -21,10 +21,10 @@
   it runs, editable lengths, optional auto-start and how much you focused
   today.
 - **Login screen redrawn**: six layers of mountains with mist and spruce
-  forests, drawn in QML instead of a photo. The time is huge on the left with
-  its colon in the accent, and under it one plate holds your round face, your
-  name and the password field; the ways out sit in a row at the top right, the
-  month on a big plate, the session at the foot. It no longer follows the
+  groves, drawn in QML instead of a photo. One column on the left: the time
+  with its colon in the accent, one plate with your round face, your name and
+  the password field, the three ways out side by side and the session; the
+  rest is the picture. It no longer follows the
   wallpaper: it wears one of five palettes (`preset=` in `theme.conf`: dusk,
   forest, midnight, amber or ash). The installer (and changing your photo in
   Settings) keeps a rounded copy of your face where the login can read it,
