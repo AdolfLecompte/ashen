@@ -454,7 +454,8 @@ Scope {
                                 if (c.visible) { h += c.restH !== undefined ? c.restH : c.height; n++ }
                             return h + Math.max(0, n - 1) * leftCol.spacing
                         }
-                        y: (parent.height - leftCol.restH) / 2
+                        // Hung from the centre plate's top line (it grows down).
+                        y: authGroup.y
                         spacing: 16
                         opacity: leftCol.enter
                         visible: leftCol.enter > 0.001
@@ -509,7 +510,8 @@ Scope {
                                 if (c.visible) { h += c.restH !== undefined ? c.restH : c.height; n++ }
                             return h + Math.max(0, n - 1) * rightCol.spacing
                         }
-                        y: (parent.height - rightCol.restH) / 2
+                        // Hung from the centre plate's top line (it grows down).
+                        y: authGroup.y
                         spacing: 16
                         opacity: rightCol.enter
                         visible: rightCol.enter > 0.001
@@ -545,8 +547,8 @@ Scope {
                         id: authGroup
                         anchors.horizontalCenter: parent.horizontalCenter
                         y: idleGroup.y + idleGroup.height + 56
-                        width: authRow.width
-                        height: authRow.height
+                        width: authPlate.width
+                        height: authPlate.height
                         // The second half of the move, once the music has gone.
                         readonly property real enter: Math.max(0, surface.auth * 2 - 1)
                         opacity: surface.loginFace ? 1 : 0
@@ -566,8 +568,25 @@ Scope {
                     // of the face and the field at its foot with nothing in
                     // between -- an L with a hole in it. Down the middle there
                     // is one column and one centre.
+                    // ONE plate holds all of it -- the face, the name, the field --
+                    // with the fill and the corner of the widgets either side and
+                    // the width of the right-hand column, so the three columns read
+                    // as one row of plates hanging from the same line.
+                    Rectangle {
+                        id: authPlate
+                        width: 380
+                        height: authRow.implicitHeight + 56
+                        radius: Services.Sizes.panelR
+                        color: Services.Prefs.widgetOutline ? Services.Colors.surfaceGlass
+                                                            : Services.Colors.surfacePill
+                        border.color: Services.Prefs.widgetOutline ? Services.Colors.fillOutline : "transparent"
+                        border.width: Services.Prefs.widgetOutline ? Services.Sizes.outlineW : 0
+                        // Arrives with the face; the name and the field come in on it.
+                        opacity: authGroup.stage(0)
+
                     Column {
                         id: authRow
+                        anchors.centerIn: parent
                         spacing: 16
 
                         Rectangle {
@@ -625,25 +644,9 @@ Scope {
                         }
 
                         // Name, field and whatever the screen has to say, one
-                        // under the other, on ONE plate: the fill and the corner
-                        // of the widgets either side, as wide as the right-hand
-                        // column, so the middle stands on the same line as them.
-                        Rectangle {
-                            id: whoPlate
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            width: 380
-                            height: whoCol.implicitHeight + 40
-                            radius: Services.Sizes.panelR
-                            color: Services.Prefs.widgetOutline ? Services.Colors.surfaceGlass
-                                                                : Services.Colors.surfacePill
-                            border.color: Services.Prefs.widgetOutline ? Services.Colors.fillOutline : "transparent"
-                            border.width: Services.Prefs.widgetOutline ? Services.Sizes.outlineW : 0
-                            // Arrives with the name; the field then comes in on it.
-                            opacity: authGroup.stage(1)
-
+                        // under the other.
                         Column {
-                            id: whoCol
-                            anchors.centerIn: parent
+                            anchors.horizontalCenter: parent.horizontalCenter
                             spacing: 10
 
                             // Two facts, not one string: who you are, and the
@@ -924,7 +927,7 @@ Scope {
                                 }
                             }
                         }
-                        }
+                    }
                     }
                     }
 
