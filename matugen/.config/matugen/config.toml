@@ -11,12 +11,6 @@ set = false
 input_path = "~/.config/matugen/templates/scheme.json.template"
 output_path = "~/.cache/ashen_scheme.json"
 
-# The login screen's copy of the palette; its folder is opened to the sddm user
-# by install/lib/sddm.sh (an ACL), because a home is otherwise closed to it.
-[templates.ashen_sddm]
-input_path = "~/.config/matugen/templates/sddm-palette.qml"
-output_path = "~/.cache/ashen-sddm/Palette.qml"
-
 # The candidates ashen-accent.sh picks the accent from: the strong tone, the
 # container tone, and the surface it has to be readable against. It cannot be
 # decided here -- matugen has no contrast ratio -- and it must not be decided

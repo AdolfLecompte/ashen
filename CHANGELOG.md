@@ -21,14 +21,16 @@
   it runs, editable lengths, optional auto-start and how much you focused
   today.
 - **Login screen redrawn**: six layers of mountains with mist and pines, drawn
-  in QML instead of a photo, in the colours of your current wallpaper. The
-  time stays large in the middle, and your round face, your name and the
-  password field now sit each on a plate of their own, like the rest of the
-  shell's widgets. The installer (and changing your photo in Settings) keeps a
-  rounded copy of your face where the login can read it, and lets the `sddm` user traverse your home and read one folder
-  (`~/.cache/ashen-sddm`, an ACL) so matugen can keep the palette current;
-  without it the login keeps its own colours. Undo with
-  `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
+  in QML instead of a photo, in three columns like the lock screen: the month
+  on one side, the time large in the middle with your round face, your name and
+  the password field each on a plate of their own, and big plates for power,
+  reboot, sleep and session on the other. It no longer follows the wallpaper:
+  it wears one of five palettes (`preset=` in `theme.conf`: dusk, forest,
+  midnight, amber or ash). The installer (and changing your photo in Settings)
+  keeps a rounded copy of your face where the login can read it, which asks
+  the `sddm` user to traverse your home and read one folder
+  (`~/.cache/ashen-sddm`, an ACL); without it the login shows a glyph instead.
+  Undo with `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
 - **The lock returns to the clock** after 30 s of silence on the login (any
   key or pointer movement restarts the count). Settings -> System -> Lock
   Screen: never / 15 s / 30 s / 60 s.

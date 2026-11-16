@@ -27,13 +27,15 @@ si falta, la bienvenida las enseña en inglés.
   y lo que has enfocado hoy.
 
 - **Pantalla de inicio de sesión rehecha**: seis capas de montañas con bruma
-  y pinos, dibujadas en QML en vez de una foto, con los colores de tu fondo
-  actual. La hora sigue grande en el centro, y tu foto redonda, tu nombre y
-  el campo de contraseña van ahora cada uno en su propia placa, como el resto
-  de widgets del shell. El instalador (y cambiar tu foto en Ajustes) guarda
-  una copia redonda de tu cara donde el login puede leerla, y deja que el usuario `sddm` atraviese tu home
-  y lea una sola carpeta (`~/.cache/ashen-sddm`, una ACL) para que matugen
-  mantenga la paleta al día; sin ella el login conserva sus colores. Se
+  y pinos, dibujadas en QML en vez de una foto, en tres columnas como el lock:
+  el mes a un lado, la hora grande en el centro con tu foto redonda, tu
+  nombre y el campo de contraseña cada uno en su propia placa, y placas
+  grandes de apagar, reiniciar, suspender y sesión al otro. Ya no sigue el
+  fondo de pantalla: lleva una de cinco paletas (`preset=` en `theme.conf`:
+  dusk, forest, midnight, amber o ash). El instalador (y cambiar tu foto en
+  Ajustes) guarda una copia redonda de tu cara donde el login puede leerla, lo
+  que pide que el usuario `sddm` atraviese tu home y lea una sola carpeta
+  (`~/.cache/ashen-sddm`, una ACL); sin ella el login muestra un glifo. Se
   deshace con `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
 - **El bloqueo vuelve al reloj** tras 30 s de silencio en el login (cualquier
   tecla o movimiento del puntero reinicia la cuenta). Ajustes -> Sistema ->

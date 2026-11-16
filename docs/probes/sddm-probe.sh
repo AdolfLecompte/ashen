@@ -25,7 +25,7 @@ s=io.open('$main',encoding='utf-8').read()
 import re
 lit=sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF)
 print(lit + len(re.findall(r'\\\\u[eEfF][0-9a-fA-F]{3}', s)))")
-[ "$n" -eq 8 ] && say ok "eight glyphs survive" || { say FAIL "expected 8 PUA glyphs, found $n"; fail=1; }
+[ "$n" -eq 7 ] && say ok "seven glyphs survive" || { say FAIL "expected 7 PUA glyphs, found $n"; fail=1; }
 
 python3 -c "
 import io,sys,re
@@ -125,20 +125,28 @@ grep -qE 'import QtQuick.Effects|MultiEffect|OpacityMask' sddm/ashen/Main.qml \
   && grep -q 'ashen-sddm-face.sh' quickshell/.config/quickshell/ashen/modules/settings/SettingsSystemTab.qml \
   && say ok "the face is rounded for the login (installer and Settings call the script)" \
   || { say FAIL "the login's face is not wired to the installer and Settings"; fail=1; }
-grep -q 'live.status === Loader.Ready' sddm/ashen/Main.qml \
-  && say ok "palette falls back to theme.conf when the live file is missing" \
-  || { say FAIL "the login would depend on a file it may not be able to read"; fail=1; }
+# The login wears a predefined palette and never reads the session's: a login
+# that depends on a file in a home it may not be able to read is a login that
+# can come up wrong.
+for k in dusk forest midnight amber ash; do
+    grep -qE "^[[:space:]]+$k: \{" sddm/ashen/Main.qml && say ok "palette $k is defined" \
+      || { say FAIL "palette $k missing from Main.qml"; fail=1; }
+done
+grep -q 'presets\[config.preset\] || presets.dusk' sddm/ashen/Main.qml \
+  && say ok "an unknown preset falls back to dusk" \
+  || { say FAIL "an unknown preset would leave the login with no palette"; fail=1; }
+grep -q 'Palette.qml' sddm/ashen/Main.qml \
+  && { say FAIL "the login still reads a live palette"; fail=1; } \
+  || say ok "no live palette"
 grep -q 'setfacl -x u:sddm' install/lib/sddm.sh \
-  && say ok "it prints how to close the palette ACL" \
+  && say ok "it prints how to close the face ACL" \
   || { say FAIL "it opens the home to sddm without saying how to close it"; fail=1; }
 
-# The palette is the shell's, not an invented one.
-for k in surface snow mist ash ghost accentText error abyss shade neutral palettePath radius; do
+# The preset is named in theme.conf and the face folder is filled in by the installer.
+for k in preset faceDir; do
     grep -q "^$k=" "$conf" && say ok "theme.conf has $k" \
       || { say FAIL "theme.conf missing $k"; fail=1; }
 done
-grep -q '^surface=#1c1c21' "$conf" && say ok "surface is Colors.surface" \
-  || { say FAIL "surface is not the shell's #1c1c21"; fail=1; }
 
 # The capsule numbers come from services/Sizes.qml and must not drift.
 grep -q 'readonly property int pillH: 44' "$main" && say ok "pillH 44" || { say FAIL "pillH drifted"; fail=1; }

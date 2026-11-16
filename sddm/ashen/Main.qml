@@ -2,17 +2,18 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// Login screen, built from the pieces of the session's own lock screen: a round
-// face with its ring, the sunk password field with the lock at one end and the
-// way in at the other, plates for the ways out, the time stacked and large.
-// The mountains behind are drawn (Ridges.qml) in the wallpaper's palette.
-// No name on it, so it suits any desktop.
+// Login screen, laid out like the session's own lock screen: three columns, the
+// time and the way in down the middle, the month on one side and the big plates
+// for the session and the ways out on the other. The widgets are the lock's:
+// plates, a round face with its ring, the sunk dots of the password.
+// The mountains behind are drawn (Ridges.qml).
+//
+// The login does NOT follow the wallpaper: it wears one of the palettes below,
+// named in theme.conf. No name on it, so it suits any desktop.
 //
 // NOT SddmComponents: that module ships its own ComboBox, Button and TextField
 // which shadow QtQuick.Controls' and carry a different API -- importing it made
 // the theme fail to load and SDDM silently fell back to its default theme.
-//
-// The palette is theme.conf: sddm runs as its own user and cannot read a home.
 Rectangle {
     id: root
     width: 1920; height: 1080
@@ -21,49 +22,51 @@ Rectangle {
     readonly property int pillH: 44
     readonly property int pillR: 10
     readonly property int cardR: 14
+
+    // The palettes. `hue` and `sat` set the scene (every layer of the mountains
+    // is a step of lightness on that one hue); the rest are the plates' colours.
+    readonly property var presets: ({
+        dusk: { hue: 0.012, sat: 0.50, surface: "#271d1c", abyss: "#1a1110", snow: "#f6dedb", mist: "#d9c2bf",
+                ash: "#a48f8c", ghost: "#ffb4ab", neutral: "#e8c29c", accentText: "#561e19", error: "#ff5449" },
+        forest: { hue: 0.40, sat: 0.34, surface: "#1b241d", abyss: "#111812", snow: "#dcebdc", mist: "#b4c7b5",
+                ash: "#7f927f", ghost: "#a6d6a2", neutral: "#e0d4a0", accentText: "#0f3a14", error: "#ffb4ab" },
+        midnight: { hue: 0.64, sat: 0.40, surface: "#1b1f2b", abyss: "#10131c", snow: "#e0e4f3", mist: "#b5bcd3",
+                ash: "#80879f", ghost: "#aac7ff", neutral: "#f0d2a8", accentText: "#0b2e5c", error: "#ffb4ab" },
+        amber: { hue: 0.10, sat: 0.50, surface: "#261f17", abyss: "#19130c", snow: "#f4e6d3", mist: "#d4c3a9",
+                ash: "#a09078", ghost: "#ffb870", neutral: "#f2d29a", accentText: "#4a2800", error: "#ffb4ab" },
+        ash: { hue: 0.70, sat: 0.16, surface: "#1c1c21", abyss: "#101015", snow: "#e8e8ec", mist: "#9090a0",
+                ash: "#4a4a54", ghost: "#b8b8cc", neutral: "#b0a090", accentText: "#12121a", error: "#c87a7a" }
+    })
+    readonly property var scheme: presets[config.preset] || presets.dusk
+    QtObject {
+        id: pal
+        readonly property color surface: root.scheme.surface
+        readonly property color abyss: root.scheme.abyss
+        readonly property color snow: root.scheme.snow
+        readonly property color mist: root.scheme.mist
+        readonly property color ash: root.scheme.ash
+        readonly property color ghost: root.scheme.ghost
+        readonly property color neutral: root.scheme.neutral
+        readonly property color accentText: root.scheme.accentText
+        readonly property color error: root.scheme.error
+    }
+
     readonly property color base: Qt.color(pal.surface)
-    // A capsule's plate: the surface at 0.82, as everywhere in the session.
+    // A plate: the surface at 0.82, as everywhere in the session.
     readonly property color plate: Qt.rgba(root.base.r, root.base.g, root.base.b, 0.82)
     readonly property color faint: Qt.rgba(0.91, 0.91, 0.93, 0.4)
     function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
+    function mix(a, b, t) { return Qt.tint(a, Qt.rgba(b.r, b.g, b.b, t)) }
+    function tone(l) { return Qt.hsla(root.scheme.hue, root.scheme.sat, l, 1) }
+
+    // Where the round copy of the face lives (scripts/ashen-sddm-face.sh): the
+    // one folder sddm can read. Older installs named it through palettePath.
+    readonly property string faceDir: config.faceDir ? config.faceDir
+        : (config.palettePath ? config.palettePath.replace(/\/[^\/]*$/, "") : "")
+    readonly property string facePath: root.faceDir ? "file://" + root.faceDir + "/face.png" : ""
 
     QtObject { id: clock; property var now: new Date() }
     Timer { interval: 1000; running: true; repeat: true; onTriggered: clock.now = new Date() }
-
-    // The session's live palette, when sddm is allowed to see it: matugen
-    // writes a QML file into a folder this user can read (see install/lib/
-    // sddm.sh). If it is missing the theme.conf palette stands in, so the
-    // login never depends on it. The face lives in that same folder.
-    Loader {
-        id: live
-        visible: false
-        source: config.palettePath ? "file://" + config.palettePath : ""
-    }
-    QtObject {
-        id: pal
-        readonly property var src: live.status === Loader.Ready ? live.item : null
-        property color surface: src ? src.surface : config.surface
-        property color abyss: src ? src.abyss : config.abyss
-        property color elevated: src ? src.elevated : config.elevated
-        property color snow: src ? src.snow : config.snow
-        property color mist: src ? src.mist : config.mist
-        property color ash: src ? src.ash : config.ash
-        property color ghost: src ? src.ghost : config.ghost
-        property color shade: src ? src.shade : config.shade
-        property color neutral: src ? src.neutral : config.neutral
-        property color error: src ? src.error_ : config.error
-        // Text on a snow-coloured chip.
-        property color accentText: src ? src.abyss : config.accentText
-    }
-    readonly property string facePath: config.palettePath
-        ? "file://" + config.palettePath.replace(/Palette\.qml$/, "face.png") : ""
-
-    function mix(a, b, t) { return Qt.tint(a, Qt.rgba(b.r, b.g, b.b, t)) }
-    // One hue in steps of lightness: the palette's accent, kept soft. Every
-    // layer of the scene is a step on this ramp, never a colour of its own.
-    readonly property real hue: pal.ghost.hslHue >= 0 ? pal.ghost.hslHue : 0.6
-    readonly property real sat: Math.min(0.5, Math.max(0.16, pal.ghost.hslSaturation * 0.6))
-    function tone(l) { return Qt.hsla(root.hue, root.sat, l, 1) }
 
     Ridges {
         anchors.fill: parent
@@ -83,6 +86,61 @@ Rectangle {
             GradientStop { position: 0.0; color: root.alpha(pal.abyss, 0.10) }
             GradientStop { position: 0.55; color: root.alpha(pal.abyss, 0.20) }
             GradientStop { position: 1.0; color: root.alpha(pal.abyss, 0.08) }
+        }
+    }
+
+    component Pill: Rectangle {
+        radius: root.pillR
+        color: root.plate
+        implicitHeight: root.pillH
+    }
+
+    // A big plate for an action: a chip with its glyph, a name and a note.
+    // Hover = grow and brighten, never a fill.
+    component ActionPlate: Rectangle {
+        id: ap
+        property string glyph
+        property string title
+        property string note
+        signal activated()
+        width: 320; height: 92; radius: root.cardR
+        color: root.plate
+        scale: hov.hovered ? 1.04 : 1
+        Behavior on scale { NumberAnimation { duration: 150 } }
+        HoverHandler { id: hov; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: ap.activated() }
+        Row {
+            anchors.verticalCenter: parent.verticalCenter
+            x: 18
+            spacing: 14
+            Rectangle {
+                width: 54; height: 54; radius: root.cardR
+                color: root.alpha(pal.ghost, 0.16)
+                Text {
+                    anchors.centerIn: parent
+                    text: ap.glyph
+                    color: hov.hovered ? pal.snow : pal.ghost
+                    font.pixelSize: 28; font.family: "Material Symbols Rounded"
+                }
+            }
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 2
+                Text {
+                    text: ap.title
+                    color: pal.snow
+                    font.pixelSize: 17; font.bold: true
+                    font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    width: 190
+                    elide: Text.ElideRight
+                    text: ap.note
+                    color: pal.mist
+                    font.pixelSize: 12
+                    font.family: "JetBrainsMono NF"
+                }
+            }
         }
     }
 
@@ -137,12 +195,6 @@ Rectangle {
         }
     }
 
-    component Pill: Rectangle {
-        radius: root.pillR
-        color: root.plate
-        implicitHeight: root.pillH
-    }
-
     // The whole composition lives in a 1920x1080 box and is scaled to fit, so
     // every size below is the one the design was drawn at.
     Item {
@@ -151,7 +203,72 @@ Rectangle {
         anchors.centerIn: parent
         scale: Math.min(root.width / 1920, root.height / 1080)
 
-        // ---- One column on one axis: time, who, the way in -----------------
+        // ---- Left: the month ----------------------------------------------
+        Rectangle {
+            id: cal
+            x: 150; y: 300
+            width: 320; height: calCol.implicitHeight + 46
+            radius: root.cardR
+            color: root.plate
+            readonly property var d: clock.now
+            readonly property int first: new Date(d.getFullYear(), d.getMonth(), 1).getDay()
+            readonly property int days: new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+            readonly property int rows: Math.ceil((first + days) / 7)
+
+            Column {
+                id: calCol
+                x: 23; y: 23
+                spacing: 12
+                Text {
+                    text: Qt.formatDate(cal.d, "MMMM yyyy").toUpperCase()
+                    color: pal.mist
+                    font.pixelSize: 12; font.bold: true; font.letterSpacing: 1.5
+                    font.family: "JetBrainsMono NF"
+                }
+                Grid {
+                    columns: 7
+                    Repeater {
+                        model: ["S", "M", "T", "W", "T", "F", "S"]
+                        Text {
+                            required property string modelData
+                            width: 38; height: 24
+                            horizontalAlignment: Text.AlignHCenter
+                            text: modelData
+                            color: pal.ash
+                            font.pixelSize: 11; font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+                    }
+                    Repeater {
+                        model: cal.rows * 7
+                        Item {
+                            required property int index
+                            readonly property int day: index - cal.first + 1
+                            readonly property bool real: day >= 1 && day <= cal.days
+                            readonly property bool today: real && day === cal.d.getDate()
+                            width: 38; height: 36
+                            // Today is the one filled chip, as in the shell's calendar.
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 32; height: 32; radius: 10
+                                color: pal.ghost
+                                visible: parent.today
+                            }
+                            Text {
+                                anchors.centerIn: parent
+                                text: parent.real ? parent.day : "-"
+                                opacity: parent.real ? 1 : 0
+                                color: parent.today ? pal.accentText : pal.snow
+                                font.pixelSize: 14; font.bold: parent.today
+                                font.family: "JetBrainsMono NF"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ---- Middle: the time, who, the way in -----------------------------
         ColumnLayout {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 150
@@ -216,7 +333,7 @@ Rectangle {
                     }
                     Text {
                         anchors.centerIn: parent
-                        text: "\ue7fd"   // person
+                        text: ""   // person
                         color: pal.ghost
                         font.pixelSize: 42; font.family: "Material Symbols Rounded"
                         visible: faceImg.status !== Image.Ready
@@ -292,7 +409,7 @@ Rectangle {
                 Text {
                     anchors.left: parent.left; anchors.leftMargin: 22
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "\ue897"   // lock
+                    text: ""   // lock
                     color: message.text !== "" ? pal.error : pal.ghost
                     font.pixelSize: 20; font.family: "Material Symbols Rounded"
                 }
@@ -340,7 +457,7 @@ Rectangle {
                 Text {
                     anchors.right: parent.right; anchors.rightMargin: 22
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "\ue5c8"   // arrow_forward
+                    text: ""   // arrow_forward
                     color: root.loggingIn || password.text !== "" ? pal.ghost : pal.mist
                     font.pixelSize: 20; font.family: "Material Symbols Rounded"
                     Behavior on color { ColorAnimation { duration: 150 } }
@@ -374,90 +491,34 @@ Rectangle {
             }
         }
 
-        // ---- Bottom centre: the session and the ways out, one plate --------
-        Pill {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom; anchors.bottomMargin: 36
-            implicitWidth: sessBox.width + 1 + powerRow.implicitWidth + 16
+        // ---- Right: the session and the ways out, as big plates ------------
+        Column {
+            x: 1450; y: 300
+            spacing: 16
 
-            Item {
-                id: sessBox
-                anchors.left: parent.left
-                height: parent.height
-                width: sessRow.implicitWidth + 32
-                Row {
-                    id: sessRow
-                    anchors.centerIn: parent
-                    spacing: 8
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "\ue30a"   // computer
-                        color: pal.mist
-                        font.pixelSize: 17; font.family: "Material Symbols Rounded"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: sessionList.currentText; color: pal.snow
-                        font.pixelSize: 13; font.family: "JetBrainsMono NF"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "\ue5cf"   // expand_more
-                        color: pal.mist
-                        font.pixelSize: 15; font.family: "Material Symbols Rounded"
-                    }
-                }
+            ActionPlate {
+                glyph: ""; title: "power"; note: "shut down"
+                onActivated: sddm.powerOff()
+            }
+            ActionPlate {
+                glyph: ""; title: "reboot"; note: "restart"
+                onActivated: sddm.reboot()
+            }
+            ActionPlate {
+                glyph: ""; title: "sleep"; note: "suspend"
+                onActivated: sddm.suspend()
+            }
+            // The session: the same plate, with the picker over it.
+            ActionPlate {
+                glyph: ""   // computer
+                title: "session"
+                note: sessionList.currentText.toLowerCase()
                 Picker {
                     id: sessionList
                     objectName: "sessionPicker"
                     anchors.fill: parent
                     openUp: true
                     model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
-                }
-            }
-
-            Rectangle {
-                x: sessBox.width
-                anchors.verticalCenter: parent.verticalCenter
-                width: 1; height: 22
-                color: Qt.rgba(1, 1, 1, 0.12)
-            }
-
-            // The same three the session's power menu offers, with its glyphs.
-            Row {
-                id: powerRow
-                anchors.right: parent.right; anchors.rightMargin: 8
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 2
-                Repeater {
-                    model: [
-                        { g: "\uf159", act: "suspend" },
-                        { g: "\uf053", act: "reboot" },
-                        { g: "\uf8c7", act: "poweroff" }
-                    ]
-                    Rectangle {
-                        width: 38; height: 34; radius: 8
-                        color: "transparent"
-                        // Hover = grow and brighten, never a fill.
-                        scale: ma.containsMouse ? 1.06 : 1
-                        Behavior on scale { NumberAnimation { duration: 150 } }
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData.g
-                            color: ma.containsMouse ? pal.snow : pal.mist
-                            font.pixelSize: 17; font.family: "Material Symbols Rounded"
-                        }
-                        MouseArea {
-                            id: ma
-                            anchors.fill: parent; hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                if (modelData.act === "poweroff") sddm.powerOff()
-                                else if (modelData.act === "reboot") sddm.reboot()
-                                else sddm.suspend()
-                            }
-                        }
-                    }
                 }
             }
         }

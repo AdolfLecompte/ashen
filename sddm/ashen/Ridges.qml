@@ -82,7 +82,7 @@ Item {
 
     // The sun, and the light it throws: one radial falloff, not stacked discs.
     Shape {
-        x: land.width * 0.74 - width / 2; y: land.height * 0.30 - height / 2
+        x: land.width * 0.68 - width / 2; y: land.height * 0.30 - height / 2
         width: land.height * 1.3; height: width
         ShapePath {
             strokeWidth: -1
@@ -102,7 +102,7 @@ Item {
     }
     Rectangle {
         readonly property real r: land.height * 0.055
-        x: land.width * 0.74 - r; y: land.height * 0.30 - r
+        x: land.width * 0.68 - r; y: land.height * 0.30 - r
         width: r * 2; height: r * 2; radius: r
         color: land.sun
     }

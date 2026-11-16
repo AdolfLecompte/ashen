@@ -34,25 +34,24 @@ sddm_install() {
     # so everything it needs has to live here, readable by everyone.
     sudo chmod -R a+rX "$dst" >>"$ASHEN_LOG" 2>&1
 
-    # The one exception: the palette. matugen keeps ~/.cache/ashen-sddm/Palette.qml
-    # current and the theme loads it, so the login follows the wallpaper. The
-    # sddm user may only TRAVERSE the home and ~/.cache (--x: it can open a path
-    # it already knows, not list or read anything else) and read that one
-    # folder. Without the ACLs the theme just keeps its theme.conf palette.
+    # The one exception: your face. scripts/ashen-sddm-face.sh keeps a round copy
+    # of ~/.face in ~/.cache/ashen-sddm and the theme shows it. The sddm user may
+    # only TRAVERSE the home and ~/.cache (--x: it can open a path it already
+    # knows, not list or read anything else) and read that one folder. Without
+    # the ACLs the login simply shows a glyph where the photo would be.
     if command -v setfacl >/dev/null 2>&1; then
         local pal="$HOME/.cache/ashen-sddm"
         mkdir -p "$pal"
         setfacl -m u:sddm:--x "$HOME" "$HOME/.cache" >>"$ASHEN_LOG" 2>&1 \
             && setfacl -m u:sddm:r-x -m d:u:sddm:r-- "$pal" >>"$ASHEN_LOG" 2>&1 \
-            && { [ ! -f "$pal/Palette.qml" ] || setfacl -m u:sddm:r-- "$pal/Palette.qml" >>"$ASHEN_LOG" 2>&1; } \
-            && sudo sed -i "s#^palettePath=.*#palettePath=$pal/Palette.qml#" "$dst/theme.conf" >>"$ASHEN_LOG" 2>&1 \
-            && printf '  login follows the wallpaper (sddm may traverse your home, nothing more)\n' \
-            || printf '  could not open the palette to sddm -- the login keeps its own colours\n'
+            && sudo sed -i "s#^faceDir=.*#faceDir=$pal#" "$dst/theme.conf" >>"$ASHEN_LOG" 2>&1 \
+            && printf '  your face shows on the login (sddm may traverse your home, nothing more)\n' \
+            || printf '  could not open the face folder to sddm -- the login shows a glyph instead\n'
         printf '  to close it again: setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm\n'
         # The face on the login: after the ACL, so the new file inherits it.
         "$ASHEN_REPO/scripts/ashen-sddm-face.sh" >>"$ASHEN_LOG" 2>&1 || true
     else
-        printf '  no setfacl here -- the login keeps its own colours\n'
+        printf '  no setfacl here -- the login shows a glyph where your face would be\n'
     fi
 
     # The theme is Qt6 and MUST say so: without `QtVersion=6` in its metadata

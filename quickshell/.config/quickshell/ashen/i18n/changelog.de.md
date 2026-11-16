@@ -26,15 +26,17 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   einstellbare Dauern, optionalen Autostart und die heute fokussierte Zeit.
 
 - **Anmeldebildschirm neu gezeichnet**: sechs Schichten Berge mit Dunst und
-  Kiefern, in QML gezeichnet statt als Foto, in den Farben deines aktuellen
-  Hintergrunds. Die Uhrzeit bleibt groß in der Mitte, und dein rundes
-  Gesicht, dein Name und das Passwortfeld liegen jetzt jeweils auf einer
-  eigenen Platte, wie die übrigen Widgets der Shell. Der Installer (und das
-  Ändern deines Fotos in den Einstellungen) legt eine runde Kopie deines
-  Gesichts dort ab, wo die Anmeldung sie lesen kann, und erlaubt dem Benutzer
-  `sddm`, dein Home zu durchqueren und einen einzigen Ordner zu lesen
-  (`~/.cache/ashen-sddm`, eine ACL), damit matugen die Palette aktuell hält;
-  ohne sie behält die Anmeldung ihre eigenen Farben. Rückgängig mit
+  Kiefern, in QML gezeichnet statt als Foto, in drei Spalten wie der
+  Sperrbildschirm: der Monat auf einer Seite, die Uhrzeit groß in der Mitte
+  mit deinem runden Gesicht, deinem Namen und dem Passwortfeld auf je einer
+  eigenen Platte, und große Platten für Ausschalten, Neustart, Standby und
+  Sitzung auf der anderen. Er folgt dem Hintergrund nicht mehr: er trägt eine
+  von fünf Paletten (`preset=` in `theme.conf`: dusk, forest, midnight, amber
+  oder ash). Der Installer (und das Ändern deines Fotos in den Einstellungen)
+  legt eine runde Kopie deines Gesichts dort ab, wo die Anmeldung sie lesen
+  kann; dafür darf der Benutzer `sddm` dein Home durchqueren und einen
+  einzigen Ordner lesen (`~/.cache/ashen-sddm`, eine ACL); ohne sie zeigt die
+  Anmeldung ein Symbol. Rückgängig mit
   `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
 - **Der Sperrbildschirm kehrt zur Uhr zurück**, nach 30 s Stille bei der
   Anmeldung (jede Taste oder Zeigerbewegung setzt den Zähler zurück).

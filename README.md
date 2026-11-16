@@ -213,9 +213,11 @@ screen, driven by a Hyprland config written in **Lua** (`hypr/`).
   — music with its sung line, notifications, the machine with its battery
   time on hover — plus a switch in its power menu to show the password as you
   type it.
-- **Login screen** — an SDDM theme laid out like the lock screen: the time large,
-  who, the password, the session and the ways out in the corners. It carries no
-  name, so it suits any desktop.
+- **Login screen** — an SDDM theme in three columns like the lock screen: the
+  month, the time large with your face, name and password each on a plate, and
+  big plates for the session and the ways out, over drawn mountains. One of five
+  palettes (`preset=` in its `theme.conf`: dusk, forest, midnight, amber, ash).
+  It carries no name, so it suits any desktop.
 - **Desktop widgets** — clock, weather, calendar, sun, media, lyrics,
   visualiser, timer, notifications, updates, battery, machine, disks, screen time and
   pictures. Arrange them with `SUPER + SHIFT + D` and drag a widget by any part
