@@ -363,7 +363,16 @@ Scope {
                         height: clockCol.height
                         // Steps up out of the way rather than vanishing: it is
                         // the same clock, just no longer the whole screen.
-                        y: (parent.height - height) / 2 - surface.auth * 200
+                        y: {
+                            const rest = (parent.height - height) / 2
+                            // At login the clock stands 40 px clear above the plate,
+                            // which is centred on the screen: the clock above and the
+                            // three blocks below read as one centred composition. The
+                            // clock is scaled to 0.68 about its centre by then, so its
+                            // bottom edge is at y + height * (1 + 0.68) / 2.
+                            const login = authGroup.y - 40 - height * 0.84
+                            return rest + surface.auth * (login - rest)
+                        }
 
                                 Column {
                                     id: clockCol
@@ -454,8 +463,9 @@ Scope {
                                 if (c.visible) { h += c.restH !== undefined ? c.restH : c.height; n++ }
                             return h + Math.max(0, n - 1) * leftCol.spacing
                         }
-                        // Hung from the centre plate's top line (it grows down).
-                        y: authGroup.y
+                        // Centred on the screen like the plate between them: the same axis,
+                        // so the blocks stand level whatever each one holds.
+                        y: (parent.height - leftCol.restH) / 2
                         spacing: 16
                         opacity: leftCol.enter
                         visible: leftCol.enter > 0.001
@@ -510,8 +520,9 @@ Scope {
                                 if (c.visible) { h += c.restH !== undefined ? c.restH : c.height; n++ }
                             return h + Math.max(0, n - 1) * rightCol.spacing
                         }
-                        // Hung from the centre plate's top line (it grows down).
-                        y: authGroup.y
+                        // Centred on the screen like the plate between them: the same axis,
+                        // so the blocks stand level whatever each one holds.
+                        y: (parent.height - rightCol.restH) / 2
                         spacing: 16
                         opacity: rightCol.enter
                         visible: rightCol.enter > 0.001
@@ -546,7 +557,9 @@ Scope {
                     Item {
                         id: authGroup
                         anchors.horizontalCenter: parent.horizontalCenter
-                        y: idleGroup.y + idleGroup.height + 56
+                        // One axis for the three blocks: the screen's middle, the same
+                        // one the two columns centre on, so they always stand level.
+                        y: (parent.height - height) / 2
                         width: authPlate.width
                         height: authPlate.height
                         // The second half of the move, once the music has gone.
