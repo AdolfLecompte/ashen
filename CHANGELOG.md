@@ -23,8 +23,8 @@
 - **Login screen redrawn**: six layers of mountains with mist and pines, drawn
   in QML instead of a photo, in the colours of your current wallpaper, and
   built from the lock screen's own pieces: the time stacked and large, plates
-  for power, reboot, sleep and session, and a card with your round face and
-  the sunk password field. The installer (and changing your photo in
+  for power, reboot, sleep and session, and your round face, your name and
+  the password field, each on a plate of its own. The installer (and changing your photo in
   Settings) keeps a rounded copy of your face where the login can read it, and
   lets the `sddm` user traverse your home and read one folder
   (`~/.cache/ashen-sddm`, an ACL) so matugen can keep the palette current;

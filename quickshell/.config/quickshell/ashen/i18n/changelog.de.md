@@ -29,8 +29,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Kiefern, in QML gezeichnet statt als Foto, in den Farben deines aktuellen
   Hintergrunds und aus den Teilen des Sperrbildschirms gebaut: die Uhrzeit
   groß und gestapelt, Platten für Ausschalten, Neustart, Standby und Sitzung
-  und eine Karte mit deinem runden Gesicht und dem eingesenkten
-  Passwortfeld. Der Installer (und das Ändern deines Fotos in den
+  und dein rundes Gesicht, dein Name und das Passwortfeld, jedes auf
+  einer eigenen Platte. Der Installer (und das Ändern deines Fotos in den
   Einstellungen) legt eine runde Kopie deines Gesichts dort ab, wo die
   Anmeldung sie lesen kann, und erlaubt dem Benutzer
   `sddm`, dein Home zu durchqueren und einen einzigen Ordner zu lesen

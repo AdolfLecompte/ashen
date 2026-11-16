@@ -304,194 +304,187 @@ Rectangle {
                 }
             }
 
-            // The card: who you are, and the way in.
-            Rectangle {
-                width: 560
-                implicitHeight: card.implicitHeight + 48
-                height: implicitHeight
-                radius: 22
-                color: root.plate
+            // Who you are: the face and the name, each on a plate of its own
+            // like the ways out above.
+            Row {
+                spacing: 16
 
-                Column {
-                    id: card
-                    x: 24; y: 24
-                    width: parent.width - 48
-                    spacing: 18
-
+                Rectangle {
+                    width: 88; height: 88; radius: root.cardR
+                    color: root.plate
                     // The face, round, with its ring: at rest a plain edge, the
                     // accent while it checks, the error when it said no.
-                    Row {
-                        spacing: 18
-                        Rectangle {
-                            id: faceRing
-                            width: 84; height: 84; radius: width / 2
-                            color: root.alpha(pal.ghost, 0.12)
-                            border.width: 2
-                            border.color: message.text !== "" ? pal.error
-                                : root.loggingIn ? pal.ghost : root.alpha(pal.ghost, 0.20)
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
-                            // Already round (scripts/ashen-sddm-face.sh), so it is only
-                            // shown: a mask would be a shader, and a greeter on software
-                            // rendering draws none -- an empty circle.
-                            Image {
-                                id: faceImg
-                                anchors.fill: parent; anchors.margins: 2
-                                source: root.facePath
-                                sourceSize: Qt.size(256, 256)
-                                fillMode: Image.PreserveAspectFit
-                                cache: false
-                            }
-                            Text {
-                                anchors.centerIn: parent
-                                text: ""   // person
-                                color: pal.ghost
-                                font.pixelSize: 44; font.family: "Material Symbols Rounded"
-                                visible: faceImg.status !== Image.Ready
-                            }
-                        }
-
-                        // Who: the name, and a picker over it when there is a choice.
-                        Item {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 400; height: 40
-                            Text {
-                                id: userText
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: userList.currentText
-                                color: pal.snow
-                                font.pixelSize: 26; font.bold: true; font.letterSpacing: 1
-                                font.family: "JetBrainsMono NF"
-                            }
-                            Picker {
-                                id: userList
-                                objectName: "userPicker"
-                                anchors.fill: parent
-                                // One user is not a choice.
-                                enabled: userModel.count > 1
-                                model: userModel; textRole: "name"; currentIndex: userModel.lastIndex
-                            }
-                        }
-                    }
-
-                    // The password field, sunk like every control you type into:
-                    // lock at one end, the way in at the other, the dots and the
-                    // prompt on its own centre. It shakes on a wrong password.
                     Rectangle {
-                        id: passField
-                        width: parent.width; height: 52
-                        radius: root.cardR
-                        color: root.alpha(pal.ghost, 0.06)
-                        border.width: 1
+                        id: faceRing
+                        anchors.centerIn: parent
+                        width: 68; height: 68; radius: width / 2
+                        color: root.alpha(pal.ghost, 0.12)
+                        border.width: 2
                         border.color: message.text !== "" ? pal.error
-                            : password.activeFocus ? pal.ghost : root.alpha(pal.ghost, 0.20)
+                            : root.loggingIn ? pal.ghost : root.alpha(pal.ghost, 0.20)
                         Behavior on border.color { ColorAnimation { duration: 150 } }
-                        transform: Translate { id: shakeT; x: 0 }
-
-                        SequentialAnimation {
-                            id: shakeAnim
-                            NumberAnimation { target: shakeT; property: "x"; to: 9; duration: 55 }
-                            NumberAnimation { target: shakeT; property: "x"; to: -8; duration: 55 }
-                            NumberAnimation { target: shakeT; property: "x"; to: 6; duration: 55 }
-                            NumberAnimation { target: shakeT; property: "x"; to: -4; duration: 55 }
-                            NumberAnimation { target: shakeT; property: "x"; to: 0; duration: 55 }
+                        // Already round (scripts/ashen-sddm-face.sh), so it is only
+                        // shown: a mask would be a shader, and a greeter on software
+                        // rendering draws none -- an empty circle.
+                        Image {
+                            id: faceImg
+                            anchors.fill: parent; anchors.margins: 2
+                            source: root.facePath
+                            sourceSize: Qt.size(256, 256)
+                            fillMode: Image.PreserveAspectFit
+                            cache: false
                         }
-
-                        // The field takes the keys but draws nothing: the dots below do.
-                        TextField {
-                            id: password
-                            objectName: "password"   // the probe types into it by name
-                            anchors.fill: parent
-                            echoMode: TextInput.Password
-                            color: "transparent"
-                            cursorDelegate: Item {}
-                            font.pixelSize: 1
-                            focus: true
-                            background: null
-                            onAccepted: root.tryLogin()
-                            Keys.onEscapePressed: password.text = ""
-                        }
-
-                        Text {
-                            anchors.left: parent.left; anchors.leftMargin: 18
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: ""   // lock
-                            color: message.text !== "" ? pal.error : pal.ghost
-                            font.pixelSize: 18; font.family: "Material Symbols Rounded"
-                        }
-
-                        // The lock's own dots. The model is a CONSTANT (a number that
-                        // changes rebuilds every delegate and replays the entry on all
-                        // of them): 16 slots, each told whether it is filled. A slot
-                        // opens, a dash appears in it and closes into a dot; the row
-                        // recentres as it grows.
-                        Row {
-                            anchors.centerIn: parent
-                            Repeater {
-                                model: 16
-                                delegate: Item {
-                                    required property int index
-                                    readonly property bool on: index < Math.min(password.text.length, 16)
-                                    width: on ? 17 : 0
-                                    height: 11
-                                    Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
-                                    Rectangle {
-                                        anchors.centerIn: parent
-                                        width: parent.on ? 11 : 9
-                                        height: parent.on ? 11 : 2
-                                        radius: height / 2
-                                        opacity: parent.on ? 1 : 0
-                                        color: pal.ghost
-                                        Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
-                                        Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
-                                        Behavior on opacity { NumberAnimation { duration: 120 } }
-                                    }
-                                }
-                            }
-                        }
-                        // Literal, NOT textConstants: sddm-greeter-qt6 0.21 does not
-                        // hand this theme a `textConstants`.
                         Text {
                             anchors.centerIn: parent
-                            visible: password.text === ""
-                            text: "enter password..."
-                            color: pal.ash
-                            font.pixelSize: 14
-                            font.family: "JetBrainsMono NF"
+                            text: "\ue7fd"   // person
+                            color: pal.ghost
+                            font.pixelSize: 36; font.family: "Material Symbols Rounded"
+                            visible: faceImg.status !== Image.Ready
                         }
+                    }
+                }
 
-                        Text {
-                            anchors.right: parent.right; anchors.rightMargin: 18
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: ""   // arrow_forward
-                            color: root.loggingIn || password.text !== "" ? pal.ghost : pal.ash
-                            font.pixelSize: 18; font.family: "Material Symbols Rounded"
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            MouseArea {
-                                anchors.fill: parent; anchors.margins: -8
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.tryLogin()
+                // Who: the name, and a picker over it when there is a choice.
+                Rectangle {
+                    width: 456; height: 88; radius: root.cardR
+                    color: root.plate
+                    Text {
+                        id: userText
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: 24
+                        text: userList.currentText
+                        color: pal.snow
+                        font.pixelSize: 26; font.bold: true; font.letterSpacing: 1
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Picker {
+                        id: userList
+                        objectName: "userPicker"
+                        anchors.fill: parent
+                        // One user is not a choice.
+                        enabled: userModel.count > 1
+                        model: userModel; textRole: "name"; currentIndex: userModel.lastIndex
+                    }
+                }
+            }
+
+            // The way in, on its own plate: lock at one end, the way in at the
+            // other, the dots and the prompt on its own centre. It shakes on a
+            // wrong password.
+            Rectangle {
+                id: passField
+                width: 560; height: 60
+                radius: root.cardR
+                color: root.plate
+                border.width: 1
+                border.color: message.text !== "" ? pal.error
+                    : password.activeFocus ? pal.ghost : root.alpha(pal.ghost, 0.20)
+                Behavior on border.color { ColorAnimation { duration: 150 } }
+                transform: Translate { id: shakeT; x: 0 }
+
+                SequentialAnimation {
+                    id: shakeAnim
+                    NumberAnimation { target: shakeT; property: "x"; to: 9; duration: 55 }
+                    NumberAnimation { target: shakeT; property: "x"; to: -8; duration: 55 }
+                    NumberAnimation { target: shakeT; property: "x"; to: 6; duration: 55 }
+                    NumberAnimation { target: shakeT; property: "x"; to: -4; duration: 55 }
+                    NumberAnimation { target: shakeT; property: "x"; to: 0; duration: 55 }
+                }
+
+                // The field takes the keys but draws nothing: the dots below do.
+                TextField {
+                    id: password
+                    objectName: "password"   // the probe types into it by name
+                    anchors.fill: parent
+                    echoMode: TextInput.Password
+                    color: "transparent"
+                    cursorDelegate: Item {}
+                    font.pixelSize: 1
+                    focus: true
+                    background: null
+                    onAccepted: root.tryLogin()
+                    Keys.onEscapePressed: password.text = ""
+                }
+
+                Text {
+                    anchors.left: parent.left; anchors.leftMargin: 22
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue897"   // lock
+                    color: message.text !== "" ? pal.error : pal.ghost
+                    font.pixelSize: 20; font.family: "Material Symbols Rounded"
+                }
+
+                // The lock's own dots. The model is a CONSTANT (a number that
+                // changes rebuilds every delegate and replays the entry on all
+                // of them): 16 slots, each told whether it is filled. A slot
+                // opens, a dash appears in it and closes into a dot; the row
+                // recentres as it grows.
+                Row {
+                    anchors.centerIn: parent
+                    Repeater {
+                        model: 16
+                        delegate: Item {
+                            required property int index
+                            readonly property bool on: index < Math.min(password.text.length, 16)
+                            width: on ? 17 : 0
+                            height: 11
+                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.on ? 11 : 9
+                                height: parent.on ? 11 : 2
+                                radius: height / 2
+                                opacity: parent.on ? 1 : 0
+                                color: pal.ghost
+                                Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                                Behavior on height { NumberAnimation { duration: 180; easing.type: Easing.OutQuint } }
+                                Behavior on opacity { NumberAnimation { duration: 120 } }
                             }
                         }
                     }
+                }
+                // Literal, NOT textConstants: sddm-greeter-qt6 0.21 does not
+                // hand this theme a `textConstants`.
+                Text {
+                    anchors.centerIn: parent
+                    visible: password.text === ""
+                    text: "enter password..."
+                    color: pal.mist
+                    font.pixelSize: 14
+                    font.family: "JetBrainsMono NF"
+                }
 
-                    // Keeps its height either way: a message must not shove the field.
-                    Item {
-                        width: parent.width; height: 16
-                        Text {
-                            id: message
-                            anchors.centerIn: parent
-                            color: pal.error
-                            font.pixelSize: 12; font.family: "JetBrainsMono NF"
-                        }
-                        // Caps Lock is where a password fails without saying why.
-                        Text {
-                            anchors.centerIn: parent
-                            visible: message.text === "" && !!(keyboard && keyboard.capsLock)
-                            text: "caps lock is on"
-                            color: pal.mist
-                            font.pixelSize: 12; font.family: "JetBrainsMono NF"
-                        }
+                Text {
+                    anchors.right: parent.right; anchors.rightMargin: 22
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "\ue5c8"   // arrow_forward
+                    color: root.loggingIn || password.text !== "" ? pal.ghost : pal.mist
+                    font.pixelSize: 20; font.family: "Material Symbols Rounded"
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                    MouseArea {
+                        anchors.fill: parent; anchors.margins: -8
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.tryLogin()
                     }
+                }
+            }
+
+            // Keeps its height either way: a message must not shove the field.
+            Item {
+                width: 560; height: 16
+                Text {
+                    id: message
+                    anchors.centerIn: parent
+                    color: pal.error
+                    font.pixelSize: 12; font.family: "JetBrainsMono NF"
+                }
+                // Caps Lock is where a password fails without saying why.
+                Text {
+                    anchors.centerIn: parent
+                    visible: message.text === "" && !!(keyboard && keyboard.capsLock)
+                    text: "caps lock is on"
+                    color: pal.mist
+                    font.pixelSize: 12; font.family: "JetBrainsMono NF"
                 }
             }
         }

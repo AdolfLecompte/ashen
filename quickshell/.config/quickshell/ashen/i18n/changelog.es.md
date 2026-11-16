@@ -29,8 +29,8 @@ si falta, la bienvenida las enseña en inglés.
 - **Pantalla de inicio de sesión rehecha**: seis capas de montañas con bruma
   y pinos, dibujadas en QML en vez de una foto, con los colores de tu fondo
   actual, y hecha con las piezas del lock: la hora apilada y grande, placas
-  para apagar, reiniciar, suspender y elegir sesión, y una tarjeta con tu
-  foto redonda y el campo de contraseña hundido. El instalador (y cambiar tu
+  para apagar, reiniciar, suspender y elegir sesión, y tu foto redonda, tu
+  nombre y el campo de contraseña, cada uno en su propia placa. El instalador (y cambiar tu
   foto en Ajustes) guarda una copia redonda de tu cara donde el login puede
   leerla, y deja que el usuario `sddm` atraviese tu home
   y lea una sola carpeta (`~/.cache/ashen-sddm`, una ACL) para que matugen
