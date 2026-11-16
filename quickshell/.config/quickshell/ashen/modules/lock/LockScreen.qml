@@ -464,8 +464,9 @@ Scope {
                             return h + Math.max(0, n - 1) * leftCol.spacing
                         }
                         // Centred on the screen like the plate between them: the same axis,
-                        // so the blocks stand level whatever each one holds.
-                        y: (parent.height - leftCol.restH) / 2
+                        // so the blocks stand level whatever each one holds. By the height
+                        // it really has: the folded one left the left column 24 px low.
+                        y: (parent.height - leftCol.height) / 2
                         spacing: 16
                         opacity: leftCol.enter
                         visible: leftCol.enter > 0.001
@@ -521,8 +522,9 @@ Scope {
                             return h + Math.max(0, n - 1) * rightCol.spacing
                         }
                         // Centred on the screen like the plate between them: the same axis,
-                        // so the blocks stand level whatever each one holds.
-                        y: (parent.height - rightCol.restH) / 2
+                        // so the blocks stand level whatever each one holds. By the height
+                        // it really has: the folded one left the left column 24 px low.
+                        y: (parent.height - rightCol.height) / 2
                         spacing: 16
                         opacity: rightCol.enter
                         visible: rightCol.enter > 0.001
