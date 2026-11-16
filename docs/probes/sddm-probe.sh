@@ -25,7 +25,7 @@ s=io.open('$main',encoding='utf-8').read()
 import re
 lit=sum(1 for c in s if 0xE000<=ord(c)<=0xF8FF)
 print(lit + len(re.findall(r'\\\\u[eEfF][0-9a-fA-F]{3}', s)))")
-[ "$n" -eq 8 ] && say ok "eight glyphs survive" || { say FAIL "expected 8 PUA glyphs, found $n"; fail=1; }
+[ "$n" -eq 9 ] && say ok "nine glyphs survive" || { say FAIL "expected 9 PUA glyphs, found $n"; fail=1; }
 
 python3 -c "
 import io,sys,re
@@ -125,6 +125,12 @@ grep -qE 'import QtQuick.Effects|MultiEffect|OpacityMask' sddm/ashen/Main.qml \
   && grep -q 'ashen-sddm-face.sh' quickshell/.config/quickshell/ashen/modules/settings/SettingsSystemTab.qml \
   && say ok "the face is rounded for the login (installer and Settings call the script)" \
   || { say FAIL "the login's face is not wired to the installer and Settings"; fail=1; }
+# The scene can be changed from the login and is kept in the greeter's own
+# settings: the theme dir and theme.conf are root's, the greeter cannot write them.
+grep -q 'Settings {' sddm/ashen/Main.qml && grep -q 'nextPreset()' sddm/ashen/Main.qml \
+  && say ok "the scene can be changed from the login and is remembered" \
+  || { say FAIL "no button to change the scene"; fail=1; }
+
 # The login wears a predefined palette and never reads the session's: a login
 # that depends on a file in a home it may not be able to read is a login that
 # can come up wrong.
@@ -132,7 +138,7 @@ for k in dusk forest midnight amber ash; do
     grep -qE "^[[:space:]]+$k: \{" sddm/ashen/Main.qml && say ok "palette $k is defined" \
       || { say FAIL "palette $k missing from Main.qml"; fail=1; }
 done
-grep -q 'presets\[config.preset\] || presets.dusk' sddm/ashen/Main.qml \
+grep -q ': "dusk"' sddm/ashen/Main.qml \
   && say ok "an unknown preset falls back to dusk" \
   || { say FAIL "an unknown preset would leave the login with no palette"; fail=1; }
 grep -q 'Palette.qml' sddm/ashen/Main.qml \

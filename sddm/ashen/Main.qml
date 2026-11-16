@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtCore
 
 // Login screen: one column on the left -- the time, one plate for who you are and
 // the way in, the three ways out, the session -- and the drawn mountains on the
@@ -37,7 +38,21 @@ Rectangle {
         ash: { hue: 0.70, sat: 0.16, surface: "#1c1c21", abyss: "#101015", snow: "#e8e8ec", mist: "#9090a0",
                 ash: "#4a4a54", ghost: "#b8b8cc", neutral: "#b0a090", accentText: "#12121a", error: "#c87a7a" }
     })
-    readonly property var scheme: presets[config.preset] || presets.dusk
+    // The scene can be changed from the login itself, and is remembered: the
+    // greeter's own settings (the sddm user's home, never the session's). Until
+    // someone picks one, theme.conf's `preset` rules, and an unknown name is dusk.
+    Settings {
+        id: remembered
+        category: "ashen-login"
+        property string preset: ""
+    }
+    readonly property var presetNames: Object.keys(presets)
+    readonly property string presetName: presets[remembered.preset] ? remembered.preset
+        : (presets[config.preset] ? config.preset : "dusk")
+    readonly property var scheme: presets[presetName]
+    function nextPreset() {
+        remembered.preset = presetNames[(presetNames.indexOf(presetName) + 1) % presetNames.length]
+    }
     QtObject {
         id: pal
         readonly property color surface: root.scheme.surface
@@ -429,41 +444,73 @@ Rectangle {
                 }
             }
 
-            // The session, one wide plate.
-            Rectangle {
-                width: 560; height: 52; radius: root.cardR
-                color: root.plate
-                scale: sessHover.hovered ? 1.02 : 1
-                Behavior on scale { NumberAnimation { duration: 150 } }
-                HoverHandler { id: sessHover }
-                Row {
-                    anchors.centerIn: parent
-                    spacing: 10
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "\ue30a"   // computer
-                        color: sessHover.hovered ? pal.snow : pal.ghost
-                        font.pixelSize: 19; font.family: "Material Symbols Rounded"
+            // The session, and the button that changes the scene.
+            Row {
+                spacing: 14
+
+                Rectangle {
+                    width: 416; height: 52; radius: root.cardR
+                    color: root.plate
+                    scale: sessHover.hovered ? 1.02 : 1
+                    Behavior on scale { NumberAnimation { duration: 150 } }
+                    HoverHandler { id: sessHover }
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 10
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "\ue30a"   // computer
+                            color: sessHover.hovered ? pal.snow : pal.ghost
+                            font.pixelSize: 19; font.family: "Material Symbols Rounded"
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: sessionList.currentText; color: pal.snow
+                            font.pixelSize: 15; font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "\ue5cf"   // expand_more
+                            color: pal.mist
+                            font.pixelSize: 17; font.family: "Material Symbols Rounded"
+                        }
                     }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: sessionList.currentText; color: pal.snow
-                        font.pixelSize: 15; font.bold: true
-                        font.family: "JetBrainsMono NF"
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "\ue5cf"   // expand_more
-                        color: pal.mist
-                        font.pixelSize: 17; font.family: "Material Symbols Rounded"
+                    Picker {
+                        id: sessionList
+                        objectName: "sessionPicker"
+                        anchors.fill: parent
+                        openUp: true
+                        model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
                     }
                 }
-                Picker {
-                    id: sessionList
-                    objectName: "sessionPicker"
-                    anchors.fill: parent
-                    openUp: true
-                    model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
+
+                // Pressing it goes to the next scene: its name says which is on.
+                Rectangle {
+                    objectName: "sceneButton"
+                    width: 130; height: 52; radius: root.cardR
+                    color: root.plate
+                    scale: sceneHover.hovered ? 1.05 : 1
+                    Behavior on scale { NumberAnimation { duration: 150 } }
+                    HoverHandler { id: sceneHover; cursorShape: Qt.PointingHandCursor }
+                    TapHandler { onTapped: root.nextPreset() }
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "\ue40a"   // palette
+                            color: sceneHover.hovered ? pal.snow : pal.ghost
+                            font.pixelSize: 19; font.family: "Material Symbols Rounded"
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.presetName
+                            color: sceneHover.hovered ? pal.snow : pal.mist
+                            font.pixelSize: 13
+                            font.family: "JetBrainsMono NF"
+                        }
+                    }
                 }
             }
         }
