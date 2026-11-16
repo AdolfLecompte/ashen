@@ -128,15 +128,7 @@ print("ok   PKGBUILD covers every installer package")
 CHECK
 [ $? -eq 0 ] || fail=1
 
-# The README prints both lists. A list nobody checks is a list that drifts, and
-# this one drifted in both directions before the container caught it.
-for p in $(bash -c 'source install/lib/pkgs.sh; echo "${PKGS_OFFICIAL[@]}"'); do
-    grep -q -- "$p" README.md || { say FAIL "README does not list $p"; fail=1; miss=1; }
-done
-[ "${miss:-0}" -eq 0 ] && say ok "the README lists every official package"
-for p in $(bash -c 'source install/lib/pkgs.sh; echo "${PKGS_AUR[@]}"'); do
-    grep -q -- "$p" README.md || { say FAIL "README does not list $p"; fail=1; missa=1; }
-done
-[ "${missa:-0}" -eq 0 ] && say ok "the README lists every AUR package"
+# That the Requirements page of the website lists every package is checked by the website's own
+# tests (AdolfLecompte.github.io): it reads the lists from install/lib/pkgs.sh.
 
 exit $fail
