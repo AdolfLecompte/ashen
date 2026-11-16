@@ -625,9 +625,25 @@ Scope {
                         }
 
                         // Name, field and whatever the screen has to say, one
-                        // under the other.
-                        Column {
+                        // under the other, on ONE plate: the fill and the corner
+                        // of the widgets either side, as wide as the right-hand
+                        // column, so the middle stands on the same line as them.
+                        Rectangle {
+                            id: whoPlate
                             anchors.horizontalCenter: parent.horizontalCenter
+                            width: 380
+                            height: whoCol.implicitHeight + 40
+                            radius: Services.Sizes.panelR
+                            color: Services.Prefs.widgetOutline ? Services.Colors.surfaceGlass
+                                                                : Services.Colors.surfacePill
+                            border.color: Services.Prefs.widgetOutline ? Services.Colors.fillOutline : "transparent"
+                            border.width: Services.Prefs.widgetOutline ? Services.Sizes.outlineW : 0
+                            // Arrives with the name; the field then comes in on it.
+                            opacity: authGroup.stage(1)
+
+                        Column {
+                            id: whoCol
+                            anchors.centerIn: parent
                             spacing: 10
 
                             // Two facts, not one string: who you are, and the
@@ -907,6 +923,7 @@ Scope {
                                     Behavior on opacity { Widgets.Anim {} }
                                 }
                             }
+                        }
                         }
                     }
                     }
