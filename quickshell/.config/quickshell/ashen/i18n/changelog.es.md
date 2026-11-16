@@ -28,11 +28,10 @@ si falta, la bienvenida las enseña en inglés.
 
 - **Pantalla de inicio de sesión rehecha**: seis capas de montañas con bruma
   y pinos, dibujadas en QML en vez de una foto, con los colores de tu fondo
-  actual, y hecha con las piezas del lock: la hora apilada y grande, placas
-  para apagar, reiniciar, suspender y elegir sesión, y tu foto redonda, tu
-  nombre y el campo de contraseña, cada uno en su propia placa. El instalador (y cambiar tu
-  foto en Ajustes) guarda una copia redonda de tu cara donde el login puede
-  leerla, y deja que el usuario `sddm` atraviese tu home
+  actual. La hora sigue grande en el centro, y tu foto redonda, tu nombre y
+  el campo de contraseña van ahora cada uno en su propia placa, como el resto
+  de widgets del shell. El instalador (y cambiar tu foto en Ajustes) guarda
+  una copia redonda de tu cara donde el login puede leerla, y deja que el usuario `sddm` atraviese tu home
   y lea una sola carpeta (`~/.cache/ashen-sddm`, una ACL) para que matugen
   mantenga la paleta al día; sin ella el login conserva sus colores. Se
   deshace con `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.

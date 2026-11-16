@@ -137,6 +137,12 @@ Rectangle {
         }
     }
 
+    component Pill: Rectangle {
+        radius: root.pillR
+        color: root.plate
+        implicitHeight: root.pillH
+    }
+
     // The whole composition lives in a 1920x1080 box and is scaled to fit, so
     // every size below is the one the design was drawn at.
     Item {
@@ -145,235 +151,112 @@ Rectangle {
         anchors.centerIn: parent
         scale: Math.min(root.width / 1920, root.height / 1080)
 
-        // ---- Left: the time, stacked, and the date on a plate -------------
-        Column {
-            x: 440
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 26
+        // ---- One column on one axis: time, who, the way in -----------------
+        ColumnLayout {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 150
+            spacing: 0
 
-            Column {
+            // The hour large, the seconds small beside it: the lock's own clock.
+            Row {
+                Layout.alignment: Qt.AlignHCenter
                 spacing: 0
-                Repeater {
-                    model: [Qt.formatTime(clock.now, "HH"), Qt.formatTime(clock.now, "mm")]
-                    // Each line is as tall as its digits, not as its font: a Text
-                    // keeps the line's full leading and the two would sit far apart.
-                    Item {
-                        required property string modelData
-                        width: digits.implicitWidth; height: 206
-                        Text {
-                            id: digits
-                            anchors.centerIn: parent
-                            text: parent.modelData
-                            color: pal.snow
-                            font.pixelSize: 250; font.weight: Font.Bold; font.letterSpacing: -8
-                            font.family: "JetBrainsMono NF"
-                        }
-                    }
-                }
-            }
-            Rectangle {
-                implicitHeight: root.pillH
-                implicitWidth: dateText.implicitWidth + 40
-                radius: root.pillR
-                color: root.plate
                 Text {
-                    id: dateText
-                    anchors.centerIn: parent
-                    text: Qt.formatDate(clock.now, "dddd, MMM d").toUpperCase()
+                    text: Qt.formatTime(clock.now, "HH:mm")
                     color: pal.snow
-                    font.pixelSize: 14; font.bold: true; font.letterSpacing: 1.5
+                    font.pixelSize: 124; font.weight: Font.Bold; font.letterSpacing: -2
+                    font.family: "JetBrainsMono NF"
+                }
+                Text {
+                    anchors.bottom: parent.bottom; anchors.bottomMargin: 24
+                    leftPadding: 10
+                    text: Qt.formatTime(clock.now, "ss")
+                    color: root.faint
+                    font.pixelSize: 30; font.weight: Font.Bold
                     font.family: "JetBrainsMono NF"
                 }
             }
-        }
-
-        // ---- Right: the ways out, and the way in ---------------------------
-        Column {
-            x: 900
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 20
-
-            Grid {
-                columns: 2
-                spacing: 16
-
-                Repeater {
-                    model: [
-                        { g: "", name: "power", sub: "shut down", act: "poweroff" },
-                        { g: "", name: "reboot", sub: "restart", act: "reboot" },
-                        { g: "", name: "sleep", sub: "suspend", act: "suspend" }
-                    ]
-                    Rectangle {
-                        required property var modelData
-                        width: 272; height: 88; radius: root.cardR
-                        color: root.plate
-                        // Hover = grow and brighten, never a fill.
-                        scale: ma.containsMouse ? 1.04 : 1
-                        Behavior on scale { NumberAnimation { duration: 150 } }
-                        Row {
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: 18
-                            spacing: 14
-                            Rectangle {
-                                width: 52; height: 52; radius: root.cardR
-                                color: root.alpha(pal.ghost, 0.16)
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.g
-                                    color: ma.containsMouse ? pal.snow : pal.ghost
-                                    font.pixelSize: 26; font.family: "Material Symbols Rounded"
-                                }
-                            }
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: 2
-                                Text {
-                                    text: modelData.name
-                                    color: pal.snow
-                                    font.pixelSize: 16; font.bold: true
-                                    font.family: "JetBrainsMono NF"
-                                }
-                                Text {
-                                    text: modelData.sub
-                                    color: pal.mist
-                                    font.pixelSize: 12
-                                    font.family: "JetBrainsMono NF"
-                                }
-                            }
-                        }
-                        MouseArea {
-                            id: ma
-                            anchors.fill: parent; hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                if (modelData.act === "poweroff") sddm.powerOff()
-                                else if (modelData.act === "reboot") sddm.reboot()
-                                else sddm.suspend()
-                            }
-                        }
-                    }
-                }
-
-                // The session: the same plate, with the picker over it.
-                Rectangle {
-                    width: 272; height: 88; radius: root.cardR
-                    color: root.plate
-                    scale: sessHover.hovered ? 1.04 : 1
-                    Behavior on scale { NumberAnimation { duration: 150 } }
-                    Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 18
-                        spacing: 14
-                        Rectangle {
-                            width: 52; height: 52; radius: root.cardR
-                            color: root.alpha(pal.ghost, 0.16)
-                            Text {
-                                anchors.centerIn: parent
-                                text: ""   // computer
-                                color: sessHover.hovered ? pal.snow : pal.ghost
-                                font.pixelSize: 26; font.family: "Material Symbols Rounded"
-                            }
-                        }
-                        Column {
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 2
-                            Text {
-                                text: "session"
-                                color: pal.snow
-                                font.pixelSize: 16; font.bold: true
-                                font.family: "JetBrainsMono NF"
-                            }
-                            Text {
-                                width: 170
-                                elide: Text.ElideRight
-                                text: sessionList.currentText.toLowerCase()
-                                color: pal.mist
-                                font.pixelSize: 12
-                                font.family: "JetBrainsMono NF"
-                            }
-                        }
-                    }
-                    HoverHandler { id: sessHover }
-                    Picker {
-                        id: sessionList
-                        objectName: "sessionPicker"
-                        anchors.fill: parent
-                        openUp: true
-                        model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
-                    }
-                }
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                text: Qt.formatDate(clock.now, "dddd, d MMMM").toLowerCase()
+                color: pal.snow
+                opacity: 0.8
+                font.pixelSize: 17
+                font.family: "JetBrainsMono NF"
             }
 
-            // Who you are: the face and the name, each on a plate of its own
-            // like the ways out above.
-            Row {
-                spacing: 16
+            Item { Layout.preferredHeight: 52 }
 
+            // The face on a plate: round, with its ring -- at rest a plain edge,
+            // the accent while it checks, the error when it said no.
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: 108; Layout.preferredHeight: 108
+                radius: 22
+                color: root.plate
                 Rectangle {
-                    width: 88; height: 88; radius: root.cardR
-                    color: root.plate
-                    // The face, round, with its ring: at rest a plain edge, the
-                    // accent while it checks, the error when it said no.
-                    Rectangle {
-                        id: faceRing
-                        anchors.centerIn: parent
-                        width: 68; height: 68; radius: width / 2
-                        color: root.alpha(pal.ghost, 0.12)
-                        border.width: 2
-                        border.color: message.text !== "" ? pal.error
-                            : root.loggingIn ? pal.ghost : root.alpha(pal.ghost, 0.20)
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
-                        // Already round (scripts/ashen-sddm-face.sh), so it is only
-                        // shown: a mask would be a shader, and a greeter on software
-                        // rendering draws none -- an empty circle.
-                        Image {
-                            id: faceImg
-                            anchors.fill: parent; anchors.margins: 2
-                            source: root.facePath
-                            sourceSize: Qt.size(256, 256)
-                            fillMode: Image.PreserveAspectFit
-                            cache: false
-                        }
-                        Text {
-                            anchors.centerIn: parent
-                            text: "\ue7fd"   // person
-                            color: pal.ghost
-                            font.pixelSize: 36; font.family: "Material Symbols Rounded"
-                            visible: faceImg.status !== Image.Ready
-                        }
+                    id: faceRing
+                    anchors.centerIn: parent
+                    width: 84; height: 84; radius: width / 2
+                    color: root.alpha(pal.ghost, 0.12)
+                    border.width: 2
+                    border.color: message.text !== "" ? pal.error
+                        : root.loggingIn ? pal.ghost : root.alpha(pal.ghost, 0.20)
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                    // Already round (scripts/ashen-sddm-face.sh), so it is only
+                    // shown: a mask would be a shader, and a greeter on software
+                    // rendering draws none -- an empty circle.
+                    Image {
+                        id: faceImg
+                        anchors.fill: parent; anchors.margins: 2
+                        source: root.facePath
+                        sourceSize: Qt.size(256, 256)
+                        fillMode: Image.PreserveAspectFit
+                        cache: false
                     }
-                }
-
-                // Who: the name, and a picker over it when there is a choice.
-                Rectangle {
-                    width: 456; height: 88; radius: root.cardR
-                    color: root.plate
                     Text {
-                        id: userText
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 24
-                        text: userList.currentText
-                        color: pal.snow
-                        font.pixelSize: 26; font.bold: true; font.letterSpacing: 1
-                        font.family: "JetBrainsMono NF"
-                    }
-                    Picker {
-                        id: userList
-                        objectName: "userPicker"
-                        anchors.fill: parent
-                        // One user is not a choice.
-                        enabled: userModel.count > 1
-                        model: userModel; textRole: "name"; currentIndex: userModel.lastIndex
+                        anchors.centerIn: parent
+                        text: "\ue7fd"   // person
+                        color: pal.ghost
+                        font.pixelSize: 42; font.family: "Material Symbols Rounded"
+                        visible: faceImg.status !== Image.Ready
                     }
                 }
             }
 
-            // The way in, on its own plate: lock at one end, the way in at the
-            // other, the dots and the prompt on its own centre. It shakes on a
-            // wrong password.
+            Item { Layout.preferredHeight: 14 }
+
+            // Who: the name on its own plate; a picker over it when there is a choice.
+            Pill {
+                Layout.alignment: Qt.AlignHCenter
+                implicitWidth: Math.max(180, userText.implicitWidth + 64)
+                Text {
+                    id: userText
+                    anchors.centerIn: parent
+                    text: userList.currentText
+                    color: pal.snow
+                    font.pixelSize: 18; font.bold: true; font.letterSpacing: 1
+                    font.family: "JetBrainsMono NF"
+                }
+                Picker {
+                    id: userList
+                    objectName: "userPicker"
+                    anchors.fill: parent
+                    // One user is not a choice.
+                    enabled: userModel.count > 1
+                    model: userModel; textRole: "name"; currentIndex: userModel.lastIndex
+                }
+            }
+
+            Item { Layout.preferredHeight: 14 }
+
+            // The way in, on its plate: lock at one end, the way in at the other,
+            // the dots and the prompt on its own centre. It shakes on a wrong
+            // password.
             Rectangle {
                 id: passField
-                width: 560; height: 60
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: 420; Layout.preferredHeight: 58
                 radius: root.cardR
                 color: root.plate
                 border.width: 1
@@ -443,8 +326,8 @@ Rectangle {
                         }
                     }
                 }
-                // Literal, NOT textConstants: sddm-greeter-qt6 0.21 does not
-                // hand this theme a `textConstants`.
+                // Literal, NOT textConstants: sddm-greeter-qt6 0.21 does not hand
+                // this theme a `textConstants`.
                 Text {
                     anchors.centerIn: parent
                     visible: password.text === ""
@@ -471,7 +354,9 @@ Rectangle {
 
             // Keeps its height either way: a message must not shove the field.
             Item {
-                width: 560; height: 16
+                Layout.alignment: Qt.AlignHCenter
+                Layout.topMargin: 12
+                Layout.preferredWidth: 420; Layout.preferredHeight: 16
                 Text {
                     id: message
                     anchors.centerIn: parent
@@ -485,6 +370,94 @@ Rectangle {
                     text: "caps lock is on"
                     color: pal.mist
                     font.pixelSize: 12; font.family: "JetBrainsMono NF"
+                }
+            }
+        }
+
+        // ---- Bottom centre: the session and the ways out, one plate --------
+        Pill {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom; anchors.bottomMargin: 36
+            implicitWidth: sessBox.width + 1 + powerRow.implicitWidth + 16
+
+            Item {
+                id: sessBox
+                anchors.left: parent.left
+                height: parent.height
+                width: sessRow.implicitWidth + 32
+                Row {
+                    id: sessRow
+                    anchors.centerIn: parent
+                    spacing: 8
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "\ue30a"   // computer
+                        color: pal.mist
+                        font.pixelSize: 17; font.family: "Material Symbols Rounded"
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: sessionList.currentText; color: pal.snow
+                        font.pixelSize: 13; font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "\ue5cf"   // expand_more
+                        color: pal.mist
+                        font.pixelSize: 15; font.family: "Material Symbols Rounded"
+                    }
+                }
+                Picker {
+                    id: sessionList
+                    objectName: "sessionPicker"
+                    anchors.fill: parent
+                    openUp: true
+                    model: sessionModel; textRole: "name"; currentIndex: sessionModel.lastIndex
+                }
+            }
+
+            Rectangle {
+                x: sessBox.width
+                anchors.verticalCenter: parent.verticalCenter
+                width: 1; height: 22
+                color: Qt.rgba(1, 1, 1, 0.12)
+            }
+
+            // The same three the session's power menu offers, with its glyphs.
+            Row {
+                id: powerRow
+                anchors.right: parent.right; anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 2
+                Repeater {
+                    model: [
+                        { g: "\uf159", act: "suspend" },
+                        { g: "\uf053", act: "reboot" },
+                        { g: "\uf8c7", act: "poweroff" }
+                    ]
+                    Rectangle {
+                        width: 38; height: 34; radius: 8
+                        color: "transparent"
+                        // Hover = grow and brighten, never a fill.
+                        scale: ma.containsMouse ? 1.06 : 1
+                        Behavior on scale { NumberAnimation { duration: 150 } }
+                        Text {
+                            anchors.centerIn: parent
+                            text: modelData.g
+                            color: ma.containsMouse ? pal.snow : pal.mist
+                            font.pixelSize: 17; font.family: "Material Symbols Rounded"
+                        }
+                        MouseArea {
+                            id: ma
+                            anchors.fill: parent; hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (modelData.act === "poweroff") sddm.powerOff()
+                                else if (modelData.act === "reboot") sddm.reboot()
+                                else sddm.suspend()
+                            }
+                        }
+                    }
                 }
             }
         }
