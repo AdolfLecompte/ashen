@@ -183,6 +183,7 @@ var entries = [
     ["system", "settings.system.lid.lock"],
     ["system", "settings.system.lid.nothing"],
     ["system", "settings.system.lid.suspend"],
+    ["system", "settings.system.lockBack"],
     ["system", "settings.system.lockFade"],
     ["system", "settings.system.lockIntro"],
     ["system", "settings.system.lock.machine"],

@@ -21,7 +21,10 @@ run && say FAIL "rolled back with no update recorded" || say ok "nothing to roll
 
 prev=$(git -C "$R" rev-parse HEAD~1); echo "$prev" > "$T/home/.cache/ashen-before-update"
 # A tracked file the rollback does not touch, so the local edit cannot collide.
-keep=$(comm -23 <(git -C "$R" ls-files | sort) <(git -C "$R" diff --name-only HEAD~1 HEAD | sort) | grep -m1 -E '^(LICENSE|docs/DESIGN.md)$' || git -C "$R" ls-files | head -1)
+# grep reads everything (no -m1): stopping early SIGPIPEs comm, and under pipefail
+# that read as "not found" once the tree was long enough for comm to still be writing.
+keep=$(comm -23 <(git -C "$R" ls-files | sort) <(git -C "$R" diff --name-only HEAD~1 HEAD | sort) | { grep -E '^(LICENSE|docs/DESIGN.md)$' || true; } | head -1)
+[ -n "$keep" ] || keep=$(git -C "$R" ls-files | head -1)
 echo "local edit" >> "$R/$keep"
 run && [ "$(git -C "$R" rev-parse HEAD)" = "$prev" ] && say ok "goes back to the recorded commit" \
     || { say FAIL "did not go back"; fail=1; }
