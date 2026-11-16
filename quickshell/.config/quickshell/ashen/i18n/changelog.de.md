@@ -54,8 +54,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   an den Ziffern, und die vier Werte am Fuß richten sich in zwei Spalten aus.
 
 - Gesicht, Name und Passwortfeld des Sperrbildschirms teilen sich jetzt eine
-  Platte, mit Füllung und Ecke der Widgets daneben, und die Spalten zu beiden
-  Seiten hängen an ihrer Oberkante.
+  Platte, mit Füllung und Ecke der Widgets daneben. Die Platte und die beiden
+  Spalten sind auf derselben Linie des Bildschirms zentriert und stehen so
+  immer auf gleicher Höhe; die Uhr rückt nach oben, direkt über sie.
 ### Behoben
 - Karten ohne Platte (das Ausschaltmenü) behalten im Morph-Stil keine dunkle
   Platte mehr dahinter.

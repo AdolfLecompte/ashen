@@ -54,8 +54,9 @@ si falta, la bienvenida las enseña en inglés.
   columnas.
 
 - La foto, el nombre y el campo de contraseña del lock ahora comparten una
-  placa, con el relleno y la esquina de los widgets de al lado, y las
-  columnas de ambos lados cuelgan de su línea superior.
+  placa, con el relleno y la esquina de los widgets de al lado. La placa y
+  las dos columnas se centran en la misma línea de la pantalla, así que
+  siempre quedan a la misma altura, y el reloj sube para quedar justo encima.
 ### Arreglado
 - Las tarjetas sin plato (el menú de apagado) ya no conservan un plato
   oscuro detrás en el estilo morph.

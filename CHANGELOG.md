@@ -47,8 +47,9 @@
   in two columns.
 
 - The lock screen's face, name and password field now share one plate, with
-  the fill and corner of the widgets beside it, and the columns either side
-  hang from its top line.
+  the fill and corner of the widgets beside it. The plate and the two columns
+  are centred on the same line of the screen, so they always stand level, and
+  the clock steps up to sit just above them.
 ### Fixed
 - Cards with no plate (the power menu) no longer keep a dark plate behind
   them in the morph style.
