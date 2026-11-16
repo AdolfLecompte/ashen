@@ -27,16 +27,17 @@ si falta, la bienvenida las enseña en inglés.
   y lo que has enfocado hoy.
 
 - **Pantalla de inicio de sesión rehecha**: seis capas de montañas con bruma
-  y pinos, dibujadas en QML en vez de una foto, en tres columnas como el lock:
-  el mes a un lado, la hora grande en el centro con tu foto redonda, tu
-  nombre y el campo de contraseña cada uno en su propia placa, y placas
-  grandes de apagar, reiniciar, suspender y sesión al otro. Ya no sigue el
-  fondo de pantalla: lleva una de cinco paletas (`preset=` en `theme.conf`:
-  dusk, forest, midnight, amber o ash). El instalador (y cambiar tu foto en
-  Ajustes) guarda una copia redonda de tu cara donde el login puede leerla, lo
-  que pide que el usuario `sddm` atraviese tu home y lea una sola carpeta
-  (`~/.cache/ashen-sddm`, una ACL); sin ella el login muestra un glifo. Se
-  deshace con `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
+  y bosques de abetos, dibujadas en QML en vez de una foto. La hora es enorme
+  a la izquierda, con los dos puntos en el acento, y debajo una sola placa
+  guarda tu foto redonda, tu nombre y el campo de contraseña; las acciones
+  van en fila arriba a la derecha, el mes en una placa grande y la sesión al
+  pie. Ya no sigue el fondo de pantalla: lleva una de cinco paletas
+  (`preset=` en `theme.conf`: dusk, forest, midnight, amber o ash). El
+  instalador (y cambiar tu foto en Ajustes) guarda una copia redonda de tu
+  cara donde el login puede leerla, lo que pide que el usuario `sddm`
+  atraviese tu home y lea una sola carpeta (`~/.cache/ashen-sddm`, una ACL);
+  sin ella el login muestra un glifo. Se deshace con
+  `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
 - **El bloqueo vuelve al reloj** tras 30 s de silencio en el login (cualquier
   tecla o movimiento del puntero reinicia la cuenta). Ajustes -> Sistema ->
   Pantalla de bloqueo: nunca / 15 s / 30 s / 60 s.
@@ -53,6 +54,8 @@ si falta, la bienvenida las enseña en inglés.
   colgando de los dígitos, y las cuatro cifras del pie se alinean en dos
   columnas.
 
+- El nombre y el campo de contraseña del lock ahora comparten una placa, con
+  el relleno y la esquina de los widgets de al lado.
 ### Arreglado
 - Las tarjetas sin plato (el menú de apagado) ya no conservan un plato
   oscuro detrás en el estilo morph.

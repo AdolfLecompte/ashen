@@ -20,15 +20,15 @@
   minutes; the pomodoro has pressable phases, a round of four that fills as
   it runs, editable lengths, optional auto-start and how much you focused
   today.
-- **Login screen redrawn**: six layers of mountains with mist and pines, drawn
-  in QML instead of a photo, in three columns like the lock screen: the month
-  on one side, the time large in the middle with your round face, your name and
-  the password field each on a plate of their own, and big plates for power,
-  reboot, sleep and session on the other. It no longer follows the wallpaper:
-  it wears one of five palettes (`preset=` in `theme.conf`: dusk, forest,
-  midnight, amber or ash). The installer (and changing your photo in Settings)
-  keeps a rounded copy of your face where the login can read it, which asks
-  the `sddm` user to traverse your home and read one folder
+- **Login screen redrawn**: six layers of mountains with mist and spruce
+  forests, drawn in QML instead of a photo. The time is huge on the left with
+  its colon in the accent, and under it one plate holds your round face, your
+  name and the password field; the ways out sit in a row at the top right, the
+  month on a big plate, the session at the foot. It no longer follows the
+  wallpaper: it wears one of five palettes (`preset=` in `theme.conf`: dusk,
+  forest, midnight, amber or ash). The installer (and changing your photo in
+  Settings) keeps a rounded copy of your face where the login can read it,
+  which asks the `sddm` user to traverse your home and read one folder
   (`~/.cache/ashen-sddm`, an ACL); without it the login shows a glyph instead.
   Undo with `setfacl -x u:sddm ~ ~/.cache ~/.cache/ashen-sddm`.
 - **The lock returns to the clock** after 30 s of silence on the login (any
@@ -46,6 +46,8 @@
   meridiem hanging off the digits, and the four figures at its foot line up
   in two columns.
 
+- The lock screen's name and password field now share one plate, with the
+  fill and corner of the widgets beside it.
 ### Fixed
 - Cards with no plate (the power menu) no longer keep a dark plate behind
   them in the morph style.

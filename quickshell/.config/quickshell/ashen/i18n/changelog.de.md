@@ -26,13 +26,13 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   einstellbare Dauern, optionalen Autostart und die heute fokussierte Zeit.
 
 - **Anmeldebildschirm neu gezeichnet**: sechs Schichten Berge mit Dunst und
-  Kiefern, in QML gezeichnet statt als Foto, in drei Spalten wie der
-  Sperrbildschirm: der Monat auf einer Seite, die Uhrzeit groß in der Mitte
-  mit deinem runden Gesicht, deinem Namen und dem Passwortfeld auf je einer
-  eigenen Platte, und große Platten für Ausschalten, Neustart, Standby und
-  Sitzung auf der anderen. Er folgt dem Hintergrund nicht mehr: er trägt eine
-  von fünf Paletten (`preset=` in `theme.conf`: dusk, forest, midnight, amber
-  oder ash). Der Installer (und das Ändern deines Fotos in den Einstellungen)
+  Fichtenwäldern, in QML gezeichnet statt als Foto. Die Uhrzeit ist links
+  riesig, ihr Doppelpunkt im Akzent, und darunter hält eine einzige Platte
+  dein rundes Gesicht, deinen Namen und das Passwortfeld; die Aktionen stehen
+  in einer Reihe oben rechts, der Monat auf einer großen Platte, die Sitzung
+  am Fuß. Er folgt dem Hintergrund nicht mehr: er trägt eine von fünf
+  Paletten (`preset=` in `theme.conf`: dusk, forest, midnight, amber oder
+  ash). Der Installer (und das Ändern deines Fotos in den Einstellungen)
   legt eine runde Kopie deines Gesichts dort ab, wo die Anmeldung sie lesen
   kann; dafür darf der Benutzer `sddm` dein Home durchqueren und einen
   einzigen Ordner lesen (`~/.cache/ashen-sddm`, eine ACL); ohne sie zeigt die
@@ -54,6 +54,8 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Die gestapelte Uhr im Uhr-Panel ist als Ganzes zentriert, das AM/PM hängt
   an den Ziffern, und die vier Werte am Fuß richten sich in zwei Spalten aus.
 
+- Name und Passwortfeld des Sperrbildschirms teilen sich jetzt eine Platte,
+  mit Füllung und Ecke der Widgets daneben.
 ### Behoben
 - Karten ohne Platte (das Ausschaltmenü) behalten im Morph-Stil keine dunkle
   Platte mehr dahinter.
