@@ -25,9 +25,14 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
   Pomodoro hat anklickbare Phasen, eine Runde aus vier, die sich füllt,
   einstellbare Dauern, optionalen Autostart und die heute fokussierte Zeit.
 
-- **Anmeldebildschirm neu gezeichnet**: ein flaches Meer in der Dämmerung
-  (Sonne, Hügel, Wasser, Ufer), in QML gezeichnet statt als Foto, in den
-  Farben deines aktuellen Hintergrunds. Der Installer erlaubt dem Benutzer
+- **Anmeldebildschirm neu gezeichnet**: sechs Schichten Berge mit Dunst und
+  Kiefern, in QML gezeichnet statt als Foto, in den Farben deines aktuellen
+  Hintergrunds und aus den Teilen des Sperrbildschirms gebaut: die Uhrzeit
+  groß und gestapelt, Platten für Ausschalten, Neustart, Standby und Sitzung
+  und eine Karte mit deinem runden Gesicht und dem eingesenkten
+  Passwortfeld. Der Installer (und das Ändern deines Fotos in den
+  Einstellungen) legt eine runde Kopie deines Gesichts dort ab, wo die
+  Anmeldung sie lesen kann, und erlaubt dem Benutzer
   `sddm`, dein Home zu durchqueren und einen einzigen Ordner zu lesen
   (`~/.cache/ashen-sddm`, eine ACL), damit matugen die Palette aktuell hält;
   ohne sie behält die Anmeldung ihre eigenen Farben. Rückgängig mit
