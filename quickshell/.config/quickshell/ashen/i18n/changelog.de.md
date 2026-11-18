@@ -50,8 +50,12 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Das Dock blendet sich standardmäßig nicht mehr aus, trägt den Starter und
   setzt seine Pillen vor die Apps. Panels nutzen standardmäßig die
   Unschärfe-Oberfläche.
-- Die gestapelte Uhr im Uhr-Panel ist als Ganzes zentriert, das AM/PM hängt
-  an den Ziffern, und die vier Werte am Fuß richten sich in zwei Spalten aus.
+- Das Uhr-Panel und das Uhr-Widget auf dem Desktop haben ein neues Gesicht: die
+  Uhrzeit groß, der Wochentag fett in Großbuchstaben mit dem Datum klein
+  darunter und ein dünner Bogen über der Uhrzeit, der der Sonne von Sonnenauf-
+  bis -untergang folgt. Im Panel steht die Uhrzeit in einer Zeile (die Minuten
+  im Ton des Systems), darunter zeigt eine Reihe von Strichen, wie weit der Tag
+  fortgeschritten ist; alles ist als ein Block zentriert.
 
 - Gesicht, Name und Passwortfeld des Sperrbildschirms teilen sich jetzt eine
   Platte, mit Füllung und Ecke der Widgets daneben. Die Platte und die beiden

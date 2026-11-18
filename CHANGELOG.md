@@ -42,9 +42,12 @@
   rearranged follows the new one.
 - The dock no longer hides by default, carries the launcher, and puts its
   pills before the apps. Panels default to the blur surface.
-- The stacked clock in the clock panel is centred as a whole, with the
-  meridiem hanging off the digits, and the four figures at its foot line up
-  in two columns.
+- The clock panel and the desktop clock widget wear a new face: the hour big,
+  the weekday in bold capitals with the date small under it, and a thin arch
+  over the hour that follows the sun from sunrise to sunset. In the panel the
+  hour is on one line (the minutes in the system's tone), and under it a row of
+  ticks shows how far through the day it is; the whole reading is centred as
+  one block.
 
 - The lock screen's face, name and password field now share one plate, with
   the fill and corner of the widgets beside it. The plate and the two columns

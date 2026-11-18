@@ -49,9 +49,12 @@ si falta, la bienvenida las enseña en inglés.
 - El dock ya no se oculta por defecto, lleva el lanzador y pone sus píldoras
   antes de las aplicaciones. Los paneles usan por defecto la superficie con
   desenfoque.
-- El reloj apilado del panel del reloj se centra entero, con el AM/PM
-  colgando de los dígitos, y las cuatro cifras del pie se alinean en dos
-  columnas.
+- El panel del reloj y el widget de reloj del escritorio estrenan cara: la
+  hora en grande, el día en negrita y mayúsculas con la fecha pequeña debajo,
+  y un arco fino sobre la hora que sigue al sol del amanecer al ocaso. En el
+  panel la hora va en una sola línea (los minutos con el tono del sistema), y
+  debajo una fila de marcas muestra cuánto del día ha pasado; todo se centra
+  como un solo bloque.
 
 - La foto, el nombre y el campo de contraseña del lock ahora comparten una
   placa, con el relleno y la esquina de los widgets de al lado. La placa y
