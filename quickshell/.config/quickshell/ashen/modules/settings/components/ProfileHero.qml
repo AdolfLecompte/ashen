@@ -70,21 +70,29 @@ Rectangle {
         anchors.margins: 24
         spacing: 20
 
-        // A fixed slot, and the face grows in real size inside it: scaling a
-        // ClippingRectangle stretches its clipped edge and the circle frays.
+        // A fixed slot. The face is drawn once at twice its size into a texture and that texture is
+        // scaled by the GPU (0.5 at rest, 0.53 on hover): scaling a live ClippingRectangle
+        // pixelates its edge, and growing its real size re-lays it out every frame and steps in
+        // whole pixels. Drawn at 2x, the scaled copy stays sharp and nothing is re-laid out.
         Item {
             Layout.preferredWidth: 104
             Layout.preferredHeight: 104
 
-            ClippingRectangle {
+            Item {
                 id: face
-                property real size: 104 * Services.Sizes.hoverScale(area.containsMouse, area.pressed)
-                Behavior on size { Widgets.Anim { speed: Services.Sizes.msMicro } }
+                width: 208
+                height: 208
                 anchors.centerIn: parent
-                width: Math.round(face.size)
-                height: width
-                radius: width / 2
-                color: Services.Colors.fillInset
+                scale: 0.5 * Services.Sizes.hoverScale(area.containsMouse, area.pressed)
+                Behavior on scale { Widgets.Anim { speed: Services.Sizes.msMicro } }
+                layer.enabled: true
+                layer.smooth: true
+                layer.mipmap: true
+
+                ClippingRectangle {
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: Services.Colors.fillInset
 
                 Image {
                     id: faceImg
@@ -94,6 +102,8 @@ Rectangle {
                     sourceSize.width: 208
                     asynchronous: true
                     cache: false
+                    smooth: true
+                    mipmap: true
                     visible: status === Image.Ready
                 }
                 Text {
@@ -102,15 +112,16 @@ Rectangle {
                     visible: faceImg.status !== Image.Ready
                     text: "\uf0d3"
                     color: Services.Colors.ghost
-                    font.pixelSize: 48
+                    font.pixelSize: 96
                     font.family: "Material Symbols Rounded"
                 }
                 Rectangle {
                     anchors.fill: parent
                     radius: width / 2
                     color: "transparent"
-                    border.width: 2
+                    border.width: 4
                     border.color: Services.Colors.ghost
+                }
                 }
             }
         }
