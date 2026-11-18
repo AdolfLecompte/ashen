@@ -131,6 +131,13 @@ grep -q 'Settings {' sddm/ashen/Main.qml && grep -q 'nextPreset()' sddm/ashen/Ma
   && say ok "the scene can be changed from the login and is remembered" \
   || { say FAIL "no button to change the scene"; fail=1; }
 
+# The remembered scene lives in a file of its own. The default location needs an application
+# name and an organization that the real greeter does not set ("Failed to initialize QSettings
+# instance"): the harness (qml6) sets them, so only the greeter's journal ever showed it.
+grep -q 'location: StandardPaths.writableLocation' sddm/ashen/Main.qml \
+  && say ok "the remembered scene has its own file (no application identifiers needed)" \
+  || { say FAIL "Settings has no location: it cannot start in the real greeter"; fail=1; }
+
 # The login wears a predefined palette and never reads the session's: a login
 # that depends on a file in a home it may not be able to read is a login that
 # can come up wrong.

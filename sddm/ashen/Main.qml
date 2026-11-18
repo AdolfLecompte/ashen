@@ -43,6 +43,10 @@ Rectangle {
     // someone picks one, theme.conf's `preset` rules, and an unknown name is dusk.
     Settings {
         id: remembered
+        // A file of its own: the greeter sets no application name or organization, and without
+        // them the default location cannot start ("Failed to initialize QSettings instance"). The
+        // config folder is the sddm user's when the greeter runs as sddm, yours in test mode.
+        location: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/ashen-login.conf"
         category: "ashen-login"
         property string preset: ""
     }
