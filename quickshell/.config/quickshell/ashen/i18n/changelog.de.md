@@ -68,6 +68,9 @@ gebraucht: fehlt sie, zeigt die Begrüßung die englischen Notizen.
 - Die Datenschutzanzeige leuchtet beim Öffnen von Alt-Tab oder der
   Workspace-Vorschau nicht mehr als Bildschirmfreigabe auf (deren
   Fenster-Miniaturen sind ebenfalls Aufnahmen).
+- Das Profilfoto in den Einstellungen wackelt beim Vergrößern mit dem Mauszeiger
+  nicht mehr und wird nicht mehr zackig: Es wird in doppelter Größe gezeichnet
+  und sanft skaliert.
 
 ## 3.8.0
 

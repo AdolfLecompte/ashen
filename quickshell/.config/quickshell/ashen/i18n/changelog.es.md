@@ -67,6 +67,8 @@ si falta, la bienvenida las enseña en inglés.
 - El indicador de privacidad ya no se enciende como pantalla compartida al
   abrir alt-tab o la vista previa del workspace (sus miniaturas también son
   capturas).
+- La foto de perfil de Ajustes ya no tambalea ni se pixela al crecer con el
+  ratón: se dibuja al doble de tamaño y se escala con suavidad.
 
 ## 3.8.0
 

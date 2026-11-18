@@ -59,6 +59,8 @@
   it again when the language's phrase bank loads.
 - The privacy indicator no longer lights up as a screen share when alt-tab or
   the workspace preview opens (their window thumbnails are captures too).
+- The profile photo in Settings no longer wobbles or turns jagged when it grows on
+  hover: it is drawn at twice its size and scaled smoothly.
 
 ## 3.8.0
 
