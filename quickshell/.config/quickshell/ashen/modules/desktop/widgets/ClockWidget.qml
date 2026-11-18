@@ -20,11 +20,22 @@ DesktopWidget {
     // Bold is what it always wore; thin is the light cut of the same font.
     readonly property int weight: root.face === "thin" ? Font.Thin : Font.Bold
 
-    // ── Digital: the shell's own clock face, seconds written small ──────
+    // ── Digital: the hour big, the day in bold capitals and the date small ──
+    // under it, all flush right, with the sun's arch over the hour. Seconds stay
+    // small on the hour's foot (the lock screen's pattern).
     component Digital: Column {
+        id: dg
         spacing: 2
 
+        Widgets.SunTrack {
+            width: hourText.width
+            height: 30
+            riseMin: Services.Weather.sunriseMin
+            setMin: Services.Weather.sunsetMin
+            nowMin: Services.Time.now.getHours() * 60 + Services.Time.now.getMinutes()
+        }
         Widgets.ClockText {
+            id: hourText
             time: Services.Time.fmt(root.timeFmt)
             px: 64
             weight: root.weight
@@ -33,7 +44,18 @@ DesktopWidget {
         }
         Text {
             textFormat: Text.PlainText
-            text: Services.Time.fmt("dddd, d MMMM").toUpperCase()
+            x: dg.width - width
+            text: Services.Time.fmt("dddd").toUpperCase()
+            color: Services.Colors.snow
+            font.pixelSize: 20
+            font.bold: true
+            font.family: "JetBrainsMono NF"
+            font.letterSpacing: 1
+        }
+        Text {
+            textFormat: Text.PlainText
+            x: dg.width - width
+            text: Services.Time.fmt("d MMMM").toUpperCase()
             color: Services.Colors.mist
             font.pixelSize: Services.Sizes.fsInput
             font.family: "JetBrainsMono NF"

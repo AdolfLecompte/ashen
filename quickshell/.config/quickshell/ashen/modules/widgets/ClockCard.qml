@@ -40,7 +40,8 @@ Item {
     // One formatted string, exactly the pill's, so the two can be the same
     // object growing rather than two different clocks crossfading.
     readonly property string timeText: Services.Time.fmt(Services.Prefs.timeFormat)
-    readonly property string dateText: Services.Time.fmt("dddd, MMMM d")
+    // The weekday is the title and travels from the pill; the date sits small under it.
+    readonly property string dateText: Services.Time.fmt("dddd")
     readonly property date now: Services.Time.now
 
     // The column always reserves room for the longest clock there is: twelve
@@ -58,7 +59,20 @@ Item {
     }
     readonly property real clockPx: Math.max(20,
         Math.floor(100 * (clockW - 30) / Math.max(1, probe.width)))
-    // The clock tab's stacked face: hour over minute, the meridiem beside.
+    // The one-line face "hh:mm" is sized to the column's width (the meridiem hangs off its
+    // right edge, so a little room is kept for it), capped so a wide column does not shout.
+    Text {
+        textFormat: Text.PlainText
+        id: probeFace
+        visible: false
+        text: "00:00"
+        font.pixelSize: 100
+        font.bold: true
+        font.family: "JetBrainsMono NF"
+    }
+    readonly property real facePx: Math.min(96, Math.max(24,
+        Math.floor(100 * (clockW - 70) / Math.max(1, probeFace.width))))
+    // The clock tab's face: hour and minute, the meridiem beside.
     readonly property var timeParts: {
         const m = root.timeText.match(/^(\d+):(\d+)/)
         const ap = root.timeText.match(/[AaPp]\.?[Mm]\.?/)
@@ -70,8 +84,8 @@ Item {
     // ── Where the shared pieces sit, in this item's coordinates ─────────
     readonly property real timeCX: row.x + clockCol.x + timeT.x + timeT.width / 2
     readonly property real timeCY: row.y + clockCol.y + timeT.y + timeT.height / 2
-    readonly property real dateCX: row.x + clockCol.x + foot.x + dateT.x + dateT.width / 2
-    readonly property real dateCY: row.y + clockCol.y + foot.y + dateT.y + dateT.height / 2
+    readonly property real dateCX: row.x + clockCol.x + grp.x + foot.x + dateBox.x + dateT.x + dateT.width / 2
+    readonly property real dateCY: row.y + clockCol.y + grp.y + foot.y + dateBox.y + dateT.y + dateT.height / 2
     readonly property real wIconCX: row.x + wxCol.x + wxNow.x + wIcon.x + wIcon.width / 2
     readonly property real wIconCY: row.y + wxCol.y + wxNow.y + wIcon.y + wIcon.height / 2
     readonly property real wTempCX: row.x + wxCol.x + wxNow.x + wTemp.x + wTemp.width / 2
@@ -247,12 +261,20 @@ Item {
             // Centred in the room above the foot, and the digits themselves are
             // what is centred: the meridiem hangs off their right edge instead of
             // being counted into the width, which shoved the pair off-centre.
+            // The whole reading is ONE block centred in the column: the hour, the day
+            // under it and the figures under that. Pinning the foot to the floor left a hole
+            // between the hour and its own date, and the column read emptier than its
+            // neighbours.
+            Column {
+                id: grp
+                anchors.centerIn: parent
+                width: parent.width
+                spacing: 20
+
             Item {
                 id: face
-                anchors.top: parent.top
-                anchors.bottom: foot.top
-                anchors.bottomMargin: 10
                 width: parent.width
+                height: stackT.height + 44
 
                 Item {
                     id: stackT
@@ -262,25 +284,42 @@ Item {
                     opacity: root.beat(0)
                     visible: opacity > 0.01
 
-                    // Big, hour over minute, as on the lock screen.
-                    Column {
+                    // The sun's path over the digits.
+                    SunTrack {
+                        width: digits.width + 36
+                        height: 24
+                        x: (parent.width - width) / 2
+                        y: -height + 4
+                        riseMin: Services.Weather.sunriseMin
+                        setMin: Services.Weather.sunsetMin
+                        nowMin: root.now.getHours() * 60 + root.now.getMinutes()
+                    }
+
+                    // Big, on one line: the hour in white, the minutes in the system's tone.
+                    Row {
                         id: digits
-                        spacing: -30
+                        spacing: 0
                         Text {
                             textFormat: Text.PlainText
-                            anchors.horizontalCenter: parent.horizontalCenter
                             text: root.timeParts.h
                             color: Services.Colors.snow
-                            font.pixelSize: 104
+                            font.pixelSize: root.facePx
                             font.bold: true
                             font.family: "JetBrainsMono NF"
                         }
                         Text {
                             textFormat: Text.PlainText
-                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: ":"
+                            color: Services.Colors.mist
+                            font.pixelSize: root.facePx
+                            font.bold: true
+                            font.family: "JetBrainsMono NF"
+                        }
+                        Text {
+                            textFormat: Text.PlainText
                             text: root.timeParts.m
                             color: Services.Colors.ghost
-                            font.pixelSize: 104
+                            font.pixelSize: root.facePx
                             font.bold: true
                             font.family: "JetBrainsMono NF"
                         }
@@ -290,7 +329,7 @@ Item {
                         visible: text !== ""
                         anchors.left: digits.right
                         anchors.leftMargin: 10
-                        y: 30
+                        y: 8
                         text: root.timeParts.ap
                         color: Services.Colors.mist
                         font.pixelSize: 18
@@ -302,30 +341,53 @@ Item {
 
             Column {
                 id: foot
-                anchors.bottom: parent.bottom
                 width: parent.width
-                spacing: 14
+                spacing: 16
 
-                Text {
-                    textFormat: Text.PlainText
-                    id: dateT
-                    opacity: root.sharedOpacity
+                // The weekday in bold capitals and the date small under it, as on the
+                // desktop clock. The box is what the flying weekday lands on.
+                Item {
+                    id: dateBox
                     width: parent.width
-                    horizontalAlignment: Text.AlignHCenter
-                    text: root.dateText.toUpperCase()
-                    color: Services.Colors.snow
-                    font.pixelSize: 13
-                    font.bold: true
-                    font.letterSpacing: 2
-                    font.family: "JetBrainsMono NF"
+                    height: dateT.height + 4 + dateSmall.height
+
+                    Text {
+                        textFormat: Text.PlainText
+                        id: dateT
+                        opacity: root.sharedOpacity
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: root.dateText.toUpperCase()
+                        color: Services.Colors.snow
+                        font.pixelSize: 22
+                        font.bold: true
+                        font.letterSpacing: 1
+                        font.family: "JetBrainsMono NF"
+                    }
+                    Text {
+                        textFormat: Text.PlainText
+                        id: dateSmall
+                        y: dateT.height + 4
+                        opacity: root.beat(1)
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: Services.Time.fmt("d MMMM").toUpperCase()
+                        color: Services.Colors.mist
+                        font.pixelSize: 12
+                        font.letterSpacing: 2
+                        font.family: "JetBrainsMono NF"
+                    }
                 }
 
-                Rectangle {
-                    anchors.horizontalCenter: parent.horizontalCenter
+                // How far through the day it is: a tick for every slice, lit up to now.
+                TickMeter {
                     width: parent.width - 40
-                    height: 1
-                    color: Services.Colors.fillInset
+                    height: 14
+                    x: 20
+                    tickW: 3
+                    gap: 4
                     opacity: root.beat(1)
+                    value: (root.now.getHours() * 60 + root.now.getMinutes()) / 1440
                 }
 
                 // The day's four figures, two by two: sun up and down on
@@ -334,7 +396,7 @@ Item {
                     id: clockRow
                     width: parent.width
                     columns: 2
-                    rowSpacing: 12
+                    rowSpacing: 14
                     opacity: root.beat(1)
 
                     WxCell {
@@ -376,13 +438,15 @@ Item {
                 }
             }
 
+            }
+
             // Only a landing spot for the flying clock: it settles where the
             // stacked face is, then the real one fades in.
             ClockText {
                 id: timeT
                 opacity: 0
-                x: face.x + stackT.x + stackT.width / 2 - width / 2
-                y: face.y + stackT.y + stackT.height / 2 - height / 2
+                x: grp.x + face.x + stackT.x + stackT.width / 2 - width / 2
+                y: grp.y + face.y + stackT.y + stackT.height / 2 - height / 2
                 time: root.timeText
                 px: root.clockPx
             }

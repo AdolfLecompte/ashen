@@ -169,8 +169,8 @@ PanelWindow {
             // The card wears it as a title -- spaced out and in caps -- so the
             // flying copy has to arrive dressed the same way.
             color: card.mix(Services.Colors.mist, Services.Colors.snow, card.morph)
-            font.pixelSize: card.lerp(15, 13, card.morph)
-            font.letterSpacing: card.lerp(0, 2, card.morph)
+            font.pixelSize: card.lerp(15, 22, card.morph)
+            font.letterSpacing: card.lerp(0, 1, card.morph)
             font.bold: true
             font.family: "JetBrainsMono NF"
             // It stays: this is the date the card shows once it has landed.
